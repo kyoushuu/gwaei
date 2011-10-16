@@ -1,0 +1,76 @@
+CC=gcc
+AR=ar
+CFLAGS=-O2 -g -Wall -Wextra -pedantic -std=c89 -D_ISOC99_SOURCE -Dinline=
+
+SPLINT = splint
+SPLINT_FLAGS = -nolib +quiet +strict \
+	+partial -exportheader +neverinclude \
+	-protoparamname \
+	-boundsread -boundswrite \
+	+ptrnegate -predboolptr \
+	-ifblock \
+	-modfilesys
+
+SPLINT_DEFS =
+
+SRCS = edictidx.h edictidx_int.h fileops.c hash.c key.c parser.c query.c build.c verify.c edictidx.c
+SRCS += mmap-stdio.c
+#SRCS += mmap-posix.c
+
+OBJS = hash.o parser.o key.o fileops.o query.o build.o verify.o edictidx.o
+OBJS += mmap-stdio.o
+#OBJS += mmap-posix.o
+
+ASMS = hash.s query.s key.s
+
+LIB = libedictidx.a
+
+TESTSRC = tests/tests.c
+TESTS = tests/hash tests/parser tests/query tests/build tests/verify
+TESTLIBS = -L. -ledictidx
+
+all: $(LIB) tests
+
+.PHONY: clean etags asms splint tests
+
+$(LIB): $(OBJS)
+	$(AR) rcs $@ $^
+
+asms: $(ASMS)
+
+tests: $(TESTS)
+
+etags: TAGS
+
+TAGS: $(SRCS)
+	etags $^
+
+%.o: %.c *.h Makefile
+	$(CC) -c $(CFLAGS) $<
+
+%.s: %.c *.h Makefile
+	$(CC) -o $@ $(CFLAGS) -S $<
+
+splint: splint_library.h $(SRCS)
+	$(SPLINT) $(SPLINT_FLAGS) $(SPLINT_DEFS) $^
+
+tests/hash: $(TESTSRC) $(LIB)
+	$(CC) -o $@ $(CFLAGS) -DHASH_TEST $< $(TESTLIBS)
+
+tests/parser: $(TESTSRC) $(LIB)
+	$(CC) -o $@ $(CFLAGS) -DPARSER_TEST $< $(TESTLIBS)
+
+tests/build: $(TESTSRC) $(LIB)
+	$(CC) -o $@ $(CFLAGS) -DBUILD_TEST $< $(TESTLIBS)
+
+tests/verify: $(TESTSRC) $(LIB)
+	$(CC) -o $@ $(CFLAGS) -DVERIFY_TEST $< $(TESTLIBS)
+
+tests/query: $(TESTSRC) $(LIB)
+	$(CC) -o $@ $(CFLAGS) -DQUERY_TEST $< $(TESTLIBS)
+
+clean:
+	rm -f $(LIB)
+	rm -f $(OBJS)
+	rm -f $(ASMS)
+	rm -f $(TESTS)
