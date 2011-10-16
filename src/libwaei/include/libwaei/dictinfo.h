@@ -33,6 +33,10 @@
 #include <libwaei/dict.h>
 #include <libwaei/resultline.h>
 
+#ifdef HAVE_EDICTIDX
+#include <edictidx.h>
+#endif
+
 #define LW_DICTINFO(object) (LwDictInfo*) object
 
 //!
@@ -45,6 +49,10 @@ struct _LwDictInfo
     long total_lines;                 //!< total lines in the file
     LwResultLine *cached_resultlines; //!< Allocated resultline swapped with current_resultline when needed
     LwResultLine *current_resultline; //!< Allocated resultline where the current parsed result data resides
+
+#ifdef HAVE_EDICTIDX
+	edict_idx *index;
+#endif
 };
 typedef struct _LwDictInfo LwDictInfo;
 

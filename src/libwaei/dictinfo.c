@@ -100,7 +100,6 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 
     uri = lw_dictinfo_get_uri (di);
     di->total_lines = lw_io_get_total_lines_for_file (uri);
-    g_free (uri);
 
     if (!_overlay_default_builtin_dictionary_settings (di))
     {
@@ -111,6 +110,21 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 
     di->cached_resultlines = NULL;
     di->current_resultline = NULL;
+
+#ifdef HAVE_EDICTIDX
+    if (DICTTYPE == LW_DICTTYPE_EDICT) {
+	    di->index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	    if (di->index)
+		    fprintf(stderr, "Building edictidx index for dictionary '%s'...\n", uri);
+	    if (edict_idx_build(di->index, T_EDICT_IDX_KEY_KANA, 0) < 0)
+		    fprintf(stderr, "Building edictidx index for dictionary '%s' failed\n", uri);
+	    else
+		    fprintf(stderr, "Created edictidx index for dictionary '%s'.\n", uri);
+    } else
+	    di->index = 0;
+#endif
+
+    g_free (uri);
 }
 
 
@@ -122,6 +136,11 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 //!
 void lw_dictinfo_deinit (LwDictInfo *di)
 {
+#ifdef HAVE_EDICTIDX
+    if (di->index)
+	    edict_idx_close(di->index);
+#endif
+
     if (di->filename != NULL)
     {
       g_free (di->filename);
