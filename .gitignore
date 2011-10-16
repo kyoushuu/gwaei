@@ -4,6 +4,8 @@
 *.exe
 Makefile
 **/.deps/*
+src/libedictidx/.deps/*
+src/libedictidx/.libs/*
 src/libwaei/.deps/*
 src/libwaei/.libs/*
 src/gwaei/.libs/*
