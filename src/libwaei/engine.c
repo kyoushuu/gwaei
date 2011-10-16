@@ -200,6 +200,47 @@ static gpointer _stream_results_thread (gpointer data)
 
     lw_searchitem_lock_mutex (item);
 
+#ifdef HAVE_EDICTIDX
+    if (item->dictionary->type == LW_DICTTYPE_EDICT) {
+	    edict_idx* idx = item->dictionary->index;
+	    edict_idx_query* idxquery;
+	    const char* query = item->queryline->string;
+	    char hiragana_buf[1024];
+
+	    if (lw_util_is_romaji_str(query) &&
+		lw_util_str_roma_to_hira(query, hiragana_buf, sizeof(hiragana_buf) - 1)) {
+		    query = hiragana_buf;
+	    }
+
+	    fprintf(stderr, "Looking up '%s'\n", query);
+	    idxquery = edict_idx_find(idx, query, strlen(query));
+	    if (idxquery) {
+		    while (edict_idx_query_result(idxquery, item->resultline->string, LW_IO_MAX_FGETS_LINE)) {
+			    item->total_results++;
+			    item->total_relevant_results++;
+
+			    lw_searchitem_parse_result_string (item);
+			    lw_engine_append_more_relevant_header (engine, item);
+			    lw_engine_append_result (engine, item);
+
+			    //Swap the result lines
+			    item->swap_resultline = item->backup_resultline;
+			    item->backup_resultline = item->resultline;
+			    item->resultline = item->swap_resultline;
+			    item->swap_resultline = NULL;
+		    }
+	    }
+#if 0
+	    //Cleanup
+	    lw_engine_cleanup_search (data);
+
+	    lw_searchitem_unlock_mutex (item);
+
+	    return NULL;
+#endif
+    }
+#endif
+
     //We loop, processing lines of the file until the max chunk size has been
     //reached or we reach the end of the file or a cancel request is recieved.
     while ((line_pointer = fgets(item->resultline->string, LW_IO_MAX_FGETS_LINE, item->fd)) != NULL &&
@@ -236,7 +277,8 @@ static gpointer _stream_results_thread (gpointer data)
         switch(relevance)
         {
           case LW_RELEVANCE_HIGH:
-              
+
+#ifndef HAVE_EDICTIDX
               if (item->total_relevant_results < LW_MAX_HIGH_RELEVENT_RESULTS)
               {
                 item->total_results++;
@@ -251,6 +293,7 @@ static gpointer _stream_results_thread (gpointer data)
                 item->resultline = item->swap_resultline;
                 item->swap_resultline = NULL;
               }
+#endif
               break;
           case LW_RELEVANCE_MEDIUM:
               if (item->total_irrelevant_results < LW_MAX_MEDIUM_IRRELEVENT_RESULTS &&
