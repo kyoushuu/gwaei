@@ -50,6 +50,15 @@ no)  libunique=false ;;
 esac],[libunique=true])
 AM_CONDITIONAL([WITH_LIBUNIQUE], [test x$libunique = xtrue && test x$gnome = xtrue && test x$win32 = xfalse])
 
+AC_ARG_WITH([edictidx],
+[  --with-edictidx         enable dictionary indexing (experimental)],
+[case "${withval}" in
+yes) edictidx=true ;;
+no)  edictidx=false ;;
+*) AC_MSG_ERROR([bad value ${withval} for --with-edictidx]) ;;
+esac],[edictidx=false])
+AM_CONDITIONAL([WITH_EDICTIDX], [test x$edictidx = xtrue])
+
 AC_CHECK_LIB(m, sqrt)
 
 PKG_CHECK_MODULES(BASE, glib-2.0           >= $GLIB_REQUIRED_VERSION
@@ -119,7 +128,7 @@ AC_SUBST(GWAEI_LOCALEDIR)
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/libwaei/Makefile src/libwaei/include/libwaei/Makefile src/waei/Makefile src/waei/include/waei/Makefile src/gwaei/Makefile src/gwaei/include/gwaei/Makefile mandir/Makefile src/gwaei/help/Makefile src/gwaei/help/gwaei.omf src/gwaei/help/C/gwaei.xml src/gwaei/ui/Makefile src/desktop/Makefile src/images/Makefile src/schemas/Makefile rpm/gwaei.spec rpm/fedora/SPECS/gwaei.spec po/Makefile.in src/kpengine/Makefile] src/libwaei/doxyfile src/waei/doxyfile src/gwaei/doxyfile)
+AC_CONFIG_FILES([Makefile src/Makefile src/libwaei/Makefile src/libwaei/include/libwaei/Makefile src/waei/Makefile src/waei/include/waei/Makefile src/gwaei/Makefile src/gwaei/include/gwaei/Makefile mandir/Makefile src/gwaei/help/Makefile src/gwaei/help/gwaei.omf src/gwaei/help/C/gwaei.xml src/gwaei/ui/Makefile src/desktop/Makefile src/images/Makefile src/schemas/Makefile rpm/gwaei.spec rpm/fedora/SPECS/gwaei.spec po/Makefile.in src/kpengine/Makefile src/libedictidx/Makefile] src/libwaei/doxyfile src/waei/doxyfile src/gwaei/doxyfile)
 
 AC_OUTPUT
 

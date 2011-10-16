@@ -12,6 +12,11 @@ libwaei_la_SOURCES = libwaei.c dictinfo.c dictinfolist.c dictinst.c dictinstlist
 libwaei_la_LDFLAGS = -version-info $(LIBRARY_VERSION)  $(BASE_LIBS) -gall
 libwaei_la_CPPFLAGS = $(BASE_CFLAGS) -I$(top_srcdir)/src/libwaei/include $(DEFINITIONS)
 
+if WITH_EDICTIDX
+libwaei_la_CPPFLAGS += -I$(top_srcdir)/src/libedictidx/ -DHAVE_EDICTIDX
+libwaei_la_LDFLAGS += -L$(top_srcdir)/src/libedictidx/ -ledictidx
+endif
+
 if ENABLE_WIN32
 libwaei_la_LDFLAGS += -Wl,-subsystem,windows 
 WIN32_DEFS = -DENABLE_WIN32 -DLC_MESSAGES=LC_ALL -DCURL_STATICLIB 
