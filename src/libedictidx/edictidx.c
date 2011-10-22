@@ -104,3 +104,44 @@ void edict_idx_params_init(struct edict_idx_params* s)
 	s->max_chain = C_EDICT_MAX_CHAIN_SIZE;
 	s->max_list = C_EDICT_MAX_LIST_SIZE;
 }
+
+int edict_idx_get_parameter(edict_idx* s, edict_idx_parameter_t par)
+{
+	switch (par) {
+	case P_EDICT_IDX_MIN_SIZE:
+		return (int)s->params.min_idx_size;
+	case P_EDICT_IDX_MAX_SIZE:
+		return (int)s->params.max_idx_size;
+	case P_EDICT_IDX_MAX_ENTRY_SIZE:
+		return (int)s->params.max_entry_size;
+	case P_EDICT_IDX_MAX_CHAIN:
+		return (int)s->params.max_chain;
+	case P_EDICT_IDX_MAX_LIST:
+		return (int)s->params.max_list;
+	default:
+		return -1;
+	}
+}
+
+int edict_idx_set_parameter(edict_idx* s, edict_idx_parameter_t par, int value)
+{
+	switch (par) {
+	case P_EDICT_IDX_MIN_SIZE:
+		s->params.min_idx_size = (size_t)value;
+		return 0;
+	case P_EDICT_IDX_MAX_SIZE:
+		s->params.max_idx_size = (size_t)value;
+		return 0;
+	case P_EDICT_IDX_MAX_ENTRY_SIZE:
+		s->params.max_entry_size = (size_t)value;
+		return 0;
+	case P_EDICT_IDX_MAX_CHAIN:
+		s->params.max_chain = (unsigned)value;
+		return 0;
+	case P_EDICT_IDX_MAX_LIST:
+		s->params.max_list = (unsigned)value;
+		return 0;
+	default:
+		return -1;
+	}
+}

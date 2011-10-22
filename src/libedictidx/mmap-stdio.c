@@ -33,7 +33,7 @@ void* edict_idx_mmap_open(FILE* f, size_t* psize)
 	if (!p)
 		return 0;
 
-	if (fread(p, sz, (size_t)1, f) != (size_t)1) {
+	if (fread(p, (size_t)1, sz, f) != sz) {
 		fprintf(stderr, "Can't load file: %s\n",
 			strerror(errno));
 		free(p);
@@ -66,7 +66,7 @@ int edict_idx_mmap_flush(FILE* f, void* p, size_t sz)
 {
 	(void)fseek(f, 0, SEEK_SET);
 
-	if (fwrite(p, sz, (size_t)1, f) != (size_t)1
+	if (fwrite(p, (size_t)1, sz, f) != sz
 	    || fflush(f) != 0) {
 		fprintf(stderr, "Error writing file: %s\n",
 			strerror(errno));

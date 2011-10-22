@@ -20,7 +20,7 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 
 	unsigned keys = 0, results = 0, max_list = 0;
 	int failed = 0;
-
+	unsigned list = 0;
 	uint32_t offset, result_offset;
 
 	key_parser = edict_idx_select_key(key_type, key_parser);
@@ -41,13 +41,12 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 
 	while ((key = edict_idx_parser_fetch_key(p, &key_sz, &offset))) {
 		edict_idx_query* q;
-		unsigned list = 0;
 		int found = 0;
 
 #ifdef DUMP
 		edict_idx_parser_dump(p, stderr);
 #endif
-
+		list = 0;
 		keys++;
 
 		/*@-temptrans@*/
@@ -102,7 +101,7 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 		if (key) {
 			fprintf(stderr, "No entry for key '");
 			edict_idx_fputs(key, key_sz, stderr);
-			fprintf(stderr, "'\n");
+			fprintf(stderr, "' [%u]\n", list);
 		}
 		fprintf(stderr, "Index verification failed\n");
 		return -1;

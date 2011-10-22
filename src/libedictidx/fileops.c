@@ -9,7 +9,7 @@
 
 size_t edict_idx_fputs(str_p s, size_t sz, FILE* f)
 {
-	return fwrite(s, sz, (size_t)1, f);
+	return fwrite(s, (size_t)1, sz, f);
 }
 
 /*@access edict_idx_file @*/

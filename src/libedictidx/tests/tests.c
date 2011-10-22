@@ -80,6 +80,12 @@ int main(int argc, char* argv[])
 	else
 		key_t = T_EDICT_IDX_KEY_KANJI;
 
+	if (argc >= 5)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_LIST, atoi(argv[4]));
+
+	if (argc >= 6)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_CHAIN, atoi(argv[5]));
+
 	if (edict_idx_build(id, key_t, 0) < 0)
 		return 3;
 
@@ -96,6 +102,9 @@ int main(int argc, char* argv[])
 	id = edict_idx_open(argv[2], argv[1], F_EDICT_IDX_OPEN);
 	if (!id)
 		return 2;
+
+	if (argc >= 4)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_LIST, atoi(argv[3]));
 
 	fprintf(stderr, "Verifying index as kanji index...\n");
 	edict_idx_verify(id, T_EDICT_IDX_KEY_KANJI, 0);

@@ -1,8 +1,18 @@
 *.o
 *.s
 *.a
+*.la
 tests/*
 !tests/tests.c
-TAGS
-Makefile
 
+TAGS
+
+.deps
+Makefile
+Makefile.in
+
+configure
+aclocal.m4
+autom4te.cache
+config.*
+stamp-h1
