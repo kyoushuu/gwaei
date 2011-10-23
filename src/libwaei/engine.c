@@ -202,7 +202,7 @@ static gpointer _stream_results_thread (gpointer data)
 
 #ifdef HAVE_EDICTIDX
     if (item->dictionary->type == LW_DICTTYPE_EDICT) {
-	    edict_idx* idx = item->dictionary->index;
+	    edict_idx* idx = item->dictionary->kana_index;
 	    edict_idx_query* idxquery;
 	    const char* query = item->queryline->string;
 	    char hiragana_buf[1024];

@@ -113,15 +113,25 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 
 #ifdef HAVE_EDICTIDX
     if (DICTTYPE == LW_DICTTYPE_EDICT) {
-	    di->index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	    if (di->index)
-		    fprintf(stderr, "Building edictidx index for dictionary '%s'...\n", uri);
-	    if (edict_idx_build(di->index, T_EDICT_IDX_KEY_KANA, 0) < 0)
-		    fprintf(stderr, "Building edictidx index for dictionary '%s' failed\n", uri);
+	    di->kanji_index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	    if (di->kanji_index)
+		    fprintf(stderr, "Building edictidx kanji index for dictionary '%s'...\n", uri);
+	    if (edict_idx_build(di->kanji_index, T_EDICT_IDX_KEY_KANJI, 0) < 0)
+		    fprintf(stderr, "Building edictidx kanji index for dictionary '%s' failed\n", uri);
 	    else
-		    fprintf(stderr, "Created edictidx index for dictionary '%s'.\n", uri);
-    } else
-	    di->index = 0;
+		    fprintf(stderr, "Created edictidx kanji index for dictionary '%s'.\n", uri);
+
+	    di->kana_index = edict_idx_share(0, di->kanji_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	    if (di->kana_index)
+		    fprintf(stderr, "Building edictidx kana index for dictionary '%s'...\n", uri);
+	    if (edict_idx_build(di->kana_index, T_EDICT_IDX_KEY_KANA, 0) < 0)
+		    fprintf(stderr, "Building edictidx kana index for dictionary '%s' failed\n", uri);
+	    else
+		    fprintf(stderr, "Created edictidx kana index for dictionary '%s'.\n", uri);
+    } else {
+	    di->kanji_index = 0;
+	    di->kana_index = 0;
+    }
 #endif
 
     g_free (uri);
@@ -137,8 +147,10 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 void lw_dictinfo_deinit (LwDictInfo *di)
 {
 #ifdef HAVE_EDICTIDX
-    if (di->index)
-	    edict_idx_close(di->index);
+	if (di->kana_index)
+		edict_idx_close(di->kana_index);
+	if (di->kanji_index)
+		edict_idx_close(di->kanji_index);
 #endif
 
     if (di->filename != NULL)
