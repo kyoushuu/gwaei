@@ -40,23 +40,25 @@ void* edict_idx_mmap_open(FILE* f, size_t* psize)
 		return 0;
 	}
 
-	*psize = (size_t)sz;
+	*psize = sz;
 
 	return p;
 }
 
-int edict_idx_mmap_resize(FILE* f, void** p, size_t size)
+int edict_idx_mmap_resize(FILE* f, void** pp,
+			  size_t size, size_t old_size)
 {
 	void* np;
 
 	f = f;
+	old_size = old_size;
 
 /*@-unqualifiedtrans@*/
-	np = realloc(*p, size);
+	np = realloc(*pp, size);
 /*@=unqualifiedtrans@*/
 
 	if (np) {
-		*p = np;
+		*pp = np;
 		return 0;
 	} else
 		return -1;

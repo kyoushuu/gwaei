@@ -121,6 +121,79 @@ long int ftell(FILE *stream)
 /*@modifies errno @*/
 ;
 
+/* time.h */
+
+typedef /*@integraltype@*/ time_t;
+
+/* POSIX */
+
+/*
+** sys/types.h
+*/
+
+typedef /*@integraltype@*/ dev_t;
+typedef /*@integraltype@*/ gid_t;
+typedef /*@unsignedintegraltype@*/ ino_t; /*: is this definitely unsigned? */
+typedef /*@integraltype@*/ mode_t;
+typedef /*@integraltype@*/ nlink_t;
+typedef /*@integraltype@*/ off_t;
+typedef /*@integraltype@*/ pid_t;
+typedef /*@integraltype@*/ uid_t;
+
+/*
+** stdio.h
+*/
+
+int fileno (FILE *fp)
+/*@*/;
+
+int ftruncate(int fd, off_t length)
+/*@modifies fileSystem @*/;
+
+/*
+** sys/stat.h
+*/
+
+struct stat {
+  mode_t st_mode;
+  ino_t	st_ino;
+  dev_t	st_dev;
+  nlink_t st_nlink;
+  uid_t	st_uid;
+  gid_t	st_gid;
+  off_t	st_size;
+  time_t st_atime;
+  time_t st_mtime;
+  time_t st_ctime;
+} ;
+
+int fstat (int fd, /*@out@*/ struct stat *buf)
+/*@modifies buf @*/;
+
+
+/*
+ * sys/mman.h
+ */
+
+/*@constant void* MAP_FAILED @*/
+
+/*@constant int PROT_READ @*/
+/*@constant int PROT_WRITE @*/
+/*@constant int PROT_EXEC @*/
+/*@constant int MAP_SHARED @*/
+/*@constant int MAP_PRIVATE @*/
+/*@constant int MAP_FIXED @*/
+/*@constant int MAP_FILE @*/
+/*@constant int MAP_ANON @*/
+/*@constant int MAP_ANONYMOUS @*/
+
+void* mmap (/*@null@*/ /*@returned@*/ void* addr, size_t len,
+	    int prot, int flags, int fd, off_t offset)
+/*@modifies addr @*/;
+
+int munmap (/*@only@*/ void* addr, size_t len)
+/*@modifies addr @*/;
+
 /*@=fcnuse@*/
 /*@=declundef@*/
 /*@=warnmissingglobs@*/

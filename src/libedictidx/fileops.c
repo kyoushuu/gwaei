@@ -24,7 +24,7 @@ edict_idx_index_create(const char* fname, size_t size)
 		return 0;
 
 	if (fname) {
-		s->file = fopen(fname, "wb");
+		s->file = fopen(fname, "w+b");
 		if (!s->file) {
 			fprintf(stderr, "Can't create index file %s: %s\n",
 				fname, strerror(errno));
@@ -119,7 +119,8 @@ int edict_idx_index_resize(edict_idx_file* s, size_t new_size)
 {
 	int r;
 
-	r = edict_idx_mmap_resize(s->file, &s->mem, new_size);
+	r = edict_idx_mmap_resize(s->file, &s->mem,
+				  new_size, s->size);
 
 	if (r < 0)
 		return -1;

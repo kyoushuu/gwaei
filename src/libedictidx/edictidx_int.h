@@ -184,8 +184,9 @@ void* edict_idx_mmap_create(/*@null@*/ FILE* f, size_t size)
 void* edict_idx_mmap_open(FILE* f, /*@out@*/ size_t* psize)
 /*@modifies f, psize @*/;
 
-int edict_idx_mmap_resize(/*@null@*/ FILE* f, void** p, size_t size)
-/*@modifies p @*/;
+int edict_idx_mmap_resize(/*@null@*/ FILE* f, void** pp,
+			  size_t size, size_t old_size)
+/*@modifies pp @*/;
 
 int edict_idx_mmap_flush(FILE* f, void* p, size_t sz)
 /*@modifies f @*/;

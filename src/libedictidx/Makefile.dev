@@ -14,12 +14,12 @@ SPLINT_FLAGS = -nolib +quiet +strict \
 SPLINT_DEFS =
 
 SRCS = edictidx.h edictidx_int.h fileops.c hash.c key.c parser.c query.c build.c verify.c edictidx.c
-SRCS += mmap-stdio.c
-#SRCS += mmap-posix.c
+#SRCS += mmap-stdio.c
+SRCS += mmap-posix.c
 
 OBJS = hash.o parser.o key.o fileops.o query.o build.o verify.o edictidx.o
-OBJS += mmap-stdio.o
-#OBJS += mmap-posix.o
+#OBJS += mmap-stdio.o
+OBJS += mmap-posix.o
 
 ASMS = hash.s query.s key.s
 
@@ -27,13 +27,14 @@ LIB = libedictidx.a
 
 TESTSRC = tests/tests.c
 TESTS = tests/hash tests/parser tests/query tests/build tests/verify
-TESTLIBS = -L. -ledictidx
+TESTLIBS = $(LIB)
 
 all: $(LIB) tests
 
 .PHONY: clean etags asms splint tests
 
 $(LIB): $(OBJS)
+	rm -f $@
 	$(AR) rcs $@ $^
 
 asms: $(ASMS)
@@ -45,10 +46,10 @@ etags: TAGS
 TAGS: $(SRCS)
 	etags $^
 
-%.o: %.c *.h Makefile
+%.o: %.c *.h Makefile.dev
 	$(CC) -c $(CFLAGS) $<
 
-%.s: %.c *.h Makefile
+%.s: %.c *.h Makefile.dev
 	$(CC) -o $@ $(CFLAGS) -S $<
 
 splint: splint_library.h $(SRCS)
