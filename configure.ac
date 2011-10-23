@@ -50,6 +50,10 @@ no)  libunique=false ;;
 esac],[libunique=true])
 AM_CONDITIONAL([WITH_LIBUNIQUE], [test x$libunique = xtrue && test x$gnome = xtrue && test x$win32 = xfalse])
 
+AC_ARG_ENABLE([mmap], AS_HELP_STRING([--enable-mmap],
+		      [enable edictidx mmap file access (experimental)]))
+AM_CONDITIONAL([HAVE_MMAP], [test "x${enable_mmap}" = "xyes"])
+
 AC_ARG_WITH([edictidx],
 [  --with-edictidx         enable dictionary indexing (experimental)],
 [case "${withval}" in
