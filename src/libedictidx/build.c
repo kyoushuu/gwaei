@@ -107,7 +107,8 @@ int edict_idx_htab_fill(edict_idx* s, edict_idx_key_fn_t key_parser,
 			max_list = list;
 
 #ifdef DUMP
-		fprintf(stderr, "<htentry>\n    hash: 0x%08X cksum: 0x%08X hi: 0x%08X hi0: 0x%08X chain: %u list: %u\n</htentry>\n\n",
+		fprintf(stderr, "<htentry>\n    hash: 0x%08X cksum: 0x%08X "
+			"hi: 0x%08X hi0: 0x%08X chain: %u list: %u\n</htentry>\n\n",
 			hash, cksum, hi, hi0, chain, list);
 #endif
 
@@ -115,8 +116,10 @@ int edict_idx_htab_fill(edict_idx* s, edict_idx_key_fn_t key_parser,
 		    || max_chain > s->params.max_chain) {
 			edict_idx_parser_close(p);
 
-			fprintf(stderr, "Failed hash table index: fill %u/%u, max chain %u, max list %u\n",
-				entries, (unsigned)s->htab_size, max_chain, max_list);
+			fprintf(stderr, "Scrapping hash table index: "
+				"fill %u/%u, max chain %u, max list %u\n",
+				entries, (unsigned)s->htab_size,
+				max_chain, max_list);
 
 			return 1;
 		}
@@ -124,7 +127,15 @@ int edict_idx_htab_fill(edict_idx* s, edict_idx_key_fn_t key_parser,
 
 	edict_idx_parser_close(p);
 
-	fprintf(stderr, "Created hash table index: fill %u/%u, max chain %u, max list %u\n",
+	if (offset != s->dict_size) {
+		fprintf(stderr, "Indexing failed : "
+			"only %u of %u dictionary bytes processed\n",
+			(unsigned)offset, (unsigned)s->dict_size);
+		return -1;
+	}
+
+	fprintf(stderr, "Created hash table index: "
+		"fill %u/%u, max chain %u, max list %u\n",
 		entries, (unsigned)s->htab_size, max_chain, max_list);
 
 	return 0;

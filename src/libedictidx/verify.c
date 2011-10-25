@@ -19,7 +19,6 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 	size_t entry_sz = s->params.max_entry_size;
 
 	unsigned keys = 0, results = 0, max_list = 0;
-	int failed = 0;
 	unsigned list = 0;
 	uint32_t offset, result_offset;
 
@@ -52,10 +51,8 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 		/*@-temptrans@*/
 		q = edict_idx_find(s, key, key_sz);
 		/*@=temptrans@*/
-		if (!q) {
-			failed = 1;
+		if (!q)
 			break;
-		}
 
 #ifdef DUMP
 		edict_idx_query_dump(q, stderr);
@@ -84,26 +81,27 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 		if (list >= s->params.max_list)
 			continue;
 
-		if (found == 0) {
-			failed = 1;
+		if (found == 0)
 			break;
-		}
 	}
 
 	free(entry);
 	edict_idx_parser_close(p);
 
-	if (failed == 0) {
-		fprintf(stderr, "Index verified: %u keys -> %u results, max list %u\n",
-		       keys, results, max_list);
-		return 0;
-	} else {
+	if (offset != s->dict_size) {
 		if (key) {
 			fprintf(stderr, "No entry for key '");
 			edict_idx_fputs(key, key_sz, stderr);
 			fprintf(stderr, "' [%u]\n", list);
 		}
-		fprintf(stderr, "Index verification failed\n");
+
+		fprintf(stderr, "Index verification failed : "
+			"only %u of %u dictionary bytes processed\n",
+			(unsigned)offset, (unsigned)s->dict_size);
 		return -1;
 	}
+
+	fprintf(stderr, "Index verified: %u keys -> %u results, max list %u\n",
+		keys, results, max_list);
+	return 0;
 }

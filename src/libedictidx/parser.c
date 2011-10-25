@@ -7,9 +7,8 @@
 
 /*@access edict_idx, edict_idx_parser @*/
 
-/*@null@*/
 edict_idx_parser*
-edict_idx_parser_new(/*@dependent@*/ edict_idx* idx,
+edict_idx_parser_new(edict_idx* idx,
 		     edict_idx_key_fn_t key_parser)
 
 {
@@ -36,15 +35,14 @@ edict_idx_parser_new(/*@dependent@*/ edict_idx* idx,
 
 }
 
-str_p edict_idx_get_entry(edict_idx* s, size_t* pentry_sz, uint32_t* poffset)
+str_p edict_idx_get_entry(edict_idx* s, size_t* pentry_sz,
+			  uint32_t* poffset)
 {
 	size_t ei, si = (size_t)*poffset;
 	size_t maxi = si + s->params.max_entry_size;
 
 	if (maxi > s->dict_size)
 		maxi = s->dict_size;
-
-	*pentry_sz = 0;
 
 	for (ei = si; ei < maxi; ei++) {
 		if (s->dict[ei] == '\n') {
@@ -54,13 +52,13 @@ str_p edict_idx_get_entry(edict_idx* s, size_t* pentry_sz, uint32_t* poffset)
 		}
 	}
 
+	*pentry_sz = 0;
+	*poffset = maxi;
 	return 0;
 }
 
-/*@null@*/ /*@dependent@*/
-str_p
-edict_idx_parser_fetch_key(edict_idx_parser* s, /*@out@*/ size_t* pkey_sz,
-			   /*@out@*/ uint32_t* poffset)
+str_p edict_idx_parser_fetch_key(edict_idx_parser* s, size_t* pkey_sz,
+				 uint32_t* poffset)
 {
 	do {
 		if (!s->key) {
@@ -68,6 +66,9 @@ edict_idx_parser_fetch_key(edict_idx_parser* s, /*@out@*/ size_t* pkey_sz,
 			s->entry = edict_idx_get_entry(s->idx, &s->entry_size,
 						       &s->next_offset);
 			if (!s->entry) {
+				if (s->offset != s->idx->dict_size)
+					edict_idx_parser_entry_error(s);
+
 				*poffset = s->offset;
 				*pkey_sz = 0;
 				return 0;
@@ -87,14 +88,23 @@ edict_idx_parser_fetch_key(edict_idx_parser* s, /*@out@*/ size_t* pkey_sz,
 	return s->key;
 }
 
-void edict_idx_parser_close(/*@only@*/ edict_idx_parser* s)
+void edict_idx_parser_close(edict_idx_parser* s)
 {
 	free(s);
 }
 
+void edict_idx_parser_entry_error(edict_idx_parser* s)
+{
+	fprintf(stderr, "Can't parse dictionary entry at line %u : "
+		"entry too long ( > %u bytes)\n",
+		s->entry_index + 1,
+		(unsigned)s->idx->params.max_entry_size);
+}
+
 void edict_idx_parser_dump(edict_idx_parser* s, FILE* f)
 {
-	fprintf(f, "<parser>\n    entry_index: %u offset: 0x%08X next_offset: 0x%08X "
+	fprintf(f, "<parser>\n    entry_index: %u "
+		"offset: 0x%08X next_offset: 0x%08X "
 		"entry_size: %u key_size: %u key_parser_chain_var: %d\n",
 		s->entry_index, (unsigned)s->offset, (unsigned)s->next_offset,
 		(unsigned)s->entry_size, (unsigned)s->key_size,

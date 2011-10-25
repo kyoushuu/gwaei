@@ -149,6 +149,11 @@ void edict_idx_parser_close(/*@only@*/ edict_idx_parser* s)
 /*@modifies s @*/
 ;
 
+void edict_idx_parser_entry_error(edict_idx_parser* s)
+/*@globals stderr @*/
+/*@modifies stderr @*/
+;
+
 void edict_idx_parser_dump(edict_idx_parser* s, FILE* f)
 /*@modifies f @*/
 ;

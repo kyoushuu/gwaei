@@ -49,14 +49,20 @@ int main(int argc, char* argv[])
 
 	if (argc > 2) {
 		key_parser = edict_idx_select_key(atoi(argv[2]), key_parser);
+		if (!key_parser)
+			return 3;
 	}
+
+	if (argc > 3)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_ENTRY_SIZE,
+					atoi(argv[3]));
 
 	p = edict_idx_parser_new(id, key_parser);
 	if (!p)
 		return 4;
 
 	while ((key = edict_idx_parser_fetch_key(p, &key_sz, &offset))) {
-		edict_idx_parser_dump(p, stderr);
+		edict_idx_parser_dump(p, stdout);
 	}
 
 	edict_idx_parser_close(p);
@@ -86,6 +92,10 @@ int main(int argc, char* argv[])
 	if (argc >= 6)
 		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_CHAIN, atoi(argv[5]));
 
+	if (argc >= 7)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_ENTRY_SIZE,
+					atoi(argv[6]));
+
 	if (edict_idx_build(id, key_t, 0) < 0)
 		return 3;
 
@@ -105,6 +115,10 @@ int main(int argc, char* argv[])
 
 	if (argc >= 4)
 		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_LIST, atoi(argv[3]));
+
+	if (argc >= 5)
+		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_ENTRY_SIZE,
+					atoi(argv[4]));
 
 	fprintf(stderr, "Verifying index as kanji index...\n");
 	edict_idx_verify(id, T_EDICT_IDX_KEY_KANJI, 0);
