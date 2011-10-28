@@ -9,9 +9,12 @@ void gw_application_private_init (GwApplication *application)
 
       priv = GW_APPLICATION_GET_PRIVATE (application);
 
+      priv->context = NULL;
+      priv->arg_new_window_switch = FALSE;
       priv->arg_dictionary = NULL;
       priv->arg_query = NULL;
       priv->arg_version_switch = FALSE;
+
       priv->last_focused = NULL;
 
       priv->engine = lw_engine_new (
@@ -26,7 +29,7 @@ void gw_application_private_init (GwApplication *application)
       );
 
       priv->preferences = lw_preferences_new ();
-      priv->dictinfolist = gw_dictinfolist_new (20, priv->preferences);
+      priv->dictinfolist = gw_dictinfolist_new (20, application);
       priv->block_new_searches = 0;
 
       priv->tagtable = _application_texttagtable_new ();
@@ -60,7 +63,7 @@ void gw_application_private_finalize (GwApplication *application)
     priv = GW_APPLICATION_GET_PRIVATE (application);
 
     gw_dictinfolist_free (priv->dictinfolist);
-    g_option_context_free (priv->context);
+    if (priv->context != NULL) g_option_context_free (priv->context);
     g_free(priv->arg_query);
     lw_engine_free (priv->engine);
     lw_preferences_free (priv->preferences);
