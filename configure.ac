@@ -39,6 +39,10 @@ no)  gnome=false ;;
 esac],[gnome=true])
 AM_CONDITIONAL([WITH_GNOME], [test x$gnome = xtrue || test x$win32 = xtrue])
 
+AC_ARG_ENABLE([waei], AS_HELP_STRING([--enable-waei],
+		      [enable console waei]))
+AM_CONDITIONAL([WANT_WAEI], [test "x${enable_waei}" = "xyes"])
+
 AC_ARG_ENABLE([mmap], AS_HELP_STRING([--enable-mmap],
 		      [enable edictidx mmap file access (experimental)]))
 AM_CONDITIONAL([HAVE_MMAP], [test "x${enable_mmap}" = "xyes"])
