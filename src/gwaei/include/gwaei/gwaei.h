@@ -7,6 +7,9 @@
 
 #include <gtk/gtk.h>
 
+struct _GwApplication;
+typedef struct _GwApplication GwApplication;
+
 #include <gwaei/window.h>
 #include <gwaei/spellcheck.h>
 #include <gwaei/dictinfolist.h>
