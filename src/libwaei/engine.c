@@ -59,7 +59,6 @@ static int _get_relevance (LwSearchItem *item) {
 
 static int _append_index_results(LwEngineData *enginedata, edict_idx* idx, const char* query)
 {
-	LwEngine *engine = LW_ENGINE (enginedata->engine);
 	LwSearchItem *item = LW_SEARCHITEM (enginedata->item);
 
 	edict_idx_query* idxquery;
@@ -76,14 +75,13 @@ static int _append_index_results(LwEngineData *enginedata, edict_idx* idx, const
 		item->total_relevant_results++;
 
 		lw_searchitem_parse_result_string (item);
-		lw_engine_append_more_relevant_header (engine, item);
-		lw_engine_append_result (engine, item);
 
-		//Swap the result lines
-		item->swap_resultline = item->backup_resultline;
-		item->backup_resultline = item->resultline;
-		item->resultline = item->swap_resultline;
-		item->swap_resultline = NULL;
+		//Store the result line and create an empty one in its place
+		item->total_results++;
+		item->total_relevant_results++;
+		item->resultline->relevance = LW_RESULTLINE_RELEVANCE_HIGH;
+		item->results_high =  g_list_append (item->results_high, item->resultline);
+		item->resultline = lw_resultline_new ();
 	}
 
 	return results;
@@ -119,12 +117,12 @@ static int _try_index_search(LwEngineData *enginedata)
 		return -1;
 
 	if (kanji_query)
-		results +=_append_index_results(enginedata,
+		results += _append_index_results(enginedata,
 						item->dictionary->kanji_index,
 						kanji_query);
 
 	if (furi_query)
-		results +=_append_index_results(enginedata,
+		results += _append_index_results(enginedata,
 						item->dictionary->kanji_index,
 						furi_query);
 
