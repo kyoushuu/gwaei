@@ -51,7 +51,9 @@ struct _LwDictInfo
     LwResultLine *current_resultline; //!< Allocated resultline where the current parsed result data resides
 
 #ifdef HAVE_EDICTIDX
-	edict_idx *kanji_index, *kana_index;
+	edict_idx *kanji_index;
+	edict_idx *kana_index;
+	edict_idx *english_index;
 #endif
 };
 typedef struct _LwDictInfo LwDictInfo;
