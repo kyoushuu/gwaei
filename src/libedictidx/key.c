@@ -17,6 +17,7 @@ edict_idx_select_key(edict_idx_key_types_t key_type,
 	case T_EDICT_IDX_KEY_KANA:
 		return edict_idx_key_kana_exact;
 	case T_EDICT_IDX_KEY_ENGLISH:
+		return edict_idx_key_english_exact;
 	default:
 		return F_KEY_NULL;
 	}
@@ -73,3 +74,55 @@ str_p edict_idx_key_kana_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
 	return 0;
 }
 
+static
+size_t skip_parens(str_p s, size_t si, size_t sz) /*@*/
+{
+	size_t pi, ei;
+
+	for (pi = si; pi < sz; pi = ei) {
+		if (s[pi] != '(')
+			break;
+		for (ei = pi + 1; ei < sz; ei++) {
+			if (s[ei] == ')')
+				/*@innerbreak@*/
+				break;
+		}
+		/* skip trailing whitespace */
+		for (ei = ei + 1; ei < sz; ei++) {
+			if (s[ei] != ' ')
+				/*@innerbreak@*/
+				break;
+		}
+	}
+
+	return pi;
+}
+
+str_p edict_idx_key_english_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
+				  int* chain)
+{
+	size_t ci, li, si, ri;
+
+	*pkey_sz = 0;
+
+	ci = (size_t)*chain;
+	if (ci >= entry_sz)
+		return 0;
+
+	for (li = ci; li < entry_sz; li++) {
+		if (entry[li] == '/')
+			break;
+	}
+
+	si = skip_parens(entry, li + 1, entry_sz);
+
+	for (ri = si + 1; ri < entry_sz; ri++) {
+		if (entry[ri] == '/') {
+			*chain = (int)ri;
+			*pkey_sz = ri - si;
+			return &entry[si];
+		}
+	}
+
+	return 0;
+}

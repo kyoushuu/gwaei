@@ -64,11 +64,8 @@ int edict_idx_verify(edict_idx* s, edict_idx_key_types_t key_type,
 #endif
 			results++;
 			list++;
-			if (offset == result_offset) {
+			if (offset == result_offset)
 				found = 1;
-				/*@innerbreak@*/ break;
-
-			}
 
 			result_offset = q->offset;
 		}

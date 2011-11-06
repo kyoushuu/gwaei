@@ -124,13 +124,15 @@ int main(int argc, char* argv[])
 	edict_idx_verify(id, T_EDICT_IDX_KEY_KANJI, 0);
 	fprintf(stderr, "Verifying index as kana index...\n");
 	edict_idx_verify(id, T_EDICT_IDX_KEY_KANA, 0);
+	fprintf(stderr, "Verifying index as english index...\n");
+	edict_idx_verify(id, T_EDICT_IDX_KEY_ENGLISH, 0);
 
 	edict_idx_close(id);
 	return 0;
 #endif
 
 #ifdef QUERY_TEST
-	if (argc < 3)
+	if (argc < 4)
 		return 1;
 
 	id = edict_idx_open(argv[2], argv[1], F_EDICT_IDX_OPEN);
