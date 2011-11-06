@@ -4,6 +4,7 @@
 G_BEGIN_DECLS
 
 //Boilerplate
+typedef struct _GwApplication GwApplication;
 typedef struct _GwApplicationClass GwApplicationClass;
 typedef struct _GwApplicationPrivate GwApplicationPrivate;
 
