@@ -94,6 +94,7 @@ static int _try_index_search(LwEngineData *enginedata)
 	const char* kanji_query = 0;
 	const char* furi_query = 0;
 	const char* kana_query = 0;
+	const char* english_query = 0;
 	char hiragana_buf[1024];
 	char katakana_buf[1024];
 	int results = 0;
@@ -101,13 +102,16 @@ static int _try_index_search(LwEngineData *enginedata)
 	if (item->dictionary->type != LW_DICTTYPE_EDICT)
 		return -1;
 
-	if (lw_util_is_romaji_str(query) &&
-	    lw_util_str_roma_to_hira(query, hiragana_buf, sizeof(hiragana_buf) - 1)) {
-		strcpy(katakana_buf, hiragana_buf);
-		lw_util_str_shift_hira_to_kata(katakana_buf);
-		kanji_query = katakana_buf;
-		furi_query = hiragana_buf;
-		kana_query = hiragana_buf;
+	if (lw_util_is_romaji_str(query)) {
+		english_query = query;
+		if (lw_util_str_roma_to_hira(query, hiragana_buf,
+					     sizeof(hiragana_buf) - 1)) {
+			strcpy(katakana_buf, hiragana_buf);
+			lw_util_str_shift_hira_to_kata(katakana_buf);
+			kanji_query = katakana_buf;
+			furi_query = hiragana_buf;
+			kana_query = hiragana_buf;
+		}
 	} else if (lw_util_is_hiragana_str(query)) {
 		furi_query = query;
 		kana_query = query;
@@ -116,20 +120,25 @@ static int _try_index_search(LwEngineData *enginedata)
 	} else
 		return -1;
 
-	if (kanji_query)
+	if (kanji_query && item->dictionary->kanji_index)
 		results += _append_index_results(enginedata,
-						item->dictionary->kanji_index,
-						kanji_query);
+						 item->dictionary->kanji_index,
+						 kanji_query);
 
-	if (furi_query)
+	if (furi_query && item->dictionary->kanji_index)
 		results += _append_index_results(enginedata,
-						item->dictionary->kanji_index,
-						furi_query);
+						 item->dictionary->kanji_index,
+						 furi_query);
 
-	if (kana_query)
+	if (kana_query && item->dictionary->kana_index)
 		results += _append_index_results(enginedata,
 						 item->dictionary->kana_index,
 						 kana_query);
+
+	if (english_query && item->dictionary->english_index)
+		results += _append_index_results(enginedata,
+						 item->dictionary->english_index,
+						 english_query);
 
 	fprintf(stderr, "Index hit: %d results\n", results);
 

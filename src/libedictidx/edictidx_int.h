@@ -229,3 +229,8 @@ str_p edict_idx_key_kana_exact(/*@out@*/ size_t* pkey_sz,
 			       int* chain)
 /*@modifies pkey_sz, chain @*/;
 
+/*@null@*/ /*@observer@*/
+str_p edict_idx_key_english_exact(/*@out@*/ size_t* pkey_sz,
+				  str_p entry, size_t entry_sz,
+				  int* chain)
+/*@modifies pkey_sz, chain @*/;

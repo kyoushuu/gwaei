@@ -41,6 +41,9 @@
 //Static declarations
 static gboolean _overlay_default_builtin_dictionary_settings (LwDictInfo*);
 
+// EDICTIDX indexing support functions
+static int _dictinfo_index_init(LwDictInfo *di, const char* uri);
+static void _dictinfo_index_deinit(LwDictInfo *di);
 
 //!
 //! @brief Creates a new LwDictInfo object
@@ -111,32 +114,10 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
     di->cached_resultlines = NULL;
     di->current_resultline = NULL;
 
-#ifdef HAVE_EDICTIDX
-    if (DICTTYPE == LW_DICTTYPE_EDICT) {
-	    di->kanji_index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	    if (di->kanji_index)
-		    fprintf(stderr, "Building edictidx kanji index for dictionary '%s'...\n", uri);
-	    if (edict_idx_build(di->kanji_index, T_EDICT_IDX_KEY_KANJI, 0) < 0)
-		    fprintf(stderr, "Building edictidx kanji index for dictionary '%s' failed\n", uri);
-	    else
-		    fprintf(stderr, "Created edictidx kanji index for dictionary '%s'.\n", uri);
-
-	    di->kana_index = edict_idx_share(0, di->kanji_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	    if (di->kana_index)
-		    fprintf(stderr, "Building edictidx kana index for dictionary '%s'...\n", uri);
-	    if (edict_idx_build(di->kana_index, T_EDICT_IDX_KEY_KANA, 0) < 0)
-		    fprintf(stderr, "Building edictidx kana index for dictionary '%s' failed\n", uri);
-	    else
-		    fprintf(stderr, "Created edictidx kana index for dictionary '%s'.\n", uri);
-    } else {
-	    di->kanji_index = 0;
-	    di->kana_index = 0;
-    }
-#endif
+    _dictinfo_index_init(di, uri);
 
     g_free (uri);
 }
-
 
 //!
 //! @brief Used to free the memory inside of a LwDictInfo object.
@@ -146,12 +127,7 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 //!
 void lw_dictinfo_deinit (LwDictInfo *di)
 {
-#ifdef HAVE_EDICTIDX
-	if (di->kana_index)
-		edict_idx_close(di->kana_index);
-	if (di->kanji_index)
-		edict_idx_close(di->kanji_index);
-#endif
+    _dictinfo_index_deinit(di);
 
     if (di->filename != NULL)
     {
@@ -172,6 +148,66 @@ void lw_dictinfo_deinit (LwDictInfo *di)
     }
 }
 
+#ifdef HAVE_EDICTIDX
+
+static int _dictinfo_index_init(LwDictInfo *di, const char* uri)
+{
+	if (di->type != LW_DICTTYPE_EDICT) {
+		di->kanji_index = 0;
+		di->kana_index = 0;
+		di->english_index = 0;
+		return 0;
+	}
+
+	di->kanji_index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	if (di->kanji_index) {
+		fprintf(stderr, "Building edictidx kanji index for dictionary '%s'...\n", uri);
+		if (edict_idx_build(di->kanji_index, T_EDICT_IDX_KEY_KANJI, 0) < 0)
+			fprintf(stderr, "Building edictidx kanji index for dictionary '%s' failed\n", uri);
+		else
+			fprintf(stderr, "Created edictidx kanji index for dictionary '%s'.\n", uri);
+	} else
+		fprintf(stderr, "Creating edictidx kanji index for dictionary '%s' failed\n", uri);
+
+	di->kana_index = edict_idx_share(0, di->kanji_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	if (di->kana_index) {
+		fprintf(stderr, "Building edictidx kana index for dictionary '%s'...\n", uri);
+		if (edict_idx_build(di->kana_index, T_EDICT_IDX_KEY_KANA, 0) < 0)
+			fprintf(stderr, "Building edictidx kana index for dictionary '%s' failed\n", uri);
+		else
+			fprintf(stderr, "Created edictidx kana index for dictionary '%s'.\n", uri);
+	} else
+		fprintf(stderr, "Creating edictidx kana index for dictionary '%s' failed\n", uri);
+
+	di->english_index = edict_idx_share(0, di->kana_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	if (di->english_index) {
+		fprintf(stderr, "Building edictidx English index for dictionary '%s'...\n", uri);
+		if (edict_idx_build(di->english_index, T_EDICT_IDX_KEY_ENGLISH, 0) < 0)
+			fprintf(stderr, "Building edictidx English index for dictionary '%s' failed\n", uri);
+		else
+			fprintf(stderr, "Created edictidx English index for dictionary '%s'.\n", uri);
+	} else
+		fprintf(stderr, "Creating edictidx English index for dictionary '%s' failed\n", uri);
+
+	return 0;
+}
+
+static void _dictinfo_index_deinit(LwDictInfo *di)
+{
+	if (di->english_index)
+		edict_idx_close(di->english_index);
+	if (di->kana_index)
+		edict_idx_close(di->kana_index);
+	if (di->kanji_index)
+		edict_idx_close(di->kanji_index);
+}
+
+#else /* HAVE_EDICTIDX */
+
+static int _dictinfo_index_init(LwDictInfo *di, const char* uri){}
+static void _dictinfo_index_deinit(LwDictInfo *di){}
+
+#endif
 
 //!
 //! @brief Function to copy in default values for built-in dictionaries.
