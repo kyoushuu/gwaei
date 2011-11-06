@@ -29,15 +29,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
-#include <libintl.h>
 
 #include <gio/gio.h>
 
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
-#include <gwaei/windowprivate.h>
+#include <gwaei/window-private.h>
 
 G_DEFINE_TYPE (GwWindow, gw_window, GTK_TYPE_WINDOW);
 
@@ -51,17 +49,30 @@ typedef enum
 void gw_window_init (GwWindow *window)
 {
     window->priv = GW_WINDOW_GET_PRIVATE (window);
-    gw_window_private_init (window);
+    memset(window->priv, 0, sizeof(GwWindowPrivate));
+
+    GwWindowPrivate *priv;
+    priv = window->priv;
+
+    priv->builder = gtk_builder_new ();
+    priv->application = NULL;
+    priv->ui_xml = NULL;
+    priv->toplevel = NULL;
 }
 
 
 void gw_window_finalize (GObject *object)
 {
     GwWindow *window;
+    GwWindowPrivate *priv;
 
     window = GW_WINDOW (object);
+    priv = window->priv;
 
-    gw_window_private_finalize (window);
+    if (priv->builder != NULL) g_object_unref (priv->builder);
+    if (priv->ui_xml != NULL) g_free (priv->ui_xml);
+    priv->toplevel = NULL;
+
     G_OBJECT_CLASS (gw_window_parent_class)->finalize (object);
 }
 
@@ -73,11 +84,9 @@ static void gw_window_set_property (GObject      *object,
 {
     GwWindow *window;
     GwWindowPrivate *priv;
-    GtkWidget *toplevel;
 
     window = GW_WINDOW (object);
-    priv = GW_WINDOW_GET_PRIVATE (window);
-    toplevel = NULL;
+    priv = window->priv;
 
     switch (property_id)
     {
@@ -86,14 +95,13 @@ static void gw_window_set_property (GObject      *object,
         gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (priv->application));
         break;
       case PROP_UI_XML:
-        if (priv->ui_xml != NULL) 
-        {
-          toplevel = GTK_WIDGET (gtk_builder_get_object (priv->builder, "toplevel"));
-          gtk_widget_destroy (toplevel);
+        if (priv->toplevel != NULL)
+          gtk_widget_destroy (priv->toplevel);
+        if (priv->ui_xml != NULL)
           g_free (priv->ui_xml);
-        }
         priv->ui_xml = g_value_dup_string (value);
         gw_window_load_ui_xml (window, priv->ui_xml);
+        priv->toplevel = GTK_WIDGET (gtk_builder_get_object (priv->builder, "toplevel"));
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -111,7 +119,7 @@ static void gw_window_get_property (GObject      *object,
     GwWindowPrivate *priv;
 
     window = GW_WINDOW (object);
-    priv = GW_WINDOW_GET_PRIVATE (window);
+    priv = window->priv;
 
     switch (property_id)
     {
@@ -179,8 +187,8 @@ gboolean gw_window_load_ui_xml (GwWindow *window, const char *filename)
     gboolean loaded;
 
     //Initializations
-    priv = GW_WINDOW_GET_PRIVATE (window);
-    paths[0] = g_build_filename ("ui", filename, NULL);
+    priv = window->priv;
+    paths[0] = g_build_filename (filename, NULL);
     paths[1] = g_build_filename ("..", "share", PACKAGE, filename, NULL);
     paths[2] = g_build_filename (DATADIR2, PACKAGE, filename, NULL);
     paths[3] = NULL;
@@ -220,7 +228,7 @@ GObject* gw_window_get_object (GwWindow *window, const char *ID)
 {
     GwWindowPrivate *priv;
 
-    priv = GW_WINDOW_GET_PRIVATE (window);
+    priv = window->priv;
 
     return G_OBJECT (gtk_builder_get_object (priv->builder, ID));
 }
@@ -230,7 +238,7 @@ void gw_window_set_application (GwWindow *window, GwApplication *application)
 {
     GwWindowPrivate *priv;
 
-    priv = GW_WINDOW_GET_PRIVATE (window);
+    priv = window->priv;
     priv->application = application;
     gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (application));
 }
@@ -240,7 +248,18 @@ GwApplication* gw_window_get_application (GwWindow *window)
 {
     GwWindowPrivate *priv;
 
-    priv = GW_WINDOW_GET_PRIVATE (window);
+    priv = window->priv;
+
     return priv->application;
+}
+
+
+GtkWidget* gw_window_get_toplevel (GwWindow *window)
+{
+    GwWindowPrivate *priv;
+
+    priv = window->priv;
+
+    return priv->toplevel;
 }
 

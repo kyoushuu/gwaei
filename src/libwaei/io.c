@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <locale.h>
-#include <libintl.h>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -145,7 +144,6 @@ gboolean lw_io_copy_with_encoding (const char *SOURCE_PATH, const char *TARGET_P
     gsize inbytes_left, outbytes_left;
     char *inptr, *outptr;
     char prev_inbytes;
-    size_t written;
     size_t curpos;
     size_t end;
     GIConv conv;
@@ -156,7 +154,6 @@ gboolean lw_io_copy_with_encoding (const char *SOURCE_PATH, const char *TARGET_P
     writefd = fopen (TARGET_PATH, "w");
     conv = g_iconv_open (TARGET_ENCODING, SOURCE_ENCODING);
     prev_inbytes = 0;
-    written = 0;
     end = lw_io_get_filesize (SOURCE_PATH);
     curpos = 0;
 
@@ -184,7 +181,7 @@ gboolean lw_io_copy_with_encoding (const char *SOURCE_PATH, const char *TARGET_P
         inptr = inptr + strlen(inptr) - inbytes_left;
         outptr = outptr + strlen(outptr) - outbytes_left;
       }
-      written = fwrite(output, 1, strlen(output), writefd); 
+      fwrite(output, 1, strlen(output), writefd); 
     }
     fraction = ((double) curpos / (double) end);
     if (cb != NULL) cb (fraction, data);
@@ -907,11 +904,7 @@ gboolean lw_io_remove (const char *URI, GError **error)
 {
   if (error != NULL && *error != NULL) return FALSE;
 
-  //Declarations
-  int resolution;
-
-  //Initializations
-  resolution = g_remove (URI);
+  g_remove (URI);
 
   return (error == NULL && *error == NULL);
 }
@@ -931,26 +924,23 @@ void lw_io_set_cancel_operations (gboolean state)
 //! @brief A quick way to get the number of lines in a file for use in progress functions
 //! @param FILENAME The path to the file to see how many lines it has
 //!
-int lw_io_get_total_lines_for_file (const char *FILENAME)
+long lw_io_get_size_for_uri (const char *URI)
 {
     //Declarations
-    const int MAX = 512;
     FILE *file;
-    char buffer[MAX];
-    int total;
+    long length;
 
     //Initializations
-    file = fopen (FILENAME, "r");
-    total = 0;
+    file = fopen (URI, "r");
+    length = 0L;
 
-    while (fgets(buffer, MAX, file) != NULL)
+    if (file != NULL)
     {
-      total++;
+      fseek (file, 0L, SEEK_END);
+      length = ftell (file);
+      fclose(file);
     }
-
-    //Cleanup
-    fclose(file);
    
-    return total;
+    return length;
 }
 

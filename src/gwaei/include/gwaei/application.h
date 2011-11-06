@@ -1,13 +1,14 @@
 #ifndef GW_APPLICATION_INCLUDED
 #define GW_APPLICATION_INCLUDED
 
-#include <gtk/gtk.h>
-
 G_BEGIN_DECLS
 
 //Boilerplate
 typedef struct _GwApplicationClass GwApplicationClass;
 typedef struct _GwApplicationPrivate GwApplicationPrivate;
+
+struct _GwSearchWindow; //Forward declaration
+struct _GwDictInfoList; //Forward declaration
 
 #define GW_TYPE_APPLICATION              (gw_application_get_type())
 #define GW_APPLICATION(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), GW_TYPE_APPLICATION, GwApplication))
@@ -54,23 +55,23 @@ GtkWindow* gw_application_get_window_by_widget (GwApplication*, GtkWidget*);
 const char* gw_application_get_program_name (GwApplication*);
 void gw_application_cancel_all_searches (GwApplication*);
 
-void gw_application_sync_tag_cb (GSettings*, gchar*, gpointer);
-
 void gw_application_block_searches (GwApplication*);
 void gw_application_unblock_searches (GwApplication*);
 gboolean gw_application_can_start_search (GwApplication*);
 
 void gw_application_handle_error (GwApplication*, GtkWindow*, gboolean, GError**);
 
-void gw_application_set_last_focused_searchwindow (GwApplication*, GwSearchWindow*);
-GwSearchWindow* gw_application_get_last_focused_searchwindow (GwApplication*);
+void gw_application_set_last_focused_searchwindow (GwApplication*, struct _GwSearchWindow*);
+struct _GwSearchWindow* gw_application_get_last_focused_searchwindow (GwApplication*);
 
 LwPreferences* gw_application_get_preferences (GwApplication*);
-GwDictInfoList* gw_application_get_dictinfolist (GwApplication*);
-//LwEngine* gw_application_get_engine (GwApplication*);
+struct _GwDictInfoList* gw_application_get_dictinfolist (GwApplication*);
+struct _LwDictInstList* gw_application_get_dictinstlist (GwApplication*);
 GtkTextTagTable* gw_application_get_tagtable (GwApplication*);
 
 void gw_application_destroy_window (GwApplication*, GtkWindow*);
+
+#include "application-callbacks.h"
 
 G_END_DECLS
 

@@ -1,8 +1,6 @@
 #ifndef GW_APPLICATION_PRIVATE_INCLUDED
 #define GW_APPLICATION_PRIVATE_INCLUDED
 
-#include <gtk/gtk.h>
-
 G_BEGIN_DECLS
 
 struct _GwApplicationPrivate {
@@ -11,6 +9,7 @@ struct _GwApplicationPrivate {
 
   LwPreferences *preferences;
   GwDictInfoList *dictinfolist;
+  LwDictInstList *dictinstlist;
 //  LwEngine *engine;
   GtkTextTagTable *tagtable;
   GwSearchWindow *last_focused;
@@ -25,9 +24,6 @@ struct _GwApplicationPrivate {
 };
 
 #define GW_APPLICATION_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_APPLICATION, GwApplicationPrivate))
-
-void gw_application_private_init (GwApplication*);
-void gw_application_private_finalize (GwApplication*);
 
 G_END_DECLS
 

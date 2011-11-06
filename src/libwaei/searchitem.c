@@ -137,7 +137,7 @@ void lw_searchitem_init (LwSearchItem *item, const char* query, LwDictInfo* dict
     item->total_relevant_results = 0;
     item->total_irrelevant_results = 0;
     item->total_results = 0;
-    item->current_line = 0;
+    item->current = 0L;
     item->resultline = NULL;
     item->queryline = lw_queryline_new ();
     item->history_relevance_idle_timer = 0;
@@ -232,7 +232,7 @@ void  lw_searchitem_prepare_search (LwSearchItem* item)
     //Initializations
     item->scratch_buffer = (char*) malloc (sizeof(char*) * LW_IO_MAX_FGETS_LINE);
     item->resultline = lw_resultline_new ();
-    item->current_line = 0;
+    item->current = 0L;
     item->total_relevant_results = 0;
     item->total_irrelevant_results = 0;
     item->total_results = 0;
@@ -725,4 +725,29 @@ void lw_searchitem_unlock_mutex (LwSearchItem *item)
   _locks--;
 //  printf("LOCKS %d\n", _locks);
   g_mutex_unlock(item->mutex);
+}
+
+
+double lw_searchitem_get_progress (LwSearchItem *item)
+{
+    //Declarations
+    long current;
+    long length;
+    double fraction;
+
+    //Initializations
+    current = 0L;
+    length = 0L;
+    fraction = 0.0;
+
+    if (item != NULL && item->dictionary != NULL && item->status == LW_SEARCHSTATUS_SEARCHING)
+    {
+      current = item->current;
+      length = item->dictionary->length;
+
+      if (current > 0L && length > 0L && current != length) 
+        fraction = (double) current / (double) length;
+    }
+
+    return fraction;
 }

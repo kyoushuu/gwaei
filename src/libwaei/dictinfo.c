@@ -32,7 +32,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <libintl.h>
 
 #include <glib.h>
 
@@ -102,7 +101,7 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
     di->filename = g_strdup_printf ("%s", FILENAME);
 
     uri = lw_dictinfo_get_uri (di);
-    di->total_lines = lw_io_get_total_lines_for_file (uri);
+    di->length = lw_io_get_size_for_uri (uri);
 
     if (!_overlay_default_builtin_dictionary_settings (di))
     {

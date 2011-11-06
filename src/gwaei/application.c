@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
-#include <libintl.h>
 
 #include <gio/gio.h>
 
@@ -42,6 +40,7 @@
 static void gw_application_activate (GApplication*);
 static gboolean gw_application_local_command_line (GApplication*, gchar***, gint*);
 static int gw_application_command_line (GApplication*, GApplicationCommandLine*);
+static GtkTextTagTable* gw_application_texttagtable_new (void);
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION);
 
@@ -65,20 +64,64 @@ GApplication* gw_application_new (const gchar *application_id, GApplicationFlags
 static void gw_application_init (GwApplication *application)
 {
     application->priv = GW_APPLICATION_GET_PRIVATE (application);
-    gw_application_private_init (application);
+
+    GwApplicationPrivate *priv;
+
+    priv = application->priv;
+
+    priv->context = NULL;
+    priv->arg_new_window_switch = FALSE;
+    priv->arg_dictionary = NULL;
+    priv->arg_query = NULL;
+    priv->arg_version_switch = FALSE;
+
+    priv->last_focused = NULL;
+
+    priv->preferences = lw_preferences_new ();
+    priv->dictinfolist = gw_dictinfolist_new (20, application);
+    priv->dictinstlist = NULL;
+    priv->block_new_searches = 0;
+
+    priv->tagtable = gw_application_texttagtable_new ();
+    lw_preferences_add_change_listener_by_schema (
+      priv->preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_FG, gw_application_sync_tag_cb, application);
+    lw_preferences_add_change_listener_by_schema (
+      priv->preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_BG, gw_application_sync_tag_cb, application);
+    lw_preferences_add_change_listener_by_schema (
+      priv->preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_HEADER_FG, gw_application_sync_tag_cb, application);
+    lw_preferences_add_change_listener_by_schema (
+      priv->preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_HEADER_BG, gw_application_sync_tag_cb, application);
+    lw_preferences_add_change_listener_by_schema (
+      priv->preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_COMMENT_FG, gw_application_sync_tag_cb, application);
+
+#ifdef OS_MINGW
+    GtkSettings *settings;
+    settings = gtk_settings_get_default ();
+    g_object_set (settings, "gtk-theme-name", "MS-Windows", NULL);
+    g_object_set (settings, "gtk-menu-images", FALSE, NULL);
+    g_object_set (settings, "gtk-button-images", FALSE, NULL);
+    g_object_set (settings, "gtk-cursor-blink", FALSE, NULL);
+    g_object_set (settings, "gtk-alternative-button-order", TRUE, NULL);
+    g_object_unref (settings);
+#endif
 }
 
 
 static void gw_application_finalize (GObject *object)
 {
     //Declarations
-    GwApplication *app;
-    GList *iter;
-    GtkWidget *widget;
+    GwApplication *application;
+    GwApplicationPrivate *priv;
 
-    app = GW_APPLICATION (object);
+    application = GW_APPLICATION (object);
+    priv = application->priv;
 
-    gw_application_private_finalize (app);
+    if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist);
+    if (priv->dictinfolist != NULL) gw_dictinfolist_free (priv->dictinfolist);
+    if (priv->context != NULL)      g_option_context_free (priv->context);
+    if (priv->arg_query != NULL)    g_free(priv->arg_query);
+    if (priv->preferences != NULL)  lw_preferences_free (priv->preferences);
+
     G_OBJECT_CLASS (gw_application_parent_class)->finalize (object);
 }
 
@@ -109,7 +152,7 @@ void gw_application_parse_args (GwApplication *application, int *argc, char** ar
 {
     GwApplicationPrivate *priv;
 
-    priv = GW_APPLICATION_GET_PRIVATE (application);
+    priv = application->priv;
 
     //Reset the switches to their default state
     priv->arg_new_window_switch = FALSE;
@@ -260,14 +303,12 @@ GtkWindow* gw_application_get_window_by_widget (GwApplication *application, GtkW
     GList *iter;
     GList *list;
     GtkWindow *window;
-    GtkWindow *active;
     GtkWindow *fuzzy;
     GtkWindow *toplevel;
 
     //Initializations
     window = NULL;
     fuzzy = NULL;
-    active = NULL;
     toplevel = GTK_WINDOW (gtk_widget_get_toplevel (widget));
     list = gtk_application_get_windows (GTK_APPLICATION (application));
 
@@ -290,34 +331,34 @@ GtkWindow* gw_application_get_window_by_widget (GwApplication *application, GtkW
 }
 
 
-void gw_application_block_searches (GwApplication *app)
+void gw_application_block_searches (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+    priv = application->priv;
 
-  priv->block_new_searches++;
-  gw_application_cancel_all_searches (app);
+    priv->block_new_searches++;
+    gw_application_cancel_all_searches (application);
 }
 
 
-void gw_application_unblock_searches (GwApplication *app)
+void gw_application_unblock_searches (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+    priv = application->priv;
 
-  if (priv->block_new_searches > 0)
-    priv->block_new_searches--;
+    if (priv->block_new_searches > 0)
+      priv->block_new_searches--;
 }
 
-gboolean gw_application_can_start_search (GwApplication *app)
+gboolean gw_application_can_start_search (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+    priv = application->priv;
 
-  return (priv->block_new_searches == 0);
+    return (priv->block_new_searches == 0);
 }
 
 
@@ -328,7 +369,6 @@ void gw_application_handle_error (GwApplication *app, GtkWindow *transient_for, 
 
     //Declarations
     GtkWidget *dialog;
-    gint response;
 
     //Handle the error
     if (show_dialog)
@@ -343,7 +383,7 @@ void gw_application_handle_error (GwApplication *app, GtkWindow *transient_for, 
                                                   );
       g_signal_connect_swapped (dialog, "response", G_CALLBACK (gtk_widget_destroy), dialog);
       gtk_widget_show_all (GTK_WIDGET (dialog));
-      response = gtk_dialog_run (GTK_DIALOG (dialog));
+      gtk_dialog_run (GTK_DIALOG (dialog));
     }
     else
     {
@@ -360,7 +400,7 @@ void gw_application_set_last_focused_searchwindow (GwApplication *application, G
 {
    GwApplicationPrivate *priv;
 
-   priv = GW_APPLICATION_GET_PRIVATE (application);
+   priv = application->priv;
 
    priv->last_focused = window; 
 }
@@ -371,7 +411,7 @@ GwSearchWindow* gw_application_get_last_focused_searchwindow (GwApplication *app
    GwApplicationPrivate *priv;
    GwSearchWindow *window;
 
-   priv = GW_APPLICATION_GET_PRIVATE (application);
+   priv = application->priv;
 
    if (priv->last_focused != NULL)
      window = priv->last_focused;
@@ -382,45 +422,46 @@ GwSearchWindow* gw_application_get_last_focused_searchwindow (GwApplication *app
 }
 
 
-LwPreferences* gw_application_get_preferences (GwApplication *app)
+LwPreferences* gw_application_get_preferences (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+    priv = application->priv;
 
-  return priv->preferences;
+    return priv->preferences;
 }
 
 
 GwDictInfoList* gw_application_get_dictinfolist (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (application);
+    priv = application->priv;
 
-  return priv->dictinfolist;
+    return priv->dictinfolist;
 }
 
 
-/*
-LwEngine* gw_application_get_engine (GwApplication *app)
+LwDictInstList* gw_application_get_dictinstlist (GwApplication *application)
 {
   GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+  priv = application->priv;
 
-  return priv->engine;
+  if (priv->dictinstlist == NULL)
+    priv->dictinstlist = lw_dictinstlist_new (priv->preferences);
+
+  return priv->dictinstlist;
 }
-*/
 
 
-GtkTextTagTable* gw_application_get_tagtable (GwApplication *app)
+GtkTextTagTable* gw_application_get_tagtable (GwApplication *application)
 {
-  GwApplicationPrivate *priv;
+    GwApplicationPrivate *priv;
 
-  priv = GW_APPLICATION_GET_PRIVATE (app);
+    priv = application->priv;
 
-  return priv->tagtable;
+    return priv->tagtable;
 }
 
 
@@ -465,7 +506,7 @@ static int gw_application_command_line (GApplication *application, GApplicationC
     char **argv;
 
     //Initializations
-    priv = GW_APPLICATION_GET_PRIVATE (GW_APPLICATION (application));
+    priv = GW_APPLICATION (application)->priv;
     dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
     argv = g_application_command_line_get_arguments (command_line, &argc);
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
@@ -488,7 +529,7 @@ static int gw_application_command_line (GApplication *application, GApplicationC
     //Set the initial query text if it was passed as an argument to the program
     if (priv->arg_query != NULL)
     {
-      gw_searchwindow_set_entry_text (window, priv->arg_query);
+      gw_searchwindow_entry_set_text (window, priv->arg_query);
       gw_searchwindow_search_cb (GTK_WIDGET (window), window);
     }
 
@@ -551,5 +592,63 @@ void gw_application_destroy_window (GwApplication *application, GtkWindow *windo
 
     if (quit) gtk_main_quit ();
     else gtk_widget_destroy (GTK_WIDGET (window));
+}
+
+
+//!
+//! @brief Adds the tags to stylize the buffer text
+//!
+static GtkTextTagTable* gw_application_texttagtable_new ()
+{
+    GtkTextTagTable *temp;
+    GtkTextTag *tag;
+
+    temp = gtk_text_tag_table_new ();
+
+    if (temp != NULL)
+    {
+      tag = gtk_text_tag_new ("italic");
+      g_object_set (tag, "style", PANGO_STYLE_ITALIC, NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("gray");
+      g_object_set (tag, "foreground", "#888888", NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("smaller");
+      g_object_set (tag, "size", "smaller", NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("small");
+      g_object_set (tag, "font", "Serif 6", NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("important");
+      g_object_set (tag, "weight", PANGO_WEIGHT_BOLD, NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("larger");
+      g_object_set (tag, "font", "Sans 20", NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("large");
+      g_object_set (tag, "font", "Serif 40", NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("center");
+      g_object_set (tag, "justification", GTK_JUSTIFY_LEFT, NULL);
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("comment");
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("match");
+      gtk_text_tag_table_add (temp, tag);
+
+      tag = gtk_text_tag_new ("header");
+      gtk_text_tag_table_add (temp, tag);
+    }
+
+    return temp;
 }
 

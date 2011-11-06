@@ -1,8 +1,6 @@
 #ifndef GW_WINDOW_INCLUDED
 #define GW_WINDOW_INCLUDED
 
-#include <gtk/gtk.h>
-
 G_BEGIN_DECLS
 
 //Boilerplate
@@ -34,6 +32,7 @@ GObject* gw_window_get_object (GwWindow*, const gchar*);
 gboolean gw_window_load_ui_xml (GwWindow*, const char*);
 void gw_window_set_application (GwWindow*, GwApplication*);
 GwApplication* gw_window_get_application (GwWindow*);
+GtkWidget* gw_window_get_toplevel (GwWindow*);
 
 G_END_DECLS
 

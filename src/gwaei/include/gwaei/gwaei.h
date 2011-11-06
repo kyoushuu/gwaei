@@ -1,33 +1,28 @@
-#ifndef GW_FRONTEND_INCLUDED
-#define GW_FRONTEND_INCLUDED
+#ifndef GW_GWAEI_INCLUDED
+#define GW_GWAEI_INCLUDED
 
-
+#include "../../../../config.h"
+#include "gettext.h"
 
 #include <libwaei/libwaei.h>
 
 #include <gtk/gtk.h>
 
-struct _GwApplication;
-typedef struct _GwApplication GwApplication;
-
-#include <gwaei/window.h>
-#include <gwaei/spellcheck.h>
-#include <gwaei/dictinfolist.h>
-
-#include <gwaei/search.h>
-/*
-#include <gwaei/radicals-window.h>
-#include <gwaei/settings-window.h>
-#include <gwaei/kanjipad-window.h>
-#include <gwaei/dictionaryinstall-window.h>
-#include <gwaei/installprogress-window.h>
-*/
-
 #include <gwaei/application.h>
 
+#include <gwaei/dictinfolist.h>
+#include <gwaei/spellcheck.h>
 #include <gwaei/printing.h>
 
-#include <gwaei/output-callbacks.h>
+#include <gwaei/window.h>
+#include <gwaei/searchwindow.h>
+#include <gwaei/radicalswindow.h>
+#include <gwaei/kanjipadwindow.h>
+#include <gwaei/settingswindow.h>
+#include <gwaei/dictionaryinstallwindow.h>
+/*
+#include <gwaei/installprogresswindow.h>
+*/
 
 
 #endif
