@@ -237,22 +237,22 @@ static int _try_index_search(LwEngineData *enginedata)
 	} else
 		return -1;
 
-	if (kanji_query)
+	if (kanji_query && item->dictionary->kanji_index)
 		results +=_append_index_results(enginedata,
 						item->dictionary->kanji_index,
 						kanji_query);
 
-	if (furi_query)
+	if (furi_query && item->dictionary->kanji_index)
 		results +=_append_index_results(enginedata,
 						item->dictionary->kanji_index,
 						furi_query);
 
-	if (kana_query)
+	if (kana_query && item->dictionary->kana_index)
 		results += _append_index_results(enginedata,
 						 item->dictionary->kana_index,
 						 kana_query);
 
-	if (english_query)
+	if (english_query && item->dictionary->english_index)
 		results += _append_index_results(enginedata,
 						 item->dictionary->english_index,
 						 english_query);
