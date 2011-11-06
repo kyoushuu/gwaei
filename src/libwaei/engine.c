@@ -238,14 +238,14 @@ static int _try_index_search(LwEngineData *enginedata)
 		return -1;
 
 	if (kanji_query && item->dictionary->kanji_index)
-		results +=_append_index_results(enginedata,
-						item->dictionary->kanji_index,
-						kanji_query);
+		results += _append_index_results(enginedata,
+						 item->dictionary->kanji_index,
+						 kanji_query);
 
 	if (furi_query && item->dictionary->kanji_index)
-		results +=_append_index_results(enginedata,
-						item->dictionary->kanji_index,
-						furi_query);
+		results += _append_index_results(enginedata,
+						 item->dictionary->kanji_index,
+						 furi_query);
 
 	if (kana_query && item->dictionary->kana_index)
 		results += _append_index_results(enginedata,
