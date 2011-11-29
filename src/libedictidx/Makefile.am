@@ -1,4 +1,6 @@
-noinst_LIBRARIES = libedictidx.a
+noinst_LTLIBRARIES = libedictidx.la
+
+ACLOCAL_AMFLAGS = -I m4
 
 SRCS = edictidx.h edictidx_int.h \
 fileops.c hash.c key.c parser.c query.c build.c verify.c edictidx.c
@@ -12,7 +14,7 @@ endif
 AM_CFLAGS = -std=c99 -pedantic -Wall -Wextra \
 -Wpointer-arith -Wconversion -Wc++-compat
 
-libedictidx_a_SOURCES = $(SRCS)
+libedictidx_la_SOURCES = $(SRCS)
 
 check_PROGRAMS = tests/hash tests/parser tests/build tests/verify tests/query
 

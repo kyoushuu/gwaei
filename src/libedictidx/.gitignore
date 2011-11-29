@@ -23,5 +23,6 @@ aclocal.m4
 autom4te.cache
 config.*
 stamp-h1
+m4
 
 *.tar.gz

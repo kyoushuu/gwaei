@@ -3,6 +3,9 @@ AC_CONFIG_AUX_DIR([config.aux])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE([foreign subdir-objects no-dependencies nostdinc])
 
+LT_INIT
+AC_CONFIG_MACRO_DIR([m4])
+
 PACKAGE_BRIEF='"Small EDICT electronic dictionary indexing library"'
 AC_SUBST([PACKAGE_BRIEF])
 
