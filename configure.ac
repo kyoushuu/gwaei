@@ -43,19 +43,14 @@ AC_ARG_ENABLE([waei], AS_HELP_STRING([--enable-waei],
 		      [enable console waei]))
 AM_CONDITIONAL([WANT_WAEI], [test "x${enable_waei}" = "xyes"])
 
-AC_ARG_ENABLE([mmap], AS_HELP_STRING([--enable-mmap],
-		      [enable edictidx mmap file access (experimental)]))
-AM_CONDITIONAL([HAVE_MMAP], [test "x${enable_mmap}" = "xyes"])
+AC_ARG_WITH([edictidx], AS_HELP_STRING([--with-edictidx],
+[enable dictionary indexing with edictidx library (experimental)]))
 
-AC_ARG_WITH([edictidx],
-[  --with-edictidx         enable dictionary indexing (experimental)],
-[case "${withval}" in
-yes) edictidx=true ;;
-no)  edictidx=false ;;
-*) AC_MSG_ERROR([bad value ${withval} for --with-edictidx]) ;;
-esac],[edictidx=false])
-AM_CONDITIONAL([WITH_EDICTIDX], [test x$edictidx = xtrue])
+AM_CONDITIONAL([WITH_EDICTIDX], [test "x${with_edictidx}" = "xyes"])
 
+# configure in-tree edictidx library
+AS_IF([test "x${with_edictidx}" = "xyes"],
+      AC_CONFIG_SUBDIRS([src/libedictidx]))
 
 AC_CHECK_LIB(m, sqrt)
 
@@ -127,7 +122,7 @@ AC_SUBST(GWAEI_LOCALEDIR)
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/libwaei/Makefile src/libwaei/include/libwaei/Makefile src/waei/Makefile src/waei/include/waei/Makefile src/gwaei/Makefile src/gwaei/include/gwaei/Makefile mandir/Makefile src/gwaei/help/Makefile src/gwaei/help/gwaei.omf src/gwaei/help/C/gwaei.xml src/desktop/Makefile src/images/Makefile src/schemas/Makefile rpm/gwaei.spec rpm/fedora/SPECS/gwaei.spec po/Makefile.in src/kpengine/Makefile src/libedictidx/Makefile] src/libwaei/doxyfile src/waei/doxyfile src/gwaei/doxyfile)
+AC_CONFIG_FILES([Makefile src/Makefile src/libwaei/Makefile src/libwaei/include/libwaei/Makefile src/waei/Makefile src/waei/include/waei/Makefile src/gwaei/Makefile src/gwaei/include/gwaei/Makefile mandir/Makefile src/gwaei/help/Makefile src/gwaei/help/gwaei.omf src/gwaei/help/C/gwaei.xml src/desktop/Makefile src/images/Makefile src/schemas/Makefile rpm/gwaei.spec rpm/fedora/SPECS/gwaei.spec po/Makefile.in src/kpengine/Makefile] src/libwaei/doxyfile src/waei/doxyfile src/gwaei/doxyfile)
 
 AC_OUTPUT
 
