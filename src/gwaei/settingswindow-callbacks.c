@@ -32,6 +32,7 @@
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
+#include <gwaei/settingswindow-private.h>
 
 
 //!
@@ -39,7 +40,8 @@
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_hira_kata_conv_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_hira_kata_conv_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -63,7 +65,8 @@ G_MODULE_EXPORT void gw_settingswindow_hira_kata_conv_toggled_cb (GtkWidget *wid
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_kata_hira_conv_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_kata_hira_conv_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -87,7 +90,8 @@ G_MODULE_EXPORT void gw_settingswindow_kata_hira_conv_toggled_cb (GtkWidget *wid
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -111,7 +115,8 @@ G_MODULE_EXPORT void gw_settingswindow_spellcheck_toggled_cb (GtkWidget *widget,
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_search_as_you_type_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_search_as_you_type_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -136,7 +141,8 @@ G_MODULE_EXPORT void gw_settingswindow_search_as_you_type_toggled_cb (GtkWidget 
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_romaji_kana_conv_changed_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_romaji_kana_conv_changed_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -160,7 +166,8 @@ G_MODULE_EXPORT void gw_settingswindow_romaji_kana_conv_changed_cb (GtkWidget *w
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -200,7 +207,8 @@ G_MODULE_EXPORT void gw_settingswindow_swatch_color_changed_cb (GtkWidget *widge
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_reset_all_swatches_activated_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_reset_all_swatches_activated_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -235,7 +243,8 @@ G_MODULE_EXPORT void gw_settingswindow_reset_all_swatches_activated_cb (GtkWidge
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_use_global_document_font_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_use_global_document_font_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -259,7 +268,8 @@ G_MODULE_EXPORT void gw_settingswindow_use_global_document_font_toggled_cb (GtkW
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_custom_document_font_changed_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_custom_document_font_changed_cb (GtkWidget *widget, gpointer data)
 {
     GwSettingsWindow *window;
     GwApplication *application;
@@ -282,7 +292,8 @@ G_MODULE_EXPORT void gw_settingswindow_custom_document_font_changed_cb (GtkWidge
 //! @brief Sets the state of the use global document font checkbox without triggering the signal handler
 //! @param setting The new checked state for the use global document font checkbox 
 //!
-G_MODULE_EXPORT void gw_settingswindow_sync_use_global_document_font_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_use_global_document_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -307,7 +318,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_use_global_document_font_cb (GSettin
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_global_document_font_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_global_document_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -338,7 +350,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_global_document_font_cb (GSettings *
 //! @brief Sets the text in the custom document font button
 //! @param font_description_string The font description in the form "Sans 10"
 //!
-G_MODULE_EXPORT void gw_settingswindow_sync_custom_font_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_custom_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -368,7 +381,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_custom_font_cb (GSettings *settings,
 //! @brief Sets the checkbox to show or hide the toolbar
 //! @param request How to set the toolbar
 //!
-G_MODULE_EXPORT void gw_settingswindow_sync_search_as_you_type_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_search_as_you_type_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -398,20 +412,29 @@ G_MODULE_EXPORT void gw_settingswindow_sync_search_as_you_type_cb (GSettings *se
 //! @param widget GtkWidget pointer to the window to close
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
+    GwApplication *application;
+    LwDictInfoList *dictinfolist;
     
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
     if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
 
     gtk_widget_destroy (GTK_WIDGET (window));
+
+    if (lw_dictinfolist_get_total (dictinfolist) == 0)
+      gw_application_quit (application);
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_romaji_kana_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_romaji_kana_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -426,7 +449,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_romaji_kana_conv_cb (GSettings *sett
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_hira_kata_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_hira_kata_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -447,7 +471,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_hira_kata_conv_cb (GSettings *settin
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_kata_hira_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_kata_hira_conv_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -468,7 +493,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_kata_hira_conv_cb (GSettings *settin
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -492,7 +518,8 @@ G_MODULE_EXPORT void gw_settingswindow_sync_swatch_color_cb (GSettings *settings
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -520,14 +547,16 @@ G_MODULE_EXPORT void gw_settingswindow_sync_spellcheck_cb (GSettings *settings, 
 //! @param data Currently unused gpointer
 //! @return Always returns true
 //!
-G_MODULE_EXPORT gboolean gw_settingswindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_settingswindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 { 
     gw_settingswindow_close_cb (widget, data);
     return TRUE;
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -578,7 +607,8 @@ G_MODULE_EXPORT void gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gp
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidget *widget, gpointer data)
 {
     GwSettingsWindow *window;
     GtkWindow *dictionaryinstallwindow;
@@ -594,7 +624,8 @@ G_MODULE_EXPORT void gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidge
 }
 
 
-G_MODULE_EXPORT void gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data)
+G_MODULE_EXPORT void 
+gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;

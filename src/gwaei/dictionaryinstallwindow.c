@@ -20,7 +20,7 @@
 *******************************************************************************/
 
 //!
-//! @file dictionaryinstally-window.c
+//! @file dictionaryinstallwindow.c
 //!
 //! @brief To be written
 //!
@@ -33,12 +33,13 @@
 #include <gwaei/gwaei.h>
 #include <gwaei/dictionaryinstallwindow-private.h>
 
-G_DEFINE_TYPE (GwDictionaryInstallWindow, gw_dictionaryinstallwindow, GW_TYPE_WINDOW);
+G_DEFINE_TYPE (GwDictionaryInstallWindow, gw_dictionaryinstallwindow, GW_TYPE_WINDOW)
 
 //!
 //! @brief Sets up the variables in main-interface.c and main-callbacks.c for use
 //!
-GtkWindow* gw_dictionaryinstallwindow_new (GtkApplication *application)
+GtkWindow* 
+gw_dictionaryinstallwindow_new (GtkApplication *application)
 {
     g_assert (application != NULL);
 
@@ -55,17 +56,16 @@ GtkWindow* gw_dictionaryinstallwindow_new (GtkApplication *application)
     return GTK_WINDOW (window);
 }
 
-void gw_dictionaryinstallwindow_init (GwDictionaryInstallWindow *window)
+static void 
+gw_dictionaryinstallwindow_init (GwDictionaryInstallWindow *window)
 {
     window->priv = GW_DICTIONARYINSTALLWINDOW_GET_PRIVATE (window);
     memset(window->priv, 0, sizeof(GwDictionaryInstallWindowPrivate));
-
-    GwDictionaryInstallWindowPrivate *priv;
-    priv = window->priv;
 }
 
 
-void gw_dictionaryinstallwindow_finalize (GObject *object)
+static void 
+gw_dictionaryinstallwindow_finalize (GObject *object)
 {
     GwDictionaryInstallWindow *window;
     GwDictionaryInstallWindowPrivate *priv;
@@ -86,7 +86,8 @@ void gw_dictionaryinstallwindow_finalize (GObject *object)
 }
 
 
-void gw_dictionaryinstallwindow_constructed (GObject *object)
+static void 
+gw_dictionaryinstallwindow_constructed (GObject *object)
 {
     //Declarations
     GwDictionaryInstallWindow *window;
@@ -99,6 +100,8 @@ void gw_dictionaryinstallwindow_constructed (GObject *object)
     LwDictInst *di;
     GtkTreeIter treeiter;
     int i;
+    GtkAccelGroup *accelgroup;
+    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -107,6 +110,7 @@ void gw_dictionaryinstallwindow_constructed (GObject *object)
 
     window = GW_DICTIONARYINSTALLWINDOW (object);
     priv = window->priv;
+    accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
     dictinstlist = gw_application_get_dictinstlist (application);
 
@@ -120,6 +124,8 @@ void gw_dictionaryinstallwindow_constructed (GObject *object)
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER_ON_PARENT);
     gtk_window_set_modal (GTK_WINDOW (window), TRUE);
     gtk_window_set_default_size (GTK_WINDOW (window), 200, 300);
+    gtk_window_set_has_resize_grip (GTK_WINDOW (window), FALSE);
+    gtk_container_set_border_width (GTK_CONTAINER (window), 4);
 
     //Initializations
     priv->dictionary_store = gtk_list_store_new (TOTAL_GW_DICTINSTWINDOW_DICTSTOREFIELDS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_INT);
@@ -194,6 +200,12 @@ void gw_dictionaryinstallwindow_constructed (GObject *object)
     gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 0);
     column = gtk_tree_view_column_new_with_attributes ("Name", renderer, "text", GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME, NULL);
     gtk_tree_view_append_column (priv->view, column);
+
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_install_cancel_button"));
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
 }
 
 

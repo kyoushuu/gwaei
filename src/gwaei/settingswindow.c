@@ -20,7 +20,7 @@
 *******************************************************************************/
 
 //!
-//! @file settings-window.c
+//! @file settingswindow.c
 //!
 //! @brief To be written
 //!
@@ -39,12 +39,13 @@ static void gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow*
 static void gw_settingswindow_attach_signals (GwSettingsWindow*);
 static void gw_settingswindow_remove_signals (GwSettingsWindow*);
 
-G_DEFINE_TYPE (GwSettingsWindow, gw_settingswindow, GW_TYPE_WINDOW);
+G_DEFINE_TYPE (GwSettingsWindow, gw_settingswindow, GW_TYPE_WINDOW)
 
 //!
 //! @brief Sets up the variables in main-interface.c and main-callbacks.c for use
 //!
-GtkWindow* gw_settingswindow_new (GtkApplication *application)
+GtkWindow* 
+gw_settingswindow_new (GtkApplication *application)
 {
     g_assert (application != NULL);
 
@@ -62,14 +63,16 @@ GtkWindow* gw_settingswindow_new (GtkApplication *application)
 }
 
 
-void gw_settingswindow_init (GwSettingsWindow *window)
+static void 
+gw_settingswindow_init (GwSettingsWindow *window)
 {
     window->priv = GW_SETTINGSWINDOW_GET_PRIVATE (window);
     memset(window->priv, 0, sizeof(GwSettingsWindowPrivate));
 }
 
 
-void gw_settingswindow_finalize (GObject *object)
+static void 
+gw_settingswindow_finalize (GObject *object)
 {
     GwSettingsWindow *window;
     GwApplication *application;
@@ -77,15 +80,14 @@ void gw_settingswindow_finalize (GObject *object)
     window = GW_SETTINGSWINDOW (object);
     application = gw_window_get_application (GW_WINDOW (window));
 
-    gw_settingswindow_remove_signals (window);
-
     if (g_main_current_source () != NULL) gw_application_unblock_searches (application);
 
     G_OBJECT_CLASS (gw_settingswindow_parent_class)->finalize (object);
 }
 
 
-static void gw_settingswindow_constructed (GObject *object)
+static void 
+gw_settingswindow_constructed (GObject *object)
 {
     //Declarations
     GwSettingsWindow *window;
@@ -93,6 +95,8 @@ static void gw_settingswindow_constructed (GObject *object)
     GwApplication *application;
     GtkTreeView *view;
     GwDictInfoList *dictinfolist;
+    GtkAccelGroup *accelgroup;
+    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -102,6 +106,7 @@ static void gw_settingswindow_constructed (GObject *object)
     //Initializations
     window = GW_SETTINGSWINDOW (object);
     priv = window->priv;
+    accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
     dictinfolist = gw_application_get_dictinfolist (application);
     view = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "manage_dictionaries_treeview"));
@@ -114,6 +119,9 @@ static void gw_settingswindow_constructed (GObject *object)
     gtk_window_set_destroy_with_parent (GTK_WINDOW (window), TRUE);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_CENTER_ON_PARENT);
+
+    g_signal_connect (G_OBJECT (window), "destroy",
+                      G_CALLBACK (gw_settingswindow_remove_signals), NULL);
 
     if (g_main_current_source () != NULL) gw_application_block_searches (application);
 
@@ -135,6 +143,12 @@ static void gw_settingswindow_constructed (GObject *object)
     gtk_widget_set_sensitive (GTK_WIDGET (checkbox), enchant_exists);
 
     gw_settingswindow_attach_signals (window);
+
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "settings_close_button"));
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
 }
 
 
@@ -152,7 +166,8 @@ gw_settingswindow_class_init (GwSettingsWindowClass *klass)
 }
 
 
-static void gw_settingswindow_attach_signals (GwSettingsWindow *window)
+static void 
+gw_settingswindow_attach_signals (GwSettingsWindow *window)
 {
     //Declarations
     GwSettingsWindowPrivate *priv;
@@ -273,7 +288,8 @@ static void gw_settingswindow_attach_signals (GwSettingsWindow *window)
 }
 
 
-static void gw_settingswindow_remove_signals (GwSettingsWindow *window)
+static void 
+gw_settingswindow_remove_signals (GwSettingsWindow *window)
 {
     //Declarations
     GwSettingsWindowPrivate *priv;
@@ -374,7 +390,8 @@ static void gw_settingswindow_remove_signals (GwSettingsWindow *window)
 //! @param widget Pointer to a GtkEntry to set the text of
 //! @param value The constant string to use as the source for the text
 //!
-void gw_settings_set_dictionary_source (GtkWidget *widget, const char* value)
+void 
+gw_settings_set_dictionary_source (GtkWidget *widget, const char* value)
 {
     if (widget != NULL && value != NULL)
     {
@@ -383,7 +400,8 @@ void gw_settings_set_dictionary_source (GtkWidget *widget, const char* value)
 }
 
 
-static void gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow *window, GtkTreeView *view)
+static void 
+gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow *window, GtkTreeView *view)
 {
       //Declarations
       GwApplication *application;
@@ -431,7 +449,8 @@ static void gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow 
 //!
 //! @brief Disables portions of the interface depending on the currently queued jobs.
 //!
-void gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
+void 
+gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
 {
     //Declarations
     GwApplication *application;

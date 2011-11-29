@@ -26,6 +26,7 @@ src/waei/waei
 vgdump
 mingw32-config.cache
 documentation
+*~
 
 libtool
 
@@ -41,7 +42,8 @@ intltool-extract.in
 intltool-merge.in
 intltool-update.in
 po/.intltool-merge-cache
-m4/intltool.m4
+m4
+m4/*
 config.h
 Doxyfile
 

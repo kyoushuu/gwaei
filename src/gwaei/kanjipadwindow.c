@@ -22,7 +22,7 @@
 *******************************************************************************/
 
 //!
-//! @file kanjipad-window.c
+//! @file kanjipadwindow.c
 //!
 //! @brief To be written
 //!
@@ -46,7 +46,7 @@
 static void _kanjipadwindow_initialize_engine (GwKanjipadWindow*);
 static gboolean _kanjipadwindow_engine_input_handler (GIOChannel*, GIOCondition, gpointer);
 
-G_DEFINE_TYPE (GwKanjipadWindow, gw_kanjipadwindow, GW_TYPE_WINDOW);
+G_DEFINE_TYPE (GwKanjipadWindow, gw_kanjipadwindow, GW_TYPE_WINDOW)
 
 //!
 //! @brief Sets up the variables in main-interface.c and main-callbacks.c for use
@@ -73,22 +73,6 @@ void gw_kanjipadwindow_init (GwKanjipadWindow *window)
 {
     window->priv = GW_KANJIPADWINDOW_GET_PRIVATE (window);
     memset(window->priv, 0, sizeof(GwKanjipadWindowPrivate));
-
-    GwKanjipadWindowPrivate *priv;
-    priv = window->priv;
-
-    priv->drawingarea = NULL;
-    priv->candidates = NULL;
-    priv->total_candidates = 0;
-    priv->strokes = NULL;
-    priv->curstroke = NULL;
-    priv->surface = NULL;
-    priv->ksurface = NULL;
-    priv->from_engine = NULL;
-    priv->to_engine = NULL;
-    priv->kselected[0] = 0;
-    priv->kselected[1] = 0;
-    priv->instroke = FALSE;
 }
 
 
@@ -146,6 +130,8 @@ static void gw_kanjipadwindow_constructed (GObject *object)
 {
     GwKanjipadWindow *window;
     GwKanjipadWindowPrivate *priv;
+    GtkAccelGroup *accelgroup;
+    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -154,6 +140,7 @@ static void gw_kanjipadwindow_constructed (GObject *object)
 
     window = GW_KANJIPADWINDOW (object);
     priv = window->priv;
+    accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Kanjipad"));
     gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
@@ -169,6 +156,13 @@ static void gw_kanjipadwindow_constructed (GObject *object)
     gw_kanjipadwindow_initialize_drawingarea (window);
     gw_kanjipadwindow_initialize_candidates (window);
     _kanjipadwindow_initialize_engine (window);
+
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "close_button"));
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
+
 }
 
 

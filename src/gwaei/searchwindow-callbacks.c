@@ -20,7 +20,7 @@
 *******************************************************************************/
 
 //!
-//! @file search-callbacks.c
+//! @file searchwindow-callbacks.c
 //!
 //! @brief To be written
 //!
@@ -44,9 +44,10 @@
 //! @param data Currently unused gpointer
 //! @return Always returns false
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_get_iter_for_motion_cb (GtkWidget      *widget,
-                                                                 GdkEventButton *event,
-                                                                 gpointer        data   )
+G_MODULE_EXPORT 
+gboolean gw_searchwindow_get_iter_for_motion_cb (GtkWidget      *widget,
+                                                 GdkEventButton *event,
+                                                 gpointer        data   )
 {
     //Declarations
     GwApplication *application;
@@ -117,9 +118,10 @@ G_MODULE_EXPORT gboolean gw_searchwindow_get_iter_for_motion_cb (GtkWidget      
 //! @param data Currently unused gpointer
 //! @return Always returns false
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_get_position_for_button_press_cb (GtkWidget      *widget,
-                                                                           GdkEventButton *event,
-                                                                           gpointer        data    )
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_get_position_for_button_press_cb (GtkWidget      *widget,
+                                                  GdkEventButton *event,
+                                                  gpointer        data    )
 {
     //Declarations
     GwSearchWindow *window;
@@ -151,9 +153,10 @@ G_MODULE_EXPORT gboolean gw_searchwindow_get_position_for_button_press_cb (GtkWi
 //! @param data Currently unused gpointer
 //! @return Always returns false
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
-                                                                         GdkEventButton *event,
-                                                                         gpointer        data    )
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
+                                                GdkEventButton *event,
+                                                gpointer        data    )
 {
     //Declarations
     GwApplication *application;
@@ -221,23 +224,29 @@ G_MODULE_EXPORT gboolean gw_searchwindow_get_iter_for_button_release_cb (GtkWidg
 //! @param widget GtkWidget pointer to the window to close
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
+    GwApplication *application;
     int pages;
     
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
     priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
     pages = gtk_notebook_get_n_pages (priv->notebook);
 
     if (pages > 1)
       gw_searchwindow_remove_current_tab_cb (widget, data);
     else
       gtk_widget_destroy (GTK_WIDGET (window));
+
+    if (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW) == NULL)
+      gw_application_quit (application);
 }
 
 
@@ -248,7 +257,8 @@ G_MODULE_EXPORT void gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
 //! @param data Currently unused gpointer
 //! @return Always returns true
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 { 
     GwApplication *application;
     GwSearchWindow *window;
@@ -257,7 +267,10 @@ G_MODULE_EXPORT gboolean gw_searchwindow_delete_event_action_cb (GtkWidget *widg
     if (window == NULL) return FALSE;
     application = gw_window_get_application (GW_WINDOW (window));
 
-    gw_application_destroy_window (application, GTK_WINDOW (window));
+    gtk_widget_destroy (GTK_WIDGET (window));
+
+    if (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW) == NULL)
+      gw_application_quit (application);
 
     return TRUE;
 }
@@ -269,7 +282,8 @@ G_MODULE_EXPORT gboolean gw_searchwindow_delete_event_action_cb (GtkWidget *widg
 //! @param widget GtkWidget pointer to the window to close
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_quit_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_quit_cb (GtkWidget *widget, gpointer data)
 {
     GwApplication *application;
     GwSearchWindow *window;
@@ -288,7 +302,8 @@ G_MODULE_EXPORT void gw_searchwindow_quit_cb (GtkWidget *widget, gpointer data)
 //! @param widget Should be a pointer to the GtkMenuItem to go back to
 //! @param data A pointer to the GwSearchWindow object
 //!
-G_MODULE_EXPORT void gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -378,7 +393,8 @@ G_MODULE_EXPORT void gw_searchwindow_search_from_history_cb (GtkWidget *widget, 
 //! @param widget Unused GtkWidget pointer.
 //! @param data pointer to a specially attached LwSearchItem variable
 //!
-G_MODULE_EXPORT void gw_searchwindow_back_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_back_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -424,7 +440,8 @@ G_MODULE_EXPORT void gw_searchwindow_back_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer.
 //! @param data pointer to a specially attached LwSearchItem variable
 //!
-G_MODULE_EXPORT void gw_searchwindow_forward_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_forward_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -469,7 +486,8 @@ G_MODULE_EXPORT void gw_searchwindow_forward_cb (GtkWidget *widget, gpointer dat
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_save_as_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_save_as_cb (GtkWidget *widget, gpointer data)
 {
 
     //Declarations
@@ -545,7 +563,8 @@ G_MODULE_EXPORT void gw_searchwindow_save_as_cb (GtkWidget *widget, gpointer dat
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //0
-G_MODULE_EXPORT void gw_searchwindow_save_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_save_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     gchar *text;
@@ -590,7 +609,8 @@ G_MODULE_EXPORT void gw_searchwindow_save_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_zoom_in_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_zoom_in_cb (GtkWidget *widget, gpointer data)
 {
     GwApplication *application;
     GwSearchWindow *window;
@@ -616,7 +636,8 @@ G_MODULE_EXPORT void gw_searchwindow_zoom_in_cb (GtkWidget *widget, gpointer dat
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_zoom_out_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_zoom_out_cb (GtkWidget *widget, gpointer data)
 {
     GwApplication *application;
     GwSearchWindow *window;
@@ -641,7 +662,8 @@ G_MODULE_EXPORT void gw_searchwindow_zoom_out_cb (GtkWidget *widget, gpointer da
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -664,7 +686,8 @@ G_MODULE_EXPORT void gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer da
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_less_relevant_results_toggle_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_less_relevant_results_toggle_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwApplication *application;
@@ -681,7 +704,8 @@ G_MODULE_EXPORT void gw_searchwindow_less_relevant_results_toggle_cb (GtkWidget 
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -704,7 +728,8 @@ G_MODULE_EXPORT void gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget *
 //! @param widget pointer to the GtkWidget that changed dictionaries
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_dictionary_radio_changed_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_dictionary_radio_changed_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -743,7 +768,8 @@ G_MODULE_EXPORT void gw_searchwindow_dictionary_radio_changed_cb (GtkWidget *wid
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -764,7 +790,8 @@ G_MODULE_EXPORT void gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer 
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -785,7 +812,8 @@ G_MODULE_EXPORT void gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -806,7 +834,8 @@ G_MODULE_EXPORT void gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_copy_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_copy_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -824,7 +853,8 @@ G_MODULE_EXPORT void gw_searchwindow_copy_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_edit_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_edit_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     char *uri;
@@ -855,7 +885,8 @@ G_MODULE_EXPORT void gw_searchwindow_edit_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_irc_channel_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_irc_channel_cb (GtkWidget *widget, gpointer data)
 {
     //Initializations
     GError *error;
@@ -880,7 +911,8 @@ G_MODULE_EXPORT void gw_searchwindow_irc_channel_cb (GtkWidget *widget, gpointer
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_homepage_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_homepage_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GError *error;
@@ -905,7 +937,8 @@ G_MODULE_EXPORT void gw_searchwindow_homepage_cb (GtkWidget *widget, gpointer da
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GError *error;
@@ -930,7 +963,8 @@ G_MODULE_EXPORT void gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer d
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     char *uri;
@@ -958,7 +992,8 @@ G_MODULE_EXPORT void gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer da
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_about_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_about_cb (GtkWidget *widget, gpointer data)
 {
     char *global_path = DATADIR2 G_DIR_SEPARATOR_S PACKAGE G_DIR_SEPARATOR_S "logo.png";
     char *local_path = ".." G_DIR_SEPARATOR_S "share" G_DIR_SEPARATOR_S PACKAGE G_DIR_SEPARATOR_S "logo.png";
@@ -1001,7 +1036,8 @@ G_MODULE_EXPORT void gw_searchwindow_about_cb (GtkWidget *widget, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_cycle_dictionaries_forward_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_cycle_dictionaries_forward_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1016,7 +1052,8 @@ G_MODULE_EXPORT void gw_searchwindow_cycle_dictionaries_forward_cb (GtkWidget *w
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_cycle_dictionaries_backward_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_cycle_dictionaries_backward_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1032,9 +1069,10 @@ G_MODULE_EXPORT void gw_searchwindow_cycle_dictionaries_backward_cb (GtkWidget *
 //! @param data Currently unused gpointer
 //! @return Always returns FALSE
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_key_press_modify_status_update_cb (GtkWidget *widget,
-                                                                            GdkEvent  *event,
-                                                                            gpointer   data  )
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_key_press_modify_status_update_cb (GtkWidget *widget,
+                                                   GdkEvent  *event,
+                                                   gpointer   data  )
 {
     //Declarations
     GwSearchWindow *window;
@@ -1079,9 +1117,10 @@ G_MODULE_EXPORT gboolean gw_searchwindow_key_press_modify_status_update_cb (GtkW
 //! @param data Currently unused gpointer
 //! @return Always returns FALSE
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_key_release_modify_status_update_cb (GtkWidget *widget,
-                                                                              GdkEvent  *event,
-                                                                              gpointer   data  )
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_key_release_modify_status_update_cb (GtkWidget *widget,
+                                                     GdkEvent  *event,
+                                                     gpointer   data  )
 {
     //Declarations
     GwSearchWindow *window;
@@ -1109,9 +1148,10 @@ G_MODULE_EXPORT gboolean gw_searchwindow_key_release_modify_status_update_cb (Gt
 //! @param data Unused gpointer
 //! @return Always returns false
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
-                                                                       GdkEvent  *event,
-                                                                       gpointer  *data  )
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
+                                              GdkEvent  *event,
+                                              gpointer  *data  )
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -1207,7 +1247,8 @@ G_MODULE_EXPORT gboolean gw_searchwindow_focus_change_on_key_press_cb (GtkWidget
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1303,7 +1344,8 @@ G_MODULE_EXPORT void gw_searchwindow_search_cb (GtkWidget *widget, gpointer data
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_insert_unknown_character_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_insert_unknown_character_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1321,7 +1363,8 @@ G_MODULE_EXPORT void gw_searchwindow_insert_unknown_character_cb (GtkWidget *wid
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1339,7 +1382,8 @@ G_MODULE_EXPORT void gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpo
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1357,7 +1401,8 @@ G_MODULE_EXPORT void gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget,
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1374,7 +1419,8 @@ G_MODULE_EXPORT void gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer 
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1388,7 +1434,8 @@ G_MODULE_EXPORT void gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer d
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_clear_search_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_clear_search_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -1407,7 +1454,11 @@ G_MODULE_EXPORT void gw_searchwindow_clear_search_cb (GtkWidget *widget, gpointe
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_clear_entry_button_pressed_cb (GtkEntry *entry, GtkEntryIconPosition icon_pos, GdkEvent *event, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_clear_entry_button_pressed_cb (GtkEntry             *entry, 
+                                               GtkEntryIconPosition  icon_pos, 
+                                               GdkEvent             *event, 
+                                               gpointer              data    )
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -1426,7 +1477,8 @@ G_MODULE_EXPORT void gw_searchwindow_clear_entry_button_pressed_cb (GtkEntry *en
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_open_dictionary_folder_cb (GtkWidget *widget, gpointer data) 
+G_MODULE_EXPORT void 
+gw_searchwindow_open_dictionary_folder_cb (GtkWidget *widget, gpointer data) 
 {
     //Declarations
     GwSearchWindow *window;
@@ -1458,12 +1510,13 @@ G_MODULE_EXPORT void gw_searchwindow_open_dictionary_folder_cb (GtkWidget *widge
 //! @see gw_searchwindow_drag_drop_1_cb ()
 //! @return Always returns true
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_drag_motion_1_cb (GtkWidget      *widget,
-                                                           GdkDragContext *drag_context,
-                                                           gint            x,
-                                                           gint            y,
-                                                           guint           time,
-                                                           gpointer        user_data)
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_drag_motion_1_cb (GtkWidget      *widget,
+                                  GdkDragContext *drag_context,
+                                  gint            x,
+                                  gint            y,
+                                  guint           time,
+                                  gpointer        user_data)
 {
     gdk_drag_status (drag_context, GDK_ACTION_COPY, time);
     gtk_drag_highlight (widget);
@@ -1477,10 +1530,11 @@ G_MODULE_EXPORT gboolean gw_searchwindow_drag_motion_1_cb (GtkWidget      *widge
 //! @see gw_searchwindow_drag_drop_1_cb ()
 //! @see gw_searchwindow_drag_motion_1_cb ()
 //!
-G_MODULE_EXPORT void gw_searchwindow_drag_leave_1_cb (GtkWidget      *widget,
-                                                      GdkDragContext *drag_context,
-                                                      guint           time,
-                                                      gpointer        user_data) 
+G_MODULE_EXPORT void 
+gw_searchwindow_drag_leave_1_cb (GtkWidget      *widget,
+                                 GdkDragContext *drag_context,
+                                 guint           time,
+                                 gpointer        user_data) 
 {
     gtk_drag_unhighlight (widget);
 }
@@ -1493,12 +1547,13 @@ G_MODULE_EXPORT void gw_searchwindow_drag_leave_1_cb (GtkWidget      *widget,
 //! @see gw_searchwindow_drag_motion_1_cb ()
 //! @return Always returns true
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_drag_drop_1_cb (GtkWidget      *widget,
-                                         GdkDragContext *drag_context,
-                                         gint            x,
-                                         gint            y,
-                                         guint           time,
-                                         gpointer        user_data)  
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_drag_drop_1_cb (GtkWidget      *widget,
+                                GdkDragContext *drag_context,
+                                gint            x,
+                                gint            y,
+                                guint           time,
+                                gpointer        user_data)  
 {
     GdkAtom target;
     target = gtk_drag_dest_find_target (widget, drag_context, NULL);
@@ -1513,14 +1568,15 @@ G_MODULE_EXPORT gboolean gw_searchwindow_drag_drop_1_cb (GtkWidget      *widget,
 //! @see gw_searchwindow_drag_drop_1_cb ()
 //! @see gw_searchwindow_drag_motion_1_cb ()
 //!
-G_MODULE_EXPORT void gw_searchwindow_search_drag_data_recieved_cb (GtkWidget        *widget,
-                                                                   GdkDragContext   *drag_context,
-                                                                   gint              x,
-                                                                   gint              y,
-                                                                   GtkSelectionData *data,
-                                                                   guint             info,
-                                                                   guint             time,
-                                                                   gpointer          user_data    )
+G_MODULE_EXPORT void 
+gw_searchwindow_search_drag_data_recieved_cb (GtkWidget        *widget,
+                                              GdkDragContext   *drag_context,
+                                              gint              x,
+                                              gint              y,
+                                              GtkSelectionData *data,
+                                              guint             info,
+                                              guint             time,
+                                              gpointer          user_data    )
 {
     //Sanity checks
     if (widget == NULL) return;
@@ -1564,8 +1620,9 @@ G_MODULE_EXPORT void gw_searchwindow_search_drag_data_recieved_cb (GtkWidget    
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget *widget,
-                                                                                  gpointer   data   )
+G_MODULE_EXPORT void 
+gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget *widget,
+                                                             gpointer   data   )
 {
     //Declarations
     GwSearchWindow *window;
@@ -1598,7 +1655,8 @@ G_MODULE_EXPORT void gw_searchwindow_update_button_states_based_on_entry_text_cb
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT gboolean gw_searchwindow_scroll_or_zoom_cb (GtkWidget *widget, GdkEventScroll *event, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_scroll_or_zoom_cb (GtkWidget *widget, GdkEventScroll *event, gpointer data)
 {
     if( (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK )
     {
@@ -1624,7 +1682,8 @@ G_MODULE_EXPORT gboolean gw_searchwindow_scroll_or_zoom_cb (GtkWidget *widget, G
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_new_tab_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_new_tab_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1637,7 +1696,8 @@ G_MODULE_EXPORT void gw_searchwindow_new_tab_cb (GtkWidget *widget, gpointer dat
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_new_window_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_new_window_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1659,7 +1719,8 @@ G_MODULE_EXPORT void gw_searchwindow_new_window_cb (GtkWidget *widget, gpointer 
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_remove_tab_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_remove_tab_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1682,7 +1743,8 @@ G_MODULE_EXPORT void gw_searchwindow_remove_tab_cb (GtkWidget *widget, gpointer 
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1705,7 +1767,11 @@ G_MODULE_EXPORT void gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, g
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_switch_tab_cb (GtkNotebook *notebook, GtkWidget *page, int page_num, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_switch_tab_cb (GtkNotebook *notebook, 
+                               GtkWidget   *page, 
+                               int          page_num, 
+                               gpointer     data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1723,7 +1789,8 @@ G_MODULE_EXPORT void gw_searchwindow_switch_tab_cb (GtkNotebook *notebook, GtkWi
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -1742,7 +1809,8 @@ G_MODULE_EXPORT void gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer da
 //! @param widget Currently unused widget pointer
 //! @param data Currently unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_previous_tab_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_previous_tab_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -1756,7 +1824,8 @@ G_MODULE_EXPORT void gw_searchwindow_previous_tab_cb (GtkWidget *widget, gpointe
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_no_results_search_for_dictionary_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_no_results_search_for_dictionary_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1777,7 +1846,8 @@ G_MODULE_EXPORT void gw_searchwindow_no_results_search_for_dictionary_cb (GtkWid
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1799,7 +1869,8 @@ G_MODULE_EXPORT void gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget,
 //!
 //! @brief Syncs the gui to the preference settinging.  It should be attached to the gsettings object
 //!
-G_MODULE_EXPORT void gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1855,7 +1926,8 @@ G_MODULE_EXPORT void gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, 
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_statusbar_show_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_statusbar_show_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1878,7 +1950,8 @@ G_MODULE_EXPORT void gw_searchwindow_statusbar_show_toggled_cb (GtkWidget *widge
 //! @brief Sets the checkbox to show or hide the statusbar
 //! @param request How to set the statusbar
 //!
-G_MODULE_EXPORT void gw_searchwindow_sync_statusbar_show_cb (GSettings *settings, gchar *key, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_statusbar_show_cb (GSettings *settings, gchar *key, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1909,7 +1982,8 @@ G_MODULE_EXPORT void gw_searchwindow_sync_statusbar_show_cb (GSettings *settings
 //!
 //! @brief Sets the requested font with magnification applied
 //!
-G_MODULE_EXPORT void gw_searchwindow_sync_font_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -1927,7 +2001,8 @@ G_MODULE_EXPORT void gw_searchwindow_sync_font_cb (GSettings *settings, gchar *K
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1958,7 +2033,8 @@ G_MODULE_EXPORT void gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, g
 //! @brief Sets the gui widgets consistently to the requested state
 //! @param request the requested state for spellchecking widgets
 //!
-G_MODULE_EXPORT void gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -1985,50 +2061,41 @@ G_MODULE_EXPORT void gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gc
 
     if (request == TRUE && priv->spellcheck == NULL)
     {
-      //priv->spellcheck =  gw_spellcheck_new (priv->entry);
+      priv->spellcheck =  gw_spellcheck_new (priv->entry);
     }
     else if (request == FALSE && priv->spellcheck != NULL)
     {
-      gw_spellcheck_free (priv->spellcheck);
-      priv->spellcheck = NULL;
+      gw_spellcheck_free (priv->spellcheck); priv->spellcheck = NULL;
     }
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_sync_search_as_you_type_cb (GSettings *settings, gchar *KEY, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_search_as_you_type_cb (GSettings *settings, 
+                                            gchar     *KEY, 
+                                            gpointer   data     )
 {
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
+    GtkWidget *toolbutton;
     gboolean request;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
     priv = window->priv;
+    toolbutton = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "search_entry_submit_toolbutton"));
     request = lw_preferences_get_boolean (settings, KEY);
 
     priv->keep_searching_enabled = request;
+    if (request) gtk_widget_hide (toolbutton);
+    else gtk_widget_show (toolbutton);
 }
 
 
-/*
-G_MODULE_EXPORT void gw_searchwindow_open_kanjipadwindow_cb (GtkWidget *widget, gpointer data)
-{
-    GwSearchWindow *window;
-    //GwApplication *application;
-
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    if (window == NULL) return;
-    application = gw_window_get_application (GW_WINDOW (window));
-
-//    gw_application_show_window (application, GW_WINDOW_KANJIPAD, GW_WINDOW (window), FALSE);
-}
-*/
-
-
-
-G_MODULE_EXPORT void gw_searchwindow_open_kanjipadwindow_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_open_kanjipadwindow_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -2047,20 +2114,17 @@ G_MODULE_EXPORT void gw_searchwindow_open_kanjipadwindow_cb (GtkWidget *widget, 
     if (iter != NULL)
     {
       kanjipadwindow = GTK_WINDOW (iter->data);
-      gtk_window_set_transient_for (GTK_WINDOW (kanjipadwindow), GTK_WINDOW (window));
-      gtk_window_present (GTK_WINDOW (kanjipadwindow));
-    }
-    else
-    {
-      kanjipadwindow = gw_kanjipadwindow_new (GTK_APPLICATION (application));
-      gtk_window_set_transient_for (GTK_WINDOW (kanjipadwindow), GTK_WINDOW (window));
-      gtk_widget_show (GTK_WIDGET (kanjipadwindow));
+      gtk_widget_destroy (GTK_WIDGET (kanjipadwindow));
     }
 
+    kanjipadwindow = gw_kanjipadwindow_new (GTK_APPLICATION (application));
+    gtk_window_set_transient_for (GTK_WINDOW (kanjipadwindow), GTK_WINDOW (window));
+    gtk_widget_show (GTK_WIDGET (kanjipadwindow));
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_open_radicalswindow_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_open_radicalswindow_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -2080,6 +2144,7 @@ G_MODULE_EXPORT void gw_searchwindow_open_radicalswindow_cb (GtkWidget *widget, 
     {
       radicalswindow = GTK_WINDOW (iter->data);
       gtk_window_set_transient_for (GTK_WINDOW (radicalswindow), GTK_WINDOW (window));
+      gw_radicalswindow_deselect_all_radicals (GW_RADICALSWINDOW (radicalswindow));
       gtk_window_present (GTK_WINDOW (radicalswindow));
     }
     else
@@ -2091,7 +2156,8 @@ G_MODULE_EXPORT void gw_searchwindow_open_radicalswindow_cb (GtkWidget *widget, 
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_open_settingswindow_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_open_settingswindow_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwApplication *application;
@@ -2122,7 +2188,11 @@ G_MODULE_EXPORT void gw_searchwindow_open_settingswindow_cb (GtkWidget *widget, 
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_dictionaries_added_cb (GtkTreeModel* model, GtkTreePath *path, GtkTreeIter* iter, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_dictionaries_added_cb (GtkTreeModel *model, 
+                                       GtkTreePath  *path, 
+                                       GtkTreeIter  *iter, 
+                                       gpointer      data  )
 {
     //Lazy implimenation
     gw_searchwindow_dictionaries_deleted_cb (model, path, data);
@@ -2132,8 +2202,10 @@ G_MODULE_EXPORT void gw_searchwindow_dictionaries_added_cb (GtkTreeModel* model,
 //!
 //! @brief Disables portions of the interface depending on the currently queued jobs.
 //!
-//G_MODULE_EXPORT void gw_searchwindow_dictionaries_changed_cb (GtkTreeModel* model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
-G_MODULE_EXPORT void gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel* model, GtkTreePath *path, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model, 
+                                         GtkTreePath  *path, 
+                                         gpointer      data  )
 {
     //Declarations
     GwApplication *application;
@@ -2166,7 +2238,11 @@ G_MODULE_EXPORT void gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel* mode
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook, GtkWidget *child, guint page_num, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook, 
+                                            GtkWidget   *child, 
+                                            guint        page_num, 
+                                            gpointer     data     )
 {
     //Declarations
     GwSearchWindow *window;
@@ -2202,7 +2278,10 @@ G_MODULE_EXPORT void gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *no
 }
 
 
-G_MODULE_EXPORT gboolean gw_searchwindow_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_searchwindow_focus_in_event_cb (GtkWidget *widget, 
+                                   GdkEvent  *event, 
+                                   gpointer   data   )
 {
     GwSearchWindow *window;
     GwApplication *application;
@@ -2217,18 +2296,41 @@ G_MODULE_EXPORT gboolean gw_searchwindow_focus_in_event_cb (GtkWidget *widget, G
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_open_vocabulary_window_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_open_vocabularywindow_cb (GtkWidget *widget, 
+                                           gpointer   data   )
 {
-  /*
-  GtkBuilder builder;
-  builder = gtk_builder_new ();
-  gtk_bueild
-  g_object_unref (builder);
-  */
+    //Declarations
+    GwSearchWindow *window;
+    GwApplication *application;
+    GtkWindow *vocabularywindow;
+    GList *iter;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    if (window == NULL);
+    application = gw_window_get_application (GW_WINDOW (window));
+    iter = gtk_application_get_windows (GTK_APPLICATION (application));
+
+    while (iter != NULL && !GW_IS_VOCABULARYWINDOW (iter->data)) iter = iter->next;
+
+    if (iter != NULL)
+    {
+      vocabularywindow = GTK_WINDOW (iter->data);
+      gtk_window_present (GTK_WINDOW (vocabularywindow));
+    }
+    else
+    {
+      vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
+      gtk_widget_show (GTK_WIDGET (vocabularywindow));
+    }
 }
 
 
-G_MODULE_EXPORT void gw_searchwindow_event_after_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+G_MODULE_EXPORT void 
+gw_searchwindow_event_after_cb (GtkWidget *widget, 
+                                GdkEvent  *event, 
+                                gpointer   data)
 {
     //Declarations
     GwSearchWindow *window;

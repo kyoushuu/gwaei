@@ -1,0 +1,40 @@
+#ifndef GW_VOCABULARYWINDOW_PRIVATE_INCLUDED
+#define GW_VOCABULARYWINDOW_PRIVATE_INCLUDED
+
+G_BEGIN_DECLS
+
+
+typedef enum { 
+  GW_VOCABULARYLIST_COLUMN_NAME,
+  TOTAL_GW_VOCABULARYLIST_COLUMNS
+} GwVocabularyListColumn;
+
+
+typedef enum {
+//  GW_VOCABULARYWINDOW_TIMEOUTID_PROGRESS,
+  TOTAL_GW_VOCABULARYWINDOW_TIMEOUTIDS
+} GwVocabularyWindowTimeoutId;
+
+typedef enum {
+//  GW_VOCABULARYWINDOW_SIGNALID_SPELLCHECK,
+  TOTAL_GW_VOCABULARYWINDOW_SIGNALIDS
+} GwVocabularyWindowSignalId;
+
+struct _GwVocabularyWindowPrivate {
+  GtkTreeView  *list_treeview;
+  GtkToolbar   *list_toolbar;
+
+  GtkTreeView  *item_treeview;
+  GtkToolbar   *item_toolbar;
+  GtkToolbar   *study_toolbar;
+
+  //Main variables
+  guint timeoutid[TOTAL_GW_VOCABULARYWINDOW_TIMEOUTIDS];
+  guint signalid[TOTAL_GW_VOCABULARYWINDOW_SIGNALIDS];
+};
+
+#define GW_VOCABULARYWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_VOCABULARYWINDOW, GwVocabularyWindowPrivate))
+
+G_END_DECLS
+
+#endif

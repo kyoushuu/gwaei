@@ -35,8 +35,6 @@ src/gwaei/kanjipad-candidatearea.c
 src/gwaei/kanjipad-drawingarea.c
 src/gwaei/kanjipadwindow-callbacks.c
 src/gwaei/kanjipadwindow.c
-src/gwaei/output-popup-callbacks.c
-src/gwaei/pluginmanager.c
 src/gwaei/printing.c
 src/gwaei/radicalswindow-callbacks.c
 src/gwaei/radicalswindow.c
@@ -49,5 +47,7 @@ src/gwaei/settingswindow.c
 src/gwaei/spellcheck-callbacks.c
 src/gwaei/spellcheck.c
 src/gwaei/window.c
+src/gwaei/vocabularywindow.c
+src/gwaei/vocabularywindow-callbacks.c
 
 src/desktop/gwaei.desktop.in

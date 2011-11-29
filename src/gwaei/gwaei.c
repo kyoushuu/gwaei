@@ -53,17 +53,13 @@ int main (int argc, char *argv[])
     g_thread_init (NULL);
     gdk_threads_init ();
 
-    lw_regex_initialize ();
-
-    application = gw_application_new ("gtk.org.gWaei", G_APPLICATION_HANDLES_COMMAND_LINE);
+    application = gw_application_new ();
 
 gdk_threads_enter ();
     resolution = g_application_run (application, argc, argv);
 gdk_threads_leave ();
 
     g_object_unref (G_OBJECT (application));
-
-    lw_regex_free ();
 
     return resolution;
 }
