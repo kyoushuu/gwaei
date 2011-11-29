@@ -87,7 +87,8 @@ edict_idx_query_result(edict_idx_query* s, char* result_entry,
 	if (entry_sz + 1 > max_result_sz) {
 		fprintf(stderr, "Query result does not fit in supplied output buffer %u > %u\n",
 			(unsigned)entry_sz, (unsigned)max_result_sz);
-		return 0;
+
+		entry_sz = max_result_sz - 1;
 	}
 
 	s->next = edict_idx_htab_look(s->idx, &s->index, &s->offset, s->cksum);

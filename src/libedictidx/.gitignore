@@ -4,8 +4,15 @@
 *.la
 tests/*
 !tests/tests.c
+!tests/runtests
+!tests/cleantests
 
 TAGS
+tags
+
+Doxyfile
+html
+latex
 
 .deps
 Makefile
@@ -16,3 +23,5 @@ aclocal.m4
 autom4te.cache
 config.*
 stamp-h1
+
+*.tar.gz

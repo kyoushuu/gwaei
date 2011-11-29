@@ -89,7 +89,7 @@ struct edict_idx_parser_s {
 	size_t key_size;
 
 	/*@dependent@*/ edict_idx_key_fn_t key_parser;
-	int key_parser_chain_var;
+	int key_parser_pos_var;
 };
 
 /* edictidx.c */
@@ -220,17 +220,17 @@ edict_idx_select_key(edict_idx_key_types_t key_type,
 /*@null@*/ /*@observer@*/
 str_p edict_idx_key_kanji_exact(/*@out@*/ size_t* pkey_sz,
 				str_p entry, size_t entry_sz,
-				int* chain)
-/*@modifies pkey_sz, chain @*/;
+				int* ppos)
+/*@modifies pkey_sz, ppos @*/;
 
 /*@null@*/ /*@observer@*/
 str_p edict_idx_key_kana_exact(/*@out@*/ size_t* pkey_sz,
 			       str_p entry, size_t entry_sz,
-			       int* chain)
-/*@modifies pkey_sz, chain @*/;
+			       int* ppos)
+/*@modifies pkey_sz, ppos @*/;
 
 /*@null@*/ /*@observer@*/
 str_p edict_idx_key_english_exact(/*@out@*/ size_t* pkey_sz,
 				  str_p entry, size_t entry_sz,
-				  int* chain)
-/*@modifies pkey_sz, chain @*/;
+				  int* ppos)
+/*@modifies pkey_sz, ppos @*/;

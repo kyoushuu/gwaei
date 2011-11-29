@@ -1,8 +1,10 @@
 CC=gcc
 AR=ar
-CFLAGS=-O2 -g -Wall -Wextra -pedantic -std=c89 -D_ISOC99_SOURCE -Dinline=
+CFLAGS=-O2 -g -std=c89 -pedantic -D_ISOC99_SOURCE -Dinline= \
+-Wall -Wextra -Wpointer-arith -Wconversion -Wc++-compat
 
 SPLINT = splint
+
 SPLINT_FLAGS = -nolib +quiet +strict \
 	+partial -exportheader +neverinclude \
 	-protoparamname \
@@ -13,7 +15,10 @@ SPLINT_FLAGS = -nolib +quiet +strict \
 
 SPLINT_DEFS =
 
-SRCS = edictidx.h edictidx_int.h fileops.c hash.c key.c parser.c query.c build.c verify.c edictidx.c
+SPLINT_LIBS = splint/library.h
+
+SRCS = edictidx.h edictidx_int.h \
+fileops.c hash.c key.c parser.c query.c build.c verify.c edictidx.c
 #SRCS += mmap-stdio.c
 SRCS += mmap-posix.c
 
@@ -31,7 +36,7 @@ TESTLIBS = $(LIB)
 
 all: $(LIB) tests
 
-.PHONY: clean etags asms splint tests
+.PHONY: clean etags asms splint tests docs
 
 $(LIB): $(OBJS)
 	rm -f $@
@@ -40,6 +45,9 @@ $(LIB): $(OBJS)
 asms: $(ASMS)
 
 tests: $(TESTS)
+
+docs: $(SRCS)
+	cd docs ; doxygen
 
 etags: TAGS
 
@@ -52,7 +60,7 @@ TAGS: $(SRCS)
 %.s: %.c *.h Makefile.dev
 	$(CC) -o $@ $(CFLAGS) -S $<
 
-splint: splint_library.h $(SRCS)
+splint: $(SPLINT_LIBS) $(SRCS)
 	$(SPLINT) $(SPLINT_FLAGS) $(SPLINT_DEFS) $^
 
 tests/hash: $(TESTSRC) $(LIB)

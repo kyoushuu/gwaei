@@ -47,7 +47,7 @@ int edict_idx_htab_resize2(edict_idx* s)
 		return -1;
 	}
 
-	s->htab = s->htab_file->mem;
+	s->htab = (struct edict_idx_htab_rec*)s->htab_file->mem;
 
 	return 0;
 }
