@@ -23,7 +23,7 @@ edict_idx_parser_new(edict_idx* idx,
 	s->entry_size = 0;
 	s->offset = 0;
 	s->next_offset = 0;
-	s->key_parser_chain_var = 0;
+	s->key_parser_pos_var = 0;
 	s->key = 0;
 	s->entry = 0;
 	s->key_size = 0;
@@ -47,13 +47,13 @@ str_p edict_idx_get_entry(edict_idx* s, size_t* pentry_sz,
 	for (ei = si; ei < maxi; ei++) {
 		if (s->dict[ei] == '\n') {
 			*pentry_sz = ei - si;
-			*poffset = ei + 1;
+			*poffset = (uint32_t)(ei + 1);
 			return &s->dict[si];
 		}
 	}
 
 	*pentry_sz = 0;
-	*poffset = maxi;
+	*poffset = (uint32_t)maxi;
 	return 0;
 }
 
@@ -75,11 +75,11 @@ str_p edict_idx_parser_fetch_key(edict_idx_parser* s, size_t* pkey_sz,
 			}
 
 			s->entry_index++;
-			s->key_parser_chain_var = 0;
+			s->key_parser_pos_var = 0;
 		}
 
 		s->key = s->key_parser(&s->key_size, s->entry, s->entry_size,
-				       &s->key_parser_chain_var);
+				       &s->key_parser_pos_var);
 	} while (!s->key);
 
 	*poffset = s->offset;
@@ -105,10 +105,10 @@ void edict_idx_parser_dump(edict_idx_parser* s, FILE* f)
 {
 	fprintf(f, "<parser>\n    entry_index: %u "
 		"offset: 0x%08X next_offset: 0x%08X "
-		"entry_size: %u key_size: %u key_parser_chain_var: %d\n",
+		"entry_size: %u key_size: %u key_parser_pos_var: %d\n",
 		s->entry_index, (unsigned)s->offset, (unsigned)s->next_offset,
 		(unsigned)s->entry_size, (unsigned)s->key_size,
-		s->key_parser_chain_var);
+		s->key_parser_pos_var);
 	if (s->key) {
 		fprintf(f, "    key: '");
 		edict_idx_fputs(s->key, s->key_size, f);

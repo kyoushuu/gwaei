@@ -24,18 +24,18 @@ edict_idx_select_key(edict_idx_key_types_t key_type,
 }
 
 str_p edict_idx_key_kanji_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
-				int* chain)
+				int* ppos)
 {
 	size_t i;
 
 	*pkey_sz = 0;
 
-	if (*chain == 1)
+	if (*ppos == 1)
 		return 0;
 	else
-		*chain = 1;
+		*ppos = 1;
 
-	for (i = 0; i < entry_sz; i++) {
+	for (i = 1; i < entry_sz; i++) {
 		if (entry[i] == ' ') {
 			*pkey_sz = i;
 			return entry;
@@ -46,16 +46,16 @@ str_p edict_idx_key_kanji_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
 }
 
 str_p edict_idx_key_kana_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
-			       int* chain)
+			       int* ppos)
 {
 	size_t li, si, ri;
 
 	*pkey_sz = 0;
 
-	if (*chain == 1)
+	if (*ppos == 1)
 		return 0;
 	else
-		*chain = 1;
+		*ppos = 1;
 
 	for (li = 0; li < entry_sz - 2; li++) {
 		if (entry[li] == '[')
@@ -99,13 +99,13 @@ size_t skip_parens(str_p s, size_t si, size_t sz) /*@*/
 }
 
 str_p edict_idx_key_english_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
-				  int* chain)
+				  int* ppos)
 {
 	size_t ci, li, si, ri;
 
 	*pkey_sz = 0;
 
-	ci = (size_t)*chain;
+	ci = (size_t)*ppos;
 	if (ci >= entry_sz)
 		return 0;
 
@@ -118,7 +118,7 @@ str_p edict_idx_key_english_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
 
 	for (ri = si + 1; ri < entry_sz; ri++) {
 		if (entry[ri] == '/') {
-			*chain = (int)ri;
+			*ppos = (int)ri;
 			*pkey_sz = ri - si;
 			return &entry[si];
 		}

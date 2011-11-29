@@ -47,7 +47,7 @@ edict_idx_new(const char* idx_fname,
 			free(s);
 			return 0;
 		}
-		s->dict = s->dict_file->mem;
+		s->dict = (str_p)s->dict_file->mem;
 		s->dict_size = s->dict_file->size;
 	} else if (parent) {
 		s->dict_file = 0;
@@ -80,7 +80,7 @@ edict_idx_new(const char* idx_fname,
 		return 0;
 	}
 
-	s->htab = s->htab_file->mem;
+	s->htab = (struct edict_idx_htab_rec*)s->htab_file->mem;
 	s->htab_size = (htab_index_t)(s->htab_file->size / sizeof(*s->htab));
 
 	return s;
