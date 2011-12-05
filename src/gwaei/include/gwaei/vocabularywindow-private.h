@@ -4,19 +4,13 @@
 G_BEGIN_DECLS
 
 
-typedef enum { 
-  GW_VOCABULARYLIST_COLUMN_NAME,
-  TOTAL_GW_VOCABULARYLIST_COLUMNS
-} GwVocabularyListColumn;
-
-
 typedef enum {
 //  GW_VOCABULARYWINDOW_TIMEOUTID_PROGRESS,
   TOTAL_GW_VOCABULARYWINDOW_TIMEOUTIDS
 } GwVocabularyWindowTimeoutId;
 
 typedef enum {
-//  GW_VOCABULARYWINDOW_SIGNALID_SPELLCHECK,
+  GW_VOCABULARYWINDOW_SIGNALID_CHANGED,
   TOTAL_GW_VOCABULARYWINDOW_SIGNALIDS
 } GwVocabularyWindowSignalId;
 
@@ -27,6 +21,8 @@ struct _GwVocabularyWindowPrivate {
   GtkTreeView  *item_treeview;
   GtkToolbar   *item_toolbar;
   GtkToolbar   *study_toolbar;
+
+  gboolean has_changes;
 
   //Main variables
   guint timeoutid[TOTAL_GW_VOCABULARYWINDOW_TIMEOUTIDS];

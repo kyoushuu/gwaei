@@ -24,9 +24,6 @@ struct _GwVocabularyWindow {
 
 struct _GwVocabularyWindowClass {
   GwWindowClass parent_class;
-  GtkTreeModel *list_model;
-  GList *item_models;
-  guint list_new_index;
 };
 
 GtkWindow* gw_vocabularywindow_new (GtkApplication *application);
@@ -35,12 +32,19 @@ GType gw_vocabularywindow_get_type (void) G_GNUC_CONST;
 void gw_vocabularywindow_save (GwVocabularyWindow*);
 void gw_vocabularywindow_load_selected_vocabulary (GwVocabularyWindow*);
 void gw_vocabularywindow_load_vocabulary_by_index (GwVocabularyWindow*, gint);
-void gw_vocabularywindow_create_new_list (GwVocabularyWindow*);
+void gw_vocabularywindow_new_list (GwVocabularyWindow*);
 void gw_vocabularywindow_remove_selected_lists (GwVocabularyWindow*);
+
+void gw_vocabularywindow_remove_selected_words (GwVocabularyWindow*);
+
 void gw_vocabularywindow_set_selected_vocabulary (GwVocabularyWindow*);
 void gw_vocabularywindow_clean_files (GwVocabularyWindow*);
+void gw_vocabularywindow_clean_lists (GwVocabularyWindow*);
 gboolean gw_vocabularywindow_list_exists (GwVocabularyWindow*, const gchar*);
 void gw_vocabularywindow_reset (GwVocabularyWindow*);
+void gw_vocabularywindow_set_has_changes (GwVocabularyWindow*, gboolean);
+gboolean gw_vocabularywindow_has_changes (GwVocabularyWindow*);
+gchar* gw_vocabularywindow_selected_words_to_string (GwVocabularyWindow*);
 
 #include "vocabularywindow-callbacks.h"
 

@@ -14,6 +14,7 @@ src/waei/console.c
 src/waei/console-callbacks.c
 src/waei/waei.c
 
+[type: gettext/glade] src/gwaei/addvocabularywindow.ui
 [type: gettext/glade] src/gwaei/dictionaryinstallwindow.ui
 [type: gettext/glade] src/gwaei/installprogresswindow.ui
 [type: gettext/glade] src/gwaei/searchwindow.ui
@@ -49,5 +50,7 @@ src/gwaei/spellcheck.c
 src/gwaei/window.c
 src/gwaei/vocabularywindow.c
 src/gwaei/vocabularywindow-callbacks.c
+src/gwaei/vocabularyliststore.c
+src/gwaei/vocabularywordstore.c
 
 src/desktop/gwaei.desktop.in

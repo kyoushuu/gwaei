@@ -42,6 +42,63 @@ static void gw_searchwindow_append_less_relevant_header (GwSearchWindow*, LwSear
 static void gw_searchwindow_append_more_relevant_header (GwSearchWindow*, LwSearchItem*);
 
 
+static void
+gw_searchwindow_insert_addlink (GwSearchWindow   *window,
+                                GtkTextBuffer    *buffer,
+                                GtkTextIter      *iter,
+                                LwVocabularyItem *item   )
+{
+    //Sanity check
+    g_assert (item != NULL);
+
+    //Declarations
+    GtkTextTag *tag;
+    gchar *data;
+    
+    //Initializations
+    tag = gtk_text_buffer_create_tag (buffer, NULL, 
+        "rise",   5000, 
+        "scale",  0.75, 
+        "weight", PANGO_WEIGHT_BOLD,
+        NULL);
+    data = lw_vocabularyitem_to_string (item);
+    g_object_set_data_full (G_OBJECT (tag), 
+        "vocabulary-data", 
+        data, g_free);
+
+    gtk_text_buffer_insert (buffer, iter, " ", -1);
+    gtk_text_buffer_insert_with_tags (buffer, iter, "+", -1, tag, NULL);
+    gtk_text_buffer_insert (buffer, iter, " ", -1 );
+}
+
+
+void
+gw_searchwindow_insert_edict_addlink (GwSearchWindow *window, LwResultLine *resultline, GtkTextBuffer *buffer, GtkTextIter *iter)
+{
+    //Declarations
+    gchar *kanji, *furigana, *definitions;
+    LwVocabularyItem *item;
+
+    //Initializations
+    kanji = resultline->kanji_start;
+    furigana = resultline->furigana_start;
+    definitions = g_strjoinv ("/", resultline->def_start);
+
+    if (definitions != NULL)
+    {
+      item = lw_vocabularyitem_new ();
+      if (item != NULL)
+      {
+        lw_vocabularyitem_set_kanji (item, kanji);
+        lw_vocabularyitem_set_furigana (item, furigana);
+        lw_vocabularyitem_set_definitions (item, definitions);
+
+        gw_searchwindow_insert_addlink (window, buffer, iter, item);
+      }
+      g_free (definitions);
+    }
+}
+
 //!
 //! @brief Appends a result to the output
 //! @param engine The LwEngine to use for output
@@ -364,7 +421,10 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearchItem*
       }
       end_offset = gtk_text_iter_get_line_offset (&iter);
       gw_add_match_highlights (line, start_offset, end_offset, item);
+
+      gw_searchwindow_insert_edict_addlink (window, resultline, buffer, &iter);
     }
+
 }
 
 
@@ -447,6 +507,7 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
     {
       gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, resultline->kanji_start, -1, "important", NULL);
     }
+
     //Furigana
     if (resultline->furigana_start != NULL)
     {
@@ -466,11 +527,11 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
       gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Pop"), -1, "small", NULL);
     }
 
+    gw_searchwindow_insert_edict_addlink (window, resultline, buffer, &iter);
+
     gw_shift_stay_mark (item, "previous_result");
     start_offset = 0;
     end_offset = gtk_text_iter_get_line_offset (&iter);
-
-//    gw_searchwindow_insert_resultpopup_button (window, item, resultline, &iter);
 
     gtk_text_buffer_insert (buffer, &iter, "\n", -1);
     gw_add_match_highlights (line, start_offset, end_offset, item);
@@ -491,7 +552,6 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
       i++;
     }
     gtk_text_buffer_insert (buffer, &iter, "\n", -1);
-
 }
 
 

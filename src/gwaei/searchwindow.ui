@@ -22,23 +22,12 @@
     <signal name="activate" handler="gw_searchwindow_open_settingswindow_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkAction" id="file_append_action">
-    <property name="label" translatable="yes">A_ppend</property>
-    <property name="tooltip">Append the current results to a file</property>
+    <property name="short_label" translatable="yes">_Append</property>
     <property name="stock_id">gtk-save</property>
-    <property name="is_important">True</property>
-    <property name="sensitive">False</property>
-    <signal name="activate" handler="gw_searchwindow_save_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkAction" id="file_close_action">
     <property name="stock_id">gtk-close</property>
     <signal name="activate" handler="gw_searchwindow_close_cb" object="toplevel" swapped="no"/>
-  </object>
-  <object class="GtkAction" id="file_edit_action">
-    <property name="tooltip">Edit the current vocabulary list</property>
-    <property name="stock_id">gtk-edit</property>
-    <property name="is_important">True</property>
-    <property name="sensitive">False</property>
-    <signal name="activate" handler="gw_searchwindow_edit_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkAction" id="file_new_tab_action">
     <property name="label" translatable="yes">New _Tab</property>
@@ -243,15 +232,6 @@
                       <object class="GtkSeparatorMenuItem" id="menuitem3">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkImageMenuItem" id="edit_menuitem">
-                        <property name="related_action">file_edit_action</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
@@ -657,23 +637,24 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem4">
+              <object class="GtkMenuItem" id="vocabulary_menu">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">V_ocabulary</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu1">
+                  <object class="GtkMenu" id="vocabulary_popup">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem5">
+                      <object class="GtkMenuItem" id="add_new_word_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Add a New Word</property>
                         <property name="use_underline">True</property>
+                        <signal name="activate" handler="gw_searchwindow_add_vocabulary_word_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -684,7 +665,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem6">
+                      <object class="GtkMenuItem" id="manage_vocabulary_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -795,18 +776,6 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolButton" id="edit_toolbutton">
-                <property name="related_action">file_edit_action</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="related_action">file_edit_action</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
@@ -1000,8 +969,8 @@
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="margin_top">3</property>
-                <property name="margin_bottom">3</property>
+                <property name="margin_top">2</property>
+                <property name="margin_bottom">2</property>
                 <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkHBox" id="search_hbox">
@@ -1077,8 +1046,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">4</property>
-                <property name="margin_top">5</property>
-                <property name="margin_bottom">5</property>
+                <property name="margin_top">2</property>
+                <property name="margin_bottom">2</property>
                 <property name="use_action_appearance">False</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Search</property>
