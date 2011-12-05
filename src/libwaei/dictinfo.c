@@ -40,8 +40,11 @@
 //Static declarations
 static gboolean _overlay_default_builtin_dictionary_settings (LwDictInfo*);
 
+// Use file-based indexes
+#define EDICT_IDX_PERSIST 1
+
 // EDICTIDX indexing support functions
-static int _dictinfo_index_init(LwDictInfo *di, const char* uri);
+static int _dictinfo_index_init(LwDictInfo *di, int persist);
 static void _dictinfo_index_deinit(LwDictInfo *di);
 
 //!
@@ -102,6 +105,7 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
 
     uri = lw_dictinfo_get_uri (di);
     di->length = lw_io_get_size_for_uri (uri);
+    g_free (uri);
 
     if (!_overlay_default_builtin_dictionary_settings (di))
     {
@@ -113,9 +117,7 @@ void lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FI
     di->cached_resultlines = NULL;
     di->current_resultline = NULL;
 
-    _dictinfo_index_init(di, uri);
-
-    g_free (uri);
+    _dictinfo_index_init(di, EDICT_IDX_PERSIST);
 }
 
 //!
@@ -149,8 +151,91 @@ void lw_dictinfo_deinit (LwDictInfo *di)
 
 #ifdef HAVE_EDICTIDX
 
-static int _dictinfo_index_init(LwDictInfo *di, const char* uri)
+static
+int _build_index(edict_idx* idx, edict_idx_key_types_t key_type,
+		 const char* idx_name, const char* dict_name)
 {
+	if (!idx_name)
+		idx_name = "<memory index>";
+
+	if (!idx) {
+		fprintf(stderr, "Creating %s for dictionary %s failed\n",
+			idx_name, dict_name);
+		return -1;
+	}
+
+	fprintf(stderr, "Building %s for dictionary %s ...\n",
+		idx_name, dict_name);
+
+	if (edict_idx_build(idx, key_type, 0) < 0) {
+		fprintf(stderr, "Building %s for dictionary %s failed\n",
+			idx_name, dict_name);
+		return -1;
+	}
+
+	return 0;
+}
+
+static
+edict_idx* _open_index(edict_idx_key_types_t key_type,
+		       const char* idx_fname, const char* dict_fname)
+{
+	edict_idx* idx;
+
+	if (idx_fname) {
+		idx = edict_idx_open(idx_fname, dict_fname, F_EDICT_IDX_OPEN);
+		if (idx)
+			return idx;
+
+		idx = edict_idx_open(idx_fname, dict_fname, F_EDICT_IDX_CREATE);
+	} else {
+		idx = edict_idx_open(0, dict_fname,
+				     F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	}
+
+	if (_build_index(idx, key_type, idx_fname, dict_fname) < 0) {
+		if (idx)
+			edict_idx_close(idx);
+		return 0;
+	}
+
+	return idx;
+}
+
+static
+edict_idx* _share_index(edict_idx_key_types_t key_type,
+			const char* idx_fname, const edict_idx* parent)
+{
+	edict_idx* idx;
+
+	if (idx_fname) {
+		idx = edict_idx_share(idx_fname, parent, F_EDICT_IDX_OPEN);
+		if (idx)
+			return idx;
+
+		idx = edict_idx_share(idx_fname, parent, F_EDICT_IDX_CREATE);
+	} else {
+		idx = edict_idx_share(0, parent,
+				     F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
+	}
+
+	if (_build_index(idx, key_type, idx_fname, "<shared>") < 0) {
+		if (idx)
+			edict_idx_close(idx);
+		    return 0;
+	}
+
+	return idx;
+}
+
+static int _dictinfo_index_init(LwDictInfo *di, int persist)
+{
+	char* dict_fname;
+
+	char* kanji_idx_fname = 0;
+	char* kana_idx_fname = 0;
+	char* english_idx_fname = 0;
+
 	if (di->type != LW_DICTTYPE_EDICT) {
 		di->kanji_index = 0;
 		di->kana_index = 0;
@@ -158,35 +243,36 @@ static int _dictinfo_index_init(LwDictInfo *di, const char* uri)
 		return 0;
 	}
 
-	di->kanji_index = edict_idx_open(0, uri, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	if (di->kanji_index) {
-		fprintf(stderr, "Building edictidx kanji index for dictionary '%s'...\n", uri);
-		if (edict_idx_build(di->kanji_index, T_EDICT_IDX_KEY_KANJI, 0) < 0)
-			fprintf(stderr, "Building edictidx kanji index for dictionary '%s' failed\n", uri);
-		else
-			fprintf(stderr, "Created edictidx kanji index for dictionary '%s'.\n", uri);
-	} else
-		fprintf(stderr, "Creating edictidx kanji index for dictionary '%s' failed\n", uri);
+	dict_fname = lw_dictinfo_get_uri (di);
 
-	di->kana_index = edict_idx_share(0, di->kanji_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	if (di->kana_index) {
-		fprintf(stderr, "Building edictidx kana index for dictionary '%s'...\n", uri);
-		if (edict_idx_build(di->kana_index, T_EDICT_IDX_KEY_KANA, 0) < 0)
-			fprintf(stderr, "Building edictidx kana index for dictionary '%s' failed\n", uri);
-		else
-			fprintf(stderr, "Created edictidx kana index for dictionary '%s'.\n", uri);
-	} else
-		fprintf(stderr, "Creating edictidx kana index for dictionary '%s' failed\n", uri);
+	if (persist) {
+		char* kanji_idx_name =
+			g_strdup_printf("%s.kanji.idx", di->filename);
+		char* kana_idx_name =
+			g_strdup_printf("%s.kana.idx", di->filename);
+		char* english_idx_name =
+			g_strdup_printf("%s.english.idx", di->filename);
 
-	di->english_index = edict_idx_share(0, di->kana_index, F_EDICT_IDX_CREATE | F_EDICT_IDX_IN_MEMORY);
-	if (di->english_index) {
-		fprintf(stderr, "Building edictidx English index for dictionary '%s'...\n", uri);
-		if (edict_idx_build(di->english_index, T_EDICT_IDX_KEY_ENGLISH, 0) < 0)
-			fprintf(stderr, "Building edictidx English index for dictionary '%s' failed\n", uri);
-		else
-			fprintf(stderr, "Created edictidx English index for dictionary '%s'.\n", uri);
-	} else
-		fprintf(stderr, "Creating edictidx English index for dictionary '%s' failed\n", uri);
+		kanji_idx_fname =
+			lw_util_build_filename (LW_PATH_CACHE, kanji_idx_name);
+		kana_idx_fname =
+			lw_util_build_filename (LW_PATH_CACHE, kana_idx_name);
+		english_idx_fname =
+			lw_util_build_filename (LW_PATH_CACHE, english_idx_name);
+
+		g_free(kanji_idx_name);
+		g_free(kana_idx_name);
+		g_free(english_idx_name);
+	}
+
+	di->kanji_index = _open_index(T_EDICT_IDX_KEY_KANJI, kanji_idx_fname, dict_fname);
+	di->kana_index = _share_index(T_EDICT_IDX_KEY_KANA, kana_idx_fname, di->kanji_index);
+	di->english_index = _share_index(T_EDICT_IDX_KEY_ENGLISH, english_idx_fname, di->kanji_index);
+
+	g_free(kanji_idx_fname);
+	g_free(kana_idx_fname);
+	g_free(english_idx_fname);
+	g_free(dict_fname);
 
 	return 0;
 }
@@ -203,8 +289,8 @@ static void _dictinfo_index_deinit(LwDictInfo *di)
 
 #else /* HAVE_EDICTIDX */
 
-static int _dictinfo_index_init(LwDictInfo *di, const char* uri){}
-static void _dictinfo_index_deinit(LwDictInfo *di){}
+static int _dictinfo_index_init(LwDictInfo *di, int persist) {}
+static void _dictinfo_index_deinit(LwDictInfo *di) {}
 
 #endif
 
