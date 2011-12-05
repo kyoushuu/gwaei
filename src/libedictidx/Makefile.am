@@ -66,4 +66,4 @@ SPLINT_LIBS = splint/library.h
 splint: $(SPLINT_LIBS) $(SRCS)
 	$(SPLINT) $(SPLINT_FLAGS) $(SPLINT_DEFS) $^
 
-EXTRA_DIST = $(SPLINT_LIBS) docs/Doxyfile.in
+EXTRA_DIST = $(SPLINT_LIBS) docs/Doxyfile.in autogen.sh
