@@ -208,39 +208,43 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem8">
+                      <object class="GtkMenuItem" id="japanese_english_flashcard_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label">Japanese-&gt;English Flashcards</property>
                         <property name="use_underline">True</property>
+                        <signal name="activate" handler="gw_vocabularywindow_japanese_english_flashcards_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem9">
+                      <object class="GtkMenuItem" id="english_japanese_flashcard_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label">English-&gt;Japanese Flashcards</property>
                         <property name="use_underline">True</property>
+                        <signal name="activate" handler="gw_vocabularywindow_english_japanese_flashcards_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem11">
+                      <object class="GtkMenuItem" id="kanji_furigana_flashcard_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label">Kanji-&gt;Furigana Flashcards</property>
                         <property name="use_underline">True</property>
+                        <signal name="activate" handler="gw_vocabularywindow_kanji_furigana_flashcards_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menuitem10">
+                      <object class="GtkMenuItem" id="japanese_english_match_menuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label">Connect the Words</property>
+                        <property name="label">Japanese-&gt;English Match the Words</property>
                         <property name="use_underline">True</property>
+                        <signal name="activate" handler="gw_vocabularywindow_japanese_english_match_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                   </object>
