@@ -771,6 +771,7 @@ gw_vocabularywindow_japanese_english_flashcards_cb (GtkWidget *widget, gpointer 
     GtkListStore *liststore, *wordstore;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
+    gboolean valid;
 
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
@@ -786,12 +787,19 @@ gw_vocabularywindow_japanese_english_flashcards_cb (GtkWidget *widget, gpointer 
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
         gettext("Find the English Definition of this Japanese word."));
-    gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                  model,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
+                                          model,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
-    gtk_widget_show (GTK_WIDGET (flashcardwindow));
+    if (!valid)
+    {
+      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
+    }
+    else
+    {
+      gtk_widget_show (GTK_WIDGET (flashcardwindow));
+    }
 }
 
 
@@ -806,6 +814,7 @@ gw_vocabularywindow_english_japanese_flashcards_cb (GtkWidget *widget, gpointer 
     GtkListStore *liststore, *wordstore;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
+    gboolean valid;
 
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
@@ -821,12 +830,19 @@ gw_vocabularywindow_english_japanese_flashcards_cb (GtkWidget *widget, gpointer 
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
         gettext("Find the Japanese word for this definition."));
-    gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                  model,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
+    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
+                                          model,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
 
-    gtk_widget_show (GTK_WIDGET (flashcardwindow));
+    if (!valid)
+    {
+      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
+    }
+    else
+    {
+      gtk_widget_show (GTK_WIDGET (flashcardwindow));
+    }
 }
 
 
@@ -841,6 +857,7 @@ gw_vocabularywindow_kanji_furigana_flashcards_cb (GtkWidget *widget, gpointer da
     GtkListStore *liststore, *wordstore;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
+    gboolean valid;
 
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
@@ -856,30 +873,18 @@ gw_vocabularywindow_kanji_furigana_flashcards_cb (GtkWidget *widget, gpointer da
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
         gettext("Find the Furigana for this Kanji."));
-    gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                  model,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                  GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA);
+    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
+                                          model,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
+                                          GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA);
 
-    gtk_widget_show (GTK_WIDGET (flashcardwindow));
-
-}
-
-
-G_MODULE_EXPORT void
-gw_vocabularywindow_japanese_english_match_cb (GtkWidget *widget, gpointer data)
-{
-    GwVocabularyWindow *window;
-    GwVocabularyWindowPrivate *priv;
-    GwApplication *application;
-    GtkWindow *matchwindow;
-
-    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
-    if (window == NULL) return;
-    priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    matchwindow = gw_matchwindow_new (GTK_APPLICATION (application));
-    printf("BREAK japanese english match\n");
-    gtk_widget_show (GTK_WIDGET (matchwindow));
+    if (!valid)
+    {
+      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
+    }
+    else
+    {
+      gtk_widget_show (GTK_WIDGET (flashcardwindow));
+    }
 }
 

@@ -25,7 +25,6 @@
 #include <gwaei/installprogresswindow.h>
 #include <gwaei/vocabularywindow.h>
 #include <gwaei/addvocabularywindow.h>
-#include <gwaei/matchwindow.h>
 #include <gwaei/flashcardwindow.h>
 
 

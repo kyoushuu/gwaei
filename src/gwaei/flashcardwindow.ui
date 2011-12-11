@@ -7,19 +7,19 @@
       <object class="GtkBox" id="toplevel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="border_width">8</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">6</property>
         <child>
           <object class="GtkBox" id="status_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="spacing">12</property>
+            <property name="margin_top">4</property>
+            <property name="border_width">8</property>
+            <property name="spacing">8</property>
             <child>
               <object class="GtkBox" id="status_icons_box">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="spacing">12</property>
+                <property name="spacing">8</property>
                 <child>
                   <object class="GtkBox" id="right_box">
                     <property name="visible">True</property>
@@ -29,6 +29,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="stock">gtk-apply</property>
+                        <property name="icon-size">2</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -67,6 +68,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="stock">gtk-cancel</property>
+                        <property name="icon-size">2</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -107,13 +109,23 @@
               <object class="GtkProgressBar" id="status_progressbar">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="text" translatable="yes">4 out of 20 Cards Remaining...</property>
-                <property name="show_text">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="status_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">label</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
@@ -127,6 +139,7 @@
           <object class="GtkBox" id="box4">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="border_width">8</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkScrolledWindow" id="card_scrolledwindow">
@@ -148,14 +161,8 @@
                         <property name="margin_bottom">8</property>
                         <property name="xalign">0</property>
                         <property name="yalign">0</property>
-                        <property name="label" translatable="yes">&lt;b&gt;Question:&lt;/b&gt;
-
-さかな
-
-&lt;b&gt;Answer:&lt;/b&gt;
-
-Fish</property>
                         <property name="use_markup">True</property>
+                        <property name="selectable">True</property>
                       </object>
                     </child>
                   </object>
@@ -173,7 +180,7 @@ Fish</property>
                 <property name="can_focus">False</property>
                 <property name="toolbar_style">both-horiz</property>
                 <property name="show_arrow">False</property>
-                <property name="icon_size">1</property>
+                <property name="icon_size">2</property>
                 <child>
                   <object class="GtkToolItem" id="entry_toolbutton">
                     <property name="use_action_appearance">False</property>
@@ -181,13 +188,36 @@ Fish</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
                     <child>
-                      <object class="GtkEntry" id="submit_entry">
+                      <object class="GtkBox" id="box1">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">●</property>
-                        <property name="invisible_char_set">True</property>
-                        <property name="placeholder_text">Enter your answer here...</property>
-                        <signal name="activate" handler="gw_flashcardwindow_check_answer_cb" object="toplevel" swapped="no"/>
+                        <property name="can_focus">False</property>
+                        <property name="spacing">8</property>
+                        <child>
+                          <object class="GtkLabel" id="label">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Answer:</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="submit_entry">
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">●</property>
+                            <property name="invisible_char_set">True</property>
+                            <signal name="activate" handler="gw_flashcardwindow_check_answer_cb" object="toplevel" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -206,6 +236,23 @@ Fish</property>
                     <property name="use_underline">True</property>
                     <property name="stock_id">gtk-apply</property>
                     <signal name="clicked" handler="gw_flashcardwindow_check_answer_cb" object="toplevel" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="dont_know_toolbutton">
+                    <property name="use_action_appearance">False</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Don't Know the Answer</property>
+                    <property name="use_action_appearance">False</property>
+                    <property name="label" translatable="yes">_Don't Know</property>
+                    <property name="use_underline">True</property>
+                    <property name="stock_id">gtk-cancel</property>
+                    <signal name="clicked" handler="gw_flashcardwindow_dont_know_cb" object="toplevel" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -240,7 +287,6 @@ Fish</property>
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="padding">8</property>
             <property name="position">1</property>
           </packing>
         </child>

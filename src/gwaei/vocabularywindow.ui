@@ -237,16 +237,6 @@
                         <signal name="activate" handler="gw_vocabularywindow_kanji_furigana_flashcards_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkMenuItem" id="japanese_english_match_menuitem">
-                        <property name="use_action_appearance">False</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label">Japanese-&gt;English Match the Words</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_japanese_english_match_cb" object="toplevel" swapped="no"/>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>

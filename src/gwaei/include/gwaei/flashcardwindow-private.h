@@ -18,10 +18,12 @@ struct _GwFlashCardWindowPrivate {
     GtkScrolledWindow *card_scrolledwindow;
     GtkToolButton *check_answer_toolbutton;
     GtkToolButton *next_card_toolbutton;
+    GtkToolButton *dont_know_toolbutton;
     GtkEntry *answer_entry;
     GtkLabel *correct_label;
     GtkLabel *incorrect_label;
-    GtkProgressBar *progressbar;
+    GtkProgressBar *status_progressbar;
+    GtkLabel *status_label;
     GtkToolbar *card_toolbar;
 
     GtkTreeModel *model;
