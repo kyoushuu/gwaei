@@ -54,6 +54,7 @@ gw_flashcardwindow_key_press_event_cb (GtkWidget *widget, GdkEvent *event, gpoin
     gboolean sensitive;
     gboolean visible;
     guint keyval;
+    gint modifier;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
     if (window == NULL) return FALSE;
@@ -62,9 +63,14 @@ gw_flashcardwindow_key_press_event_cb (GtkWidget *widget, GdkEvent *event, gpoin
     sensitive = gtk_widget_get_sensitive (GTK_WIDGET (priv->answer_entry));
     visible = gtk_widget_get_visible (GTK_WIDGET (priv->content_box));
     eventkey = (GdkEventKey*) event;
+    modifier = eventkey->state;
     keyval = eventkey->keyval;
 
-    if (visible && !sensitive && keyval == GDK_KEY_Return)
+    if ((modifier & GDK_CONTROL_MASK) != 0 && keyval == GDK_KEY_w)
+    {
+      gw_flashcardwindow_close_cb (widget, data);
+    }
+    else if (visible && !sensitive && keyval == GDK_KEY_Return)
     {
       gw_flashcardwindow_iterate (window);
       return TRUE;

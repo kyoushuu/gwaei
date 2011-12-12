@@ -224,17 +224,21 @@ gboolean
 gw_flashcardwindow_set_model (GwFlashCardWindow *window, 
                               GtkTreeModel      *model, 
                               gint               question_column,
-                              gint               answer_column)
+                              gint               answer_column,
+                              gboolean           randomize      )
 {
     if (model == NULL) return FALSE;
 
     GwFlashCardWindowPrivate *priv;
+    GRand *random_generator;
     GtkTreeIter source_iter, target_iter;
     GtkTreePath *path;
     gchar *answer, *question;
     gboolean valid;
+    gint position;
 
     priv = window->priv;
+    random_generator = g_rand_new ();
     if (priv->model != NULL) g_object_unref (model);
     priv->model = GTK_TREE_MODEL (gtk_list_store_new (
         TOTAL_COLUMNS, 
@@ -256,7 +260,15 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
       path = gtk_tree_model_get_path (model, &source_iter);
       if (question != NULL && strlen (question) && answer != NULL && strlen (answer))
       {
-        gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
+        if (randomize)
+        {
+          g_rand_int_range (random_generator, 0, priv->total_cards);
+          gtk_list_store_insert (GTK_LIST_STORE (priv->model), &target_iter, position);
+        }
+        else
+        {
+          gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
+        }
         gtk_list_store_set (GTK_LIST_STORE (priv->model), &target_iter,
             COLUMN_QUESTION, question,
             COLUMN_ANSWER, answer,
@@ -269,6 +281,8 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
       if (answer != NULL) g_free (answer); answer = NULL;
       valid = gtk_tree_model_iter_next (model, &source_iter);
     }
+
+    if (random_generator != NULL) g_rand_free (random_generator);
 
     if (priv->total_cards == 0)
     {

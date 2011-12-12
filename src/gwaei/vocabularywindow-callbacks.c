@@ -786,11 +786,12 @@ gw_vocabularywindow_japanese_english_flashcards_cb (GtkWidget *widget, gpointer 
     model = GTK_TREE_MODEL (wordstore);
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("Find the English Definition of this Japanese word."));
+        gettext("What is the English definition of this word?"));
     valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
                                           model,
                                           GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, 
+                                          TRUE);
 
     if (!valid)
     {
@@ -829,11 +830,12 @@ gw_vocabularywindow_english_japanese_flashcards_cb (GtkWidget *widget, gpointer 
     model = GTK_TREE_MODEL (wordstore);
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("Find the Japanese word for this definition."));
+        gettext("What is the Japanese word for this definition?"));
     valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
                                           model,
                                           GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
+                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI, 
+                                          TRUE);
 
     if (!valid)
     {
@@ -872,11 +874,12 @@ gw_vocabularywindow_kanji_furigana_flashcards_cb (GtkWidget *widget, gpointer da
     model = GTK_TREE_MODEL (wordstore);
 
     gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("Find the Furigana for this Kanji."));
+        gettext("What is the Furigana for this Word?"));
     valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
                                           model,
                                           GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA);
+                                          GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, 
+                                          TRUE);
 
     if (!valid)
     {

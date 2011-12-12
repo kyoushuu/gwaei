@@ -25,6 +25,7 @@ struct _GwVocabularyWindowPrivate {
   GtkToggleToolButton *edit_toolbutton;
 
   gboolean has_changes;
+  gboolean shuffle;
 
   //Main variables
   guint timeoutid[TOTAL_GW_VOCABULARYWINDOW_TIMEOUTIDS];

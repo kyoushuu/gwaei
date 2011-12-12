@@ -24,6 +24,11 @@
 #define LW_KEY_WINDOW_POSITIONS    "window-positions"
 
 //////////////////////////
+#define LW_SCHEMA_VOCABULARY       "org.gnome.gwaei.vocabulary"
+#define LW_KEY_SHUFFLE_FLASHCARDS  "shuffle-flashcards"
+#define LW_KEY_LIST_ORDER          "list-order"
+
+//////////////////////////
 #define LW_SCHEMA_FONT               "org.gnome.gwaei.fonts"
 #define LW_KEY_FONT_USE_GLOBAL_FONT  "use-global-document-font"
 #define LW_KEY_FONT_CUSTOM_FONT      "custom-document-font"

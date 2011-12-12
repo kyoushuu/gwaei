@@ -29,7 +29,7 @@ struct _GwFlashCardWindowClass {
 GtkWindow* gw_flashcardwindow_new (GtkApplication *application);
 GType gw_flashcardwindow_get_type (void) G_GNUC_CONST;
 
-gboolean gw_flashcardwindow_set_model (GwFlashCardWindow*, GtkTreeModel*, gint, gint);
+gboolean gw_flashcardwindow_set_model (GwFlashCardWindow*, GtkTreeModel*, gint, gint, gboolean);
 void gw_flashcardwindow_load_iterator (GwFlashCardWindow*, gboolean, gboolean);
 void gw_flashcardwindow_increment_incorrect_guesses (GwFlashCardWindow*);
 void gw_flashcardwindow_increment_correct_guesses (GwFlashCardWindow*);

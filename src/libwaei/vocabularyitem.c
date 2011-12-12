@@ -65,7 +65,8 @@ void lw_vocabularyitem_set_incorrect_guesses (LwVocabularyItem *item, gint numbe
 }
 
 
-gint lw_vocabularyitem_get_score (LwVocabularyItem *item)
+gint 
+lw_vocabularyitem_get_score (LwVocabularyItem *item)
 {
     gint total = item->correct_guesses + item->incorrect_guesses;
     if (total == 0) return 0.0;
@@ -73,7 +74,8 @@ gint lw_vocabularyitem_get_score (LwVocabularyItem *item)
 }
 
 
-const gchar* lw_vocabularyitem_get_score_as_string (LwVocabularyItem *item)
+const gchar* 
+lw_vocabularyitem_get_score_as_string (LwVocabularyItem *item)
 {
     gint total;
     
