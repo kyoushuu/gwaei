@@ -57,4 +57,10 @@ gboolean gw_vocabularyliststore_list_exists (GwVocabularyListStore*, const gchar
 gboolean gw_vocabularyliststore_has_changes (GwVocabularyListStore*);
 void gw_vocabularyliststore_set_has_changes (GwVocabularyListStore*, gboolean);
 
+gint gw_vocabularywordstore_get_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+void gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+
+void gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+gint gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+
 #endif

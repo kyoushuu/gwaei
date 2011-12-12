@@ -36,6 +36,59 @@ void lw_vocabularyitem_set_definitions (LwVocabularyItem *item, const gchar *tex
   item->fields[LW_VOCABULARYITEM_FIELD_DEFINITIONS] = g_strdup (text);
 }
 
+gint lw_vocabularyitem_get_correct_guesses (LwVocabularyItem *item)
+{
+  return item->correct_guesses;
+}
+
+void lw_vocabularyitem_set_correct_guesses (LwVocabularyItem *item, gint number)
+{
+  if (item->fields[LW_VOCABULARYITEM_FIELD_CORRECT_GUESSES] != NULL)
+    g_free (item->fields[LW_VOCABULARYITEM_FIELD_CORRECT_GUESSES]);
+  item->fields[LW_VOCABULARYITEM_FIELD_CORRECT_GUESSES] = g_strdup_printf ("%d", number);
+  item->correct_guesses = number;
+  if (item->score != NULL) g_free (item->score); item->score = NULL;
+}
+
+gint lw_vocabularyitem_get_incorrect_guesses (LwVocabularyItem *item)
+{
+  return item->incorrect_guesses;
+}
+
+void lw_vocabularyitem_set_incorrect_guesses (LwVocabularyItem *item, gint number)
+{
+  if (item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES] != NULL)
+    g_free (item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES]);
+  item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES] = g_strdup_printf ("%d", number);
+  item->incorrect_guesses = number;
+  if (item->score != NULL) g_free (item->score); item->score = NULL;
+}
+
+
+gint lw_vocabularyitem_get_score (LwVocabularyItem *item)
+{
+    gint total = item->correct_guesses + item->incorrect_guesses;
+    if (total == 0) return 0.0;
+    else return (item->correct_guesses * 100 / total);
+}
+
+
+const gchar* lw_vocabularyitem_get_score_as_string (LwVocabularyItem *item)
+{
+    gint total;
+    
+    if (item->score == NULL)
+    {
+      total = item->correct_guesses + item->incorrect_guesses;
+      if (total == 0)
+        item->score = g_strdup (gettext("Untested"));
+      else
+        item->score = g_strdup_printf ("%3d%%", lw_vocabularyitem_get_score (item));
+    }
+
+    return item->score;
+}
+
 
 LwVocabularyItem*
 lw_vocabularyitem_new ()
@@ -52,14 +105,15 @@ LwVocabularyItem*
 lw_vocabularyitem_new_from_string (const gchar *text)
 {
     LwVocabularyItem *item;
-
+    gchar *ptr;
+    gchar *endptr;
     item = g_new0 (LwVocabularyItem, 1);
     if (item != NULL)
     {
       gchar **atoms;
       gint i;
 
-      atoms = g_strsplit (text, ";", 3);
+      atoms = g_strsplit (text, ";", TOTAL_LW_VOCABULARYITEM_FIELDS);
 
       if (atoms != NULL)
       {
@@ -67,7 +121,15 @@ lw_vocabularyitem_new_from_string (const gchar *text)
         {
           item->fields[i] = g_strdup (g_strstrip(atoms[i]));
         }
+        for (i = 0; i < TOTAL_LW_VOCABULARYITEM_FIELDS; i++)
+        {
+          if (item->fields[i] == NULL) item->fields[i] = g_strdup ("");
+        }
         g_strfreev (atoms); atoms = NULL;
+        ptr = item->fields[LW_VOCABULARYITEM_FIELD_CORRECT_GUESSES];
+        item->correct_guesses = (gint) g_ascii_strtoll (ptr, &endptr, 10);
+        ptr = item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES];
+        item->incorrect_guesses =  (gint) g_ascii_strtoll (ptr, &endptr, 10);
       }
     }
 

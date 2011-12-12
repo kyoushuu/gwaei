@@ -63,7 +63,16 @@ gw_vocabularywordstore_new (const gchar *NAME)
 static void 
 gw_vocabularywordstore_init (GwVocabularyWordStore *model)
 {
-    GType types[] = { G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT };
+    GType types[] = { 
+      G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_KANJI
+      G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA
+      G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
+      G_TYPE_INT,    //GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES
+      G_TYPE_INT,    //GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES
+      G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_SCORE
+      G_TYPE_INT     //GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT_
+    };
+
     gtk_list_store_set_column_types (GTK_LIST_STORE (model), TOTAL_GW_VOCABULARYWORDSTORE_COLUMNS, types);
 
     model->priv = GW_VOCABULARYWORDSTORE_GET_PRIVATE (model);
@@ -182,6 +191,7 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store)
     PangoWeight weight;
     gchar *text;
     gboolean valid;
+    gint number;
 
     priv = store->priv;
     model = GTK_TREE_MODEL (store);
@@ -221,8 +231,14 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store)
             g_free (text);
           }
 
+          gtk_tree_model_get (model, &iter,  GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, &number, -1);
+          lw_vocabularyitem_set_correct_guesses (item, number);
+
+          gtk_tree_model_get (model, &iter,  GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &number, -1);
+          lw_vocabularyitem_set_incorrect_guesses (item, number);
+
           priv->vocabulary_list->items = g_list_append (priv->vocabulary_list->items, item);
-          gtk_list_store_set (GTK_LIST_STORE (model), &iter, GW_VOCABULARYWORDSTORE_COLUMN_CHANGED, weight, -1);
+          gtk_list_store_set (GTK_LIST_STORE (model), &iter, GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, weight, -1);
         }
         valid = gtk_tree_model_iter_next (model, &iter);
       }
@@ -265,7 +281,10 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store)
           GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, lw_vocabularyitem_get_furigana (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, lw_vocabularyitem_get_definitions (item), 
-          GW_VOCABULARYWORDSTORE_COLUMN_CHANGED, PANGO_WEIGHT_NORMAL,
+          GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, lw_vocabularyitem_get_correct_guesses (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, lw_vocabularyitem_get_incorrect_guesses (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
       -1);
     }
 
@@ -393,20 +412,28 @@ gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore *store, GtkTreeIter
     GtkTreeModel *model;
     gchar *text;
     gchar *kanji, *furigana, *definitions;
+    gint correct_guesses, incorrect_guesses;
+    gchar *correct_guesses_string, *incorrect_guesses_string;
 
     model = GTK_TREE_MODEL (store);
 
     gtk_tree_model_get (model, iter,
-        GW_VOCABULARYWORDSTORE_COLUMN_KANJI,       &kanji,
-        GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,    &furigana,
-        GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, &definitions,
+        GW_VOCABULARYWORDSTORE_COLUMN_KANJI,             &kanji,
+        GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,          &furigana,
+        GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,       &definitions,
+        GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,   &correct_guesses,
+        GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &incorrect_guesses,
     -1);
 
-    text = g_strjoin (";", kanji, furigana, definitions, NULL);
+    correct_guesses_string = g_strdup_printf("%d", correct_guesses);
+    incorrect_guesses_string = g_strdup_printf("%d", incorrect_guesses);
+    text = g_strjoin (";", kanji, furigana, definitions, correct_guesses_string, incorrect_guesses_string, NULL);
 
     if (kanji != NULL) g_free (kanji); 
     if (furigana != NULL) g_free (furigana); 
     if (definitions != NULL) g_free (definitions);
+    if (correct_guesses_string != NULL) g_free (correct_guesses_string);
+    if (incorrect_guesses_string != NULL) g_free (incorrect_guesses_string);
 
     return text;
 }
@@ -497,7 +524,7 @@ gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *i
             gtk_list_store_insert_after (GTK_LIST_STORE (store), &new_iter, iter);
           for (j = 0; atoms[j] != NULL; j++)
             gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, j, atoms[j], -1);
-          gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, GW_VOCABULARYWORDSTORE_COLUMN_CHANGED, PANGO_WEIGHT_SEMIBOLD, -1);
+          gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_SEMIBOLD, -1);
           g_strfreev (atoms); atoms = NULL;
           modified = TRUE;
         }
@@ -534,10 +561,12 @@ gw_vocabularywordstore_new_word (GwVocabularyWordStore *store,
 
     gtk_list_store_insert_before (wordstore, iter, sibling);
     gtk_list_store_set (wordstore, iter, 
-        GW_VOCABULARYWORDSTORE_COLUMN_KANJI,       kanji, 
-        GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,    furigana,
-        GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, definitions,
-        GW_VOCABULARYWORDSTORE_COLUMN_CHANGED,     weight,
+        GW_VOCABULARYWORDSTORE_COLUMN_KANJI,             kanji, 
+        GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,          furigana,
+        GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,       definitions,
+        GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,            weight,
+        GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,   0,
+        GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, 0,
     -1);
     gw_vocabularywordstore_set_has_changes (store, TRUE);
 }
@@ -570,11 +599,82 @@ gw_vocabularywordstore_set_string (GwVocabularyWordStore *store,
       {
         gtk_list_store_set (wordstore, iter, 
           column, NEW_TEXT,
-          GW_VOCABULARYWORDSTORE_COLUMN_CHANGED, PANGO_WEIGHT_SEMIBOLD,
+          GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_SEMIBOLD,
           -1);
         gw_vocabularywordstore_set_has_changes (store, TRUE);
       }
       g_free (text); text = NULL;
+    }
+}
+
+
+gint
+gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter)
+{
+    gint guesses;
+    gtk_tree_model_get (GTK_TREE_MODEL (store), iter, GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &guesses, -1);
+    return guesses;
+}
+
+
+void
+gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter, gint guesses)
+{
+    LwVocabularyItem *item;
+    gchar *text;
+
+    text = gw_vocabularywordstore_iter_to_string (store, iter);
+    item = lw_vocabularyitem_new_from_string (text);
+
+    if (text != NULL)
+    {
+      if (item != NULL)
+      {
+        lw_vocabularyitem_set_incorrect_guesses (item, guesses);
+
+        gtk_list_store_set (GTK_LIST_STORE (store), iter, 
+          GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, guesses,
+          GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+        -1);
+
+        lw_vocabularyitem_free (item);
+      }
+      g_free (text);
+    }
+}
+
+
+gint
+gw_vocabularywordstore_get_correct_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter)
+{
+    gint guesses;
+    gtk_tree_model_get (GTK_TREE_MODEL (store), iter, GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, &guesses, -1);
+    return guesses;
+}
+
+
+void
+gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter, gint guesses)
+{
+    LwVocabularyItem *item;
+    gchar *text;
+
+    text = gw_vocabularywordstore_iter_to_string (store, iter);
+    item = lw_vocabularyitem_new_from_string (text);
+    if (text != NULL)
+    {
+      if (item != NULL)
+      {
+        lw_vocabularyitem_set_correct_guesses (item, guesses);
+
+        gtk_list_store_set (GTK_LIST_STORE (store), iter, 
+          GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, guesses,
+          GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+        -1);
+
+        lw_vocabularyitem_free (item);
+      }
+      g_free (text);
     }
 }
 

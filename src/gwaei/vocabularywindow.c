@@ -146,7 +146,7 @@ gw_vocabularywindow_constructed (GObject *object)
     //Set up the gtk window
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Manager"));
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
-    gtk_window_set_default_size (GTK_WINDOW (window), 620, 450);
+    gtk_window_set_default_size (GTK_WINDOW (window), 790, 450);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
     gtk_window_set_destroy_with_parent (GTK_WINDOW (window), TRUE);
     gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_NORMAL);
@@ -782,33 +782,33 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     editable = gtk_toggle_tool_button_get_active (priv->edit_toolbutton);
     column = gtk_tree_view_column_new ();
     renderer = gtk_cell_renderer_text_new ();
-    g_object_set (G_OBJECT (renderer), "editable", editable, NULL);
+    g_object_set (G_OBJECT (renderer), "editable", editable, "scale", 1.25, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_KANJI));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Word"));
-    gtk_tree_view_column_pack_start (column, renderer, FALSE);
+    gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
-        "text", GW_VOCABULARYWORDSTORE_COLUMN_KANJI, 
-        "weight", GW_VOCABULARYWORDSTORE_COLUMN_CHANGED,
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_KANJI, 
+        "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI] = renderer;
 
     column = gtk_tree_view_column_new ();
     renderer = gtk_cell_renderer_text_new ();
-    g_object_set (G_OBJECT (renderer), "editable", editable, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Reading"));
-    gtk_tree_view_column_pack_start (column, renderer, FALSE);
+    gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
-        "text", GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, 
-        "weight", GW_VOCABULARYWORDSTORE_COLUMN_CHANGED,
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, 
+        "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA] = renderer;
 
     column = gtk_tree_view_column_new ();
+    g_object_set (G_OBJECT (column), "expand", TRUE, NULL);
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS));
@@ -816,11 +816,22 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     gtk_tree_view_column_set_title (column, gettext("Definitions"));
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
-        "text", GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, 
-        "weight", GW_VOCABULARYWORDSTORE_COLUMN_CHANGED,
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, 
+        "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS] = renderer;
+
+    column = gtk_tree_view_column_new ();
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
+    gtk_tree_view_column_set_title (column, gettext("Score"));
+    gtk_tree_view_column_pack_start (column, renderer, TRUE);
+    gtk_tree_view_column_set_attributes (column, renderer, 
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_SCORE, 
+        NULL);
+    gtk_tree_view_append_column (priv->word_treeview, column);
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_SCORE] = renderer;
 
     GtkEntry *entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "vocabulary_search_entry"));
     gtk_tree_view_set_search_entry (priv->word_treeview, entry);

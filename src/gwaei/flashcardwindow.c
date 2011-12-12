@@ -39,12 +39,14 @@
 //Static declarations
 static void gw_flashcardwindow_attach_signals (GwFlashCardWindow*);
 //static void gw_flashcardwindow_remove_signals (GwFlashCardWindow*);
+static gboolean gw_flashcardwindow_finalize_inner_path (GtkTreeModel*, GtkTreePath*, GtkTreeIter*, gpointer);
 
 enum {
   COLUMN_QUESTION,
   COLUMN_ANSWER,
-  COLUMN_TIMES_INCORRECT,
-  COLUMN_COMPLETED
+  COLUMN_IS_COMPLETED,
+  COLUMN_TREE_PATH,
+  TOTAL_COLUMNS
 };
 
 static void gw_flashcardwindow_init_accelerators (GwFlashCardWindow*);
@@ -99,6 +101,8 @@ gw_flashcardwindow_finalize (GObject *object)
     if (priv->question != NULL) g_free (priv->question); priv->question = NULL;
     if (priv->answer != NULL) g_free (priv->answer); priv->answer = NULL;
 
+    gtk_tree_model_foreach (priv->model, gw_flashcardwindow_finalize_inner_path, NULL);
+
     G_OBJECT_CLASS (gw_flashcardwindow_parent_class)->finalize (object);
 }
 
@@ -121,6 +125,9 @@ gw_flashcardwindow_constructed (GObject *object)
     priv = window->priv;
 
     //Set up the gtkbuilder links
+    priv->content_box = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "content_box"));
+    priv->finished_box = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "finished_box"));
+
     priv->card_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "card_toolbar"));
     priv->card_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "card_label"));
     priv->card_scrolledwindow = GTK_SCROLLED_WINDOW (gw_window_get_object (GW_WINDOW (window), "card_scrolledwindow"));
@@ -152,6 +159,8 @@ gw_flashcardwindow_constructed (GObject *object)
 
     gw_flashcardwindow_init_accelerators (window);
     gw_flashcardwindow_attach_signals (window);
+
+    priv->time = g_get_monotonic_time ();
 }
 
 
@@ -221,25 +230,38 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
 
     GwFlashCardWindowPrivate *priv;
     GtkTreeIter source_iter, target_iter;
+    GtkTreePath *path;
     gchar *answer, *question;
     gboolean valid;
 
     priv = window->priv;
     if (priv->model != NULL) g_object_unref (model);
-    priv->model = GTK_TREE_MODEL (gtk_list_store_new (4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_BOOLEAN));
+    priv->model = GTK_TREE_MODEL (gtk_list_store_new (
+        TOTAL_COLUMNS, 
+        G_TYPE_STRING,  //COLUMN_QUESTION
+        G_TYPE_STRING,  //COLUMN_ANSWER
+        G_TYPE_BOOLEAN, //COLUMN_IS_COMPLETED
+        G_TYPE_POINTER  //COLUMN_TREE_PATH
+    ));
+
     valid = gtk_tree_model_get_iter_first (model, &source_iter);
+
+    priv->source_question_column = question_column;
+    priv->source_answer_column = answer_column;
+    priv->source_model = model;
   
     while (valid)
     {
       gtk_tree_model_get (model, &source_iter, question_column, &question, answer_column, &answer, -1);
+      path = gtk_tree_model_get_path (model, &source_iter);
       if (question != NULL && strlen (question) && answer != NULL && strlen (answer))
       {
         gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
         gtk_list_store_set (GTK_LIST_STORE (priv->model), &target_iter,
             COLUMN_QUESTION, question,
             COLUMN_ANSWER, answer,
-            COLUMN_TIMES_INCORRECT, 0,
-            COLUMN_COMPLETED, FALSE,
+            COLUMN_TREE_PATH, path,
+            COLUMN_IS_COMPLETED, FALSE,
             -1);
         priv->total_cards++;
       }
@@ -256,8 +278,10 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
 
     gtk_tree_model_get_iter_first (priv->model, &(priv->iter));
     priv->cards_left = priv->total_cards;
-    gw_flashcardwindow_set_correct_guesses (window, 0);
-    gw_flashcardwindow_set_incorrect_guesses (window, 0);
+    priv->correct_guesses = -1;
+    priv->incorrect_guesses = -1;
+    gw_flashcardwindow_increment_correct_guesses (window);
+    gw_flashcardwindow_increment_incorrect_guesses (window);
     gw_flashcardwindow_update_progress (window);
 
     gw_flashcardwindow_load_iterator (window, FALSE, FALSE);
@@ -292,22 +316,19 @@ gw_flashcardwindow_load_iterator (GwFlashCardWindow *window, gboolean show_answe
     if (priv->question != NULL) g_free (priv->question);
     if (priv->answer != NULL) g_free (priv->answer);
 
-    gtk_widget_set_can_focus (GTK_WIDGET (priv->next_card_toolbutton), TRUE);
-    gtk_widget_set_can_focus (GTK_WIDGET (priv->check_answer_toolbutton), TRUE);
     if (show_answer)
     {
       gtk_widget_set_sensitive (GTK_WIDGET (priv->answer_entry), !show_answer);
       gtk_widget_set_sensitive (GTK_WIDGET (priv->check_answer_toolbutton), !show_answer);
       gtk_widget_set_sensitive (GTK_WIDGET (priv->dont_know_toolbutton), !show_answer);
-      gtk_widget_grab_focus (GTK_WIDGET (priv->next_card_toolbutton));
     }
     else
     {
       gtk_widget_set_sensitive (GTK_WIDGET (priv->answer_entry), !show_answer);
       gtk_widget_set_sensitive (GTK_WIDGET (priv->check_answer_toolbutton), !show_answer);
       gtk_widget_set_sensitive (GTK_WIDGET (priv->dont_know_toolbutton), !show_answer);
-      gtk_widget_grab_focus (GTK_WIDGET (priv->answer_entry));
       gtk_entry_set_text (priv->answer_entry, "");
+      gtk_widget_grab_focus (GTK_WIDGET (priv->answer_entry));
     }
 
     gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_QUESTION, &priv->question, COLUMN_ANSWER, &priv->answer, -1);
@@ -366,7 +387,11 @@ gw_flashcardwindow_iterate (GwFlashCardWindow *window)
 
     g_assert (priv->total_cards != 0);
 
-    if (priv->cards_left == 0) return FALSE;
+    if (priv->cards_left == 0)
+    {
+      gw_flashcardwindow_set_finished (window);
+      return FALSE;
+    }
 
     valid = TRUE;
     completed = TRUE;
@@ -375,7 +400,7 @@ gw_flashcardwindow_iterate (GwFlashCardWindow *window)
     {
       valid = gtk_tree_model_iter_next (priv->model, &(priv->iter));
       if (!valid) valid = gtk_tree_model_get_iter_first (priv->model, &(priv->iter));
-      gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_COMPLETED, &completed, -1);
+      gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_IS_COMPLETED, &completed, -1);
     }
 
     gw_flashcardwindow_load_iterator (window, FALSE, FALSE);
@@ -392,42 +417,130 @@ gw_flashcardwindow_set_card_completed (GwFlashCardWindow *window, gboolean compl
 
     if (priv->model == NULL) return;
 
-    gtk_list_store_set (GTK_LIST_STORE (priv->model), &(priv->iter), COLUMN_COMPLETED, completed, -1);
+    gtk_list_store_set (GTK_LIST_STORE (priv->model), &(priv->iter), COLUMN_IS_COMPLETED, completed, -1);
+}
+
+
+
+static void
+gw_flashcardwindow_increment_source_incorrect_guesses (GwFlashCardWindow *window)
+{
+    GwFlashCardWindowPrivate *priv;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    gboolean valid;
+    gint incorrect_guesses;
+    gchar *source_answer, *source_question;
+
+    priv = window->priv;
+
+    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
+
+    if (path == NULL) return;
+
+    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
+    if (valid)
+    {
+        gtk_tree_model_get (priv->source_model, &iter, 
+          priv->source_answer_column, &source_answer,
+          priv->source_question_column, &source_question, 
+          -1);
+        incorrect_guesses = gw_vocabularywordstore_get_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
+
+        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
+            source_question != NULL && strcmp(priv->question, source_question) == 0)
+        {
+          incorrect_guesses++;
+          gw_vocabularywordstore_set_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, incorrect_guesses);
+          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
+          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model));
+        }
+
+        if (source_answer != NULL) g_free (source_answer);
+        if (source_question != NULL) g_free (source_question);
+    }
 }
 
 
 void
-gw_flashcardwindow_set_incorrect_guesses (GwFlashCardWindow *window, gint guesses)
+gw_flashcardwindow_increment_incorrect_guesses (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
     gchar *text;
 
     priv = window->priv;
-    priv->incorrect_guesses = guesses;
-    text = g_strdup_printf ("%d", guesses);
+    priv->incorrect_guesses++;
+    text = g_strdup_printf ("%d", priv->incorrect_guesses);
     if (text != NULL)
     {
       gtk_label_set_text (priv->incorrect_label, text);
       g_free (text);
     }
+
+    if (priv->incorrect_guesses > 0) 
+      gw_flashcardwindow_increment_source_incorrect_guesses (window);
+}
+
+
+static void
+gw_flashcardwindow_increment_source_correct_guesses (GwFlashCardWindow *window)
+{
+    GwFlashCardWindowPrivate *priv;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    gboolean valid;
+    gint correct_guesses;
+    gchar *source_answer, *source_question;
+
+    priv = window->priv;
+
+    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
+
+    if (path == NULL) return;
+
+    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
+    if (valid)
+    {
+        gtk_tree_model_get (priv->source_model, &iter, 
+          priv->source_answer_column, &source_answer,
+          priv->source_question_column, &source_question, 
+          -1);
+        correct_guesses = gw_vocabularywordstore_get_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
+
+        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
+            source_question != NULL && strcmp(priv->question, source_question) == 0)
+        {
+          correct_guesses++;
+          gw_vocabularywordstore_set_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, correct_guesses);
+          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
+          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model));
+        }
+
+        if (source_answer != NULL) g_free (source_answer);
+        if (source_question != NULL) g_free (source_question);
+    }
 }
 
 
 void
-gw_flashcardwindow_set_correct_guesses (GwFlashCardWindow *window, gint guesses)
+gw_flashcardwindow_increment_correct_guesses (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
     gchar *text;
 
     priv = window->priv;
-    priv->correct_guesses = guesses;
-    text = g_strdup_printf ("%d", guesses);
+    priv->correct_guesses++;
+    text = g_strdup_printf ("%d", priv->correct_guesses);
     if (text != NULL)
     {
       gtk_label_set_text (priv->correct_label, text);
       g_free (text);
     }
+
+    if (priv->correct_guesses > 0) 
+      gw_flashcardwindow_increment_source_correct_guesses (window);
 }
+
 
 void
 gw_flashcardwindow_update_progress (GwFlashCardWindow *window)
@@ -438,7 +551,7 @@ gw_flashcardwindow_update_progress (GwFlashCardWindow *window)
 
     priv = window->priv;
     fraction = (gdouble) (priv->total_cards - priv->cards_left) / (gdouble) priv->total_cards;
-    text = g_strdup_printf (gettext("%d/%d"), priv->cards_left, priv->total_cards);
+    text = g_strdup_printf ("%d/%d", priv->cards_left, priv->total_cards);
 
     gtk_progress_bar_set_fraction (priv->status_progressbar, fraction);
     gtk_label_set_text (priv->status_label, text);
@@ -460,15 +573,67 @@ gw_flashcardwindow_check_answer (GwFlashCardWindow *window)
     {
       if (priv->cards_left > 0) priv->cards_left--;
       gw_flashcardwindow_set_card_completed (window, TRUE);
-      gw_flashcardwindow_set_correct_guesses (window, ++priv->correct_guesses);
+      gw_flashcardwindow_increment_correct_guesses (window);
       gw_flashcardwindow_update_progress (window);
     }
     else
     {
-      gw_flashcardwindow_set_incorrect_guesses (window, ++priv->incorrect_guesses);
+      gw_flashcardwindow_increment_incorrect_guesses (window);
     }
 
     gw_flashcardwindow_load_iterator (window, TRUE, correct);
 }
 
 
+static gboolean
+gw_flashcardwindow_finalize_inner_path (GtkTreeModel *model,
+                                        GtkTreePath  *path,
+                                        GtkTreeIter  *iter,
+                                        gpointer      data  )
+{
+    GtkTreePath *inner_path;
+
+    gtk_tree_model_get (model, iter, COLUMN_TREE_PATH, &inner_path, -1);
+
+    if (inner_path != NULL) gtk_tree_path_free (inner_path);
+
+    return TRUE;
+}
+
+
+void
+gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
+{
+    GwFlashCardWindowPrivate *priv;
+    GtkWidget *finished_label;
+    gchar *markup;
+    gint64 time;
+    gint64 difference;
+    gint hours, minutes, seconds;
+    gint percent;
+
+    priv = window->priv;
+    finished_label = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "finished_label"));
+    time = g_get_monotonic_time ();
+    difference = (time - priv->time) / 1000000;
+    hours = difference / 60 / 60;
+    minutes = difference / 60 % 60;
+    seconds = difference % 60 % 60;
+    percent = (priv->correct_guesses * 100) / (priv->correct_guesses + priv->incorrect_guesses);
+
+    markup = g_markup_printf_escaped (
+      "<big><b>%s</b></big>\n\n"
+      "<b>Your Grade:</b> %d%%\n"
+      "<b>Completion Time:</b> %02d:%02d:%02d\n",
+      gettext("You've finished this flash card deck!"), 
+      percent, 
+      hours, minutes, seconds);
+    if (markup != NULL)
+    {
+      gtk_label_set_markup (GTK_LABEL (finished_label), markup);
+      g_free (markup);
+    }
+
+    gtk_widget_hide (GTK_WIDGET (priv->content_box));
+    gtk_widget_show (GTK_WIDGET (priv->finished_box));
+}

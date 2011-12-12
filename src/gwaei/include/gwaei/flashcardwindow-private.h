@@ -26,6 +26,9 @@ struct _GwFlashCardWindowPrivate {
     GtkLabel *status_label;
     GtkToolbar *card_toolbar;
 
+    GtkBox *content_box;
+    GtkBox *finished_box;
+
     GtkTreeModel *model;
     GtkTreeIter iter;
 
@@ -37,6 +40,12 @@ struct _GwFlashCardWindowPrivate {
     gint cards_left;
     gint incorrect_guesses;
     gint correct_guesses;
+
+    GtkTreeModel *source_model;
+    gint source_question_column;
+    gint source_answer_column;
+
+    gint64 time;
 };
 
 #define GW_FLASHCARDWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_FLASHCARDWINDOW, GwFlashCardWindowPrivate))
