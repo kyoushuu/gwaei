@@ -145,7 +145,6 @@ gw_flashcardwindow_constructed (GObject *object)
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
     gtk_window_set_default_size (GTK_WINDOW (window), 450, 300);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
-    gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Flashcard Study"));
     gtk_window_set_has_resize_grip (GTK_WINDOW (window), FALSE);
     gw_window_set_is_important (GW_WINDOW (window), TRUE);
 
@@ -370,11 +369,12 @@ gw_flashcardwindow_load_iterator (GwFlashCardWindow *window, gboolean show_answe
           "<small>\n\n</small>"
           "  <span foreground=\"green\" size=\"larger\" weight=\"semibold\">%s</span>"
           "<small>\n</small>"
-          "  <span size=\"smaller\" weight=\"semibold\">Press enter to continue...</span>"
+          "  <span size=\"smaller\" weight=\"semibold\">%s</span>"
           "<small>\n\n</small>"
           "<b>%s:</b>\n%s</big>\n",
           priv->question_title, priv->question, 
           gettext("You were correct!"),
+          gettext("Press [Enter] to continue..."),
           gettext("Answer"), priv->answer
         );
       else if (show_answer && !answer_correct)
@@ -383,11 +383,12 @@ gw_flashcardwindow_load_iterator (GwFlashCardWindow *window, gboolean show_answe
           "<small>\n\n</small>"
           "  <span foreground=\"red\" size=\"larger\" weight=\"semibold\">%s</span>"
           "<small>\n</small>"
-          "  <span size=\"smaller\" weight=\"semibold\">Press enter to continue...</span>"
+          "  <span size=\"smaller\" weight=\"semibold\">%s</span>"
           "<small>\n\n</small>"
           "<b>%s:</b>\n%s</big>\n",
           priv->question_title, priv->question, 
           gettext("You were incorrect!"),
+          gettext("Press [Enter] to continue..."),
           gettext("Answer"), priv->answer
         );
       else
@@ -652,11 +653,11 @@ gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
 
     markup = g_markup_printf_escaped (
       "<big><b>%s</b></big>\n\n"
-      "<b>Your Grade:</b> %d%%\n"
-      "<b>Completion Time:</b> %02d:%02d:%02d\n",
+      "<b>%s:</b> %d%%\n"
+      "<b>%s:</b> %02d:%02d:%02d\n",
       gettext("You've finished this flash card deck!"), 
-      percent, 
-      hours, minutes, seconds);
+      gettext("Your Grade"), percent, 
+      gettext("Completion Time"), hours, minutes, seconds);
     if (markup != NULL)
     {
       gtk_label_set_markup (GTK_LABEL (finished_label), markup);
