@@ -160,15 +160,20 @@ gw_searchwindow_get_position_for_button_press_cb (GtkWidget      *widget,
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
+    GtkTextWindowType type;
+    GtkTextView *view;
+    gint x, y;
 
     //Window coordinates
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return FALSE;
     priv = window->priv;
+    view = gw_searchwindow_get_current_textview (window);
+    type = gtk_text_view_get_window_type (view, event->window);
+    gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
 
-
-    priv->mouse_button_press_x = event->x;
-    priv->mouse_button_press_y = event->y;
+    priv->mouse_button_press_x = x;
+    priv->mouse_button_press_y = y;
 
     return FALSE;
 }

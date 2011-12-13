@@ -555,6 +555,35 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
 }
 
 
+static void
+gw_searchwindow_insert_kanjidict_addlink (GwSearchWindow *window, LwResultLine *resultline, GtkTextBuffer *buffer, GtkTextIter *iter)
+{
+    //Declarations
+    gchar *kanji, *furigana, *definitions;
+    LwVocabularyItem *item;
+
+    //Initializations
+    kanji = resultline->kanji;
+    furigana = g_strjoinv (",", resultline->readings);
+    definitions = resultline->meanings;
+
+    if (furigana != NULL)
+    {
+      item = lw_vocabularyitem_new ();
+      if (item != NULL)
+      {
+        lw_vocabularyitem_set_kanji (item, kanji);
+        lw_vocabularyitem_set_furigana (item, furigana);
+        lw_vocabularyitem_set_definitions (item, definitions);
+
+        gw_searchwindow_insert_addlink (window, buffer, iter, item);
+      }
+      g_free (furigana);
+    }
+}
+
+
+
 //!
 //! @brief Appends a kanjidict style result to the buffer, adding nice formatting.
 //!
@@ -613,6 +642,8 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
     gw_add_match_highlights (line, start_offset, end_offset, item);
+
+    gw_searchwindow_insert_kanjidict_addlink (window, resultline, buffer, &iter);
 
     gtk_text_buffer_insert (buffer, &iter, "\n", -1);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
