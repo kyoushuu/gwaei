@@ -311,20 +311,23 @@ gw_vocabularywindow_list_cell_edited_cb (GtkCellRendererText *renderer,
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_save_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_save_cb (GtkAction *action, gpointer data)
 {
     //Declarations
     GwVocabularyWindow *window;
     GwApplication *application;
+    LwPreferences *preferences;
     GtkListStore *liststore;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
     liststore = gw_application_get_vocabularyliststore (application);
 
     gw_vocabularyliststore_save_all (GW_VOCABULARYLISTSTORE (liststore));
+    gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
 }
 
 
@@ -335,6 +338,7 @@ gw_vocabularywindow_reset_cb (GtkWidget *widget, gpointer data)
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GwApplication *application;
+    LwPreferences *preferences;
     GtkListStore *liststore, *wordstore;
     GtkTreeIter iter;
     GtkTreeModel *model;
@@ -345,11 +349,13 @@ gw_vocabularywindow_reset_cb (GtkWidget *widget, gpointer data)
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
     liststore = gw_application_get_vocabularyliststore (application);
     model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
 
     gw_vocabularyliststore_revert_all (GW_VOCABULARYLISTSTORE (liststore));
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
 
     if (!gtk_tree_selection_get_selected (selection, &model, NULL))
     {
@@ -377,6 +383,7 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwVocabularyWindow *window;
     GwApplication *application;
+    LwPreferences *preferences;
     GtkListStore *store;
     GtkWidget *dialog;
     gint response;
@@ -385,6 +392,7 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
     store = gw_application_get_vocabularyliststore (application);
 
     if (gw_vocabularywindow_has_changes (window))
@@ -427,12 +435,14 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
       {
         case GTK_RESPONSE_YES:
           gw_vocabularyliststore_save_all (GW_VOCABULARYLISTSTORE (store)); 
+          gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
           gtk_widget_destroy (GTK_WIDGET (window));
           break;
         case GTK_RESPONSE_CANCEL:
           break;
         case GTK_RESPONSE_NO:
           gw_vocabularyliststore_revert_all (GW_VOCABULARYLISTSTORE (store)); 
+          gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
           gtk_widget_destroy (GTK_WIDGET (window));
           break;
         default:
@@ -444,35 +454,61 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
     {
       gtk_widget_destroy (GTK_WIDGET (window));
     }
+
+    if (gw_application_should_quit (application))
+      gw_application_quit (application);
 }
 
 
 void
-gw_vocabularywindow_export_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_export_cb (GtkAction *action, gpointer data)
 {
     //Declarations
+    GwVocabularyWindow *window;
     GtkWidget *dialog;
+    GtkListStore *store;
     gint response;
+    gchar *filename;
+    gchar *final_path;
 
     //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    store = gw_vocabularywindow_get_selected_wordstore (window);
+    if (store == NULL) return;
+
     dialog = gtk_file_chooser_dialog_new (
-        "Export as...", NULL, GTK_FILE_CHOOSER_ACTION_SAVE, 
+        gettext ("Export Vocabulary List..."), NULL, GTK_FILE_CHOOSER_ACTION_SAVE, 
         GTK_STOCK_CANCEL, GTK_RESPONSE_NO,
-        "Export", GTK_RESPONSE_YES,
+        "Export",         GTK_RESPONSE_YES,
         NULL);
+    //gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (dialog), TRUE);
+    gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), g_get_home_dir ());
+    filename = g_strjoin (".", gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (store)), "txt", NULL);
+    if (filename != NULL)
+    {
+      gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), filename);
+      g_free (filename);
+    }
+
     response = gtk_dialog_run (GTK_DIALOG (dialog));
 
     switch (response)
     {
       case GTK_RESPONSE_YES:
+        final_path = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+        if (final_path != NULL)
+        {
+          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (store), final_path);
+          g_free (final_path);
+        }
         break;
       case GTK_RESPONSE_NO:
       default:
         break;
     }
-    gtk_widget_destroy (GTK_WIDGET (dialog));
 
-    g_warning ("this function is unimplimented\n");
+    gtk_widget_destroy (GTK_WIDGET (dialog));
 }
 
 
@@ -480,10 +516,15 @@ void
 gw_vocabularywindow_import_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
+    GwVocabularyWindow *window;
     GtkWidget *dialog;
     gint response;
+    gchar *path;
+    GtkListStore *store;
 
     //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
     dialog = gtk_file_chooser_dialog_new (
         "Export as...", NULL, GTK_FILE_CHOOSER_ACTION_OPEN, 
         GTK_STOCK_CANCEL, GTK_RESPONSE_NO,
@@ -494,15 +535,21 @@ gw_vocabularywindow_import_cb (GtkWidget *widget, gpointer data)
     switch (response)
     {
       case GTK_RESPONSE_YES:
+        path = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+        if (path != NULL && g_file_test (path, G_FILE_TEST_IS_REGULAR))
+        {
+          gw_vocabularywindow_new_list_cb (GTK_WIDGET (window), window);
+          store = gw_vocabularywindow_get_selected_wordstore (window);
+          gw_vocabularywordstore_load (GW_VOCABULARYWORDSTORE (store), path);
+          g_free (path);
+        }
         break;
       case GTK_RESPONSE_NO:
       default:
         break;
     }
+
     gtk_widget_destroy (GTK_WIDGET (dialog));
-
-
-  g_warning ("this function is unimplimented\n");
 }
 
 
@@ -694,7 +741,7 @@ gw_vocabularywindow_revert_wordstore_cb (GtkWidget *widget, gpointer data)
     {
       wordstore = gw_vocabularyliststore_get_wordstore_by_iter (liststore, &iter);
       gw_vocabularywordstore_reset (GW_VOCABULARYWORDSTORE (wordstore));
-      gw_vocabularywordstore_load (GW_VOCABULARYWORDSTORE (wordstore));
+      gw_vocabularywordstore_load (GW_VOCABULARYWORDSTORE (wordstore), NULL);
     }
 }
 
@@ -761,90 +808,70 @@ gw_vocabularywindow_set_word_tooltip_text (GtkWidget  *widget,
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_japanese_english_flashcards_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_kanji_definition_flashcards_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
-    GwVocabularyWindowPrivate *priv;
-    GwApplication *application;
-    GtkWindow *flashcardwindow;
-    GtkTreeModel *model;
-    GtkListStore *liststore, *wordstore;
-    GtkTreeSelection *selection;
-    GtkTreeIter iter;
-    gboolean valid;
-
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
-    priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
-    liststore = GTK_LIST_STORE (gtk_tree_view_get_model (priv->list_treeview));
-    model = GTK_TREE_MODEL (liststore);
-    selection = gtk_tree_view_get_selection (priv->list_treeview);
-    gtk_tree_selection_get_selected (selection, &model, &iter);
-    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    model = GTK_TREE_MODEL (wordstore);
 
-    gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("What is the English definition of this word?"));
-    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                          model,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, 
-                                          TRUE);
-
-    if (!valid)
-    {
-      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
-    }
-    else
-    {
-      gtk_widget_show (GTK_WIDGET (flashcardwindow));
-    }
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Kanji→Definition"),
+      gettext("What is the English definition of this word?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
+      GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
+    );
 }
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_english_japanese_flashcards_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_definition_kanji_flashcards_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
-    GwVocabularyWindowPrivate *priv;
-    GwApplication *application;
-    GtkWindow *flashcardwindow;
-    GtkTreeModel *model;
-    GtkListStore *liststore, *wordstore;
-    GtkTreeSelection *selection;
-    GtkTreeIter iter;
-    gboolean valid;
-
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
-    priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
-    liststore = GTK_LIST_STORE (gtk_tree_view_get_model (priv->list_treeview));
-    model = GTK_TREE_MODEL (liststore);
-    selection = gtk_tree_view_get_selection (priv->list_treeview);
-    gtk_tree_selection_get_selected (selection, &model, &iter);
-    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    model = GTK_TREE_MODEL (wordstore);
 
-    gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("What is the Japanese word for this definition?"));
-    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                          model,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI, 
-                                          TRUE);
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Definition→Kanji"),
+      gettext("What is the Japanese word for this definition?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
+      GW_VOCABULARYWORDSTORE_COLUMN_KANJI
+    );
+}
 
-    if (!valid)
-    {
-      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
-    }
-    else
-    {
-      gtk_widget_show (GTK_WIDGET (flashcardwindow));
-    }
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_furigana_definition_flashcards_cb (GtkWidget *widget, gpointer data)
+{
+    GwVocabularyWindow *window;
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Furigana→Definition"),
+      gettext("What is the English definition of this word?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,
+      GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
+    );
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_definition_furigana_flashcards_cb (GtkWidget *widget, gpointer data)
+{
+    GwVocabularyWindow *window;
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Definition→Furigana"),
+      gettext("What is the Furigana for this definition?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
+      GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA
+    );
 }
 
 
@@ -852,42 +879,96 @@ G_MODULE_EXPORT void
 gw_vocabularywindow_kanji_furigana_flashcards_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
-    GwVocabularyWindowPrivate *priv;
-    GwApplication *application;
-    GtkWindow *flashcardwindow;
-    GtkTreeModel *model;
-    GtkListStore *liststore, *wordstore;
-    GtkTreeSelection *selection;
-    GtkTreeIter iter;
-    gboolean valid;
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
 
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Kanji→Furigana"),
+      gettext("What is the Furigana for this Kanji?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
+      GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA
+    );
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_furigana_kanji_flashcards_cb (GtkWidget *widget, gpointer data)
+{
+    GwVocabularyWindow *window;
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+
+    gw_vocabularywindow_start_flashcards (
+      window,
+      gettext("Furigana→Kanji"),
+      gettext("What is the Kanji for this Furigana?"),
+      GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,
+      GW_VOCABULARYWORDSTORE_COLUMN_KANJI
+    );
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_shuffle_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwApplication *application;
+    GwVocabularyWindow *window;
+    LwPreferences *preferences;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_SHUFFLE_FLASHCARDS);
+
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_SHUFFLE_FLASHCARDS, !request);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_shuffle_flashcards_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    GtkToggleAction *action;
+    gboolean request;
+
+    //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
-    liststore = GTK_LIST_STORE (gtk_tree_view_get_model (priv->list_treeview));
-    model = GTK_TREE_MODEL (liststore);
-    selection = gtk_tree_view_get_selection (priv->list_treeview);
-    gtk_tree_selection_get_selected (selection, &model, &iter);
-    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    model = GTK_TREE_MODEL (wordstore);
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    action = GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_toggleaction"));
+    request = lw_preferences_get_boolean (settings, key);
+    priv->shuffle = request;
 
-    gw_flashcardwindow_set_question_title (GW_FLASHCARDWINDOW (flashcardwindow), 
-        gettext("What is the Furigana for this Word?"));
-    valid = gw_flashcardwindow_set_model (GW_FLASHCARDWINDOW (flashcardwindow), 
-                                          model,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
-                                          GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, 
-                                          TRUE);
-
-    if (!valid)
-    {
-      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
-    }
-    else
-    {
-      gtk_widget_show (GTK_WIDGET (flashcardwindow));
-    }
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
 }
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_list_order_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    GtkListStore *store;
+
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    store = gw_application_get_vocabularyliststore (application);
+
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
+}
+
 

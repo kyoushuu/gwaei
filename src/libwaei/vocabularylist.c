@@ -78,7 +78,7 @@ lw_vocabularylist_free (LwVocabularyList *list)
 
 
 void
-lw_vocabularylist_load (LwVocabularyList *list, LwIoProgressCallback cb)
+lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
     LwVocabularyItem *item;
     gchar *uri;
@@ -86,8 +86,12 @@ lw_vocabularylist_load (LwVocabularyList *list, LwIoProgressCallback cb)
     const gint MAX = 200;
     gchar buffer[MAX + 1];
 
-    uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
     stream = fopen (uri, "r");
+    if (stream == NULL) return;
     buffer[MAX] = '\0';
 
     while (stream != NULL && feof(stream) == 0)
@@ -104,7 +108,7 @@ lw_vocabularylist_load (LwVocabularyList *list, LwIoProgressCallback cb)
 }
 
 void
-lw_vocabularylist_save (LwVocabularyList *list, LwIoProgressCallback cb)
+lw_vocabularylist_save (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
     //Declarations
     LwVocabularyItem *item;
@@ -113,8 +117,13 @@ lw_vocabularylist_save (LwVocabularyList *list, LwIoProgressCallback cb)
     gchar *uri;
     FILE *stream;
 
-    uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
     stream = fopen (uri, "w");
+
+    if (stream == NULL) return;
 
     for (iter = list->items; iter != NULL; iter = iter->next)
     {

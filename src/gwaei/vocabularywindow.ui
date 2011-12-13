@@ -1,6 +1,140 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAction" id="definition_furigana_flashcards_action">
+    <property name="label" translatable="yes">Definition→Furigana Flashcards</property>
+    <property name="short_label" translatable="yes">Definition→Furigana</property>
+    <signal name="activate" handler="gw_vocabularywindow_definition_furigana_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="definition_kanji_flashcards_action">
+    <property name="label" translatable="yes">Definition→Kanji Flashcards</property>
+    <property name="short_label" translatable="yes">Definition→Kanji</property>
+    <signal name="activate" handler="gw_vocabularywindow_definition_kanji_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="export_action">
+    <property name="label" translatable="yes">_Export List</property>
+    <property name="short_label" translatable="yes">Export</property>
+    <property name="stock_id">gtk-convert</property>
+    <signal name="activate" handler="gw_vocabularywindow_export_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="furigana_definition_flashcards_action">
+    <property name="label" translatable="yes">Furigana→Definition Flashcards</property>
+    <property name="short_label" translatable="yes">Furigana→Definition</property>
+    <signal name="activate" handler="gw_vocabularywindow_furigana_definition_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="furigana_kanji_flashcards_action">
+    <property name="label" translatable="yes">Furigana→Kanji Flashcards</property>
+    <property name="short_label" translatable="yes">Furigana→Kanji</property>
+    <signal name="activate" handler="gw_vocabularywindow_furigana_kanji_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="import_action">
+    <property name="label" translatable="yes">_Import List</property>
+    <property name="short_label" translatable="yes">Import</property>
+    <property name="stock_id">gtk-convert</property>
+    <signal name="activate" handler="gw_vocabularywindow_import_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="kanji_definition_flashcards_action">
+    <property name="label" translatable="yes">Kanji→Definition Flashcards</property>
+    <property name="short_label" translatable="yes">Kanji→Definition</property>
+    <signal name="activate" handler="gw_vocabularywindow_kanji_definition_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="kanji_furigana_flashcards_action">
+    <property name="label" translatable="yes">Kanji→Furigana Flashcards</property>
+    <property name="short_label" translatable="yes">Kanji→Furigana Flashcards</property>
+    <signal name="activate" handler="gw_vocabularywindow_kanji_furigana_flashcards_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="revert_action">
+    <property name="label" translatable="yes">_Revert List</property>
+    <property name="short_label" translatable="yes">Revert</property>
+    <property name="icon_name">edit-undo-symbolic</property>
+    <property name="sensitive">False</property>
+    <signal name="activate" handler="gw_vocabularywindow_revert_wordstore_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkAction" id="save_action">
+    <property name="label" translatable="yes">_Save All Changes</property>
+    <property name="short_label" translatable="yes">Save All</property>
+    <property name="stock_id">gtk-save</property>
+    <property name="sensitive">False</property>
+    <signal name="activate" handler="gw_vocabularywindow_save_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="shuffle_toggleaction">
+    <property name="label" translatable="yes">Shuffle Flashcards</property>
+    <property name="short_label" translatable="yes">Shuffle</property>
+    <property name="icon_name">media-playlist-shuffle</property>
+    <signal name="toggled" handler="gw_vocabularywindow_shuffle_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkMenu" id="toolbar_study_menu">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="kanji_definition_flashcard_menuitem1">
+        <property name="related_action">kanji_definition_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Kanji→Definition Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="definition_kanji_flashcard_menuitem1">
+        <property name="related_action">definition_kanji_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Definition→Kanji Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem3">
+        <property name="use_action_appearance">False</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="furigana_definition_flashcard_menuitem1">
+        <property name="related_action">furigana_definition_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Furigana→Definition Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="definition_furigana_flashcard_menuitem1">
+        <property name="related_action">definition_furigana_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Definition→Furigana Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem4">
+        <property name="use_action_appearance">False</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="kanji_furigana_flashcard_menuitem1">
+        <property name="related_action">kanji_furigana_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Kanji→Furigana Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="furigana_kanji_flashcard_menuitem1">
+        <property name="related_action">furigana_kanji_flashcards_action</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">Furigana→Kanji Flashcards</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="unused">
     <property name="can_focus">False</property>
     <child>
@@ -52,10 +186,8 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="save_menuitem">
-                        <property name="label">gtk-save</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">save_action</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
@@ -71,22 +203,16 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="import_menuitem">
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">import_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">_Import</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_import_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="export_menuitem">
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">export_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">_Export</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_export_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -124,14 +250,11 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="revert_menuitem">
-                        <property name="label">gtk-revert-to-saved</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">revert_action</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_revert_wordstore_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -208,33 +331,115 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="japanese_english_flashcard_menuitem">
-                        <property name="use_action_appearance">False</property>
+                      <object class="GtkMenuItem" id="kanji_definition_flashcard_menuitem">
+                        <property name="related_action">kanji_definition_flashcards_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label">Japanese-&gt;English Flashcards</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_japanese_english_flashcards_cb" object="toplevel" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="english_japanese_flashcard_menuitem">
+                      <object class="GtkMenuItem" id="definition_kanji_flashcard_menuitem">
+                        <property name="related_action">definition_kanji_flashcards_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem8">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label">English-&gt;Japanese Flashcards</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_english_japanese_flashcards_cb" object="toplevel" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="furigana_definition_flashcard_menuitem">
+                        <property name="related_action">furigana_definition_flashcards_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="definition_furigana_flashcard_menuitem">
+                        <property name="related_action">definition_furigana_flashcards_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem7">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="kanji_furigana_flashcard_menuitem">
+                        <property name="related_action">kanji_furigana_flashcards_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="furigana_kanji_flashcard_menuitem">
+                        <property name="related_action">furigana_kanji_flashcards_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem2">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label">Kanji-&gt;Furigana Flashcards</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="shuffle_menuitem">
+                        <property name="related_action">shuffle_toggleaction</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="generate_menuitem">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_Generate</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="weak_word_list_menuitem">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">List from your Weakest Words</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="gw_vocabularywindow_kanji_furigana_flashcards_cb" object="toplevel" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="random_frequent_words_menuitem">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">List from Popular Words</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menuitem9">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Kanji List from JLPT Level 1</property>
+                        <property name="use_underline">True</property>
                       </object>
                     </child>
                   </object>
@@ -253,7 +458,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkMenuToolButton" id="Study">
+              <object class="GtkMenuToolButton" id="study_menutoolbutton">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -261,20 +466,20 @@
                 <property name="label" translatable="yes">Study</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-media-play</property>
+                <signal name="clicked" handler="gw_vocabularywindow_kanji_definition_flashcards_cb" object="toplevel" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="Shuffle">
-                <property name="use_action_appearance">False</property>
+              <object class="GtkToggleToolButton" id="shuffle_toolbutton">
+                <property name="related_action">shuffle_toggleaction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">shuffle_toggleaction</property>
                 <property name="label" translatable="yes">Shuffle</property>
                 <property name="use_underline">True</property>
-                <property name="icon_name">media-playlist-shuffle</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -282,7 +487,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSeparatorToolItem" id="toolbutton1">
+              <object class="GtkSeparatorToolItem" id="separator_toolbutton1">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -294,15 +499,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToolButton" id="Export">
-                <property name="use_action_appearance">False</property>
+              <object class="GtkToolButton" id="export_toolbutton">
+                <property name="related_action">export_action</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">export_action</property>
                 <property name="label" translatable="yes">Export</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-convert</property>
-                <signal name="clicked" handler="gw_vocabularywindow_export_cb" object="toplevel" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -311,15 +514,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="save_toolbutton">
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">save_action</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
+                <property name="related_action">save_action</property>
                 <property name="label" translatable="yes">Save</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-save</property>
-                <signal name="clicked" handler="gw_vocabularywindow_save_cb" object="toplevel" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -487,14 +687,12 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="revert_toolbutton">
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">revert_action</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
+                        <property name="related_action">revert_action</property>
                         <property name="label" translatable="yes">Revert</property>
                         <property name="use_underline">True</property>
-                        <property name="icon_name">edit-undo-symbolic</property>
                         <signal name="clicked" handler="gw_vocabularywindow_revert_wordstore_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>

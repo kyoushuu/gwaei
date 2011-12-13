@@ -604,10 +604,16 @@ GtkListStore*
 gw_application_get_vocabularyliststore (GwApplication *application)
 {
   GwApplicationPrivate *priv;
+  LwPreferences *preferences;
+
   priv = application->priv;
 
   if (priv->vocabulary == NULL)
+  {
+    preferences = gw_application_get_preferences (application);
     priv->vocabulary = gw_vocabularyliststore_new ();
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabulary), preferences);
+  }
 
   return priv->vocabulary;
 }
@@ -784,3 +790,19 @@ gw_application_texttagtable_new ()
     return temp;
 }
 
+
+gboolean
+gw_application_should_quit (GwApplication *application)
+{
+    GList *windowlist;
+    GList *link;
+    gboolean should_quit;
+
+    windowlist = gtk_application_get_windows (GTK_APPLICATION (application));
+    should_quit = TRUE;
+
+    for (link = windowlist; should_quit && link != NULL; link = link->next)
+      if (gw_window_is_important (GW_WINDOW (link->data))) should_quit = FALSE;
+
+    return should_quit;
+}

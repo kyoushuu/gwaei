@@ -368,7 +368,7 @@ gw_addvocabularywindow_save (GwAddVocabularyWindow *window)
 {
    if (window->priv->wordstore != NULL)
    {
-     gw_vocabularywordstore_save (window->priv->wordstore);
+     gw_vocabularywordstore_save (window->priv->wordstore, NULL);
    }
 }
 

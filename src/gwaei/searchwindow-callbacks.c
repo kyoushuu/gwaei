@@ -288,7 +288,7 @@ gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
     else
       gtk_widget_destroy (GTK_WIDGET (window));
 
-    if (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW) == NULL)
+    if (gw_application_should_quit (application))
       gw_application_quit (application);
 }
 
@@ -312,7 +312,7 @@ gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpoi
 
     gtk_widget_destroy (GTK_WIDGET (window));
 
-    if (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW) == NULL)
+    if (gw_application_should_quit (application))
       gw_application_quit (application);
 
     return TRUE;
@@ -830,7 +830,7 @@ gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_paste_cb (GtkAction *action, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -852,7 +852,7 @@ gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_cut_cb (GtkAction *action, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -874,7 +874,7 @@ gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_copy_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_copy_cb (GtkAction *action, gpointer data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -2305,7 +2305,7 @@ gw_searchwindow_focus_in_event_cb (GtkWidget *widget,
 
 G_MODULE_EXPORT void 
 gw_searchwindow_open_vocabularywindow_cb (GtkWidget *widget, 
-                                           gpointer   data   )
+                                          gpointer   data   )
 {
     //Declarations
     GwSearchWindow *window;
@@ -2393,7 +2393,7 @@ gw_searchwindow_add_vocabulary_destroy_cb (GwAddVocabularyWindow *window, gpoint
   wordstore = gw_addvocabularywindow_get_wordstore (window);
   if (wordstore != NULL)
   {
-    gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (wordstore));
+    gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (wordstore), NULL);
     printf("save\n");
   }
 }

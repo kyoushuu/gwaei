@@ -97,6 +97,7 @@ gw_flashcardwindow_finalize (GObject *object)
     window = GW_FLASHCARDWINDOW (object);
     priv = window->priv;
 
+    if (priv->list_name != NULL) g_free (priv->list_name); priv->list_name = NULL;
     if (priv->question_title != NULL) g_free (priv->question_title); priv->question_title = NULL;
     if (priv->question != NULL) g_free (priv->question); priv->question = NULL;
     if (priv->answer != NULL) g_free (priv->answer); priv->answer = NULL;
@@ -140,14 +141,13 @@ gw_flashcardwindow_constructed (GObject *object)
     priv->status_progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "status_progressbar"));
     priv->status_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "status_label"));
 
-    priv->question_title = g_strdup (gettext("Question"));
-
     //Set up the gtk window
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
     gtk_window_set_default_size (GTK_WINDOW (window), 450, 300);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Flashcard Study"));
     gtk_window_set_has_resize_grip (GTK_WINDOW (window), FALSE);
+    gw_window_set_is_important (GW_WINDOW (window), TRUE);
 
     context = gtk_widget_get_style_context (GTK_WIDGET (priv->card_toolbar));
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);
@@ -209,20 +209,27 @@ gw_flashcardwindow_remove_signals (GwFlashCardWindow *window)
 
 
 void
-gw_flashcardwindow_set_question_title (GwFlashCardWindow *window, const gchar *question_title)
+gw_flashcardwindow_update_title (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
+    gchar *title;
 
     priv = window->priv;
-
-    if (priv->question_title != NULL) g_free (priv->question_title);
-    priv->question_title = g_strdup (question_title);
+    title = g_strdup_printf (gettext("gWaei %s Flashcards for \"%s\""), priv->flash_cards_type, priv->list_name);
+    if (title != NULL)
+    {
+      gtk_window_set_title (GTK_WINDOW (window), title);
+      g_free (title);
+    }
 }
 
 
 gboolean
 gw_flashcardwindow_set_model (GwFlashCardWindow *window, 
                               GtkTreeModel      *model, 
+                              const gchar       *flash_cards_type,
+                              const gchar       *list_name,
+                              const gchar       *question_title,
                               gint               question_column,
                               gint               answer_column,
                               gboolean           randomize      )
@@ -253,7 +260,12 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
     priv->source_question_column = question_column;
     priv->source_answer_column = answer_column;
     priv->source_model = model;
-  
+    priv->list_name = g_strdup (list_name);
+    priv->question_title = g_strdup (question_title);
+    priv->flash_cards_type = g_strdup (flash_cards_type);
+
+    gw_flashcardwindow_update_title (window);
+
     while (valid)
     {
       gtk_tree_model_get (model, &source_iter, question_column, &question, answer_column, &answer, -1);
@@ -262,7 +274,10 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
       {
         if (randomize)
         {
-          g_rand_int_range (random_generator, 0, priv->total_cards);
+          if (priv->total_cards == 0)
+            position = 0;
+          else
+            position = g_rand_int_range (random_generator, 0, priv->total_cards);
           gtk_list_store_insert (GTK_LIST_STORE (priv->model), &target_iter, position);
         }
         else
@@ -467,7 +482,7 @@ gw_flashcardwindow_increment_source_incorrect_guesses (GwFlashCardWindow *window
           incorrect_guesses++;
           gw_vocabularywordstore_set_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, incorrect_guesses);
           gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model));
+          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
         }
 
         if (source_answer != NULL) g_free (source_answer);
@@ -527,7 +542,7 @@ gw_flashcardwindow_increment_source_correct_guesses (GwFlashCardWindow *window)
           correct_guesses++;
           gw_vocabularywordstore_set_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, correct_guesses);
           gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model));
+          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
         }
 
         if (source_answer != NULL) g_free (source_answer);

@@ -88,10 +88,15 @@ G_MODULE_EXPORT void
 gw_flashcardwindow_close_cb (GtkWidget *widget, gpointer data)
 {
     GwFlashCardWindow *window;
+    GwApplication *application;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
     if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
 
     gtk_widget_destroy (GTK_WIDGET (window));
+
+    if (gw_application_should_quit (application))
+      gw_application_quit (application);
 }
 

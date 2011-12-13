@@ -46,6 +46,10 @@ GType gw_vocabularyliststore_get_type (void) G_GNUC_CONST;
 
 void gw_vocabularyliststore_save_all (GwVocabularyListStore*);
 void gw_vocabularyliststore_revert_all (GwVocabularyListStore*);
+
+void gw_vocabularyliststore_save_list_order (GwVocabularyListStore*, LwPreferences*);
+void gw_vocabularyliststore_load_list_order (GwVocabularyListStore*, LwPreferences*);
+
 GtkListStore* gw_vocabularyliststore_get_wordstore_by_iter (GwVocabularyListStore*, GtkTreeIter*);
 GtkListStore* gw_vocabularyliststore_get_wordstore_by_index (GwVocabularyListStore*, gint);
 GtkListStore* gw_vocabularyliststore_get_wordstore_by_name (GwVocabularyListStore*, const gchar*);
@@ -62,5 +66,6 @@ void gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore*,
 
 void gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
 gint gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+
 
 #endif

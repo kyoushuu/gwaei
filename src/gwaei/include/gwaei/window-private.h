@@ -7,6 +7,7 @@ struct _GwWindowPrivate {
   GtkBuilder *builder;
   GwApplication *application;
   gchar* ui_xml;
+  gboolean important;
   GtkWidget *toplevel;
   GtkAccelGroup *accelgroup;
 };

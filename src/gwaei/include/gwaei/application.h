@@ -75,7 +75,7 @@ struct _LwDictInstList* gw_application_get_dictinstlist (GwApplication*);
 GtkTextTagTable* gw_application_get_tagtable (GwApplication*);
 GtkListStore* gw_application_get_vocabularyliststore (GwApplication*);
 
-void gw_application_destroy_window (GwApplication*, GtkWindow*);
+gboolean gw_application_should_quit (GwApplication *application);
 
 #include "application-callbacks.h"
 

@@ -132,7 +132,7 @@ gw_vocabularyliststore_get_wordstore_by_iter (GwVocabularyListStore *store, GtkT
     gtk_tree_model_get (model, iter, GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, &wordstore, -1);
     if (wordstore != NULL)
     {
-      gw_vocabularywordstore_load (GW_VOCABULARYWORDSTORE (wordstore));
+      gw_vocabularywordstore_load (GW_VOCABULARYWORDSTORE (wordstore), NULL);
       g_object_unref (wordstore);
     }
     return wordstore;
@@ -278,6 +278,112 @@ gw_vocabularyliststore_list_exists (GwVocabularyListStore *store, const gchar *N
 
 
 void
+gw_vocabularyliststore_save_list_order (GwVocabularyListStore *store, LwPreferences *preferences)
+{
+    //Declarations
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gchar **atoms;
+    gchar *order;
+    gint i, length;
+    gboolean valid;
+
+    //Initializations
+    model = GTK_TREE_MODEL (store);
+    length = 0;
+    i = 0;
+
+    //Find the length
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    while (valid)
+    {
+      length++;
+      valid = gtk_tree_model_iter_next (model, &iter);
+    }
+
+    //Allocate it
+    atoms = g_new0 (gchar*, length + 1);
+
+    //Set the atoms
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    while (valid && i < length)
+    {
+      atoms[i] = gw_vocabularyliststore_get_name_by_iter (store, &iter);
+      valid = gtk_tree_model_iter_next (model, &iter);
+      i++;
+    }
+
+    //Create and save the order
+    order = g_strjoinv (";", atoms);
+
+    lw_preferences_set_string_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_LIST_ORDER, order);
+
+    //Cleanup
+    g_strfreev (atoms); atoms = NULL;
+    g_free (order); order = NULL;
+}
+
+
+void
+gw_vocabularyliststore_load_list_order (GwVocabularyListStore *store, LwPreferences *preferences)
+{
+    //Declarations
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gboolean valid;
+    gchar **atoms;
+    gchar buffer[500];
+    gint old_pos, new_pos, i, length;
+    gchar *name;
+    gint *reorder;
+
+    //Initializations
+    model = GTK_TREE_MODEL (store);
+    lw_preferences_get_string_by_schema (preferences, buffer, LW_SCHEMA_VOCABULARY, LW_KEY_LIST_ORDER, 500);
+    atoms = g_strsplit (buffer, ";", -1);
+    length = gtk_tree_model_iter_n_children (model, NULL);
+  
+    //Set up the reorder array
+    reorder = g_new (gint, length);
+    for (i = 0; i < length; i++) reorder[i] = -1;
+
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    old_pos = 0;
+    new_pos = 0;
+    while (valid)
+    {
+      name = gw_vocabularyliststore_get_name_by_iter (store, &iter);
+      for (new_pos = 0; atoms[new_pos] != NULL; new_pos++)
+      {
+        if (strcmp(name, atoms[new_pos]) == 0)
+        {
+          reorder[old_pos] = new_pos;
+          break;
+        }
+      }
+      g_free (name);
+      old_pos++;
+      valid = gtk_tree_model_iter_next (model, &iter);
+    }
+
+    //Fill in the blank spots
+    for (old_pos = 0; old_pos < length; old_pos++)
+    {
+      if (reorder[old_pos] == -1)
+      {
+        reorder[old_pos] = new_pos;
+        new_pos++;
+      }
+    }
+
+    gtk_list_store_reorder (GTK_LIST_STORE (store), reorder);
+
+    g_strfreev (atoms);
+    g_free (reorder);
+}
+
+
+void
 gw_vocabularyliststore_save_all (GwVocabularyListStore *store)
 {
     //Declarations
@@ -286,6 +392,7 @@ gw_vocabularyliststore_save_all (GwVocabularyListStore *store)
     GtkListStore *wordstore;
     GtkTreeIter iter;
     gboolean valid;
+
 
     gw_vocabularyliststore_clean_files (store);
     priv = store->priv;
@@ -297,7 +404,7 @@ gw_vocabularyliststore_save_all (GwVocabularyListStore *store)
       gtk_tree_model_get (model, &iter, GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, &wordstore, -1);
       if (wordstore != NULL)
       {
-        gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (wordstore));
+        gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (wordstore), NULL);
         gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), FALSE);
         g_object_unref (wordstore); wordstore = NULL;
       }
@@ -342,6 +449,7 @@ gw_vocabularyliststore_revert_all (GwVocabularyListStore* store)
       }
       g_strfreev (lists); lists = NULL;
     }
+
     priv->has_removed_lists = FALSE;
     gw_vocabularyliststore_set_has_changes (store, FALSE);
 }

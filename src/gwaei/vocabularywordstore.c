@@ -182,7 +182,7 @@ gw_vocabularywordstore_class_init (GwVocabularyWordStoreClass *klass)
 
 
 void
-gw_vocabularywordstore_save (GwVocabularyWordStore *store)
+gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME)
 {
     GwVocabularyWordStorePrivate *priv;
     LwVocabularyItem *item;
@@ -197,9 +197,9 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store)
     model = GTK_TREE_MODEL (store);
     weight = PANGO_WEIGHT_NORMAL;
 
-    if (!gw_vocabularywordstore_has_changes (store)) return;
+    if (!gw_vocabularywordstore_has_changes (store) && FILENAME == NULL) return;
 
-    gw_vocabularywordstore_load (store);
+    gw_vocabularywordstore_load (store, NULL);
 
     if (priv->vocabulary_list != NULL) lw_vocabularylist_free (priv->vocabulary_list);
 
@@ -243,7 +243,7 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store)
         valid = gtk_tree_model_iter_next (model, &iter);
       }
 
-      lw_vocabularylist_save (priv->vocabulary_list, NULL);
+      lw_vocabularylist_save (priv->vocabulary_list, FILENAME, NULL);
       lw_vocabularylist_free (priv->vocabulary_list); priv->vocabulary_list = NULL;
       gw_vocabularywordstore_set_has_changes (store, FALSE);
     }
@@ -251,11 +251,11 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store)
 
 
 void 
-gw_vocabularywordstore_load (GwVocabularyWordStore *store)
+gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME)
 {
     //Sanity checks
     g_assert (store != NULL);
-    if (gw_vocabularywordstore_loaded (store)) return;
+    if (gw_vocabularywordstore_loaded (store) && FILENAME == NULL) return;
     g_assert (store->priv->name != NULL);
 
     //Declarations
@@ -271,7 +271,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store)
 
     if (priv->vocabulary_list != NULL) lw_vocabularylist_free (priv->vocabulary_list);
     priv->vocabulary_list = lw_vocabularylist_new (priv->name);
-    lw_vocabularylist_load (priv->vocabulary_list, NULL);
+    lw_vocabularylist_load (priv->vocabulary_list, FILENAME, NULL);
 
     for (listiter = priv->vocabulary_list->items; listiter != NULL; listiter = listiter->next)
     {
@@ -504,9 +504,9 @@ void
 gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *iter, gboolean before, const gchar *text)
 {
     //Declarations
+    LwVocabularyItem *item;
     gchar **rows;
-    gchar **atoms;
-    gint i, j;
+    gint i;
     GtkTreeIter new_iter;
     gboolean modified;
 
@@ -515,17 +515,23 @@ gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *i
     {
       for (i = 0; rows[i] != NULL; i++)
       {
-        atoms = g_strsplit (rows[i], ";", 3);
-        if (atoms != NULL)
+        item = lw_vocabularyitem_new_from_string (rows[i]);
+        if (item != NULL)
         {
           if (before)
             gtk_list_store_insert_before (GTK_LIST_STORE (store), &new_iter, iter);
           else
             gtk_list_store_insert_after (GTK_LIST_STORE (store), &new_iter, iter);
-          for (j = 0; atoms[j] != NULL; j++)
-            gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, j, atoms[j], -1);
-          gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_SEMIBOLD, -1);
-          g_strfreev (atoms); atoms = NULL;
+          gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, 
+            GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, lw_vocabularyitem_get_furigana (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, lw_vocabularyitem_get_definitions (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, lw_vocabularyitem_get_correct_guesses (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, lw_vocabularyitem_get_incorrect_guesses (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_SEMIBOLD,
+          -1);
+          lw_vocabularyitem_free (item);
           modified = TRUE;
         }
       }

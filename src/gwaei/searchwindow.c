@@ -129,6 +129,7 @@ gw_searchwindow_constructed (GObject *object)
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
     gtk_window_set_default_size (GTK_WINDOW (window), 620, 500);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
+    gw_window_set_is_important (GW_WINDOW (window), TRUE);
 
     gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
     gw_searchwindow_set_dictionary (window, 0);

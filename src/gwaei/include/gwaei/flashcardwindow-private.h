@@ -32,7 +32,9 @@ struct _GwFlashCardWindowPrivate {
     GtkTreeModel *model;
     GtkTreeIter iter;
 
+    gchar *flash_cards_type;
     gchar *question_title;
+    gchar *list_name;
     gchar *question;
     gchar *answer;
 

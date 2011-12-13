@@ -6,3 +6,6 @@ void gw_vocabularywindow_list_cell_edited_cb (GtkCellRendererText*, gchar*, gcha
 void gw_vocabularywindow_list_row_deleted_cb (GtkTreeModel*, GtkTreePath*, gpointer);
 gboolean gw_vocabularywindow_event_after_cb (GtkWidget*, GdkEvent*, gpointer);
 void gw_vocabularywindow_liststore_changed_cb (GwVocabularyListStore*, gpointer);
+
+void gw_vocabularywindow_sync_shuffle_flashcards_cb (GSettings*, gchar*, gpointer);
+void gw_vocabularywindow_sync_list_order_cb (GSettings*, gchar*, gpointer);

@@ -29,7 +29,7 @@ struct _GwFlashCardWindowClass {
 GtkWindow* gw_flashcardwindow_new (GtkApplication *application);
 GType gw_flashcardwindow_get_type (void) G_GNUC_CONST;
 
-gboolean gw_flashcardwindow_set_model (GwFlashCardWindow*, GtkTreeModel*, gint, gint, gboolean);
+gboolean gw_flashcardwindow_set_model (GwFlashCardWindow*, GtkTreeModel*, const gchar*, const gchar*, const gchar*, gint, gint, gboolean);
 void gw_flashcardwindow_load_iterator (GwFlashCardWindow*, gboolean, gboolean);
 void gw_flashcardwindow_increment_incorrect_guesses (GwFlashCardWindow*);
 void gw_flashcardwindow_increment_correct_guesses (GwFlashCardWindow*);
@@ -37,7 +37,6 @@ void gw_flashcardwindow_update_progress (GwFlashCardWindow*);
 void gw_flashcardwindow_set_card_completed (GwFlashCardWindow*, gboolean);
 gboolean gw_flashcardwindow_iterate (GwFlashCardWindow*);
 void gw_flashcardwindow_check_answer (GwFlashCardWindow*);
-void gw_flashcardwindow_set_question_title (GwFlashCardWindow*, const gchar*);
 void gw_flashcardwindow_set_finished (GwFlashCardWindow*);
 
 #include "flashcardwindow-callbacks.h"

@@ -22,7 +22,7 @@ gw_addvocabularywindow_add_cb (GtkWidget *widget, gpointer data)
     wordstore = gw_addvocabularywindow_get_wordstore (window);
     priv->wordstore = GW_VOCABULARYWORDSTORE (wordstore);
 
-    gw_vocabularywordstore_load (priv->wordstore);
+    gw_vocabularywordstore_load (priv->wordstore, NULL);
     gw_vocabularywordstore_new_word (priv->wordstore, &(priv->iter), NULL, kanji, furigana, definitions);
 
     if (klass->last_selected_list_name != NULL)

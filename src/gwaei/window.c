@@ -96,7 +96,6 @@ gw_window_constructed (GObject *object)
     priv->builder = gtk_builder_new ();
     gw_window_load_ui_xml (window, priv->ui_xml);
     priv->toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toplevel"));
-
 }
 
 
@@ -298,4 +297,26 @@ gw_window_get_accel_group (GwWindow *window)
     priv = window->priv;
 
     return priv->accelgroup;
+}
+
+
+void
+gw_window_set_is_important (GwWindow *window, gboolean important)
+{
+    GwWindowPrivate *priv;
+
+    priv = window->priv;
+
+    priv->important = important;
+}
+
+
+gboolean
+gw_window_is_important (GwWindow *window)
+{
+    GwWindowPrivate *priv;
+
+    priv = window->priv;
+
+    return priv->important;
 }

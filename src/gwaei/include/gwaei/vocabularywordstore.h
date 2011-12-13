@@ -46,8 +46,8 @@ struct _GwVocabularyWordStoreClass {
 GtkListStore* gw_vocabularywordstore_new (const gchar*);
 GType gw_vocabularywordstore_get_type (void) G_GNUC_CONST;
 
-void gw_vocabularywordstore_save (GwVocabularyWordStore*);
-void gw_vocabularywordstore_load (GwVocabularyWordStore*);
+void gw_vocabularywordstore_save (GwVocabularyWordStore*, const gchar*);
+void gw_vocabularywordstore_load (GwVocabularyWordStore*, const gchar*);
 gboolean gw_vocabularywordstore_loaded (GwVocabularyWordStore*);
 const gchar* gw_vocabularywordstore_get_name (GwVocabularyWordStore*);
 gchar* gw_vocabularywordstore_get_filename (GwVocabularyWordStore*);
