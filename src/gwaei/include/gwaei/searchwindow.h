@@ -33,7 +33,7 @@ struct _GwSearchWindow {
 struct _GwSearchWindowClass {
   GwWindowClass parent_class;
   guint signalid[TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS];
-  void (*word_added) (LwResultLine *line);
+  void (*word_added) (GwSearchWindow* window, LwResultLine *line);
 };
 
 GtkWindow* gw_searchwindow_new (GtkApplication *application);
@@ -74,10 +74,7 @@ void gw_searchwindow_buffer_initialize_tags (GwSearchWindow*);
 void gw_searchwindow_set_font (GwSearchWindow*);
 void gw_searchwindow_buffer_initialize_marks (GtkTextBuffer*);
 
-
-void gw_searchwindow_entry_insert (GwSearchWindow*, char*);
 void gw_searchwindow_clear_search_entry (GwSearchWindow*);
-
 
 gunichar gw_searchwindow_get_hovered_character (GwSearchWindow*, int*, int*, GtkTextIter*);
 void gw_searchwindow_show_window (GwSearchWindow*, char*);

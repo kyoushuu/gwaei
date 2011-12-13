@@ -68,6 +68,9 @@ struct _GwSearchWindowPrivate {
   gboolean keep_searching_enabled;
 
   gboolean text_selected;
+
+  GwRadicalsWindow *radicalswindow;
+  GwKanjipadWindow *kanjipadwindow;
 };
 
 #define GW_SEARCHWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_SEARCHWINDOW, GwSearchWindowPrivate))

@@ -1059,31 +1059,6 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
 
 
 //!
-//! @brief Inserts text into the window entry
-//!
-//! @param text The text to insert
-//!
-void 
-gw_searchwindow_entry_insert (GwSearchWindow *window, char* text)
-{
-    //Declarations
-    GwSearchWindowPrivate *priv;
-    glong length;
-    gint start, end;
-
-    //Initializations
-    length = strlen (text);
-    priv = window->priv;
-
-    gtk_editable_get_selection_bounds (GTK_EDITABLE (priv->entry), &start, &end);
-    gtk_editable_delete_text (GTK_EDITABLE (priv->entry), start, end);
-
-    gtk_editable_insert_text(GTK_EDITABLE (priv->entry), text, length, &start);
-    gtk_editable_set_position (GTK_EDITABLE (priv->entry), start);
-}
-
-
-//!
 //! @brief Selects all text in a target
 //!
 //! @param TARGET The widget where to select all text

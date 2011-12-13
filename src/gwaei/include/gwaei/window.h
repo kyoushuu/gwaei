@@ -3,6 +3,8 @@
 
 G_BEGIN_DECLS
 
+#include <gwaei/application.h>
+
 //Boilerplate
 typedef struct _GwWindow GwWindow;
 typedef struct _GwWindowClass GwWindowClass;

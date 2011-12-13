@@ -760,8 +760,6 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
       resultline
     );
 
-    g_signal_connect (G_OBJECT (window), "word-added::kanjidict", G_CALLBACK (), NULL);
-
     if (resultline->radicals != NULL)
     {
       GwRadicalsWindow *radicalswindow;

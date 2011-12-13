@@ -1362,7 +1362,7 @@ gw_searchwindow_insert_unknown_character_cb (GtkWidget *widget, gpointer data)
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    gw_searchwindow_entry_insert (window, ".");
+    gw_searchwindow_entry_insert_text (window, ".");
 }
 
 
@@ -1381,7 +1381,7 @@ gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpointer data)
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    gw_searchwindow_entry_insert (window, "\\b");
+    gw_searchwindow_entry_insert_text (window, "\\b");
 }
 
 
@@ -1400,7 +1400,7 @@ gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget, gpointer data)
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    gw_searchwindow_entry_insert (window, "\\B");
+    gw_searchwindow_entry_insert_text (window, "\\B");
 }
 
 
@@ -1418,7 +1418,7 @@ gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer data)
 {
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    gw_searchwindow_entry_insert (window, "&");
+    gw_searchwindow_entry_insert_text (window, "&");
 }
 
 
@@ -1437,7 +1437,7 @@ gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer data)
     GwSearchWindow *window;
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    gw_searchwindow_entry_insert (window, "|");
+    gw_searchwindow_entry_insert_text (window, "|");
 }
 
 
@@ -2106,32 +2106,90 @@ gw_searchwindow_sync_search_as_you_type_cb (GSettings *settings,
 }
 
 
+static void
+gw_searchwindow_kanjipadwindow_kanji_selected_cb (GwKanjipadWindow *window, const gchar *text, gpointer data)
+{
+    GwSearchWindow *searchwindow;
+    searchwindow = GW_SEARCHWINDOW (data);
+    gw_searchwindow_entry_insert_text (searchwindow, text);
+}
+
+
 G_MODULE_EXPORT void 
 gw_searchwindow_open_kanjipadwindow_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
-    GwApplication *application;
     GwSearchWindow *window;
-    GtkWindow *kanjipadwindow;
-    GList *iter;
+    GwSearchWindowPrivate *priv;
+    GwApplication *application;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    iter = gtk_application_get_windows (GTK_APPLICATION (application));
 
-    while (iter != NULL && !GW_IS_KANJIPADWINDOW (iter->data)) iter = iter->next;
-
-    if (iter != NULL)
+    if (priv->kanjipadwindow != NULL)
     {
-      kanjipadwindow = GTK_WINDOW (iter->data);
-      gtk_widget_destroy (GTK_WIDGET (kanjipadwindow));
+      gtk_window_set_transient_for (GTK_WINDOW (priv->kanjipadwindow), GTK_WINDOW (window));
+      gtk_window_present (GTK_WINDOW (priv->kanjipadwindow));
+    }
+    else
+    {
+      priv->kanjipadwindow = GW_KANJIPADWINDOW (gw_kanjipadwindow_new (GTK_APPLICATION (application)));
+      gtk_window_set_transient_for (GTK_WINDOW (priv->kanjipadwindow), GTK_WINDOW (window));
+      g_signal_connect (
+        G_OBJECT (priv->kanjipadwindow), 
+        "kanji-selected", 
+        G_CALLBACK (gw_searchwindow_kanjipadwindow_kanji_selected_cb), 
+        window
+      );
+      gtk_widget_show (GTK_WIDGET (priv->kanjipadwindow));
+      g_object_add_weak_pointer (G_OBJECT (priv->kanjipadwindow), (gpointer) &(priv->kanjipadwindow));
+    }
+}
+
+
+//!
+//! @brief Sets the query created in the radicalwindow to the searchwindow
+//!
+static void
+gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpointer data)
+{
+    //Declarations
+    GwSearchWindow *searchwindow;
+    GwApplication *application;
+    LwDictInfoList *dictinfolist;
+    LwDictInfo *di;
+    char *text_query;
+    char *text_radicals;
+    char *text_strokes;
+
+    //Initializations
+    searchwindow = GW_SEARCHWINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
+    g_assert (searchwindow != NULL);
+    application = gw_window_get_application (GW_WINDOW (window));
+    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    di = lw_dictinfolist_get_dictinfo (dictinfolist, LW_DICTTYPE_KANJI, "Kanji");
+    if (di == NULL) return;
+
+    text_radicals = gw_radicalswindow_strdup_all_selected (window);
+    text_strokes = gw_radicalswindow_strdup_prefered_stroke_count (window);
+    text_query = g_strdup_printf ("%s%s", text_radicals, text_strokes);
+
+    //Sanity checks
+    if (text_query != NULL && strlen(text_query) > 0)
+    {
+      gw_searchwindow_entry_set_text (searchwindow, text_query);
+      gw_searchwindow_set_dictionary (searchwindow, di->load_position);
+
+      gw_searchwindow_search_cb (GTK_WIDGET (searchwindow), searchwindow);
     }
 
-    kanjipadwindow = gw_kanjipadwindow_new (GTK_APPLICATION (application));
-    gtk_window_set_transient_for (GTK_WINDOW (kanjipadwindow), GTK_WINDOW (window));
-    gtk_widget_show (GTK_WIDGET (kanjipadwindow));
+    //Cleanup
+    if (text_query != NULL) g_free (text_query);
+    if (text_strokes != NULL) g_free (text_strokes);
+    if (text_radicals != NULL) g_free (text_radicals);
 }
 
 
@@ -2139,31 +2197,34 @@ G_MODULE_EXPORT void
 gw_searchwindow_open_radicalswindow_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
-    GwApplication *application;
     GwSearchWindow *window;
-    GtkWindow *radicalswindow;
-    GList *iter;
+    GwSearchWindowPrivate *priv;
+    GwApplication *application;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    iter = gtk_application_get_windows (GTK_APPLICATION (application));
 
-    while (iter != NULL && !GW_IS_RADICALSWINDOW (iter->data)) iter = iter->next;
-
-    if (iter != NULL)
+    if (priv->radicalswindow != NULL)
     {
-      radicalswindow = GTK_WINDOW (iter->data);
-      gtk_window_set_transient_for (GTK_WINDOW (radicalswindow), GTK_WINDOW (window));
-      gw_radicalswindow_deselect_all_radicals (GW_RADICALSWINDOW (radicalswindow));
-      gtk_window_present (GTK_WINDOW (radicalswindow));
+      gtk_window_set_transient_for (GTK_WINDOW (priv->radicalswindow), GTK_WINDOW (window));
+      gw_radicalswindow_deselect_all_radicals (GW_RADICALSWINDOW (priv->radicalswindow));
+      gtk_window_present (GTK_WINDOW (priv->radicalswindow));
     }
     else
     {
-      radicalswindow = gw_radicalswindow_new (GTK_APPLICATION (application));
-      gtk_window_set_transient_for (GTK_WINDOW (radicalswindow), GTK_WINDOW (window));
-      gtk_widget_show (GTK_WIDGET (radicalswindow));
+      priv->radicalswindow = GW_RADICALSWINDOW (gw_radicalswindow_new (GTK_APPLICATION (application)));
+      gtk_window_set_transient_for (GTK_WINDOW (priv->radicalswindow), GTK_WINDOW (window));
+      g_signal_connect (
+        G_OBJECT (priv->radicalswindow), 
+        "query-changed", 
+        G_CALLBACK (gw_searchwindow_radicalswindow_query_changed_cb), 
+        window
+      );
+      gtk_widget_show (GTK_WIDGET (priv->radicalswindow));
+      g_object_add_weak_pointer (G_OBJECT (priv->radicalswindow), (gpointer) &(priv->radicalswindow));
     }
 }
 

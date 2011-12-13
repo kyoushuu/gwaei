@@ -106,7 +106,7 @@
                     <property name="adjustment">stroke_count_adjustment</property>
                     <property name="numeric">True</property>
                     <property name="update_policy">if-valid</property>
-                    <signal name="value-changed" handler="gw_radicalswindow_search_cb" object="toplevel" swapped="no"/>
+                    <signal name="value-changed" handler="gw_radicalswindow_toggled_cb" object="toplevel" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
