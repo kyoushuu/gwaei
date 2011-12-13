@@ -377,12 +377,14 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearchItem*
     g_assert (lw_searchitem_has_data (item));
 
     //Declarations
+    GwSearchWindowClass *klass;
     GwSearchData *sdata;
     GtkTextView *view;
     GtkTextBuffer *buffer;
     GtkTextMark *mark;
 
     //Initializations
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
     view = GTK_TEXT_VIEW (sdata->view);
     buffer = gtk_text_view_get_buffer (view);
@@ -427,6 +429,11 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearchItem*
       gw_searchwindow_insert_edict_addlink (window, resultline, buffer, &iter);
     }
 
+    g_signal_emit (window, 
+      klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
+      g_quark_from_static_string ("edict"), 
+      resultline
+    );
 }
 
 
@@ -460,6 +467,7 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
     g_assert (lw_searchitem_has_data (item));
 
     //Declarations
+    GwSearchWindowClass *klass;
     LwResultLine *resultline;
     GwSearchData *sdata;
     GtkTextView *view;
@@ -469,6 +477,7 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
     int line, start_offset, end_offset;
 
     //Initializations
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     resultline = lw_searchitem_get_result (item);
     if (resultline == NULL) return;
     sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
@@ -554,6 +563,12 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
       i++;
     }
     gtk_text_buffer_insert (buffer, &iter, "\n", -1);
+
+    g_signal_emit (window, 
+      klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
+      g_quark_from_static_string ("edict"), 
+      resultline
+    );
 }
 
 
@@ -601,6 +616,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
     g_assert (lw_searchitem_has_data (item));
 
     //Declarations
+    GwSearchWindowClass *klass;
     GwApplication *application;
     GwSearchData *sdata;
     LwResultLine *resultline;
@@ -611,6 +627,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
     int line, start_offset, end_offset;
 
     //Initializations
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     application = gw_window_get_application (GW_WINDOW (window));
     resultline = lw_searchitem_get_result (item);
     if (resultline == NULL) return;
@@ -662,13 +679,6 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
 
       gtk_text_buffer_insert (buffer, &iter, "\n", -1);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
-
-      GwRadicalsWindow *radicalswindow;
-      radicalswindow =  GW_RADICALSWINDOW (gw_application_get_window_by_type (application, GW_TYPE_RADICALSWINDOW));
-      if (radicalswindow != NULL && resultline->radicals != NULL)
-      {
-        gw_radicalswindow_set_button_sensitive_when_label_is (radicalswindow, resultline->radicals);
-      }
     }
 
     //Readings
@@ -743,6 +753,24 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
     gw_add_match_highlights (line, start_offset, end_offset, item);
 
     gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
+
+    g_signal_emit (window, 
+      klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
+      g_quark_from_static_string ("kanjidict"), 
+      resultline
+    );
+
+    g_signal_connect (G_OBJECT (window), "word-added::kanjidict", G_CALLBACK (), NULL);
+
+    if (resultline->radicals != NULL)
+    {
+      GwRadicalsWindow *radicalswindow;
+      radicalswindow =  GW_RADICALSWINDOW (gw_application_get_window_by_type (application, GW_TYPE_RADICALSWINDOW));
+      if (radicalswindow != NULL && resultline->radicals != NULL)
+      {
+        gw_radicalswindow_set_button_sensitive_when_label_is (radicalswindow, resultline->radicals);
+      }
+    }
 }
 
 
@@ -761,6 +789,7 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearchItem
     g_assert (lw_searchitem_has_data (item));
 
     //Declarations
+    GwSearchWindowClass *klass;
     GwSearchData *sdata;
     LwResultLine *resultline;
     GtkTextView *view;
@@ -770,6 +799,7 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearchItem
     GtkTextIter iter;
 
     //Initializations
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     resultline = lw_searchitem_get_result (item);
     if (resultline == NULL) return;
     sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
@@ -815,6 +845,13 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearchItem
 
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
     gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
+
+    g_signal_emit (window, 
+      klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
+      g_quark_from_static_string ("examplesdict"), 
+      resultline
+    );
+
 }
 
 
@@ -833,6 +870,7 @@ gw_searchwindow_append_unknowndict_result (GwSearchWindow *window, LwSearchItem 
     g_assert (lw_searchitem_has_data (item));
 
     //Definitions
+    GwSearchWindowClass *klass;
     LwResultLine *resultline;
     GwSearchData *sdata;
     GtkTextView *view;
@@ -843,6 +881,7 @@ gw_searchwindow_append_unknowndict_result (GwSearchWindow *window, LwSearchItem 
 
 
     //Initializations
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     resultline = lw_searchitem_get_result (item);
     if (resultline == NULL) return;
     sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
@@ -862,6 +901,12 @@ gw_searchwindow_append_unknowndict_result (GwSearchWindow *window, LwSearchItem 
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
     gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
+
+    g_signal_emit (window, 
+      klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
+      g_quark_from_static_string ("unknowndict"), 
+      resultline
+    );
 }
 
 

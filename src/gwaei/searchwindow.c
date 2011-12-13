@@ -156,14 +156,26 @@ gw_searchwindow_constructed (GObject *object)
 static void
 gw_searchwindow_class_init (GwSearchWindowClass *klass)
 {
-  GObjectClass *object_class;
+    GObjectClass *object_class;
 
-  object_class = G_OBJECT_CLASS (klass);
+    object_class = G_OBJECT_CLASS (klass);
 
-  object_class->constructed = gw_searchwindow_constructed;
-  object_class->finalize = gw_searchwindow_finalize;
+    object_class->constructed = gw_searchwindow_constructed;
+    object_class->finalize = gw_searchwindow_finalize;
 
-  g_type_class_add_private (object_class, sizeof (GwSearchWindowPrivate));
+    g_type_class_add_private (object_class, sizeof (GwSearchWindowPrivate));
+
+    klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED] = g_signal_new (
+        "word-added",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (GwSearchWindowClass, word_added),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE, 
+        1, G_TYPE_POINTER
+    );
+
 }
 
 

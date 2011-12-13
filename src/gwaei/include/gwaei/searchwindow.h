@@ -5,6 +5,12 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+  GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED,
+  TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS
+} GwSearchWindowClassSignalId;
+
+
 //Boilerplate
 typedef struct _GwSearchWindow GwSearchWindow;
 typedef struct _GwSearchWindowClass GwSearchWindowClass;
@@ -26,6 +32,8 @@ struct _GwSearchWindow {
 
 struct _GwSearchWindowClass {
   GwWindowClass parent_class;
+  guint signalid[TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS];
+  void (*word_added) (LwResultLine *line);
 };
 
 GtkWindow* gw_searchwindow_new (GtkApplication *application);
