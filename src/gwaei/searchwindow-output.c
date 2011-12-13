@@ -82,6 +82,8 @@ gw_searchwindow_insert_edict_addlink (GwSearchWindow *window, LwResultLine *resu
     //Initializations
     kanji = resultline->kanji_start;
     furigana = resultline->furigana_start;
+    if (furigana == NULL || strlen (furigana) == 0)
+      furigana = kanji;
     definitions = g_strjoinv ("/", resultline->def_start);
 
     if (definitions != NULL)
