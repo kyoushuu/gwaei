@@ -992,7 +992,6 @@ gw_vocabularywindow_drag_begin_cb (
   path = (GtkTreePath*) selectedlist->data;
   surface = gtk_tree_view_create_row_drag_icon (view, path);
 
-  surface = gtk_tree_view_create_row_drag_icon (view, path);
   gtk_drag_set_icon_surface (context, surface);
 
   cairo_surface_destroy (surface);
