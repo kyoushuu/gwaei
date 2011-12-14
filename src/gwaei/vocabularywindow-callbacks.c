@@ -972,3 +972,375 @@ gw_vocabularywindow_sync_list_order_cb (GSettings *settings, gchar *key, gpointe
 }
 
 
+G_MODULE_EXPORT void
+gw_vocabularywindow_drag_begin_cb (
+  GtkWidget      *widget,
+  GdkDragContext *context,
+  gpointer        data)
+{
+  cairo_surface_t *surface;
+  GtkTreeView *view;
+  GtkTreeModel *model;
+  GtkTreeSelection *selection;
+  GtkTreePath *path;
+  GList *selectedlist;
+
+  view = GTK_TREE_VIEW (widget);
+  model = gtk_tree_view_get_model (GTK_TREE_VIEW (widget));
+  selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (widget));
+  selectedlist = gtk_tree_selection_get_selected_rows (selection, &model);
+  path = (GtkTreePath*) selectedlist->data;
+  surface = gtk_tree_view_create_row_drag_icon (view, path);
+
+  surface = gtk_tree_view_create_row_drag_icon (view, path);
+  gtk_drag_set_icon_surface (context, surface);
+
+  cairo_surface_destroy (surface);
+  g_list_foreach (selectedlist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (selectedlist);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_list_drag_motion_cb (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkTreeView *view;
+    GtkTreeModel *model;
+    GtkTreeViewDropPosition drop_position;
+    GtkTreeSelection *selection;
+    GtkTreePath *path;
+    GtkTreeIter iter, previous_iter;
+    GtkTreeView *source;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    view = GTK_TREE_VIEW (widget);
+    selection = gtk_tree_view_get_selection (view);
+    model = gtk_tree_view_get_model (view);
+    source = GTK_TREE_VIEW (gtk_drag_get_source_widget (context));
+
+    if (source == priv->list_treeview)
+    {
+      gtk_tree_view_get_dest_row_at_pos (view, x, y, &path, &drop_position);
+
+      if (path != NULL)
+      {
+        if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE) 
+          drop_position = GTK_TREE_VIEW_DROP_BEFORE;
+        else if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER) 
+          drop_position = GTK_TREE_VIEW_DROP_AFTER;
+
+        gtk_tree_view_set_drag_dest_row (view, path, drop_position);
+      }
+    }
+    else if (source == priv->word_treeview)
+    {
+      gtk_tree_view_get_path_at_pos (view, x, y, &path, NULL, NULL, NULL);
+      if (path == NULL)
+      {
+        if (gtk_tree_model_get_iter_first (model, &iter)) {
+          previous_iter = iter;
+          while (gtk_tree_model_iter_next (model, &iter)) previous_iter = iter;
+          iter = previous_iter;
+        }
+      }
+      else
+      {
+        gtk_tree_path_prev (path);
+        gtk_tree_model_get_iter (model, &iter, path);
+      }
+        gtk_tree_selection_select_iter (selection, &iter);
+    }
+
+    if (path != NULL) gtk_tree_path_free (path); path = NULL;
+}
+
+
+static gboolean
+gw_vocabularywindow_list_drag_reorder (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer user_data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    GtkTreeViewDropPosition drop_position;
+    GtkTreePath *path;
+    GtkTreeView *view;
+    GtkTreeSelection *selection;
+    GtkTreeModel *model;
+    GtkTreeIter iter, position;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return FALSE;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    view = GTK_TREE_VIEW (widget);
+    selection = gtk_tree_view_get_selection (view);
+    model = gtk_tree_view_get_model (view);
+
+    gtk_tree_view_get_dest_row_at_pos (view, x, y, &path, &drop_position);
+    if (path == NULL) return FALSE;
+    gtk_tree_model_get_iter (model, &position, path);
+    gtk_tree_path_free (path); path = NULL;
+
+    if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE) 
+      drop_position = GTK_TREE_VIEW_DROP_BEFORE;
+    else if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER) 
+      drop_position = GTK_TREE_VIEW_DROP_AFTER;
+
+    gtk_tree_selection_get_selected (selection, &model, &iter);
+
+    if (drop_position == GTK_TREE_VIEW_DROP_BEFORE) 
+      gtk_list_store_move_before (GTK_LIST_STORE (model), &iter, &position);
+    else if (drop_position == GTK_TREE_VIEW_DROP_AFTER) 
+      gtk_list_store_move_after (GTK_LIST_STORE (model), &iter, &position);
+
+    gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (model), preferences);
+
+    return TRUE;
+}
+
+
+static gboolean
+gw_vocabularywindow_list_drag_drop (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer user_data)
+{
+    //Declarations
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    GtkTreeView *list_treeview, *word_treeview;
+    GtkListStore *liststore, *source_wordstore, *target_wordstore, *temp_wordstore;
+    gchar *text;
+    GtkTreeSelection *selection;
+    GList *rowlist;
+    GtkTreeModel *model;
+    gboolean valid;
+
+    //Initializations
+    list_treeview = GTK_TREE_VIEW (widget);
+    gtk_tree_view_get_path_at_pos (list_treeview, x, y, &path, NULL, NULL, NULL);
+    if (path != NULL) gtk_tree_path_prev (path);
+    word_treeview = GTK_TREE_VIEW (gtk_drag_get_source_widget (context));
+    liststore = GTK_LIST_STORE (gtk_tree_view_get_model (list_treeview));
+    source_wordstore = GTK_LIST_STORE (gtk_tree_view_get_model (word_treeview));
+
+    //Get the data from the source wordstore
+    selection = gtk_tree_view_get_selection (word_treeview);
+    model = GTK_TREE_MODEL (source_wordstore);
+    rowlist = gtk_tree_selection_get_selected_rows (selection, &model);
+    text = gw_vocabularywordstore_path_list_to_string (GW_VOCABULARYWORDSTORE (source_wordstore), rowlist);
+    gw_vocabularywordstore_remove_path_list (GW_VOCABULARYWORDSTORE (source_wordstore), rowlist);
+
+    //Get the target wordstore
+    selection = gtk_tree_view_get_selection (list_treeview);
+    model = GTK_TREE_MODEL (liststore);
+    gtk_tree_selection_get_selected (selection, &model, &iter);
+    target_wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
+    
+    //Append the text to the target wordstore
+    gw_vocabularywordstore_append_text (GW_VOCABULARYWORDSTORE (target_wordstore), NULL, FALSE, text);
+    selection = gtk_tree_view_get_selection (list_treeview);
+    model = GTK_TREE_MODEL (liststore);
+
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    temp_wordstore = NULL;
+    while (valid)
+    {
+      gtk_tree_model_get (model, &iter, GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, &temp_wordstore, -1);
+      if (temp_wordstore == source_wordstore)
+        gtk_tree_selection_select_iter (selection, &iter);
+      g_object_unref (temp_wordstore); temp_wordstore = NULL;
+
+      valid = gtk_tree_model_iter_next (model, &iter);
+    }
+
+    g_free (text); text = NULL;
+    g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
+    g_list_free (rowlist); rowlist = NULL;
+
+    return TRUE;
+}
+
+
+G_MODULE_EXPORT gboolean
+gw_vocabularywindow_list_drag_drop_cb (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer user_data)
+{
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkTreeView *source;
+    gboolean success;
+
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return FALSE;
+    priv = window->priv;
+    source = GTK_TREE_VIEW (gtk_drag_get_source_widget (context));
+    success = FALSE;
+
+    if (source == priv->list_treeview)
+      gw_vocabularywindow_list_drag_reorder (widget, context, x, y, time, user_data);
+    else if (source == priv->word_treeview)
+      success = gw_vocabularywindow_list_drag_drop (widget, context, y, y, time, user_data);
+
+    if (success) gw_vocabularywindow_set_has_changes (window, TRUE);
+    gtk_drag_finish (context, success, FALSE, time);
+
+    return success;
+}
+
+
+
+static gboolean
+gw_vocabularywindow_word_drag_reorder (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer user_data)
+{
+    //Declarations
+    GtkTreeViewDropPosition drop_position;
+    GtkTreePath *path;
+    GtkTreeView *view;
+    GtkTreeSelection *selection;
+    GtkTreeModel *model;
+    GtkTreeIter position;
+    GList *rowlist;
+    gchar *text;
+    gboolean before;
+
+    //Initializations
+    view = GTK_TREE_VIEW (widget);
+    selection = gtk_tree_view_get_selection (view);
+    model = gtk_tree_view_get_model (view);
+    before = FALSE;
+
+    gtk_tree_view_get_dest_row_at_pos (view, x, y, &path, &drop_position);
+    if (path == NULL) return FALSE;
+    gtk_tree_model_get_iter (model, &position, path);
+    gtk_tree_path_free (path); path = NULL;
+
+    if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE || drop_position == GTK_TREE_VIEW_DROP_BEFORE)
+      before = TRUE;
+    else if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER || drop_position == GTK_TREE_VIEW_DROP_AFTER)
+      before = FALSE;
+
+    rowlist = gtk_tree_selection_get_selected_rows (selection, &model);
+    text = gw_vocabularywordstore_path_list_to_string (GW_VOCABULARYWORDSTORE (model), rowlist);
+    gw_vocabularywordstore_append_text (GW_VOCABULARYWORDSTORE (model), &position, before, text);
+    g_free (text); text = NULL;
+    g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
+    g_list_free (rowlist); rowlist = NULL;
+
+    rowlist = gtk_tree_selection_get_selected_rows (selection, &model);
+    gw_vocabularywordstore_remove_path_list (GW_VOCABULARYWORDSTORE (model), rowlist);
+
+    g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
+    g_list_free (rowlist); rowlist = NULL;
+
+    return TRUE;
+}
+
+
+G_MODULE_EXPORT gboolean
+gw_vocabularywindow_word_drag_drop_cb (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer user_data)
+{
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkTreeView *source;
+    gboolean success;
+
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return FALSE;
+    priv = window->priv;
+    source = GTK_TREE_VIEW (gtk_drag_get_source_widget (context));
+    success = FALSE;
+
+    if (source == priv->word_treeview)
+      success = gw_vocabularywindow_word_drag_reorder (widget, context, x, y, time, user_data);
+
+    if (success) gw_vocabularywindow_set_has_changes (window, TRUE);
+    gtk_drag_finish (context, success, FALSE, time);
+
+    return success;
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_word_drag_motion_cb (
+  GtkWidget *widget,
+  GdkDragContext *context,
+  gint x,
+  gint y,
+  guint time,
+  gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkTreeView *view;
+    GtkTreeViewDropPosition drop_position;
+    GtkTreePath *path;
+    GtkTreeView *source;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    view = GTK_TREE_VIEW (widget);
+    source = GTK_TREE_VIEW (gtk_drag_get_source_widget (context));
+
+    if (source == priv->word_treeview)
+    {
+      gtk_tree_view_get_dest_row_at_pos (view, x, y, &path, &drop_position);
+
+      if (path != NULL)
+      {
+        if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_BEFORE) 
+          drop_position = GTK_TREE_VIEW_DROP_BEFORE;
+        else if (drop_position == GTK_TREE_VIEW_DROP_INTO_OR_AFTER) 
+          drop_position = GTK_TREE_VIEW_DROP_AFTER;
+
+        gtk_tree_view_set_drag_dest_row (view, path, drop_position);
+      }
+    }
+
+    if (path != NULL) gtk_tree_path_free (path); path = NULL;
+}
+
+
