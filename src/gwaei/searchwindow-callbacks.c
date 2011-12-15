@@ -2364,6 +2364,7 @@ gw_searchwindow_focus_in_event_cb (GtkWidget *widget,
     application = gw_window_get_application (GW_WINDOW (window));
 
     gw_application_set_last_focused_searchwindow (application, window);
+    printf("focus in! %d\n", window);
 
     return FALSE;
 }

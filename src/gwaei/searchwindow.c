@@ -105,6 +105,7 @@ gw_searchwindow_constructed (GObject *object)
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
+    GwApplication *application;
     GtkToolButton *toolbutton;
     gboolean enchant_exists;
 
@@ -116,6 +117,7 @@ gw_searchwindow_constructed (GObject *object)
     //Initializations
     window = GW_SEARCHWINDOW (object);
     priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
 
     //Set up the gtkbuilder links
     priv->entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "search_entry"));
@@ -150,6 +152,8 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_init_accelerators (window);
 
     gw_searchwindow_attach_signals (window);
+
+    gw_application_set_last_focused_searchwindow (application, window);;
 }
 
 
