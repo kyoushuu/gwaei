@@ -269,6 +269,7 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
     {
       { "new", 'n', 0, G_OPTION_ARG_NONE, &(priv->arg_new_window_switch), gettext("Force a new instance window"), NULL },
       { "dictionary", 'd', 0, G_OPTION_ARG_STRING, &(priv->arg_dictionary), gettext("Choose the dictionary to use"), "English" },
+      { "vocabulary", 'o', 0, G_OPTION_ARG_NONE, &(priv->arg_new_vocabulary_window_switch), gettext("Open the vocabulary manager window"), NULL },
       { "version", 'v', 0, G_OPTION_ARG_NONE, &(priv->arg_version_switch), gettext("Check the gWaei version information"), NULL },
       { NULL }
     };
@@ -633,14 +634,22 @@ gw_application_get_tagtable (GwApplication *application)
 static void 
 gw_application_activate (GApplication *application)
 {
+    GwApplicationPrivate *priv;
     GwSearchWindow *searchwindow;
+    GwVocabularyWindow *vocabularywindow;
     GwSettingsWindow *settingswindow;
     LwDictInfoList *dictinfolist;
 
+    priv = GW_APPLICATION (application)->priv;
     searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
 
-    if (searchwindow == NULL)
+    if (priv->arg_new_vocabulary_window_switch)
+    {
+      vocabularywindow = GW_VOCABULARYWINDOW (gw_vocabularywindow_new (GTK_APPLICATION (application)));
+      gtk_widget_show (GTK_WIDGET (vocabularywindow));
+    }
+    else if (searchwindow == NULL)
     {
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
@@ -675,15 +684,16 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
     argv = g_application_command_line_get_arguments (command_line, &argc);
 
+    gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
     g_application_activate (G_APPLICATION (application));
 
-    gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
-
-    g_assert (window != NULL);
+    if (window == NULL) 
+      return 0;
+    di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary);
 
     //Set the initial dictionary
-    if ((di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary)) != NULL)
+    if (di != NULL)
     {
       gw_searchwindow_set_dictionary (window, di->load_position);
     }

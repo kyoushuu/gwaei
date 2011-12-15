@@ -33,6 +33,7 @@ struct _GwApplicationPrivate {
   gchar   *arg_dictionary;
   gchar   *arg_query;
   gboolean arg_version_switch;
+  gboolean arg_new_vocabulary_window_switch;
 
   GtkListStore *vocabulary;
 

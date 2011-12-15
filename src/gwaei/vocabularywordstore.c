@@ -501,13 +501,13 @@ gw_vocabularywordstore_remove_path_list (GwVocabularyWordStore *store, GList *li
 
 
 void
-gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *iter, gboolean before, const gchar *text)
+gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *sibling, gboolean before, const gchar *text)
 {
     //Declarations
     LwVocabularyItem *item;
     gchar **rows;
     gint i;
-    GtkTreeIter new_iter;
+    GtkTreeIter iter;
     gboolean modified;
 
     rows = g_strsplit (text, "\n", -1);
@@ -519,10 +519,10 @@ gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *i
         if (item != NULL)
         {
           if (before)
-            gtk_list_store_insert_before (GTK_LIST_STORE (store), &new_iter, iter);
+            gtk_list_store_insert_before (GTK_LIST_STORE (store), &iter, sibling);
           else
-            gtk_list_store_insert_after (GTK_LIST_STORE (store), &new_iter, iter);
-          gtk_list_store_set (GTK_LIST_STORE (store), &new_iter, 
+            gtk_list_store_insert_after (GTK_LIST_STORE (store), &iter, sibling);
+          gtk_list_store_set (GTK_LIST_STORE (store), &iter, 
             GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item),
             GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, lw_vocabularyitem_get_furigana (item),
             GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, lw_vocabularyitem_get_definitions (item),
@@ -533,6 +533,11 @@ gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *i
           -1);
           lw_vocabularyitem_free (item);
           modified = TRUE;
+          if (sibling != NULL)
+          {
+            before = FALSE;
+            *sibling = iter;
+          }
         }
       }
       g_strfreev (rows); rows = NULL;
