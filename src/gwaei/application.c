@@ -560,7 +560,6 @@ gw_application_get_last_focused_searchwindow (GwApplication *application)
    priv = application->priv;
    window = GW_SEARCHWINDOW (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW));
 
-printf("%d %d\n", window, priv->last_focused);
    if (window != NULL && priv->last_focused != NULL)
      window = priv->last_focused;
 
@@ -647,7 +646,6 @@ gw_application_activate (GApplication *application)
 
     if (priv->arg_new_vocabulary_window_switch)
     {
-      printf("creating vocabulary window\n");
       vocabularywindow = GW_VOCABULARYWINDOW (gw_vocabularywindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (vocabularywindow));
       return;
@@ -655,7 +653,6 @@ gw_application_activate (GApplication *application)
 
     else if (searchwindow == NULL)
     {
-    printf("creating search window\n");
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
 
@@ -694,21 +691,16 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
 
     gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
     g_application_activate (G_APPLICATION (application));
-printf("BREAK1\n");
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
-printf("BREAK2\n");
     if (window == NULL) 
       return 0;
-printf("BREAK3\n");
     di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary);
-printf("BREAK4\n");
 
     //Set the initial dictionary
     if (di != NULL)
     {
       gw_searchwindow_set_dictionary (window, di->load_position);
     }
-printf("BREAK5\n");
 
     //Set the initial query text if it was passed as an argument to the program
     if (priv->arg_query != NULL)
@@ -716,7 +708,6 @@ printf("BREAK5\n");
       gw_searchwindow_entry_set_text (window, priv->arg_query);
       gw_searchwindow_search_cb (GTK_WIDGET (window), window);
     }
-printf("BREAK6\n");
 
     return 0;
 }

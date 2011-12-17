@@ -84,11 +84,16 @@ gw_searchwindow_finalize (GObject *object)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
+    GwApplication *application;
 
     window = GW_SEARCHWINDOW (object);
     priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
 
     gw_searchwindow_cancel_all_searches (window);
+
+    if (gw_application_get_last_focused_searchwindow (application) == window)
+      gw_application_set_last_focused_searchwindow (application, NULL);
 
     if (priv->spellcheck) gw_spellcheck_free (priv->spellcheck); priv->spellcheck = NULL;
     if (priv->history) lw_history_free (priv->history); priv->history = NULL;

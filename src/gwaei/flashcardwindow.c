@@ -214,7 +214,7 @@ gw_flashcardwindow_update_title (GwFlashCardWindow *window)
     gchar *title;
 
     priv = window->priv;
-    title = g_strdup_printf (gettext("gWaei %s Flashcards for \"%s\""), priv->flash_cards_type, priv->list_name);
+    title = g_strdup_printf (gettext("%s - gWaei %s Flashcards"), priv->list_name, priv->flash_cards_type);
     if (title != NULL)
     {
       gtk_window_set_title (GTK_WINDOW (window), title);
