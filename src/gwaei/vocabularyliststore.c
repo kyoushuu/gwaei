@@ -333,53 +333,77 @@ gw_vocabularyliststore_load_list_order (GwVocabularyListStore *store, LwPreferen
     gboolean valid;
     gchar **atoms;
     gchar buffer[500];
-    gint old_pos, new_pos, i, length;
+    gint i;
+    gint old_pos, new_pos, atoms_length, reorder_length;
     gchar *name;
     gint *reorder;
+    GHashTable *oldhash, *newhash;
+    gboolean found;
+    gpointer ptr;
 
     //Initializations
     model = GTK_TREE_MODEL (store);
     lw_preferences_get_string_by_schema (preferences, buffer, LW_SCHEMA_VOCABULARY, LW_KEY_LIST_ORDER, 500);
     atoms = g_strsplit (buffer, ";", -1);
-    length = gtk_tree_model_iter_n_children (model, NULL);
-  
-    //Set up the reorder array
-    reorder = g_new (gint, length);
-    for (i = 0; i < length; i++) reorder[i] = -1;
+    atoms_length = g_strv_length (atoms);
+    reorder_length = gtk_tree_model_iter_n_children (model, NULL);
+    reorder = g_new (gint, reorder_length);
+    for (i = 0; i < reorder_length; i++) reorder[i] = -1;
+    newhash = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+    oldhash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
+    //Create the hash table for the new order
+    for (new_pos = 0; atoms[new_pos] != NULL; new_pos++)
+    {
+      g_hash_table_insert (newhash, atoms[new_pos], GINT_TO_POINTER (new_pos));
+    }
+
+    //Create the hash table for the old order
     valid = gtk_tree_model_get_iter_first (model, &iter);
-    old_pos = 0;
-    new_pos = 0;
-    while (valid)
+    for (old_pos = 0; valid; old_pos++)
     {
       name = gw_vocabularyliststore_get_name_by_iter (store, &iter);
-      for (new_pos = 0; atoms[new_pos] != NULL; new_pos++)
+      if (name != NULL)
       {
-        if (strcmp(name, atoms[new_pos]) == 0)
-        {
-          reorder[old_pos] = new_pos;
-          break;
-        }
+        g_hash_table_insert (oldhash, name, GINT_TO_POINTER (old_pos));
       }
-      g_free (name);
-      old_pos++;
       valid = gtk_tree_model_iter_next (model, &iter);
     }
 
-    //Fill in the blank spots
-    for (old_pos = 0; old_pos < length; old_pos++)
+    //Create the map between the two
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    while (valid)
     {
-      if (reorder[old_pos] == -1)
+      name = gw_vocabularyliststore_get_name_by_iter (store, &iter);
+      if (name != NULL)
       {
-        reorder[old_pos] = new_pos;
-        new_pos++;
+        found = g_hash_table_lookup_extended (oldhash, name, NULL, &ptr);
+        if (found)
+        {
+          old_pos = GPOINTER_TO_INT (ptr);
+          found = g_hash_table_lookup_extended (newhash, name, NULL, &ptr);
+          if (found)
+          {
+            new_pos = GPOINTER_TO_INT (ptr);
+            reorder[new_pos] = old_pos;
+          }
+          else if (atoms_length < reorder_length)
+          {
+            new_pos = atoms_length;
+            reorder[new_pos] = old_pos;
+          }
+        }
+        g_free (name);
       }
+      valid = gtk_tree_model_iter_next (model, &iter);
     }
 
     gtk_list_store_reorder (GTK_LIST_STORE (store), reorder);
 
     g_strfreev (atoms);
     g_free (reorder);
+    g_hash_table_destroy (oldhash);
+    g_hash_table_destroy (newhash);
 }
 
 
