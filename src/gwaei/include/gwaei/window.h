@@ -38,6 +38,8 @@ GtkAccelGroup *gw_window_get_accel_group (GwWindow*);
 
 void gw_window_set_is_important (GwWindow*, gboolean);
 gboolean gw_window_is_important (GwWindow*);
+void gw_window_load_size (GwWindow*);
+void gw_window_save_size (GwWindow*);
 
 G_END_DECLS
 

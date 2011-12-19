@@ -104,6 +104,8 @@ gw_flashcardwindow_finalize (GObject *object)
 
     gtk_tree_model_foreach (priv->model, gw_flashcardwindow_finalize_inner_path, NULL);
 
+    gw_window_save_size (GW_WINDOW (window));
+
     G_OBJECT_CLASS (gw_flashcardwindow_parent_class)->finalize (object);
 }
 
@@ -147,6 +149,7 @@ gw_flashcardwindow_constructed (GObject *object)
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
     gtk_window_set_has_resize_grip (GTK_WINDOW (window), FALSE);
     gw_window_set_is_important (GW_WINDOW (window), TRUE);
+    gw_window_load_size (GW_WINDOW (window));
 
     context = gtk_widget_get_style_context (GTK_WIDGET (priv->card_toolbar));
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);

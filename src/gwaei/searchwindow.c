@@ -100,6 +100,8 @@ gw_searchwindow_finalize (GObject *object)
     if (priv->tablist) g_list_free (priv->tablist); priv->tablist = NULL;
     if (priv->keep_searching_query) g_free (priv->keep_searching_query); priv->keep_searching_query = NULL;
 
+    gw_window_save_size (GW_WINDOW (window));
+
     G_OBJECT_CLASS (gw_searchwindow_parent_class)->finalize (object);
 }
 
@@ -137,6 +139,7 @@ gw_searchwindow_constructed (GObject *object)
     gtk_window_set_default_size (GTK_WINDOW (window), 620, 500);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
     gw_window_set_is_important (GW_WINDOW (window), TRUE);
+    gw_window_load_size (GW_WINDOW (window));
 
     gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
     gw_searchwindow_set_dictionary (window, 0);

@@ -47,6 +47,7 @@ typedef enum
 } GwWindowProps;
 
 static gboolean gw_window_load_ui_xml (GwWindow*, const char*);
+static gboolean gw_window_configure_event_cb (GtkWidget*, GdkEvent*, gpointer);
 
 
 static void 
@@ -96,6 +97,8 @@ gw_window_constructed (GObject *object)
     priv->builder = gtk_builder_new ();
     gw_window_load_ui_xml (window, priv->ui_xml);
     priv->toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toplevel"));
+
+    g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
 }
 
 
@@ -320,3 +323,125 @@ gw_window_is_important (GwWindow *window)
 
     return priv->important;
 }
+
+
+void
+gw_window_load_size (GwWindow *window)
+{
+    GwApplication *application;
+    LwPreferences *preferences;
+    gchar buffer[500];
+    gchar **atoms;
+    gchar **atom;
+    gchar **ptr;
+    gchar *endptr;
+    const gchar* NAME;
+    gint width, height;
+
+    application = gw_window_get_application (window);
+    preferences = gw_application_get_preferences (application);
+    lw_preferences_get_string_by_schema (preferences, buffer, LW_SCHEMA_BASE, LW_KEY_WINDOW_SIZE, 500);
+    NAME = G_OBJECT_TYPE_NAME (window);
+
+    atoms = g_strsplit (buffer, ";", -1);
+    if (atoms != NULL)
+    {
+      //look for the correct window name
+      ptr = atoms;
+      while (*ptr != NULL && strncmp(*ptr, NAME, strlen(NAME)) != 0) ptr++;
+
+      //if it exists, get the info for it
+      if (*ptr != NULL)
+      {
+        atom = g_strsplit_set (*ptr, ":,", 3);
+        if (g_strv_length (atom) == 3)
+        {
+          width = (gint) g_ascii_strtoll (atom[1], &endptr, 10);
+          height = (gint) g_ascii_strtoll (atom[2], &endptr, 10);
+          if (width > 0 && height > 0);
+          {
+            gtk_window_set_default_size (GTK_WINDOW (window), width, height);
+          }
+        }
+        if (atom != NULL) g_strfreev (atom); atom = NULL;
+      }
+      g_strfreev (atoms); atoms = NULL;
+    }
+}
+
+
+void
+gw_window_save_size (GwWindow *window)
+{
+    GwWindowPrivate *priv;
+    GwApplication *application;
+    LwPreferences *preferences;
+    gchar buffer[500];
+    gchar *new_buffer;
+    gchar **atoms;
+    gchar *atom;
+    gchar **ptr;
+    const gchar *NAME;
+
+    priv = window->priv;
+    application = gw_window_get_application (window);
+    preferences = gw_application_get_preferences (application);
+    new_buffer = NULL;
+    NAME = G_OBJECT_TYPE_NAME (window);
+
+    atom = g_strdup_printf ("%s:%d,%d", NAME, priv->width, priv->height);
+    if (atom != NULL)  //Atom is sometimes freed as part of g_strfreev!
+    {
+      lw_preferences_get_string_by_schema (preferences, buffer, LW_SCHEMA_BASE, LW_KEY_WINDOW_SIZE, 500);
+      atoms = g_strsplit (buffer, ";", -1);
+      if (atoms != NULL)
+      {
+        ptr = atoms;
+        while (*ptr != NULL && strncmp(*ptr, NAME, strlen(NAME)) != 0) ptr++;
+
+        if (*ptr != NULL)
+        {
+          g_free (*ptr);
+          *ptr = atom;
+          new_buffer = g_strjoinv (";", atoms);
+        }
+        else
+        {
+          if (*buffer != '\0')
+            new_buffer = g_strjoin (";", buffer, atom, NULL);
+          else
+            new_buffer = g_strdup (atom);
+          g_free (atom); atom = NULL;
+        }
+        g_strfreev (atoms); atoms = NULL;
+      }
+    }
+
+    //set our new buffer to the prefs
+    if (new_buffer != NULL)
+    {
+      lw_preferences_set_string_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_WINDOW_SIZE, new_buffer);
+      g_free (new_buffer); new_buffer = NULL;
+    }
+}
+
+
+static gboolean 
+gw_window_configure_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    GwWindow *window;
+    GwWindowPrivate *priv;
+    GdkEventConfigure *event_configure;
+
+    window = GW_WINDOW (widget);
+    priv = window->priv;
+    event_configure = (GdkEventConfigure*) event;
+
+    priv->x = event_configure->x;
+    priv->y = event_configure->y;
+    priv->width = event_configure->width;
+    priv->height = event_configure->height;
+
+    return FALSE;
+}
+

@@ -110,11 +110,13 @@ gw_vocabularywindow_init (GwVocabularyWindow *window)
 static void 
 gw_vocabularywindow_finalize (GObject *object)
 {
-//    GwVocabularyWindow *window;
+    GwVocabularyWindow *window;
 //    GwVocabularyWindowPrivate *priv;
 
-//    window = GW_VOCABULARYWINDOW (object);
+    window = GW_VOCABULARYWINDOW (object);
 //    priv = window->priv;
+
+    gw_window_save_size (GW_WINDOW (window));
 
     G_OBJECT_CLASS (gw_vocabularywindow_parent_class)->finalize (object);
 }
@@ -154,6 +156,7 @@ gw_vocabularywindow_constructed (GObject *object)
     gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), FALSE);
     gtk_window_set_skip_pager_hint (GTK_WINDOW (window), FALSE);
     gw_window_set_is_important (GW_WINDOW (window), TRUE);
+    gw_window_load_size (GW_WINDOW (window));
 
     gw_vocabularywindow_init_styles (window);
     gw_vocabularywindow_init_list_treeview (window);
