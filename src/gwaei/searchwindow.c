@@ -299,6 +299,9 @@ gw_searchwindow_init_accelerators (GwSearchWindow *window)
       accelgroup, (GDK_KEY_Right), GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
 
     //Vocabulary popup
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "add_new_word_menuitem"));
+    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+      accelgroup, (GDK_KEY_D), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
     widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "manage_vocabulary_menuitem"));
     gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
       accelgroup, (GDK_KEY_M), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);

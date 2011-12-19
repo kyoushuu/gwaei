@@ -36,6 +36,7 @@
 #include <gwaei/vocabularywindow-private.h>
 
 
+static void gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow*);
 
 G_MODULE_EXPORT void
 gw_vocabularywindow_new_list_cb (GtkWidget *widget, gpointer data)
@@ -61,6 +62,7 @@ gw_vocabularywindow_new_list_cb (GtkWidget *widget, gpointer data)
     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
     gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+    gw_vocabularywindow_update_flashcard_sensitivities (window);
 }
 
 
@@ -106,6 +108,8 @@ gw_vocabularywindow_remove_list_cb (GtkWidget *widget, gpointer data)
 
     g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
     g_list_free (rowlist); rowlist = NULL;
+
+    gw_vocabularywindow_update_flashcard_sensitivities (window);
 }
 
 
@@ -206,35 +210,32 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     GwVocabularyWindowPrivate *priv;
     GwApplication *application;
     GtkTreeModel *model;
-    GtkListStore *store;
+    GtkListStore *liststore, *wordstore;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
+    gboolean has_changes;
+    GtkAction *action;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    store = gw_application_get_vocabularyliststore (application);
-    model = GTK_TREE_MODEL (store);
+    liststore = gw_application_get_vocabularyliststore (application);
+    model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
 
     gtk_tree_selection_get_selected (selection, &model, &iter);
 
-    model = GTK_TREE_MODEL (gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (store), &iter));
-
-
-    gtk_tree_view_set_model (priv->word_treeview, model);
+    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
+    gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
-    gboolean has_changes;
     has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
+    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
+    gtk_action_set_sensitive (action, has_changes);
 
-    GtkWidget *widget;
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "revert_menuitem"));
-    gtk_widget_set_sensitive (widget, has_changes);
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "revert_toolbutton"));
-    gtk_widget_set_sensitive (widget, has_changes);
+    gw_vocabularywindow_update_flashcard_sensitivities (window);
 }
 
 
@@ -707,13 +708,14 @@ gw_vocabularywindow_event_after_cb (GtkWidget *widget, GdkEvent *event, gpointer
 G_MODULE_EXPORT void
 gw_vocabularywindow_liststore_changed_cb (GwVocabularyListStore *store, gpointer data)
 {
-  GwVocabularyWindow *window;
-  gboolean has_changes;
+    GwVocabularyWindow *window;
+    gboolean has_changes;
 
-  window = GW_VOCABULARYWINDOW (data);
-  has_changes = gw_vocabularyliststore_has_changes (store);
+    window = GW_VOCABULARYWINDOW (data);
+    has_changes = gw_vocabularyliststore_has_changes (store);
 
-  gw_vocabularywindow_set_has_changes (window, has_changes);
+    gw_vocabularywindow_set_has_changes (window, has_changes);
+    gw_vocabularywindow_update_flashcard_sensitivities (window);
 }
 
 
@@ -1385,6 +1387,40 @@ gw_vocabularywindow_word_drag_motion_cb (
     }
 
     if (path != NULL) gtk_tree_path_free (path); path = NULL;
+}
+
+
+static void
+gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow *window)
+{
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    GtkAction *action;
+    gint i, n_children;
+    const gchar *flashcard_id[6] =
+    {
+      "kanji_definition_flashcards_action",
+      "definition_kanji_flashcards_action",
+      "kanji_furigana_flashcards_action",
+      "furigana_kanji_flashcards_action",
+      "definition_furigana_flashcards_action",
+      "furigana_definition_flashcards_action"
+    };
+    GtkTreeModel *model;
+
+    //Initializations
+    priv = window->priv;
+    model = gtk_tree_view_get_model (priv->word_treeview);
+    if (model != NULL)
+      n_children = gtk_tree_model_iter_n_children (model, NULL);
+    else 
+      n_children = 0;
+
+    for (i = 0; i < 6; i++) 
+    {
+      action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), flashcard_id[i]));
+      gtk_action_set_sensitive (action, n_children);
+    }
 }
 
 

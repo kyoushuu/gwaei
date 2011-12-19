@@ -159,8 +159,8 @@ gw_vocabularywindow_constructed (GObject *object)
     gw_window_load_size (GW_WINDOW (window));
 
     gw_vocabularywindow_init_styles (window);
-    gw_vocabularywindow_init_list_treeview (window);
     gw_vocabularywindow_init_word_treeview (window);
+    gw_vocabularywindow_init_list_treeview (window);
     gw_vocabularywindow_init_accelerators (window);
 
     gw_vocabularywindow_attach_signals (window);
@@ -171,16 +171,24 @@ gw_vocabularywindow_constructed (GObject *object)
       GtkTreeModel *model;
       GtkListStore *store;
       GtkTreeIter iter;
+      GtkTreePath *path;
+      gboolean valid;
       selection = gtk_tree_view_get_selection (priv->list_treeview);
       model = gtk_tree_view_get_model (priv->list_treeview);
-      if (gtk_tree_model_get_iter_first (model, &iter))
+      valid = gtk_tree_model_get_iter_first (model, &iter);
+      if (valid)
       {
+        path = gtk_tree_model_get_path (model, &iter);
+        if (path != NULL)
+        { 
+          gtk_tree_view_set_cursor (priv->list_treeview, path, NULL, FALSE);
+          gtk_tree_path_free (path); path = NULL;
+        }
         gtk_tree_selection_select_iter (selection, &iter);
         store = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (model), &iter);
         gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (store));
       }
     }
-
     gtk_widget_grab_focus (GTK_WIDGET (priv->list_treeview));
 }
 
@@ -190,6 +198,16 @@ gw_vocabularywindow_init_accelerators (GwVocabularyWindow *window)
 {
     GtkWidget *widget;
     GtkAccelGroup *accelgroup;
+    gint i;
+    const gchar *flashcard_id[6] =
+    {
+      "kanji_definition_flashcard_menuitem",
+      "definition_kanji_flashcard_menuitem",
+      "furigana_definition_flashcard_menuitem",
+      "definition_furigana_flashcard_menuitem",
+      "kanji_furigana_flashcard_menuitem",
+      "furigana_kanji_flashcard_menuitem"
+    };
 
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
@@ -238,6 +256,13 @@ gw_vocabularywindow_init_accelerators (GwVocabularyWindow *window)
     widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "delete_menuitem"));
     gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
       accelgroup, (GDK_KEY_Delete), 0, GTK_ACCEL_VISIBLE);
+
+    for (i = 0; i < 6; i++)
+    {
+      widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), flashcard_id[i]));
+      gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+        accelgroup, (GDK_KEY_0 + i), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+    }
 }
 
 
@@ -638,18 +663,19 @@ gw_vocabularywindow_start_flashcards (GwVocabularyWindow *window,
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
     liststore = GTK_LIST_STORE (gtk_tree_view_get_model (priv->list_treeview));
     model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
     gtk_tree_selection_get_selected (selection, &model, &iter);
     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    model = GTK_TREE_MODEL (wordstore);
-    gw_flashcardwindow_set_track_results (GW_FLASHCARDWINDOW (flashcardwindow), priv->track);
 
+    if ((gtk_tree_model_iter_n_children (GTK_TREE_MODEL (wordstore), NULL)) == 0) return;
+
+    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
+    gw_flashcardwindow_set_track_results (GW_FLASHCARDWINDOW (flashcardwindow), priv->track);
     valid = gw_flashcardwindow_set_model (
       GW_FLASHCARDWINDOW (flashcardwindow), 
-      model,
+      GTK_TREE_MODEL (wordstore),
       flash_cards_type,
       gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore)),
       question_text,
