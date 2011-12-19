@@ -142,6 +142,7 @@ gw_flashcardwindow_constructed (GObject *object)
     priv->incorrect_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "wrong_label"));
     priv->status_progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "status_progressbar"));
     priv->status_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "status_label"));
+    priv->track_togglebutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "track_checkbutton"));
 
     //Set up the gtk window
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
@@ -670,3 +671,24 @@ gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
     gtk_widget_hide (GTK_WIDGET (priv->content_box));
     gtk_widget_show (GTK_WIDGET (priv->finished_box));
 }
+
+
+void
+gw_flashcardwindow_set_track_results (GwFlashCardWindow *window, gboolean request)
+{
+    GwFlashCardWindowPrivate *priv;
+    GtkToggleButton *button;
+    GtkWidget *toplevel;
+
+    priv = window->priv;
+
+    priv->track = request;
+    button = priv->track_togglebutton;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (button, gw_flashcardwindow_track_results_toggled_cb, toplevel);
+    gtk_toggle_button_set_active (button, request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (button, gw_flashcardwindow_track_results_toggled_cb, toplevel);
+}
+
+

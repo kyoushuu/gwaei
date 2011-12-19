@@ -71,8 +71,15 @@
     <key name="shuffle-flashcards" type="b">
       <default>false</default>
       <summary>Whether the generated flashchard decks should be shuffled</summary>
-      <description>The newly created flashcard decks will be shulled..</description>
+      <description>The newly created flashcard decks will be shulled.</description>
     </key>
+
+    <key name="track-results" type="b">
+      <default>false</default>
+      <summary>Whether the generated flashchard results should be saved</summary>
+      <description>Whether the generated flashchard results should be saved.</description>
+    </key>
+
   </schema>
 
   <!-- Dictionary settings -->

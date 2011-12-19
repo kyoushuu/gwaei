@@ -100,3 +100,17 @@ gw_flashcardwindow_close_cb (GtkWidget *widget, gpointer data)
       gw_application_quit (application);
 }
 
+
+G_MODULE_EXPORT void
+gw_flashcardwindow_track_results_toggled_cb (GtkWidget *widget, gpointer data)
+{
+    GwFlashCardWindow *window;
+    gboolean state;
+
+    window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
+    if (window == NULL) return;
+    state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
+    gw_flashcardwindow_set_track_results (window, state);
+}
+

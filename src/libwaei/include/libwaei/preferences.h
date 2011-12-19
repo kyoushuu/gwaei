@@ -26,6 +26,7 @@
 //////////////////////////
 #define LW_SCHEMA_VOCABULARY       "org.gnome.gwaei.vocabulary"
 #define LW_KEY_SHUFFLE_FLASHCARDS  "shuffle-flashcards"
+#define LW_KEY_TRACK_RESULTS       "track-results"
 #define LW_KEY_LIST_ORDER          "list-order"
 
 //////////////////////////

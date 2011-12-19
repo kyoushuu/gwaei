@@ -298,6 +298,14 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
         gw_vocabularywindow_sync_list_order_cb,
         window
     );
+
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
+        LW_KEY_TRACK_RESULTS,
+        gw_vocabularywindow_sync_track_results_cb,
+        window
+    );
 }
 
 
@@ -348,6 +356,13 @@ gw_vocabularywindow_remove_signals (GwVocabularyWindow *window)
       priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_LIST_ORDER_CHANGED]
     );
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_LIST_ORDER_CHANGED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED] = 0;
 }
 
 
@@ -627,6 +642,7 @@ gw_vocabularywindow_start_flashcards (GwVocabularyWindow *window,
     gtk_tree_selection_get_selected (selection, &model, &iter);
     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
     model = GTK_TREE_MODEL (wordstore);
+    gw_flashcardwindow_set_track_results (GW_FLASHCARDWINDOW (flashcardwindow), priv->track);
 
     valid = gw_flashcardwindow_set_model (
       GW_FLASHCARDWINDOW (flashcardwindow), 

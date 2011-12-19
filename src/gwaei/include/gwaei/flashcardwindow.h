@@ -38,6 +38,7 @@ void gw_flashcardwindow_set_card_completed (GwFlashCardWindow*, gboolean);
 gboolean gw_flashcardwindow_iterate (GwFlashCardWindow*);
 void gw_flashcardwindow_check_answer (GwFlashCardWindow*);
 void gw_flashcardwindow_set_finished (GwFlashCardWindow*);
+void gw_flashcardwindow_set_track_results (GwFlashCardWindow*, gboolean);
 
 #include "flashcardwindow-callbacks.h"
 

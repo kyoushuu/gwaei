@@ -9,3 +9,4 @@ void gw_vocabularywindow_liststore_changed_cb (GwVocabularyListStore*, gpointer)
 
 void gw_vocabularywindow_sync_shuffle_flashcards_cb (GSettings*, gchar*, gpointer);
 void gw_vocabularywindow_sync_list_order_cb (GSettings*, gchar*, gpointer);
+void gw_vocabularywindow_sync_track_results_cb (GSettings*, gchar*, gpointer);

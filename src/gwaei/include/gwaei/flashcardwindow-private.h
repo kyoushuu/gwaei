@@ -19,6 +19,7 @@ struct _GwFlashCardWindowPrivate {
     GtkToolButton *check_answer_toolbutton;
     GtkToolButton *next_card_toolbutton;
     GtkToolButton *dont_know_toolbutton;
+    GtkToggleButton *track_togglebutton;
     GtkEntry *answer_entry;
     GtkLabel *correct_label;
     GtkLabel *incorrect_label;
@@ -48,6 +49,8 @@ struct _GwFlashCardWindowPrivate {
     gint source_answer_column;
 
     gint64 time;
+
+    gboolean track;
 };
 
 #define GW_FLASHCARDWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_FLASHCARDWINDOW, GwFlashCardWindowPrivate))

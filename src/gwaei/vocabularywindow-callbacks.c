@@ -955,6 +955,51 @@ gw_vocabularywindow_sync_shuffle_flashcards_cb (GSettings *settings, gchar *key,
 
 
 G_MODULE_EXPORT void
+gw_vocabularywindow_track_results_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwApplication *application;
+    GwVocabularyWindow *window;
+    LwPreferences *preferences;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_TRACK_RESULTS);
+
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_TRACK_RESULTS, !request);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_track_results_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    GtkToggleAction *action;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    action = GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "track_results_toggleaction"));
+    request = lw_preferences_get_boolean (settings, key);
+    priv->track = request;
+
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_track_results_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_track_results_toggled_cb, toplevel);
+}
+
+
+G_MODULE_EXPORT void
 gw_vocabularywindow_sync_list_order_cb (GSettings *settings, gchar *key, gpointer data)
 {
     GwVocabularyWindow *window;
