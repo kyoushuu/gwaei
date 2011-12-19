@@ -492,6 +492,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_KANJI));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Word"));
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_KANJI, 
@@ -505,6 +506,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Reading"));
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, 
@@ -520,6 +522,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Definitions"));
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, 
