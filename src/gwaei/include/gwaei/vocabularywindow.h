@@ -46,6 +46,8 @@ gchar* gw_vocabularywindow_selected_words_to_string (GwVocabularyWindow*);
 gboolean gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow*);
 void gw_vocabularywindow_start_flashcards (GwVocabularyWindow*, const gchar*, const gchar*, gint, gint);
 GtkListStore* gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow*);
+void gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow*);
+void gw_vocabularywindow_set_selected_list (GwVocabularyWindow*, GtkTreePath*);
 
 #include "vocabularywindow-callbacks.h"
 

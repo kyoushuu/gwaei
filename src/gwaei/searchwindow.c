@@ -153,6 +153,7 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_initialize_dictionary_combobox (window);
     gw_searchwindow_initialize_dictionary_menu (window);
     gw_searchwindow_update_history_popups (window);
+    gw_searchwindow_update_vocabulary_menuitems (window);
 
     gtk_widget_set_sensitive (GTK_WIDGET (priv->entry), enchant_exists);
     gtk_widget_set_sensitive (GTK_WIDGET (toolbutton), enchant_exists);
@@ -1996,11 +1997,13 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     GwDictInfoList *dictinfolist;
+    GtkListStore *liststore;
     LwPreferences *preferences;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
     dictinfolist = gw_application_get_dictinfolist (application);
+    liststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
 
@@ -2085,6 +2088,14 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
         G_CALLBACK (gw_searchwindow_dictionaries_deleted_cb),
         window 
     );
+    priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED] = g_signal_connect (
+        G_OBJECT (liststore),
+        "changed",
+        G_CALLBACK (gw_searchwindow_vocabulary_changed_cb),
+        window 
+    );
+
+
 
     priv->timeoutid[GW_SEARCHWINDOW_TIMEOUTID_KEEP_SEARCHING] = gdk_threads_add_timeout (
           500,
@@ -2116,6 +2127,7 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     GwDictInfoList *dictinfolist;
+    GtkListStore *liststore;
     LwPreferences *preferences;
     GSource *source;
     gint i;
@@ -2123,6 +2135,7 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
     dictinfolist = gw_application_get_dictinfolist (application);
+    liststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
     for (i = 0; i < TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS; i++)
@@ -2185,6 +2198,11 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     g_signal_handler_disconnect (
         G_OBJECT (dictinfolist->model),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED]
+    );
+
+    g_signal_handler_disconnect (
+        G_OBJECT (liststore),
+        priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED]
     );
 }
 
@@ -2284,4 +2302,71 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     gtk_widget_show (GTK_WIDGET (widget));
 }
 
+
+static void
+gw_searchwindow_clear_vocabularylist_menuitems (GwSearchWindow *window)
+{
+    GtkMenuShell *shell;
+    GList *children, *link;
+    GtkWidget *widget;
+
+    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "vocabulary_popup"));
+    children = gtk_container_get_children (GTK_CONTAINER (shell));
+    link = g_list_last (children);
+
+    while (link != NULL && GTK_IS_SEPARATOR_MENU_ITEM (link->data) == FALSE)
+    {
+      widget = GTK_WIDGET (link->data);
+      gtk_widget_destroy (widget);
+      link = link->prev;
+    }
+
+    g_list_free (children); children = NULL;
+}
+
+
+static void
+gw_searchwindow_append_vocabularylist_menuitems (GwSearchWindow *window)
+{
+    GwApplication *application;
+    GtkMenuShell *shell;
+    GtkWidget *menuitem;
+    GtkListStore *liststore;
+    GtkTreeModel *model;
+    GtkTreePath *path;
+    GtkTreeIter iter;
+    gboolean valid;
+    gchar *name;
+
+    application = gw_window_get_application (GW_WINDOW (window));
+    liststore = gw_application_get_vocabularyliststore (application);
+    model = GTK_TREE_MODEL (liststore);
+    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "vocabulary_popup"));
+
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    while (valid)
+    {
+      name = gw_vocabularyliststore_get_name_by_iter (GW_VOCABULARYLISTSTORE (model), &iter);
+      if (name != NULL)
+      {
+        menuitem = gtk_menu_item_new_with_label (name);
+        path = gtk_tree_model_get_path (model, &iter);
+        g_object_set_data_full (G_OBJECT (menuitem), "tree-path", (gpointer) path, (GDestroyNotify) gtk_tree_path_free);
+        g_signal_connect (G_OBJECT (menuitem), "activate", 
+            G_CALLBACK (gw_searchwindow_vocabulary_menuitem_activated_cb), window);
+        gtk_menu_shell_append (shell, menuitem);
+        gtk_widget_show (menuitem);
+        g_free (name);
+      }
+      valid = gtk_tree_model_iter_next (model, &iter);
+    }
+}
+
+
+void
+gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow *window)
+{
+  gw_searchwindow_clear_vocabularylist_menuitems (window);
+  gw_searchwindow_append_vocabularylist_menuitems (window);
+}
 

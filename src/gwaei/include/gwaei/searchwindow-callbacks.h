@@ -78,6 +78,8 @@ gboolean gw_searchwindow_focus_in_event_cb (GtkWidget*, GdkEvent*, gpointer);
 void gw_searchwindow_event_after_cb (GtkWidget*, GdkEvent*, gpointer);
 
 gboolean gw_searchwindow_motion_notify_event_cb (GtkWidget*, GdkEventButton*, gpointer);
+void gw_searchwindow_vocabulary_changed_cb (GtkWidget*, gpointer);
+void gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget*, gpointer);
 
 #endif
 

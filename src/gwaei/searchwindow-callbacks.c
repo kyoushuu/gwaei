@@ -2484,3 +2484,53 @@ gw_searchwindow_add_vocabulary_word_cb (GtkWidget *widget, gpointer data)
     gtk_widget_show (GTK_WIDGET (addvocabularywindow));
 }
 
+
+G_MODULE_EXPORT void
+gw_searchwindow_vocabulary_changed_cb (GtkWidget *widget, gpointer data)
+{
+    //Declarations
+    GwSearchWindow *window;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    if (window == NULL);
+
+    gw_searchwindow_update_vocabulary_menuitems (window);
+}
+
+
+G_MODULE_EXPORT void
+gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    GwApplication *application;
+    GtkWindow *vocabularywindow;
+    GtkMenuItem *menuitem;
+    GtkTreePath *path;
+    GList *iter;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    if (window == NULL);
+    application = gw_window_get_application (GW_WINDOW (window));
+    menuitem = GTK_MENU_ITEM (widget);
+    path = (GtkTreePath*) g_object_get_data (G_OBJECT (menuitem), "tree-path");
+    iter = gtk_application_get_windows (GTK_APPLICATION (application));
+
+    while (iter != NULL && !GW_IS_VOCABULARYWINDOW (iter->data)) iter = iter->next;
+
+    if (iter != NULL)
+    {
+      vocabularywindow = GTK_WINDOW (iter->data);
+      gtk_window_present (GTK_WINDOW (vocabularywindow));
+    }
+    else
+    {
+      vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
+      gtk_widget_show (GTK_WIDGET (vocabularywindow));
+    }
+
+    gw_vocabularywindow_set_selected_list (GW_VOCABULARYWINDOW (vocabularywindow), path);
+}
+

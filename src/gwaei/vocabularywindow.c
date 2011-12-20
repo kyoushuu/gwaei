@@ -695,6 +695,21 @@ gw_vocabularywindow_start_flashcards (GwVocabularyWindow *window,
 }
 
 
+void
+gw_vocabularywindow_set_selected_list (GwVocabularyWindow *window, GtkTreePath *path)
+{
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    GtkTreeView *view;
+
+    //Initializations
+    priv = window->priv;
+    view = priv->list_treeview;
+
+    gtk_tree_view_set_cursor (view, path, NULL, FALSE);
+}
+
+
 GtkListStore*
 gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow *window)
 {
