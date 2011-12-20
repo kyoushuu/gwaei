@@ -91,6 +91,70 @@ lw_vocabularyitem_get_score_as_string (LwVocabularyItem *item)
     return item->score;
 }
 
+guint32
+lw_vocabularyitem_timestamp_to_hours (gint64 timestamp)
+{
+    const gint MICROSECONDS = 1000000;
+    const gint SECONDS = 60;
+    const gint MINUTES = 60;
+    return (guint32) (timestamp / MICROSECONDS / SECONDS / MINUTES);
+}
+
+
+void
+lw_vocabularyitem_set_timestamp (LwVocabularyItem *item, gint64 timestamp)
+{
+    guint32 hours = lw_vocabularyitem_timestamp_to_hours (timestamp);
+    lw_vocabularyitem_set_hours (item, hours);
+}
+
+
+void
+lw_vocabularyitem_update_timestamp (LwVocabularyItem *item)
+{
+    lw_vocabularyitem_set_timestamp (item, g_get_real_time ());
+}
+
+
+void
+lw_vocabularyitem_set_hours (LwVocabularyItem *item, guint32 hours)
+{
+    item->timestamp = hours;
+
+    if (item->days != NULL) g_free (item->days); item->days = NULL;
+    if (item->fields[LW_VOCABULARYITEM_FIELD_TIMESTAMP] != NULL)
+      g_free (item->fields[LW_VOCABULARYITEM_FIELD_TIMESTAMP]);
+
+    item->fields[LW_VOCABULARYITEM_FIELD_TIMESTAMP] = g_strdup_printf ("%" G_GUINT32_FORMAT, item->timestamp);
+}
+
+
+guint32
+lw_vocabularyitem_get_hours (LwVocabularyItem *item)
+{
+    return item->timestamp;
+}
+
+
+const gchar*
+lw_vocabularyitem_get_timestamp_as_string (LwVocabularyItem *item)
+{
+    if (item->days == NULL)
+    {
+      guint32 days = lw_vocabularyitem_get_hours (item) / 24;
+      guint32 today = lw_vocabularyitem_timestamp_to_hours ( g_get_real_time ()) / 24;
+      guint32 difference = today - days;
+      if (difference < 0) difference = 0;
+
+      if (days == 0) item->days = g_strdup (pgettext("noun", "Never"));
+      else if (difference == 0) item->days = g_strdup (gettext("Today"));
+      else if (difference == 1) item->days = g_strdup (gettext("Yesterday"));
+      else item->days = g_strdup_printf (gettext("%" G_GUINT32_FORMAT " Days Ago"), difference);
+    }
+
+    return item->days;
+}
+
 
 LwVocabularyItem*
 lw_vocabularyitem_new ()
@@ -132,6 +196,8 @@ lw_vocabularyitem_new_from_string (const gchar *text)
         item->correct_guesses = (gint) g_ascii_strtoll (ptr, &endptr, 10);
         ptr = item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES];
         item->incorrect_guesses =  (gint) g_ascii_strtoll (ptr, &endptr, 10);
+        ptr = item->fields[LW_VOCABULARYITEM_FIELD_TIMESTAMP];
+        item->timestamp =  (guint32) g_ascii_strtoll (ptr, &endptr, 10);
       }
     }
 

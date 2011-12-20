@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gwaei 3.1.0\n"
 "Report-Msgid-Bugs-To: pizzach@gmail.com\n"
-"POT-Creation-Date: 2011-12-19 14:13-0800\n"
+"POT-Creation-Date: 2011-12-20 15:54-0800\n"
 "PO-Revision-Date: 2011-08-03 01:28+0700\n"
 "Last-Translator: Ngô Chin <ndtrung4419@gmail.com>\n"
 "Language-Team: none\n"
@@ -180,6 +180,24 @@ msgstr "Không thể ghi đầu ra của dòng vào một tập tin."
 msgid "Untested"
 msgstr ""
 
+#: ../src/libwaei/vocabularyitem.c:149
+#, fuzzy
+msgctxt "noun"
+msgid "Never"
+msgstr "Không bao giờ"
+
+#: ../src/libwaei/vocabularyitem.c:150
+msgid "Today"
+msgstr ""
+
+#: ../src/libwaei/vocabularyitem.c:151
+msgid "Yesterday"
+msgstr ""
+
+#: ../src/libwaei/vocabularyitem.c:152
+msgid "%"
+msgstr ""
+
 #: ../src/waei/console.c:65
 #, c-format
 msgid "Uninstalling %s...\n"
@@ -215,14 +233,14 @@ msgstr "Không tìm thấy từ điển yêu cầu!\n"
 msgid "Searching for \"%s\" in %s...\n"
 msgstr "Đang tìm kiếm \"%s\" trong %s...\n"
 
-#: ../src/waei/console.c:326 ../src/gwaei/searchwindow.c:581
+#: ../src/waei/console.c:326 ../src/gwaei/searchwindow.c:585
 #, c-format
 msgid "Found %d result"
 msgid_plural "Found %d results"
 msgstr[0] "Tìm thấy %d kết quả"
 
 #. TRANSLATORS: relevant what ? It's the number of "relevant" result(s) displayed while or after searching.
-#: ../src/waei/console.c:327 ../src/gwaei/searchwindow.c:585
+#: ../src/waei/console.c:327 ../src/gwaei/searchwindow.c:589
 #, c-format
 msgid "(%d Relevant)"
 msgid_plural "(%d Relevant)"
@@ -596,7 +614,7 @@ msgid "Add"
 msgstr ""
 
 #: ../src/gwaei/vocabularywindow.ui.h:2
-#: ../src/gwaei/vocabularywindow-callbacks.c:870
+#: ../src/gwaei/vocabularywindow-callbacks.c:872
 #, fuzzy
 msgid "Definition→Furigana"
 msgstr "Từ điển"
@@ -606,7 +624,7 @@ msgid "Definition→Furigana Flashcards"
 msgstr ""
 
 #: ../src/gwaei/vocabularywindow.ui.h:4
-#: ../src/gwaei/vocabularywindow-callbacks.c:836
+#: ../src/gwaei/vocabularywindow-callbacks.c:838
 #, fuzzy
 msgid "Definition→Kanji"
 msgstr "Từ điển"
@@ -625,7 +643,7 @@ msgid "Export"
 msgstr ""
 
 #: ../src/gwaei/vocabularywindow.ui.h:8
-#: ../src/gwaei/vocabularywindow-callbacks.c:853
+#: ../src/gwaei/vocabularywindow-callbacks.c:855
 #, fuzzy
 msgid "Furigana→Definition"
 msgstr "Từ điển"
@@ -635,7 +653,7 @@ msgid "Furigana→Definition Flashcards"
 msgstr ""
 
 #: ../src/gwaei/vocabularywindow.ui.h:10
-#: ../src/gwaei/vocabularywindow-callbacks.c:904
+#: ../src/gwaei/vocabularywindow-callbacks.c:906
 msgid "Furigana→Kanji"
 msgstr ""
 
@@ -652,7 +670,7 @@ msgid "Kanji List from JLPT Level 1"
 msgstr ""
 
 #: ../src/gwaei/vocabularywindow.ui.h:14
-#: ../src/gwaei/vocabularywindow-callbacks.c:819
+#: ../src/gwaei/vocabularywindow-callbacks.c:821
 #, fuzzy
 msgid "Kanji→Definition"
 msgstr "Từ điển"
@@ -1175,25 +1193,25 @@ msgstr ""
 "bảo tất cả bạn bè của bạn làm như thế luôn. Sau này họ sẽ phải cảm ơn bạn. "
 "Thật đấy."
 
-#: ../src/gwaei/searchwindow.c:579
+#: ../src/gwaei/searchwindow.c:583
 msgid "Searching..."
 msgstr "Đang tìm kiếm..."
 
-#: ../src/gwaei/searchwindow.c:582
+#: ../src/gwaei/searchwindow.c:586
 #, c-format
 msgid "Searching... %d result"
 msgid_plural "Searching... %d results"
 msgstr[0] "Đang tìm kiếm... %d kết quả"
 
-#: ../src/gwaei/searchwindow.c:1568
+#: ../src/gwaei/searchwindow.c:1572
 msgid "(Empty)"
 msgstr "(Rỗng)"
 
-#: ../src/gwaei/searchwindow.c:2271
+#: ../src/gwaei/searchwindow.c:2292
 msgid "_Cycle Up"
 msgstr "Từ điển _trước"
 
-#: ../src/gwaei/searchwindow.c:2277
+#: ../src/gwaei/searchwindow.c:2298
 msgid "Cycle _Down"
 msgstr "Từ điển _sau"
 
@@ -1220,71 +1238,75 @@ msgstr "Phím tắt"
 msgid "gWaei Vocabulary Manager"
 msgstr "Tạo một danh sách từ vựng"
 
-#: ../src/gwaei/vocabularywindow.c:440
+#: ../src/gwaei/vocabularywindow.c:465
 msgid "Lists"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow.c:494
+#: ../src/gwaei/vocabularywindow.c:519
 msgid "Word"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow.c:508
+#: ../src/gwaei/vocabularywindow.c:533
 #, fuzzy
 msgid "Reading"
 msgstr "Cách đọc: "
 
-#: ../src/gwaei/vocabularywindow.c:524
+#: ../src/gwaei/vocabularywindow.c:549
 #, fuzzy
 msgid "Definitions"
 msgstr "Từ điển"
 
-#: ../src/gwaei/vocabularywindow.c:537
+#: ../src/gwaei/vocabularywindow.c:563
+msgid "Last Studied"
+msgstr ""
+
+#: ../src/gwaei/vocabularywindow.c:575
 msgid "Score"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:409
+#: ../src/gwaei/vocabularywindow-callbacks.c:410
 msgid "Save changes before closing?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:410
+#: ../src/gwaei/vocabularywindow-callbacks.c:411
 msgid "Close _without Saving"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:424
+#: ../src/gwaei/vocabularywindow-callbacks.c:425
 msgid "Save Changes before Closing?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:425
+#: ../src/gwaei/vocabularywindow-callbacks.c:426
 msgid "Some of your vocabulary lists have changed since your last save."
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:481
+#: ../src/gwaei/vocabularywindow-callbacks.c:482
 #, fuzzy
 msgid "Export Vocabulary List..."
 msgstr "Tạo một danh sách từ vựng"
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:820
-#: ../src/gwaei/vocabularywindow-callbacks.c:854
+#: ../src/gwaei/vocabularywindow-callbacks.c:822
+#: ../src/gwaei/vocabularywindow-callbacks.c:856
 msgid "What is the English definition of this word?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:837
+#: ../src/gwaei/vocabularywindow-callbacks.c:839
 msgid "What is the Japanese word for this definition?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:871
+#: ../src/gwaei/vocabularywindow-callbacks.c:873
 msgid "What is the Furigana for this definition?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:887
+#: ../src/gwaei/vocabularywindow-callbacks.c:889
 msgid "Kanji→Furigana"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:888
+#: ../src/gwaei/vocabularywindow-callbacks.c:890
 msgid "What is the Furigana for this Kanji?"
 msgstr ""
 
-#: ../src/gwaei/vocabularywindow-callbacks.c:905
+#: ../src/gwaei/vocabularywindow-callbacks.c:907
 msgid "What is the Kanji for this Furigana?"
 msgstr ""
 
@@ -1294,52 +1316,56 @@ msgstr ""
 msgid "New List %d"
 msgstr ""
 
-#: ../src/gwaei/vocabularywordstore.c:568
+#: ../src/gwaei/vocabularywordstore.c:580
 #, fuzzy
 msgid "(Click to set Kanji)"
 msgstr "Nhấn để tìm kiếm"
 
-#: ../src/gwaei/vocabularywordstore.c:569
+#: ../src/gwaei/vocabularywordstore.c:581
 #, fuzzy
 msgid "(Click to set Furigana)"
 msgstr "Nhấn để tìm kiếm"
 
-#: ../src/gwaei/vocabularywordstore.c:570
+#: ../src/gwaei/vocabularywordstore.c:582
 #, fuzzy
 msgid "(Click to set Definitions)"
 msgstr "Nhấn để tìm kiếm"
 
-#: ../src/gwaei/flashcardwindow.c:221
+#: ../src/gwaei/vocabularywordstore.c:594
+msgid "New"
+msgstr ""
+
+#: ../src/gwaei/flashcardwindow.c:227
 #, fuzzy, c-format
 msgid "%s - gWaei %s Flashcards"
 msgstr "Từ điển Nhật-Anh gWaei"
 
-#: ../src/gwaei/flashcardwindow.c:380
+#: ../src/gwaei/flashcardwindow.c:387
 msgid "You were correct!"
 msgstr ""
 
-#: ../src/gwaei/flashcardwindow.c:381 ../src/gwaei/flashcardwindow.c:395
+#: ../src/gwaei/flashcardwindow.c:388 ../src/gwaei/flashcardwindow.c:402
 msgid "Press [Enter] to continue..."
 msgstr ""
 
-#: ../src/gwaei/flashcardwindow.c:382 ../src/gwaei/flashcardwindow.c:396
+#: ../src/gwaei/flashcardwindow.c:389 ../src/gwaei/flashcardwindow.c:403
 msgid "Answer"
 msgstr ""
 
-#: ../src/gwaei/flashcardwindow.c:394
+#: ../src/gwaei/flashcardwindow.c:401
 msgid "You were incorrect!"
 msgstr ""
 
-#: ../src/gwaei/flashcardwindow.c:662
+#: ../src/gwaei/flashcardwindow.c:669
 msgid "You've finished this flash card deck!"
 msgstr ""
 
-#: ../src/gwaei/flashcardwindow.c:663
+#: ../src/gwaei/flashcardwindow.c:670
 #, fuzzy
 msgid "Your Grade"
 msgstr "Được học ở lớp: "
 
-#: ../src/gwaei/flashcardwindow.c:664
+#: ../src/gwaei/flashcardwindow.c:671
 #, fuzzy
 msgid "Completion Time"
 msgstr "Nén: "

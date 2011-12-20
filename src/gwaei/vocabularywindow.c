@@ -556,6 +556,19 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     gtk_tree_view_append_column (priv->word_treeview, column);
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS] = renderer;
 
+    //Date Column
+    column = gtk_tree_view_column_new ();
+    renderer = gtk_cell_renderer_text_new ();
+    g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
+    gtk_tree_view_column_set_title (column, gettext("Last Studied"));
+    gtk_tree_view_column_pack_start (column, renderer, TRUE);
+    gtk_tree_view_column_set_attributes (column, renderer, 
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_DAYS, 
+        NULL);
+    gtk_tree_view_append_column (priv->word_treeview, column);
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DAYS] = renderer;
+
+    //Score Column
     column = gtk_tree_view_column_new ();
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);

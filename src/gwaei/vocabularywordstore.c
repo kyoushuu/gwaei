@@ -70,7 +70,9 @@ gw_vocabularywordstore_init (GwVocabularyWordStore *model)
       G_TYPE_INT,    //GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES
       G_TYPE_INT,    //GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES
       G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_SCORE
-      G_TYPE_INT     //GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT_
+      G_TYPE_UINT,   //GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP
+      G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_DAYS
+      G_TYPE_INT     //GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT
     };
 
     gtk_list_store_set_column_types (GTK_LIST_STORE (model), TOTAL_GW_VOCABULARYWORDSTORE_COLUMNS, types);
@@ -98,7 +100,7 @@ gw_vocabularywordstore_finalize (GObject *object)
 
 
 static void 
-gw_vocabularywordstore_set_property (GObject      *object,
+gw_vocabularywordstore_set_property (GObject  *object,
                                  guint         property_id,
                                  const GValue *value,
                                  GParamSpec   *pspec)
@@ -237,6 +239,9 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME
           gtk_tree_model_get (model, &iter,  GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &number, -1);
           lw_vocabularyitem_set_incorrect_guesses (item, number);
 
+          gtk_tree_model_get (model, &iter,  GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, &number, -1);
+          lw_vocabularyitem_set_hours (item, number);
+
           priv->vocabulary_list->items = g_list_append (priv->vocabulary_list->items, item);
           gtk_list_store_set (GTK_LIST_STORE (model), &iter, GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, weight, -1);
         }
@@ -283,6 +288,8 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
           GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, lw_vocabularyitem_get_definitions (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, lw_vocabularyitem_get_correct_guesses (item),
           GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, lw_vocabularyitem_get_incorrect_guesses (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, lw_vocabularyitem_get_hours (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_DAYS, lw_vocabularyitem_get_timestamp_as_string (item),
           GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
           GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
       -1);
@@ -412,8 +419,8 @@ gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore *store, GtkTreeIter
     GtkTreeModel *model;
     gchar *text;
     gchar *kanji, *furigana, *definitions;
-    gint correct_guesses, incorrect_guesses;
-    gchar *correct_guesses_string, *incorrect_guesses_string;
+    gint correct_guesses, incorrect_guesses, timestamp;
+    gchar *correct_guesses_string, *incorrect_guesses_string, *timestamp_string;
 
     model = GTK_TREE_MODEL (store);
 
@@ -423,17 +430,20 @@ gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore *store, GtkTreeIter
         GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,       &definitions,
         GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,   &correct_guesses,
         GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &incorrect_guesses,
+        GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP,         &timestamp,
     -1);
 
     correct_guesses_string = g_strdup_printf("%d", correct_guesses);
     incorrect_guesses_string = g_strdup_printf("%d", incorrect_guesses);
-    text = g_strjoin (";", kanji, furigana, definitions, correct_guesses_string, incorrect_guesses_string, NULL);
+    timestamp_string = g_strdup_printf("%d", timestamp);
+    text = g_strjoin (";", kanji, furigana, definitions, correct_guesses_string, incorrect_guesses_string, timestamp, NULL);
 
     if (kanji != NULL) g_free (kanji); 
     if (furigana != NULL) g_free (furigana); 
     if (definitions != NULL) g_free (definitions);
     if (correct_guesses_string != NULL) g_free (correct_guesses_string);
     if (incorrect_guesses_string != NULL) g_free (incorrect_guesses_string);
+    if (timestamp_string != NULL) g_free (timestamp_string);
 
     return text;
 }
@@ -529,6 +539,8 @@ gw_vocabularywordstore_append_text (GwVocabularyWordStore *store, GtkTreeIter *s
             GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, lw_vocabularyitem_get_correct_guesses (item),
             GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, lw_vocabularyitem_get_incorrect_guesses (item),
             GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, lw_vocabularyitem_get_hours (item),
+            GW_VOCABULARYWORDSTORE_COLUMN_DAYS, lw_vocabularyitem_get_timestamp_as_string (item),
             GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_SEMIBOLD,
           -1);
           lw_vocabularyitem_free (item);
@@ -578,6 +590,8 @@ gw_vocabularywordstore_new_word (GwVocabularyWordStore *store,
         GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,            weight,
         GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,   0,
         GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, 0,
+        GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP,         lw_vocabularyitem_timestamp_to_hours (g_get_real_time ()),
+        GW_VOCABULARYWORDSTORE_COLUMN_DAYS,              gettext("New"),
     -1);
     gw_vocabularywordstore_set_has_changes (store, TRUE);
 }
@@ -681,6 +695,32 @@ gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore *store
         gtk_list_store_set (GTK_LIST_STORE (store), iter, 
           GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, guesses,
           GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
+        -1);
+
+        lw_vocabularyitem_free (item);
+      }
+      g_free (text);
+    }
+}
+
+
+void
+gw_vocabularywordstore_update_timestamp_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter)
+{
+    LwVocabularyItem *item;
+    gchar *text;
+
+    text = gw_vocabularywordstore_iter_to_string (store, iter);
+    item = lw_vocabularyitem_new_from_string (text);
+    if (text != NULL)
+    {
+      if (item != NULL)
+      {
+        lw_vocabularyitem_update_timestamp (item);
+
+        gtk_list_store_set (GTK_LIST_STORE (store), iter, 
+          GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, lw_vocabularyitem_get_hours (item),
+          GW_VOCABULARYWORDSTORE_COLUMN_DAYS, lw_vocabularyitem_get_timestamp_as_string (item),
         -1);
 
         lw_vocabularyitem_free (item);
