@@ -767,12 +767,12 @@ gw_vocabularywindow_toggle_editing_cb (GtkWidget *widget, gpointer data)
 
 
 G_MODULE_EXPORT gboolean
-gw_vocabularywindow_set_word_tooltip_text (GtkWidget  *widget,
-                                           gint        x,
-                                           gint        y,
-                                           gboolean    keyboard_mode,
-                                           GtkTooltip *tooltip,
-                                           gpointer    data)
+gw_vocabularywindow_set_word_tooltip_text_cb (GtkWidget  *widget,
+                                              gint        x,
+                                              gint        y,
+                                              gboolean    keyboard_mode,
+                                              GtkTooltip *tooltip,
+                                              gpointer    data)
 {
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
@@ -1432,6 +1432,7 @@ gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpoin
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
+    GtkAction *action;
     gboolean request;
 
     //Initializations
@@ -1445,11 +1446,12 @@ gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpoin
       gtk_widget_show (GTK_WIDGET (priv->study_toolbar));
     else
       gtk_widget_hide (GTK_WIDGET (priv->study_toolbar));
-/*
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_toolbar_action"));
+
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_toolbar_toggled_cb, toplevel);
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
-*/
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_toolbar_toggled_cb, toplevel);
+
 }
 
 
@@ -1460,6 +1462,7 @@ gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, 
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
+    GtkAction *action;
     gboolean request;
 
     //Initializations
@@ -1468,14 +1471,13 @@ gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, 
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, key);
+    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_score_column_action"));
 
     gtk_tree_view_column_set_visible (priv->score_column, request);
 
-/*
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_score_column_toggled_cb, toplevel);
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
-*/
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_score_column_toggled_cb, toplevel);
 }
 
 
@@ -1486,6 +1488,7 @@ gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings *settings, gchar *k
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
+    GtkAction *action;
     gboolean request;
 
     //Initializations
@@ -1494,13 +1497,71 @@ gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings *settings, gchar *k
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, key);
+    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_timestamp_column_action"));
 
     gtk_tree_view_column_set_visible (priv->timestamp_column, request);
-/*
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_timestamp_column_toggled_cb, toplevel);
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
-*/
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_timestamp_column_toggled_cb, toplevel);
 }
 
 
+G_MODULE_EXPORT void
+gw_vocabularywindow_toolbar_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    gboolean state;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+
+    state = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_TOOLBAR_SHOW, state);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_score_column_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    gboolean state;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+
+    state = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_SCORE_COLUMN_SHOW, state);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_timestamp_column_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    gboolean state;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+
+    state = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_TIMESTAMP_COLUMN_SHOW, state);
+}

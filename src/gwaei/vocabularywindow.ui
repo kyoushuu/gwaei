@@ -63,6 +63,18 @@
     <property name="icon_name">media-playlist-shuffle</property>
     <signal name="toggled" handler="gw_vocabularywindow_shuffle_toggled_cb" object="toplevel" swapped="no"/>
   </object>
+  <object class="GtkToggleAction" id="toggle_score_column_action">
+    <property name="label" translatable="yes">Show _Score Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_score_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="toggle_timestamp_column_action">
+    <property name="label" translatable="yes">Show _Last Studied Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_timestamp_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="toggle_toolbar_action">
+    <property name="label" translatable="yes">Show _Toolbar</property>
+    <signal name="toggled" handler="gw_vocabularywindow_toolbar_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
   <object class="GtkToggleAction" id="track_results_toggleaction">
     <property name="label" translatable="yes">Track Score Results</property>
     <property name="short_label" translatable="yes">Track Results</property>
@@ -325,6 +337,49 @@
               </object>
             </child>
             <child>
+              <object class="GtkMenuItem" id="view_menuitem">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">_View</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="view_menu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_toolbar_toggle_menuitem">
+                        <property name="related_action">toggle_toolbar_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="menuitem6">
+                        <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_timestamp_column_toggle_menuitem">
+                        <property name="related_action">toggle_timestamp_column_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_score_column_toggle_menuitem">
+                        <property name="related_action">toggle_score_column_action</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
               <object class="GtkMenuItem" id="study_menuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
@@ -424,7 +479,7 @@
                 <property name="label" translatable="yes">_Generate</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu1">
+                  <object class="GtkMenu" id="generate_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
@@ -650,7 +705,7 @@
                         <property name="can_focus">True</property>
                         <signal name="drag-drop" handler="gw_vocabularywindow_word_drag_drop_cb" object="toplevel" swapped="no"/>
                         <signal name="drag-motion" handler="gw_vocabularywindow_word_drag_motion_cb" object="toplevel" swapped="no"/>
-                        <signal name="query-tooltip" handler="gw_vocabularywindow_set_word_tooltip_text" object="toplevel" swapped="no"/>
+                        <signal name="query-tooltip" handler="gw_vocabularywindow_set_word_tooltip_text_cb" object="toplevel" swapped="no"/>
                         <signal name="drag-begin" handler="gw_vocabularywindow_drag_begin_cb" object="toplevel" swapped="no"/>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="treeview-selection2"/>

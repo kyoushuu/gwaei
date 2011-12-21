@@ -559,6 +559,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     //Set up the columns
     editable = gtk_toggle_tool_button_get_active (priv->edit_toolbutton);
     column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "editable", editable, "scale", 1.25, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_KANJI));
@@ -574,6 +575,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI] = renderer;
 
     column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA);
     renderer = gtk_cell_renderer_text_new ();
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
@@ -588,6 +590,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA] = renderer;
 
     column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
     g_object_set (G_OBJECT (column), "expand", TRUE, NULL);
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
@@ -605,11 +608,12 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 
     //Date Column
     column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP);
     priv->timestamp_column = column;
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Last Studied"));
-    gtk_tree_view_column_pack_start (column, renderer, TRUE);
+    gtk_tree_view_column_pack_start (column, renderer, FALSE);
     gtk_tree_view_column_set_attributes (column, renderer, 
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_DAYS, 
         NULL);
@@ -618,11 +622,12 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 
     //Score Column
     column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_SCORE);
     priv->score_column = column;
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Score"));
-    gtk_tree_view_column_pack_start (column, renderer, TRUE);
+    gtk_tree_view_column_pack_start (column, renderer, FALSE);
     gtk_tree_view_column_set_attributes (column, renderer, 
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_SCORE, 
         NULL);

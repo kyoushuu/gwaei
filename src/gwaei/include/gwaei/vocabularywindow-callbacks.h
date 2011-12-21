@@ -13,3 +13,7 @@ void gw_vocabularywindow_sync_track_results_cb (GSettings*, gchar*, gpointer);
 void gw_vocabularywindow_sync_toolbar_show_cb (GSettings*, gchar*, gpointer);
 void gw_vocabularywindow_sync_score_column_show_cb (GSettings*, gchar*, gpointer);
 void gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings*, gchar*, gpointer);
+
+void gw_vocabularywindow_toolbar_toggled_cb (GtkAction*, gpointer);
+void gw_vocabularywindow_score_column_toggled_cb (GtkAction*, gpointer);
+void gw_vocabularywindow_timestamp_column_toggled_cb (GtkAction*, gpointer);
