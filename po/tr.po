@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gwaei 0.15.1\n"
 "Report-Msgid-Bugs-To: pizzach@gmail.com\n"
-"POT-Creation-Date: 2011-12-20 15:54-0800\n"
+"POT-Creation-Date: 2011-12-20 16:07-0800\n"
 "PO-Revision-Date: 2010-10-25 14:50+0200\n"
 "Last-Translator: Yusuf BARAN <info@barancolor.net>\n"
 "Language-Team: none\n"
@@ -216,7 +216,8 @@ msgid "Yesterday"
 msgstr ""
 
 #: ../src/libwaei/vocabularyitem.c:152
-msgid "%"
+#, c-format
+msgid "%d Days Ago"
 msgstr ""
 
 #: ../src/waei/console.c:65

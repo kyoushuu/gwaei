@@ -149,7 +149,7 @@ lw_vocabularyitem_get_timestamp_as_string (LwVocabularyItem *item)
       if (days == 0) item->days = g_strdup (pgettext("noun", "Never"));
       else if (difference == 0) item->days = g_strdup (gettext("Today"));
       else if (difference == 1) item->days = g_strdup (gettext("Yesterday"));
-      else item->days = g_strdup_printf (gettext("%" G_GUINT32_FORMAT " Days Ago"), difference);
+      else item->days = g_strdup_printf (gettext("%d Days Ago"), difference);
     }
 
     return item->days;

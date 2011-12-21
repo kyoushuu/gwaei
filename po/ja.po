@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: pizzach@gmail.com\n"
-"POT-Creation-Date: 2011-12-20 15:54-0800\n"
+"POT-Creation-Date: 2011-12-20 16:07-0800\n"
 "PO-Revision-Date: 2008-11-30 02:35+0500\n"
 "Last-Translator: Zachary Dovel pizzach@gmail.com\n"
 "Language-Team: Not Applicable\n"
@@ -181,15 +181,16 @@ msgstr "まだ"
 
 #: ../src/libwaei/vocabularyitem.c:150
 msgid "Today"
-msgstr ""
+msgstr "今日"
 
 #: ../src/libwaei/vocabularyitem.c:151
 msgid "Yesterday"
-msgstr ""
+msgstr "昨日"
 
 #: ../src/libwaei/vocabularyitem.c:152
-msgid "%"
-msgstr ""
+#, c-format
+msgid "%d Days Ago"
+msgstr "%d日前"
 
 #: ../src/waei/console.c:65
 #, c-format
@@ -1177,7 +1178,7 @@ msgstr "意味"
 
 #: ../src/gwaei/vocabularywindow.c:563
 msgid "Last Studied"
-msgstr ""
+msgstr "前回勉強した"
 
 #: ../src/gwaei/vocabularywindow.c:575
 msgid "Score"
