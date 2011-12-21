@@ -436,7 +436,7 @@ gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore *store, GtkTreeIter
     correct_guesses_string = g_strdup_printf("%d", correct_guesses);
     incorrect_guesses_string = g_strdup_printf("%d", incorrect_guesses);
     timestamp_string = g_strdup_printf("%d", timestamp);
-    text = g_strjoin (";", kanji, furigana, definitions, correct_guesses_string, incorrect_guesses_string, timestamp, NULL);
+    text = g_strjoin (";", kanji, furigana, definitions, correct_guesses_string, incorrect_guesses_string, timestamp_string, NULL);
 
     if (kanji != NULL) g_free (kanji); 
     if (furigana != NULL) g_free (furigana); 

@@ -493,6 +493,7 @@ gw_flashcardwindow_increment_source_incorrect_guesses (GwFlashCardWindow *window
         {
           incorrect_guesses++;
           gw_vocabularywordstore_set_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, incorrect_guesses);
+          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
           gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
           gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
         }
@@ -553,6 +554,7 @@ gw_flashcardwindow_increment_source_correct_guesses (GwFlashCardWindow *window)
         {
           correct_guesses++;
           gw_vocabularywordstore_set_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, correct_guesses);
+          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
           gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
           gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
         }

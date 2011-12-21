@@ -66,6 +66,15 @@ void gw_vocabularywordstore_new_word (GwVocabularyWordStore*, GtkTreeIter*, GtkT
 void gw_vocabularywordstore_set_string (GwVocabularyWordStore*, GtkTreeIter*, gint, const gchar*);
 gchar* gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore*, GtkTreeIter*);
 
+void gw_vocabularywordstore_update_timestamp_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+
+gint gw_vocabularywordstore_get_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+void gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+
+gint gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+void gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+
+
 G_END_DECLS
 
 #endif
