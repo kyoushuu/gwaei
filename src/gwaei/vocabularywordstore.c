@@ -590,7 +590,7 @@ gw_vocabularywordstore_new_word (GwVocabularyWordStore *store,
         GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,            weight,
         GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,   0,
         GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, 0,
-        GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP,         lw_vocabularyitem_timestamp_to_hours (g_get_real_time ()),
+        GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP,         0,
         GW_VOCABULARYWORDSTORE_COLUMN_DAYS,              gettext("New"),
     -1);
     gw_vocabularywordstore_set_has_changes (store, TRUE);
