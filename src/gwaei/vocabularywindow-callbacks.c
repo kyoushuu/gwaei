@@ -1424,3 +1424,83 @@ gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow *window)
 }
 
 
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    request = lw_preferences_get_boolean (settings, key);
+    priv->shuffle = request;
+    if (request == TRUE)
+      gtk_widget_show (GTK_WIDGET (priv->study_toolbar));
+    else
+      gtk_widget_hide (GTK_WIDGET (priv->study_toolbar));
+/*
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+*/
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    request = lw_preferences_get_boolean (settings, key);
+
+    gtk_tree_view_column_set_visible (priv->score_column, request);
+
+/*
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+*/
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    request = lw_preferences_get_boolean (settings, key);
+
+    gtk_tree_view_column_set_visible (priv->timestamp_column, request);
+/*
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_shuffle_toggled_cb, toplevel);
+*/
+}
+
+

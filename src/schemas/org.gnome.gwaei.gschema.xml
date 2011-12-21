@@ -62,6 +62,13 @@
 
   <!-- Vocabulary settings -->
   <schema id="org.gnome.gwaei.vocabulary" path="/org/gnome/gwaei/vocabulary/">
+
+    <key name="toolbar-show" type="b">
+      <default>false</default>
+      <summary>Toolbar show status</summary>
+      <description>Determines if the toolbar is hidden or not.</description>
+    </key>
+
     <key name="list-order" type="s">
       <default>'edict/English,kanji/Kanji,edict/Names,edict/Places,examples/Examples'</default>
       <summary>Used for the styling of some titles</summary>
@@ -79,6 +86,19 @@
       <summary>Whether the generated flashchard results should be saved</summary>
       <description>Whether the generated flashchard results should be saved.</description>
     </key>
+
+    <key name="score-column-show" type="b">
+      <default>true</default>
+      <summary>Column</summary>
+      <description>Column.</description>
+    </key>
+
+    <key name="timestamp-column-show" type="b">
+      <default>true</default>
+      <summary>Column</summary>
+      <description>Column.</description>
+    </key>
+
 
   </schema>
 

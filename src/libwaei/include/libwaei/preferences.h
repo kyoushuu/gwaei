@@ -24,10 +24,12 @@
 #define LW_KEY_SEARCH_AS_YOU_TYPE  "search-as-you-type"
 
 //////////////////////////
-#define LW_SCHEMA_VOCABULARY       "org.gnome.gwaei.vocabulary"
-#define LW_KEY_SHUFFLE_FLASHCARDS  "shuffle-flashcards"
-#define LW_KEY_TRACK_RESULTS       "track-results"
-#define LW_KEY_LIST_ORDER          "list-order"
+#define LW_SCHEMA_VOCABULARY         "org.gnome.gwaei.vocabulary"
+#define LW_KEY_SHUFFLE_FLASHCARDS    "shuffle-flashcards"
+#define LW_KEY_TRACK_RESULTS         "track-results"
+#define LW_KEY_LIST_ORDER            "list-order"
+#define LW_KEY_SCORE_COLUMN_SHOW     "score-column-show"
+#define LW_KEY_TIMESTAMP_COLUMN_SHOW "timestamp-column-show"
 
 //////////////////////////
 #define LW_SCHEMA_FONT               "org.gnome.gwaei.fonts"

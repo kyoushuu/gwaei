@@ -302,11 +302,37 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
     g_signal_connect (G_OBJECT (window), "event-after",
                       G_CALLBACK (gw_vocabularywindow_event_after_cb), window);
 
+
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_CHANGED] = g_signal_connect (
         G_OBJECT (store), 
         "changed", 
         G_CALLBACK (gw_vocabularywindow_liststore_changed_cb), 
         window);
+
+
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
+        LW_KEY_TOOLBAR_SHOW,
+        gw_vocabularywindow_sync_toolbar_show_cb,
+        window
+    );
+
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
+        LW_KEY_SCORE_COLUMN_SHOW,
+        gw_vocabularywindow_sync_score_column_show_cb,
+        window
+    );
+
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TIMESTAMP_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
+        LW_KEY_TIMESTAMP_COLUMN_SHOW,
+        gw_vocabularywindow_sync_timestamp_column_show_cb,
+        window
+    );
 
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SHUFFLE_CHANGED] = lw_preferences_add_change_listener_by_schema (
         preferences,
@@ -388,6 +414,27 @@ gw_vocabularywindow_remove_signals (GwVocabularyWindow *window)
       priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED]
     );
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TIMESTAMP_COLUMN_TOGGLED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TIMESTAMP_COLUMN_TOGGLED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED] = 0;
 }
 
 
@@ -558,6 +605,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 
     //Date Column
     column = gtk_tree_view_column_new ();
+    priv->timestamp_column = column;
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Last Studied"));
@@ -570,6 +618,7 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 
     //Score Column
     column = gtk_tree_view_column_new ();
+    priv->score_column = column;
     renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Score"));
