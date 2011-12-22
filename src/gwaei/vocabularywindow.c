@@ -897,3 +897,13 @@ gw_vocabularywindow_show_save_dialog (GwVocabularyWindow *window)
 }
 
 
+void
+gw_vocabularywindow_set_paned_size (GwVocabularyWindow *window, gint size)
+{
+    GtkPaned *paned;
+
+    paned = GTK_PANED (gw_window_get_object (GW_WINDOW (window), "vocabulary_paned"));
+
+    gtk_paned_set_position (paned, size);
+}
+

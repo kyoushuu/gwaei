@@ -385,13 +385,23 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
     GwVocabularyWindow *window;
     GwApplication *application;
     gboolean close_window;
+    GList *link;
+    gint count;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
+    link = gtk_application_get_windows (GTK_APPLICATION (application));
+    count = 0;
 
-    if (gw_vocabularywindow_has_changes (window))
+    while (link != NULL)
+    {
+      if (GW_IS_VOCABULARYWINDOW (link->data) == TRUE) count++;
+      link = link->next;
+    }
+
+    if (count == 1 && gw_vocabularywindow_has_changes (window))
     {
       close_window = gw_vocabularywindow_show_save_dialog (window);
     }
