@@ -2505,9 +2505,11 @@ gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer da
     path = (GtkTreePath*) g_object_get_data (G_OBJECT (menuitem), "tree-path");
 
     vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
-    gtk_widget_show (GTK_WIDGET (vocabularywindow));
 
     gw_vocabularywindow_set_selected_list (GW_VOCABULARYWINDOW (vocabularywindow), path);
     gw_vocabularywindow_set_paned_size (GW_VOCABULARYWINDOW (vocabularywindow), 0);
+
+    gtk_widget_show (GTK_WIDGET (vocabularywindow));
+
 }
 
