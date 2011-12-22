@@ -87,14 +87,20 @@
       <description>Whether the generated flashchard results should be saved.</description>
     </key>
 
-    <key name="score-column-show" type="b">
+    <key name="position-column-show" type="b">
       <default>true</default>
       <summary>Column</summary>
       <description>Column.</description>
     </key>
 
+    <key name="score-column-show" type="b">
+      <default>false</default>
+      <summary>Column</summary>
+      <description>Column.</description>
+    </key>
+
     <key name="timestamp-column-show" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Column</summary>
       <description>Column.</description>
     </key>

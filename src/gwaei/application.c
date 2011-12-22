@@ -325,9 +325,35 @@ gw_application_quit (GwApplication *application)
 {
     gw_application_block_searches (application);
 
-    GList *iter;
-    while ((iter = gtk_application_get_windows (GTK_APPLICATION (application))) != NULL)
-      gtk_widget_destroy (GTK_WIDGET (iter->data));
+    GList *link;
+    GtkListStore *liststore;
+    gboolean has_changes;
+    gboolean should_close;
+
+    liststore = gw_application_get_vocabularyliststore (application);
+    has_changes = gw_vocabularyliststore_has_changes (GW_VOCABULARYLISTSTORE (liststore));
+    should_close = TRUE;
+
+    if (has_changes)
+    {
+       link = gtk_application_get_windows (GTK_APPLICATION (application));
+       while (link != NULL && GW_IS_VOCABULARYWINDOW (link->data) == FALSE) link = link->next;
+
+       if (link != NULL)
+       {
+         should_close = gw_vocabularywindow_show_save_dialog (GW_VOCABULARYWINDOW (link->data));
+       }
+    }
+
+    if (should_close)
+    {
+      link = gtk_application_get_windows (GTK_APPLICATION (application));
+      while (link != NULL)
+      {
+        gtk_widget_destroy (GTK_WIDGET (link->data));
+        link = gtk_application_get_windows (GTK_APPLICATION (application));
+      }
+    }
 
     gw_application_unblock_searches (application);
 }

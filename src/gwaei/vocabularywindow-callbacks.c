@@ -384,80 +384,28 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwVocabularyWindow *window;
     GwApplication *application;
-    LwPreferences *preferences;
-    GtkListStore *store;
-    GtkWidget *dialog;
-    gint response;
+    gboolean close_window;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
-    preferences = gw_application_get_preferences (application);
-    store = gw_application_get_vocabularyliststore (application);
 
     if (gw_vocabularywindow_has_changes (window))
     {
-      GtkWidget *box;
-      GtkWidget *image;
-      GtkWidget *label;
-      GtkWidget *content_area;
-      gchar *markup, *header, *description;
-
-
-      dialog = gtk_dialog_new ();
-      gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
-      gtk_window_set_title (GTK_WINDOW (dialog), gettext("Save changes before closing?"));
-      gtk_dialog_add_button (GTK_DIALOG (dialog), gettext("Close _without Saving"), GTK_RESPONSE_NO);
-      gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
-      gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_SAVE, GTK_RESPONSE_YES);
-      gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
-      content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-
-      box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 16);
-      image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
-      label = gtk_label_new (NULL);
-      gtk_misc_set_padding (GTK_MISC (label), 0, 8);
-      gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 0);
-      gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 0);
-      gtk_widget_show_all (box);
-
-      header = gettext("Save Changes before Closing?");
-      description = gettext("Some of your vocabulary lists have changed since your last save.");
-      markup = g_markup_printf_escaped ("<big><b>%s</b></big>\n%s", header, description);
-      gtk_label_set_markup (GTK_LABEL (label), markup);
-      g_free (markup);
-      gtk_container_add (GTK_CONTAINER (content_area), box);
-      gtk_container_set_border_width (GTK_CONTAINER (box), 8);
-      gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
-      response = gtk_dialog_run (GTK_DIALOG (dialog));
-
-      switch (response)
-      {
-        case GTK_RESPONSE_YES:
-          gw_vocabularyliststore_save_all (GW_VOCABULARYLISTSTORE (store)); 
-          gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
-          gtk_widget_destroy (GTK_WIDGET (window));
-          break;
-        case GTK_RESPONSE_CANCEL:
-          break;
-        case GTK_RESPONSE_NO:
-          gw_vocabularyliststore_revert_all (GW_VOCABULARYLISTSTORE (store)); 
-          gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
-          gtk_widget_destroy (GTK_WIDGET (window));
-          break;
-        default:
-          break;
-      }
-      gtk_widget_destroy (GTK_WIDGET (dialog));
+      close_window = gw_vocabularywindow_show_save_dialog (window);
     }
     else
     {
-      gtk_widget_destroy (GTK_WIDGET (window));
+      close_window = TRUE;
     }
+    
+    if (close_window == TRUE) gtk_widget_destroy (GTK_WIDGET (window));
 
     if (gw_application_should_quit (application))
+    {
       gw_application_quit (application);
+    }
 }
 
 
@@ -1456,6 +1404,32 @@ gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpoin
 
 
 G_MODULE_EXPORT void
+gw_vocabularywindow_sync_position_column_show_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
+    GtkWidget *toplevel;
+    GtkAction *action;
+    gboolean request;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    priv = window->priv;
+    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
+    request = lw_preferences_get_boolean (settings, key);
+    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_position_column_action"));
+
+    gtk_tree_view_column_set_visible (priv->position_column, request);
+
+    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_position_column_toggled_cb, toplevel);
+    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_position_column_toggled_cb, toplevel);
+}
+
+
+G_MODULE_EXPORT void
 gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, gpointer data)
 {
     //Declarations
@@ -1524,6 +1498,26 @@ gw_vocabularywindow_toolbar_toggled_cb (GtkAction *action, gpointer data)
 
     state = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
     lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_TOOLBAR_SHOW, state);
+}
+
+
+G_MODULE_EXPORT void
+gw_vocabularywindow_position_column_toggled_cb (GtkAction *action, gpointer data)
+{
+    //Declarations
+    GwVocabularyWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
+    gboolean state;
+
+    //Initializations
+    window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+
+    state = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_VOCABULARY, LW_KEY_POSITION_COLUMN_SHOW, state);
 }
 
 

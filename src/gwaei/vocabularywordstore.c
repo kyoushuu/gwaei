@@ -64,6 +64,7 @@ static void
 gw_vocabularywordstore_init (GwVocabularyWordStore *model)
 {
     GType types[] = { 
+      G_TYPE_STRING,    //GW_VOCABULARYWORDSTORE_COLUMN_POSITION
       G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_KANJI
       G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA
       G_TYPE_STRING, //GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
@@ -194,6 +195,9 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME
     gchar *text;
     gboolean valid;
     gint number;
+    gint i;
+    const gint BUFFER_SIZE = 100;
+    gchar buffer[BUFFER_SIZE];
 
     priv = store->priv;
     model = GTK_TREE_MODEL (store);
@@ -208,10 +212,14 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME
     if ((priv->vocabulary_list = lw_vocabularylist_new (priv->name)) != NULL)
     {
       valid = gtk_tree_model_get_iter_first (model, &iter);
+      i = 0;
       while (valid)
       {
         if ((item = lw_vocabularyitem_new ()) != NULL)
         {
+          g_snprintf (buffer, BUFFER_SIZE, "%d", i);
+          gtk_list_store_set (GTK_LIST_STORE (model), &iter, GW_VOCABULARYWORDSTORE_COLUMN_POSITION, &buffer, -1);
+
           gtk_tree_model_get (model, &iter,  GW_VOCABULARYWORDSTORE_COLUMN_KANJI, &text, -1);
           if (text != NULL)
           {
@@ -246,6 +254,7 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME
           gtk_list_store_set (GTK_LIST_STORE (model), &iter, GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, weight, -1);
         }
         valid = gtk_tree_model_iter_next (model, &iter);
+        i++;
       }
 
       lw_vocabularylist_save (priv->vocabulary_list, FILENAME, NULL);
@@ -269,10 +278,14 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     GtkTreeIter treeiter;
     GList *listiter;
     LwVocabularyItem *item;
+    const int BUFFER_SIZE = 100;
+    gchar buffer[BUFFER_SIZE];
+    int i;
 
     //Initializations
     priv = store->priv;
     model = GTK_TREE_MODEL (store);
+    i = 0;
 
     if (priv->vocabulary_list != NULL) lw_vocabularylist_free (priv->vocabulary_list);
     priv->vocabulary_list = lw_vocabularylist_new (priv->name);
@@ -281,8 +294,10 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     for (listiter = priv->vocabulary_list->items; listiter != NULL; listiter = listiter->next)
     {
       item = LW_VOCABULARYITEM (listiter->data);
+      g_snprintf (buffer, BUFFER_SIZE, "%d", i);
       gtk_list_store_append (GTK_LIST_STORE (model), &treeiter);
       gtk_list_store_set (GTK_LIST_STORE (model), &treeiter, 
+          GW_VOCABULARYWORDSTORE_COLUMN_POSITION, buffer, 
           GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, lw_vocabularyitem_get_furigana (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS, lw_vocabularyitem_get_definitions (item), 
@@ -293,6 +308,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
           GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
           GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
       -1);
+      i++;
     }
 
     priv->loaded = TRUE;

@@ -321,6 +321,14 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_VOCABULARY,
+        LW_KEY_POSITION_COLUMN_SHOW,
+        gw_vocabularywindow_sync_position_column_show_cb,
+        window
+    );
+
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
         LW_KEY_SCORE_COLUMN_SHOW,
         gw_vocabularywindow_sync_score_column_show_cb,
         window
@@ -421,6 +429,14 @@ gw_vocabularywindow_remove_signals (GwVocabularyWindow *window)
       priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED]
     );
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_POSITION_COLUMN_TOGGLED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_POSITION_COLUMN_TOGGLED] = 0;
+
 
     lw_preferences_remove_change_listener_by_schema (
       preferences, 
@@ -556,11 +572,23 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     gtk_tree_view_set_rules_hint (priv->word_treeview, TRUE);
     gtk_widget_set_has_tooltip (GTK_WIDGET (priv->word_treeview), TRUE);
 
-    //Set up the columns
+    //Position Column
+    priv->position_column = column = gtk_tree_view_column_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_POSITION);
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_POSITION] = renderer = gtk_cell_renderer_text_new ();
+    g_object_set (G_OBJECT (renderer), "weight", PANGO_WEIGHT_SEMIBOLD, "scale", .75, NULL);
+    gtk_tree_view_column_set_title (column, "#");
+    gtk_tree_view_column_pack_start (column, renderer, TRUE);
+    gtk_tree_view_column_set_attributes (column, renderer, 
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_POSITION, 
+        NULL);
+    gtk_tree_view_append_column (priv->word_treeview, column);
+
+    //Kanji Column
     editable = gtk_toggle_tool_button_get_active (priv->edit_toolbutton);
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
-    renderer = gtk_cell_renderer_text_new ();
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI] = renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "editable", editable, "scale", 1.25, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_KANJI));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
@@ -572,11 +600,11 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
         "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI] = renderer;
 
+    //Furigana Column
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA);
-    renderer = gtk_cell_renderer_text_new ();
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA] = renderer = gtk_cell_renderer_text_new ();
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
     gtk_tree_view_column_set_title (column, gettext("Reading"));
@@ -587,12 +615,12 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
         "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA] = renderer;
 
+    //Definitions Column
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
     g_object_set (G_OBJECT (column), "expand", TRUE, NULL);
-    renderer = gtk_cell_renderer_text_new ();
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS] = renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "ellipsize", PANGO_ELLIPSIZE_END, NULL);
     g_object_set_data (G_OBJECT (renderer), "column", GINT_TO_POINTER (GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS));
     g_signal_connect (G_OBJECT (renderer), "edited", G_CALLBACK (gw_vocabularywindow_cell_edited_cb), priv->word_treeview);
@@ -604,13 +632,11 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
         "weight", GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS] = renderer;
 
     //Date Column
-    column = gtk_tree_view_column_new ();
+    priv->timestamp_column = column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP);
-    priv->timestamp_column = column;
-    renderer = gtk_cell_renderer_text_new ();
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DAYS] = renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Last Studied"));
     gtk_tree_view_column_pack_start (column, renderer, FALSE);
@@ -618,13 +644,11 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_DAYS, 
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DAYS] = renderer;
 
     //Score Column
-    column = gtk_tree_view_column_new ();
+    priv->score_column = column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_SCORE);
-    priv->score_column = column;
-    renderer = gtk_cell_renderer_text_new ();
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_SCORE] = renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "alignment", PANGO_ALIGN_RIGHT, "scale", 0.75, "weight", PANGO_WEIGHT_SEMIBOLD, NULL);
     gtk_tree_view_column_set_title (column, gettext("Score"));
     gtk_tree_view_column_pack_start (column, renderer, FALSE);
@@ -632,7 +656,6 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
         "text",   GW_VOCABULARYWORDSTORE_COLUMN_SCORE, 
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_SCORE] = renderer;
 
     GtkEntry *entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "vocabulary_search_entry"));
     gtk_tree_view_set_search_entry (priv->word_treeview, entry);
@@ -803,3 +826,74 @@ gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow *window)
 
     return wordstore;
 } 
+
+
+gboolean
+gw_vocabularywindow_show_save_dialog (GwVocabularyWindow *window)
+{
+    //Declarations
+    GtkWidget *dialog;
+    GwApplication *application;
+    gint response;
+    GtkWidget *box;
+    GtkWidget *image;
+    GtkWidget *label;
+    GtkWidget *content_area;
+    gchar *markup, *header, *description;
+    LwPreferences *preferences;
+    GtkListStore *store;
+
+    //Initializations
+    application = gw_window_get_application (GW_WINDOW (window));
+    dialog = gtk_dialog_new ();
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), GTK_WINDOW (window));
+    gtk_window_set_title (GTK_WINDOW (dialog), gettext("Save changes before closing?"));
+    gtk_dialog_add_button (GTK_DIALOG (dialog), gettext("Close _without Saving"), GTK_RESPONSE_NO);
+    gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+    gtk_dialog_add_button (GTK_DIALOG (dialog), GTK_STOCK_SAVE, GTK_RESPONSE_YES);
+    gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_YES);
+    content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+
+    box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 16);
+    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_WARNING, GTK_ICON_SIZE_DIALOG);
+    label = gtk_label_new (NULL);
+    gtk_misc_set_padding (GTK_MISC (label), 0, 8);
+    gtk_box_pack_start (GTK_BOX (box), image, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 0);
+    gtk_widget_show_all (box);
+
+    header = gettext("Save Changes before Closing?");
+    description = gettext("Some of your vocabulary lists have changed since your last save.");
+    markup = g_markup_printf_escaped ("<big><b>%s</b></big>\n%s", header, description);
+    gtk_label_set_markup (GTK_LABEL (label), markup);
+    g_free (markup);
+    gtk_container_add (GTK_CONTAINER (content_area), box);
+    gtk_container_set_border_width (GTK_CONTAINER (box), 8);
+    gtk_container_set_border_width (GTK_CONTAINER (dialog), 6);
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+    preferences = gw_application_get_preferences (application);
+    store = gw_application_get_vocabularyliststore (application);
+
+    switch (response)
+    {
+      case GTK_RESPONSE_YES:
+        gw_vocabularyliststore_save_all (GW_VOCABULARYLISTSTORE (store)); 
+        gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
+        gtk_widget_destroy (GTK_WIDGET (window));
+        break;
+      case GTK_RESPONSE_CANCEL:
+        break;
+      case GTK_RESPONSE_NO:
+        gw_vocabularyliststore_revert_all (GW_VOCABULARYLISTSTORE (store)); 
+        gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (store), preferences);
+        gtk_widget_destroy (GTK_WIDGET (window));
+        break;
+      default:
+        break;
+    }
+    gtk_widget_destroy (GTK_WIDGET (dialog));
+
+    return (response  == GTK_RESPONSE_YES || response == GTK_RESPONSE_NO);
+}
+
+

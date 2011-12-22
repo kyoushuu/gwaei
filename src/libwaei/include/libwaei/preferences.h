@@ -28,6 +28,7 @@
 #define LW_KEY_SHUFFLE_FLASHCARDS    "shuffle-flashcards"
 #define LW_KEY_TRACK_RESULTS         "track-results"
 #define LW_KEY_LIST_ORDER            "list-order"
+#define LW_KEY_POSITION_COLUMN_SHOW  "position-column-show"
 #define LW_KEY_SCORE_COLUMN_SHOW     "score-column-show"
 #define LW_KEY_TIMESTAMP_COLUMN_SHOW "timestamp-column-show"
 

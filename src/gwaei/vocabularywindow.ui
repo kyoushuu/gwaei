@@ -63,6 +63,10 @@
     <property name="icon_name">media-playlist-shuffle</property>
     <signal name="toggled" handler="gw_vocabularywindow_shuffle_toggled_cb" object="toplevel" swapped="no"/>
   </object>
+  <object class="GtkToggleAction" id="toggle_position_column_action">
+    <property name="label" translatable="yes">Show _Position Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_position_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
   <object class="GtkToggleAction" id="toggle_score_column_action">
     <property name="label" translatable="yes">Show _Score Column</property>
     <signal name="toggled" handler="gw_vocabularywindow_score_column_toggled_cb" object="toplevel" swapped="no"/>
@@ -357,6 +361,13 @@
                     <child>
                       <object class="GtkSeparatorMenuItem" id="menuitem6">
                         <property name="use_action_appearance">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="view_position_column_toggle_menuitem">
+                        <property name="related_action">toggle_position_column_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
