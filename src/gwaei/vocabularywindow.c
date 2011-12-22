@@ -318,7 +318,7 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
         window
     );
 
-    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SCORE_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_POSITION_COLUMN_TOGGLED] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_VOCABULARY,
         LW_KEY_POSITION_COLUMN_SHOW,
@@ -574,13 +574,13 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 
     //Position Column
     priv->position_column = column = gtk_tree_view_column_new ();
-    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_POSITION);
-    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_POSITION] = renderer = gtk_cell_renderer_text_new ();
+    gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER);
+    priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING] = renderer = gtk_cell_renderer_text_new ();
     g_object_set (G_OBJECT (renderer), "weight", PANGO_WEIGHT_SEMIBOLD, "scale", .75, NULL);
     gtk_tree_view_column_set_title (column, "#");
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
     gtk_tree_view_column_set_attributes (column, renderer, 
-        "text",   GW_VOCABULARYWORDSTORE_COLUMN_POSITION, 
+        "text",   GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING, 
         NULL);
     gtk_tree_view_append_column (priv->word_treeview, column);
 

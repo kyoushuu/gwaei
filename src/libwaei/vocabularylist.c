@@ -83,7 +83,7 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
     LwVocabularyItem *item;
     gchar *uri;
     FILE *stream;
-    const gint MAX = 200;
+    const gint MAX = 512;
     gchar buffer[MAX + 1];
 
     if (FILENAME != NULL)
@@ -98,11 +98,16 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
     {
       if (fgets (buffer, MAX, stream) != NULL)
       {
+        buffer[MAX] = '\0';
         item = lw_vocabularyitem_new_from_string (buffer);
         if (item != NULL)
         {
           list->items = g_list_append (list->items, item);
         }
+      }
+      if (strchr(buffer, '\n') == NULL && feof(stream) == 0)
+      {
+        while (fgetc(stream) != '\n' && feof(stream) == 0);
       }
     }
 }
