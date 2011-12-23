@@ -63,6 +63,7 @@ gw_vocabularywindow_new_list_cb (GtkWidget *widget, gpointer data)
     gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
     gw_vocabularywindow_update_flashcard_sensitivities (window);
+    gw_vocabularywindow_show_vocabulary_list (window, TRUE);
 }
 
 
@@ -110,6 +111,8 @@ gw_vocabularywindow_remove_list_cb (GtkWidget *widget, gpointer data)
     g_list_free (rowlist); rowlist = NULL;
 
     gw_vocabularywindow_update_flashcard_sensitivities (window);
+
+    gw_vocabularywindow_show_vocabulary_list (window, TRUE);
 }
 
 

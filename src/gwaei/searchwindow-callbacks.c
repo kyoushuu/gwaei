@@ -2507,7 +2507,7 @@ gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer da
     vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
 
     gw_vocabularywindow_set_selected_list (GW_VOCABULARYWINDOW (vocabularywindow), path);
-    gw_vocabularywindow_set_paned_size (GW_VOCABULARYWINDOW (vocabularywindow), 0);
+    gw_vocabularywindow_show_vocabulary_list (GW_VOCABULARYWINDOW (vocabularywindow), FALSE);
 
     gtk_widget_show (GTK_WIDGET (vocabularywindow));
 

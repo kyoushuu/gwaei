@@ -30,6 +30,7 @@ struct _GwVocabularyWindowPrivate {
   GtkToolbar   *word_toolbar;
   GtkToolbar   *study_toolbar;
   GtkToggleToolButton *edit_toolbutton;
+  GtkPaned     *paned;
 
   gboolean has_changes;
   gboolean shuffle;
@@ -44,6 +45,8 @@ struct _GwVocabularyWindowPrivate {
   GtkTreeViewColumn *position_column;
   GtkTreeViewColumn *score_column;
   GtkTreeViewColumn *timestamp_column;
+
+  gint paned_initial_size;
 };
 
 #define GW_VOCABULARYWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_VOCABULARYWINDOW, GwVocabularyWindowPrivate))

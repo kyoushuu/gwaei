@@ -138,12 +138,13 @@ gw_vocabularywindow_constructed (GObject *object)
     priv = window->priv;
 
     //Set up the gtkbuilder links
-    priv->list_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_treeview"));
-    priv->list_toolbar =  GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_toolbar"));
-    priv->word_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_treeview"));
-    priv->word_toolbar =  GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_toolbar"));
-    priv->study_toolbar =  GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "study_toolbar"));
+    priv->list_treeview =   GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_treeview"));
+    priv->list_toolbar =    GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_toolbar"));
+    priv->word_treeview =   GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_treeview"));
+    priv->word_toolbar =    GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_toolbar"));
+    priv->study_toolbar =   GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "study_toolbar"));
     priv->edit_toolbutton = GTK_TOGGLE_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "edit_toolbutton"));
+    priv->paned =           GTK_PANED (gw_window_get_object (GW_WINDOW (window), "vocabulary_paned"));
 
     //Set up the gtk window
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Manager"));
@@ -551,6 +552,8 @@ gw_vocabularywindow_init_list_treeview (GwVocabularyWindow *window)
         n_list_row_dest_targets,
         GDK_ACTION_MOVE
     );
+
+    priv->paned_initial_size = gtk_paned_get_position (priv->paned);
 }
 
 
@@ -898,12 +901,15 @@ gw_vocabularywindow_show_save_dialog (GwVocabularyWindow *window)
 
 
 void
-gw_vocabularywindow_set_paned_size (GwVocabularyWindow *window, gint size)
+gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow *window, gboolean request)
 {
-    GtkPaned *paned;
+    GwVocabularyWindowPrivate *priv;
 
-    paned = GTK_PANED (gw_window_get_object (GW_WINDOW (window), "vocabulary_paned"));
-
-    gtk_paned_set_position (paned, size);
+    priv = window->priv;
+    
+    if (request)
+      gtk_paned_set_position (priv->paned, priv->paned_initial_size);
+    else
+      gtk_paned_set_position (priv->paned, 0);
 }
 
