@@ -338,7 +338,7 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
     {
       lw_searchitem_lock_mutex (item);
         if (
-            item->status != LW_SEARCHSTATUS_CANCELING &&
+            item->status != LW_SEARCHSTATUS_FINISHING &&
             (item != priv->feedback_item ||
              item->current != priv->feedback ||
              item->status != priv->feedback_status       )
@@ -618,7 +618,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
                 final_message = g_strdup_printf (base_message, total, relevant);
             }
             break;
-        case LW_SEARCHSTATUS_CANCELING:
+        case LW_SEARCHSTATUS_FINISHING:
             break;
       }
 

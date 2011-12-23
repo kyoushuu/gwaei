@@ -47,7 +47,7 @@ typedef enum
 {
   LW_SEARCHSTATUS_IDLE,
   LW_SEARCHSTATUS_SEARCHING,
-  LW_SEARCHSTATUS_CANCELING
+  LW_SEARCHSTATUS_FINISHING
 } LwSearchStatus;
 
 typedef void(*LwSearchItemDataFreeFunc)(gpointer);

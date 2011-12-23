@@ -173,12 +173,7 @@ lw_searchitem_init (LwSearchItem *item, const char* query, LwDictInfo* dictionar
 void 
 lw_searchitem_deinit (LwSearchItem *item)
 {
-    if (item->thread != NULL) 
-    {
-      item->status = LW_SEARCHSTATUS_CANCELING;
-      g_thread_join (item->thread);
-      item->thread = NULL;
-    }
+    lw_searchitem_cancel_search (item);
     lw_searchitem_clear_results (item);
     lw_searchitem_cleanup_search (item);
     lw_queryline_free (item->queryline);
@@ -284,8 +279,7 @@ lw_searchitem_cleanup_search (LwSearchItem* item)
       item->resultline = NULL;
     }
 
-    item->thread = NULL;
-    item->status = LW_SEARCHSTATUS_IDLE;
+    item->status = LW_SEARCHSTATUS_FINISHING;
 }
 
 

@@ -85,7 +85,7 @@ static gpointer _stream_results_thread (gpointer data)
     //We loop, processing lines of the file until the max chunk size has been
     //reached or we reach the end of the file or a cancel request is recieved.
     while ((line_pointer = fgets(item->resultline->string, LW_IO_MAX_FGETS_LINE, item->fd)) != NULL &&
-           item->status != LW_SEARCHSTATUS_CANCELING)
+           item->status != LW_SEARCHSTATUS_FINISHING)
     {
       //Give a chance for something else to run
       lw_searchitem_unlock_mutex (item);
@@ -168,6 +168,14 @@ static gpointer _stream_results_thread (gpointer data)
 }
 
 
+static void
+lw_searchitem_count_threads (GThread *thread, gpointer user_data)
+{
+    gint* count = (gint*) user_data;
+    g_message ("Thread %d with address %"G_GINTPTR_FORMAT"\n", *count, (gintptr)thread);
+    (*count) += 1;
+}
+
 //!
 //! @brief Start a dictionary search
 //! @param item a LwSearchItem argument to calculate results
@@ -176,19 +184,27 @@ static gpointer _stream_results_thread (gpointer data)
 //!
 void lw_searchitem_start_search (LwSearchItem *item, gboolean create_thread, gboolean exact)
 {
+    GError *error;
     gpointer data;
+    gint count;
 
+    error = NULL;
     data = lw_enginedata_new (item, exact);
+    count = 0;
 
     if (data != NULL)
     {
       lw_searchitem_prepare_search (item);
       if (create_thread)
       {
-        item->thread = g_thread_create ((GThreadFunc) _stream_results_thread, (gpointer) data, TRUE, NULL);
+        item->thread = g_thread_create ((GThreadFunc) _stream_results_thread, (gpointer) data, TRUE, &error);
         if (item->thread == NULL)
         {
-          fprintf(stderr, "Couldn't create the thread");
+          g_warning ("Thread Creation Error: %s\n", error->message);
+          g_thread_foreach ((GFunc)lw_searchitem_count_threads, &count);
+          g_warning ("There are a total of %d threads running", count);
+          g_error_free (error);
+          error = NULL;
         }
       }
       else
@@ -223,7 +239,7 @@ void lw_searchitem_cancel_search (LwSearchItem *item)
         return;
       }
 
-      item->status = LW_SEARCHSTATUS_CANCELING;
+      item->status = LW_SEARCHSTATUS_FINISHING;
       lw_searchitem_unlock_mutex (item);
 
       g_thread_join (item->thread);
@@ -280,14 +296,30 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
 //!
 gboolean lw_searchitem_should_check_results (LwSearchItem *item)
 {
+    if (item == NULL) return FALSE;
+
     gboolean should_check_results;
+    LwSearchStatus status;
 
     g_mutex_lock (item->mutex);
-    should_check_results = (item->status != LW_SEARCHSTATUS_IDLE ||
-                            item->results_high != NULL ||
-                            item->results_medium != NULL ||
-                            item->results_low != NULL);
+      status = item->status;
     g_mutex_unlock (item->mutex);
+
+
+    if (status == LW_SEARCHSTATUS_FINISHING)
+    {
+      lw_searchitem_cancel_search (item);
+      should_check_results = FALSE;
+    }
+    else
+    {
+      g_mutex_lock (item->mutex);
+      should_check_results = (item->status != LW_SEARCHSTATUS_IDLE ||
+                              item->results_high != NULL ||
+                              item->results_medium != NULL ||
+                              item->results_low != NULL);
+      g_mutex_unlock (item->mutex);
+    }
 
     return should_check_results;
 }
