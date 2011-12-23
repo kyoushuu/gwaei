@@ -780,7 +780,7 @@ gw_vocabularywindow_kanji_definition_flashcards_cb (GtkWidget *widget, gpointer 
     gw_vocabularywindow_start_flashcards (
       window,
       gettext("Kanji→Definition"),
-      gettext("What is the English definition of this word?"),
+      gettext("What is the definition of this word?"),
       GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
       GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
     );
@@ -814,7 +814,7 @@ gw_vocabularywindow_furigana_definition_flashcards_cb (GtkWidget *widget, gpoint
     gw_vocabularywindow_start_flashcards (
       window,
       gettext("Furigana→Definition"),
-      gettext("What is the English definition of this word?"),
+      gettext("What is the definition of this word?"),
       GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,
       GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS
     );
