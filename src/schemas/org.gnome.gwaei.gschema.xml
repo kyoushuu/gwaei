@@ -70,7 +70,7 @@
     </key>
 
     <key name="list-order" type="s">
-      <default>'edict/English,kanji/Kanji,edict/Names,edict/Places,examples/Examples'</default>
+      <default>''</default>
       <summary>Used for the styling of some titles</summary>
       <description>Used as a separator for the "Other results" section. Is not always used.</description>
     </key>

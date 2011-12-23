@@ -345,6 +345,7 @@ gw_vocabularyliststore_load_list_order (GwVocabularyListStore *store, LwPreferen
     model = GTK_TREE_MODEL (store);
     lw_preferences_get_string_by_schema (preferences, buffer, LW_SCHEMA_VOCABULARY, LW_KEY_LIST_ORDER, 500);
     atoms = g_strsplit (buffer, ";", -1);
+    if (atoms == NULL) return;
     atoms_length = g_strv_length (atoms);
     reorder_length = gtk_tree_model_iter_n_children (model, NULL);
     reorder = g_new (gint, reorder_length);
