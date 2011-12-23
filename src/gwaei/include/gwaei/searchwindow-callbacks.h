@@ -81,5 +81,8 @@ gboolean gw_searchwindow_motion_notify_event_cb (GtkWidget*, GdkEventButton*, gp
 void gw_searchwindow_vocabulary_changed_cb (GtkWidget*, gpointer);
 void gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget*, gpointer);
 
+void gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget*, gpointer);
+void gw_searchwindow_radicalswindow_destroy_cb (GtkWidget*, gpointer);
+
 #endif
 
