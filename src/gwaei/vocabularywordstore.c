@@ -218,7 +218,7 @@ gw_vocabularywordstore_save (GwVocabularyWordStore *store, const gchar *FILENAME
       {
         if ((item = lw_vocabularyitem_new ()) != NULL)
         {
-          g_snprintf (buffer, BUFFER_SIZE, "%d", i);
+          g_snprintf (buffer, BUFFER_SIZE, "%d", i + 1);
           gtk_list_store_set (GTK_LIST_STORE (model), &iter, 
               GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER, i,
               GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING, &buffer,
@@ -298,7 +298,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     for (link = priv->vocabulary_list->items; link != NULL; link = link->next)
     {
       item = LW_VOCABULARYITEM (link->data);
-      g_snprintf (buffer, BUFFER_SIZE, "%d", i);
+      g_snprintf (buffer, BUFFER_SIZE, "%d", i + 1);
       gtk_list_store_append (GTK_LIST_STORE (model), &treeiter);
       gtk_list_store_set (GTK_LIST_STORE (model), &treeiter, 
           GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER, i, 
