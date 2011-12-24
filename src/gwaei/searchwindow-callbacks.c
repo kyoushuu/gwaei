@@ -1485,37 +1485,6 @@ gw_searchwindow_clear_entry_button_pressed_cb (GtkEntry             *entry,
 
 
 //!
-//! @brief Opens the dictionary folder using the user's default file browser
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_open_dictionary_folder_cb (GtkWidget *widget, gpointer data) 
-{
-    //Declarations
-    GwSearchWindow *window;
-    GwApplication *application;
-    const char *directory;
-    char *uri;
-    GError *error;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    if (window == NULL) return;
-    application = gw_window_get_application (GW_WINDOW (window));
-    directory = lw_util_build_filename (LW_PATH_DICTIONARY, NULL);
-    uri = g_build_filename ("file://", directory, NULL);
-    error = NULL;
-
-    gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
-
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
-
-    g_free (uri);
-}
-
-
-//!
 //! @brief Sets the drag icon to the cursor if the widget is dragged over
 //! @see gw_searchwindow_search_drag_data_recieved_cb ()
 //! @see gw_searchwindow_drag_leave_1_cb ()
