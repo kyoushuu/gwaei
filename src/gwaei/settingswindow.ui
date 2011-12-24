@@ -806,8 +806,7 @@
                                 <property name="receives_default">True</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
-                                <signal name="activate" handler="gw_searchwindow_open_dictionary_folder_cb" object="toplevel" swapped="no"/>
-                                <signal name="clicked" handler="gw_searchwindow_open_dictionary_folder_cb" object="toplevel" swapped="no"/>
+                                <signal name="clicked" handler="gw_settingswindow_open_dictionary_folder_cb" object="toplevel" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">True</property>

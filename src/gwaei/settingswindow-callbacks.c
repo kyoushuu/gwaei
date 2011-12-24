@@ -651,5 +651,36 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
 }
 
 
+//!
+//! @brief Opens the dictionary folder using the user's default file browser
+//! @param widget Unused GtkWidget pointer
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_settingswindow_open_dictionary_folder_cb (GtkWidget *widget, gpointer data) 
+{
+    //Declarations
+    GwSettingsWindow *window;
+    GwApplication *application;
+    char *directory;
+    char *uri;
+    GError *error;
+
+    //Initializations
+    window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
+    if (window == NULL) return;
+    application = gw_window_get_application (GW_WINDOW (window));
+    directory = lw_util_build_filename (LW_PATH_DICTIONARY, NULL);
+    uri = g_build_filename ("file://", directory, NULL);
+    error = NULL;
+
+    gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
+
+    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
+
+    g_free (uri);
+    g_free (directory);
+}
+
 
 
