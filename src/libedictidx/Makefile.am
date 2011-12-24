@@ -41,13 +41,13 @@ docs: $(SRCS)
 	cd docs ; $(DOXYGEN)
 
 runtests: check
-	cd tests ; ./runtests
+	cd tests ; ./runtests.sh all
 
 clean-docs:
 	-rm -rf docs/html docs/latex
 
 clean-tests:
-	cd tests ; ./cleantests
+	cd tests ; ./runtests.sh clean
 
 clean-local: clean-docs clean-tests
 
@@ -66,4 +66,6 @@ SPLINT_LIBS = splint/library.h
 splint: $(SPLINT_LIBS) $(SRCS)
 	$(SPLINT) $(SPLINT_FLAGS) $(SPLINT_DEFS) $^
 
-EXTRA_DIST = $(SPLINT_LIBS) docs/Doxyfile.in autogen.sh
+TEST_FILES = tests/mkdict.pl tests/checkindex.pl tests/runtests.sh
+
+EXTRA_DIST = $(SPLINT_LIBS) docs/Doxyfile.in $(TEST_FILES)

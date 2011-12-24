@@ -100,8 +100,11 @@ int main(int argc, char* argv[])
 	if (edict_idx_build(id, key_t, 0) < 0)
 		return 3;
 
-	if (edict_idx_verify(id, key_t, 0) < 0)
-		return 4;
+	if (argc < 3) {
+		fprintf(stderr, "Verifying in-memory index before exiting...\n");
+		if (edict_idx_verify(id, key_t, 0) < 0)
+			return 4;
+	}
 
 	edict_idx_close(id);
 #endif
@@ -129,7 +132,6 @@ int main(int argc, char* argv[])
 		edict_idx_set_parameter(id, P_EDICT_IDX_MAX_ENTRY_SIZE,
 					atoi(argv[6]));
 
-	fprintf(stderr, "Verifying index...\n");
 	edict_idx_verify(id, key_t, 0);
 
 	edict_idx_close(id);

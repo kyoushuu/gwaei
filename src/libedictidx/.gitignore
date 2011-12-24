@@ -2,10 +2,17 @@
 *.s
 *.a
 *.la
-tests/*
-!tests/tests.c
-!tests/runtests
-!tests/cleantests
+
+*.out
+*.edict
+*.idx
+*.dump
+
+tests/hash
+tests/parser
+tests/build
+tests/verify
+tests/query
 
 TAGS
 tags
@@ -15,14 +22,16 @@ html
 latex
 
 .deps
+.dirstamp
+
 Makefile
 Makefile.in
 
 configure
 aclocal.m4
 autom4te.cache
+build-aux
 config.*
 stamp-h1
-m4
 
 *.tar.gz
