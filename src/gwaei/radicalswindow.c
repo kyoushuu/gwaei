@@ -31,7 +31,8 @@
 
 #include <gtk/gtk.h>
 
-#include <gwaei/gwaei.h>
+#include <libwaei/libwaei.h>
+#include <gwaei/radicalswindow.h>
 #include <gwaei/radicalswindow-private.h>
 
 static void gw_radicalswindow_fill_radicals (GwRadicalsWindow*);
@@ -385,7 +386,7 @@ gw_radicalswindow_constructed (GObject *object)
     gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_UTILITY);
     gtk_window_set_skip_taskbar_hint (GTK_WINDOW (window), TRUE);
     gtk_window_set_skip_pager_hint (GTK_WINDOW (window), TRUE);
-    gtk_window_set_destroy_with_parent (GTK_WINDOW (window), FALSE);
+    gtk_window_set_destroy_with_parent (GTK_WINDOW (window), TRUE);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
 
     priv->radicals_table = GTK_TABLE (gw_window_get_object (GW_WINDOW (window), "radical_selection_table"));
@@ -402,14 +403,25 @@ gw_radicalswindow_constructed (GObject *object)
 static void
 gw_radicalswindow_class_init (GwRadicalsWindowClass *klass)
 {
-  GObjectClass *object_class;
+    GObjectClass *object_class;
 
-  object_class = G_OBJECT_CLASS (klass);
+    object_class = G_OBJECT_CLASS (klass);
 
-  object_class->constructed = gw_radicalswindow_constructed;
-  object_class->finalize = gw_radicalswindow_finalize;
+    object_class->constructed = gw_radicalswindow_constructed;
+    object_class->finalize = gw_radicalswindow_finalize;
 
-  g_type_class_add_private (object_class, sizeof (GwRadicalsWindowPrivate));
+    g_type_class_add_private (object_class, sizeof (GwRadicalsWindowPrivate));
+
+    klass->signalid[GW_RADICALSWINDOW_CLASS_SIGNALID_QUERY_CHANGED] = g_signal_new (
+        "query-changed",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST,
+        G_STRUCT_OFFSET (GwRadicalsWindowClass, query_changed),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 
+        0
+    );
 }
 
 
@@ -492,7 +504,7 @@ gw_radicalswindow_fill_radicals (GwRadicalsWindow *window)
           g_free (tooltip);
           tooltip = NULL;
         }
-        g_signal_connect(button, "toggled", G_CALLBACK (gw_radicalswindow_search_cb), window);
+        g_signal_connect(G_OBJECT (button), "toggled", G_CALLBACK (gw_radicalswindow_toggled_cb), window);
         gtk_table_attach (priv->radicals_table, button, cols, cols + 1, rows, rows + 1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
         i++;
       }
@@ -683,10 +695,10 @@ gw_radicalswindow_deselect_all_radicals (GwRadicalsWindow *window)
     //Reset all of the toggle buttons
     for (iter = list; iter != NULL; iter = iter->next)
     {
-      g_signal_handlers_block_by_func (iter->data, gw_radicalswindow_search_cb, window);
+      G_GNUC_EXTENSION g_signal_handlers_block_by_func (iter->data, gw_radicalswindow_toggled_cb, window);
       if (G_OBJECT_TYPE (iter->data) == type)
          gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(iter->data), FALSE);
-      g_signal_handlers_unblock_by_func (iter->data, gw_radicalswindow_search_cb, window);
+      G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (iter->data, gw_radicalswindow_toggled_cb, window);
       gtk_widget_set_sensitive (GTK_WIDGET (iter->data), TRUE);
     }
 

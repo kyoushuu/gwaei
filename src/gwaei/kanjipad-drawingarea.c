@@ -36,7 +36,8 @@
 
 #include <gtk/gtk.h>
 
-#include <gwaei/gwaei.h>
+#include <libwaei/libwaei.h>
+#include <gwaei/kanjipadwindow.h>
 #include <gwaei/kanjipadwindow-private.h>
 
 static void _kanjipadwindow_initialize_drawingarea (GwKanjipadWindow*);

@@ -1,3 +1,28 @@
+/******************************************************************************
+    AUTHOR:
+    File written and Copyrighted by Zachary Dovel. All Rights Reserved.
+
+    LICENSE:
+    This file is part of gWaei.
+
+    gWaei is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    gWaei is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    You should have received a copy of the GNU General Public License
+    along with gWaei.  If not, see <http://www.gnu.org/licenses/>.
+*******************************************************************************/
+
+//!
+//!  @file vocabularylist.c
+//!
+
 #include <libwaei/libwaei.h>
 
 
@@ -78,33 +103,42 @@ lw_vocabularylist_free (LwVocabularyList *list)
 
 
 void
-lw_vocabularylist_load (LwVocabularyList *list, LwIoProgressCallback cb)
+lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
     LwVocabularyItem *item;
     gchar *uri;
     FILE *stream;
-    const gint MAX = 200;
+    const gint MAX = 512;
     gchar buffer[MAX + 1];
 
-    uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
     stream = fopen (uri, "r");
+    if (stream == NULL) return;
     buffer[MAX] = '\0';
 
     while (stream != NULL && feof(stream) == 0)
     {
       if (fgets (buffer, MAX, stream) != NULL)
       {
+        buffer[MAX] = '\0';
         item = lw_vocabularyitem_new_from_string (buffer);
         if (item != NULL)
         {
           list->items = g_list_append (list->items, item);
         }
       }
+      if (strchr(buffer, '\n') == NULL && feof(stream) == 0)
+      {
+        while (fgetc(stream) != '\n' && feof(stream) == 0);
+      }
     }
 }
 
 void
-lw_vocabularylist_save (LwVocabularyList *list, LwIoProgressCallback cb)
+lw_vocabularylist_save (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
     //Declarations
     LwVocabularyItem *item;
@@ -113,8 +147,13 @@ lw_vocabularylist_save (LwVocabularyList *list, LwIoProgressCallback cb)
     gchar *uri;
     FILE *stream;
 
-    uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
     stream = fopen (uri, "w");
+
+    if (stream == NULL) return;
 
     for (iter = list->items; iter != NULL; iter = iter->next)
     {

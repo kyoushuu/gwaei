@@ -11,9 +11,9 @@ void gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer data);
 void gw_searchwindow_statusbar_toggle_cb (GtkWidget *widget, gpointer data);
 void gw_searchwindow_less_relevant_results_toggle_cb(GtkWidget *widget, gpointer data);
 void gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_paste_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_cut_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_copy_cb (GtkWidget *widget, gpointer data);
+void gw_searchwindow_paste_cb (GtkAction *action, gpointer data);
+void gw_searchwindow_cut_cb (GtkAction *widget, gpointer data);
+void gw_searchwindow_copy_cb (GtkAction *action, gpointer data);
 void gw_searchwindow_about_cb (GtkWidget *widget, gpointer data);
 void gw_searchwindow_destroy_cb (GObject*, gpointer);
 void gw_searchwindow_search_cb (GtkWidget *widget, gpointer data);
@@ -78,6 +78,11 @@ gboolean gw_searchwindow_focus_in_event_cb (GtkWidget*, GdkEvent*, gpointer);
 void gw_searchwindow_event_after_cb (GtkWidget*, GdkEvent*, gpointer);
 
 gboolean gw_searchwindow_motion_notify_event_cb (GtkWidget*, GdkEventButton*, gpointer);
+void gw_searchwindow_vocabulary_changed_cb (GtkWidget*, gpointer);
+void gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget*, gpointer);
+
+void gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget*, gpointer);
+void gw_searchwindow_radicalswindow_destroy_cb (GtkWidget*, gpointer);
 
 #endif
 

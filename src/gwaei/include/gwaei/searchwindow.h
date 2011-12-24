@@ -5,6 +5,12 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+  GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED,
+  TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS
+} GwSearchWindowClassSignalId;
+
+
 //Boilerplate
 typedef struct _GwSearchWindow GwSearchWindow;
 typedef struct _GwSearchWindowClass GwSearchWindowClass;
@@ -26,6 +32,8 @@ struct _GwSearchWindow {
 
 struct _GwSearchWindowClass {
   GwWindowClass parent_class;
+  guint signalid[TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS];
+  void (*word_added) (GwSearchWindow* window, LwResultLine *line);
 };
 
 GtkWindow* gw_searchwindow_new (GtkApplication *application);
@@ -66,10 +74,7 @@ void gw_searchwindow_buffer_initialize_tags (GwSearchWindow*);
 void gw_searchwindow_set_font (GwSearchWindow*);
 void gw_searchwindow_buffer_initialize_marks (GtkTextBuffer*);
 
-
-void gw_searchwindow_entry_insert (GwSearchWindow*, char*);
 void gw_searchwindow_clear_search_entry (GwSearchWindow*);
-
 
 gunichar gw_searchwindow_get_hovered_character (GwSearchWindow*, int*, int*, GtkTextIter*);
 void gw_searchwindow_show_window (GwSearchWindow*, char*);
@@ -102,7 +107,14 @@ void gw_searchwindow_set_color_to_swatch (GwSearchWindow*, const char*, const ch
 
 void gw_searchwindow_guarantee_first_tab (GwSearchWindow*);
 
+GtkTextView* gw_searchwindow_get_textview (GwSearchWindow*, int);
+GtkInfoBar* gw_searchwindow_get_infobar (GwSearchWindow*, int);
 GtkTextView* gw_searchwindow_get_current_textview (GwSearchWindow*);
+GtkInfoBar* gw_searchwindow_get_current_infobar (GwSearchWindow*);
+
+void gw_searchwindow_show_current_infobar (GwSearchWindow*, char*);
+void gw_searchwindow_hide_current_infobar (GwSearchWindow*);
+void gw_searchwindow_hide_infobars (GwSearchWindow*);
 
 void gw_searchwindow_set_tab_text_by_searchitem (GwSearchWindow*, LwSearchItem*);
 void gw_searchwindow_set_current_searchitem (GwSearchWindow*, LwSearchItem*);

@@ -110,10 +110,11 @@
     <property name="stock_id">gtk-clear</property>
     <signal name="activate" handler="gw_searchwindow_clear_search_cb" object="toplevel" swapped="no"/>
   </object>
-  <object class="GtkAction" id="insert_kanjipad_action">
+  <object class="GtkToggleAction" id="insert_kanjipad_toggleaction">
     <property name="label" translatable="yes">Using _Kanjipad</property>
+    <property name="short_label" translatable="yes">Kanjipad</property>
     <property name="stock_id">gtk-edit</property>
-    <signal name="activate" handler="gw_searchwindow_open_kanjipadwindow_cb" object="toplevel" swapped="no"/>
+    <signal name="toggled" handler="gw_searchwindow_toggle_kanjipadwindow_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkAction" id="insert_not_word_edge_action">
     <property name="label" translatable="yes">_Not-word-edge Mark</property>
@@ -126,10 +127,11 @@
     <property name="label" translatable="yes">Logical _Or Character</property>
     <signal name="activate" handler="gw_searchwindow_insert_or_cb" object="toplevel" swapped="no"/>
   </object>
-  <object class="GtkAction" id="insert_radicals_action">
+  <object class="GtkToggleAction" id="insert_radicals_toggleaction">
     <property name="label" translatable="yes">Using _Radical Search Tool</property>
+    <property name="short_label" translatable="yes">Radicals</property>
     <property name="stock_id">gtk-find</property>
-    <signal name="activate" handler="gw_searchwindow_open_radicalswindow_cb" object="toplevel" swapped="no"/>
+    <signal name="toggled" handler="gw_searchwindow_toggle_radicalswindow_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkAction" id="insert_unknown_character_action">
     <property name="label" translatable="yes">_Unknown Character</property>
@@ -502,33 +504,31 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="tools_menu">
+              <object class="GtkMenuItem" id="insert_menu">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Insert</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="tools_popup">
+                  <object class="GtkMenu" id="insert_popup">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="kanjipad_menuitem">
-                        <property name="related_action">insert_kanjipad_action</property>
+                      <object class="GtkCheckMenuItem" id="kanjipad_menuitem">
+                        <property name="related_action">insert_kanjipad_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="no_show_all">True</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="radicals_menuitem">
-                        <property name="related_action">insert_radicals_action</property>
+                      <object class="GtkCheckMenuItem" id="radicals_menuitem">
+                        <property name="related_action">insert_radicals_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
                       </object>
                     </child>
                     <child>
@@ -945,6 +945,42 @@
                 <property name="can_focus">False</property>
                 <property name="related_action">view_zoom_out_action</property>
                 <property name="label" translatable="yes">Shrink</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem" id="toolbutton1">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleToolButton" id="kanjipad_toggletoolbutton">
+                <property name="related_action">insert_kanjipad_toggleaction</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="related_action">insert_kanjipad_toggleaction</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleToolButton" id="radicals_toggletoolbutton">
+                <property name="related_action">insert_radicals_toggleaction</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="related_action">insert_radicals_toggleaction</property>
               </object>
               <packing>
                 <property name="expand">False</property>

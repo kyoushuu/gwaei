@@ -37,7 +37,8 @@
 
 #include <gtk/gtk.h>
 
-#include <gwaei/gwaei.h>
+#include <libwaei/libwaei.h>
+#include <gwaei/kanjipadwindow.h>
 #include <gwaei/kanjipadwindow-private.h>
 
 #define BUFLEN 256
@@ -169,14 +170,27 @@ static void gw_kanjipadwindow_constructed (GObject *object)
 static void
 gw_kanjipadwindow_class_init (GwKanjipadWindowClass *klass)
 {
-  GObjectClass *object_class;
+    GObjectClass *object_class;
 
-  object_class = G_OBJECT_CLASS (klass);
+    object_class = G_OBJECT_CLASS (klass);
 
-  object_class->constructed = gw_kanjipadwindow_constructed;
-  object_class->finalize = gw_kanjipadwindow_finalize;
+    object_class->constructed = gw_kanjipadwindow_constructed;
+    object_class->finalize = gw_kanjipadwindow_finalize;
 
-  g_type_class_add_private (object_class, sizeof (GwKanjipadWindowPrivate));
+    g_type_class_add_private (object_class, sizeof (GwKanjipadWindowPrivate));
+
+    klass->signalid[GW_KANJIPADWINDOW_CLASS_SIGNALID_KANJI_SELECTED] = g_signal_new (
+        "kanji-selected",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST,
+        G_STRUCT_OFFSET (GwKanjipadWindowClass, kanji_selected),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__STRING,
+        G_TYPE_NONE, 
+        1, G_TYPE_STRING
+
+    );
+
 }
 
 

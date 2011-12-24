@@ -402,7 +402,6 @@ static gpointer _outfunc (gpointer data)
 
     g_mutex_lock (spellcheck->mutex);
     spellcheck->running_check = FALSE;
-    spellcheck->thread = NULL;
     g_mutex_unlock (spellcheck->mutex);
 
     return NULL;
@@ -423,16 +422,13 @@ gboolean gw_spellcheck_update_timeout (gpointer data)
     if (window == NULL) return FALSE;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-/*
-    //Make sure any previous spellchecks have finished
-    g_mutex_lock (spellcheck->mutex);
+
     if (spellcheck->thread != NULL) 
     {
-      g_mutex_unlock (spellcheck->mutex);
-      return TRUE;
+      g_thread_join (spellcheck->thread); 
+      spellcheck->thread = NULL;
     }
-    g_mutex_unlock (spellcheck->mutex);
-*/
+
     //Sanity check
     if (spellcheck->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0) return TRUE;
 

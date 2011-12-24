@@ -20,6 +20,7 @@ typedef enum {
   GW_SEARCHWINDOW_SIGNALID_FONT_MAGNIFICATION,
   GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED,
   GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED,
+  GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED,
   TOTAL_GW_SEARCHWINDOW_SIGNALIDS
 } GwSearchWindowSignalId;
 
@@ -68,6 +69,9 @@ struct _GwSearchWindowPrivate {
   gboolean keep_searching_enabled;
 
   gboolean text_selected;
+
+  GwRadicalsWindow *radicalswindow;
+  GwKanjipadWindow *kanjipadwindow;
 };
 
 #define GW_SEARCHWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_SEARCHWINDOW, GwSearchWindowPrivate))

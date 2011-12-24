@@ -15,8 +15,6 @@ typedef struct _GwVocabularyWindowPrivate GwVocabularyWindowPrivate;
 #define GW_IS_VOCABULARYWINDOW_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), GW_TYPE_VOCABULARYWINDOW))
 #define GW_VOCABULARYWINDOW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS((obj), GW_TYPE_VOCABULARYWINDOW, GwVocabularyWindowClass))
 
-#define GW_VOCABULARYWINDOW_KEEP_SEARCHING_MAX_DELAY 3
-
 struct _GwVocabularyWindow {
   GwWindow window;
   GwVocabularyWindowPrivate *priv;
@@ -45,6 +43,13 @@ void gw_vocabularywindow_reset (GwVocabularyWindow*);
 void gw_vocabularywindow_set_has_changes (GwVocabularyWindow*, gboolean);
 gboolean gw_vocabularywindow_has_changes (GwVocabularyWindow*);
 gchar* gw_vocabularywindow_selected_words_to_string (GwVocabularyWindow*);
+gboolean gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow*);
+void gw_vocabularywindow_start_flashcards (GwVocabularyWindow*, const gchar*, const gchar*, gint, gint);
+GtkListStore* gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow*);
+void gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow*);
+void gw_vocabularywindow_set_selected_list (GwVocabularyWindow*, GtkTreePath*);
+gboolean gw_vocabularywindow_show_save_dialog (GwVocabularyWindow*);
+void gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow*, gboolean);
 
 #include "vocabularywindow-callbacks.h"
 

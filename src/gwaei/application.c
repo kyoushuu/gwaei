@@ -264,11 +264,13 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
     if (priv->arg_query != NULL) g_free (priv->arg_query);
     priv->arg_query = NULL;
     priv->arg_version_switch = FALSE;
+    priv->arg_new_vocabulary_window_switch = FALSE;
 
     GOptionEntry entries[] =
     {
       { "new", 'n', 0, G_OPTION_ARG_NONE, &(priv->arg_new_window_switch), gettext("Force a new instance window"), NULL },
       { "dictionary", 'd', 0, G_OPTION_ARG_STRING, &(priv->arg_dictionary), gettext("Choose the dictionary to use"), "English" },
+      { "vocabulary", 'o', 0, G_OPTION_ARG_NONE, &(priv->arg_new_vocabulary_window_switch), gettext("Open the vocabulary manager window"), NULL },
       { "version", 'v', 0, G_OPTION_ARG_NONE, &(priv->arg_version_switch), gettext("Check the gWaei version information"), NULL },
       { NULL }
     };
@@ -323,9 +325,35 @@ gw_application_quit (GwApplication *application)
 {
     gw_application_block_searches (application);
 
-    GList *iter;
-    while ((iter = gtk_application_get_windows (GTK_APPLICATION (application))) != NULL)
-      gtk_widget_destroy (GTK_WIDGET (iter->data));
+    GList *link;
+    GtkListStore *liststore;
+    gboolean has_changes;
+    gboolean should_close;
+
+    liststore = gw_application_get_vocabularyliststore (application);
+    has_changes = gw_vocabularyliststore_has_changes (GW_VOCABULARYLISTSTORE (liststore));
+    should_close = TRUE;
+
+    if (has_changes)
+    {
+       link = gtk_application_get_windows (GTK_APPLICATION (application));
+       while (link != NULL && GW_IS_VOCABULARYWINDOW (link->data) == FALSE) link = link->next;
+
+       if (link != NULL)
+       {
+         should_close = gw_vocabularywindow_show_save_dialog (GW_VOCABULARYWINDOW (link->data));
+       }
+    }
+
+    if (should_close)
+    {
+      link = gtk_application_get_windows (GTK_APPLICATION (application));
+      while (link != NULL)
+      {
+        gtk_widget_destroy (GTK_WIDGET (link->data));
+        link = gtk_application_get_windows (GTK_APPLICATION (application));
+      }
+    }
 
     gw_application_unblock_searches (application);
 }
@@ -556,11 +584,10 @@ gw_application_get_last_focused_searchwindow (GwApplication *application)
    GwSearchWindow *window;
 
    priv = application->priv;
+   window = GW_SEARCHWINDOW (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW));
 
-   if (priv->last_focused != NULL)
+   if (window != NULL && priv->last_focused != NULL)
      window = priv->last_focused;
-   else
-     window = GW_SEARCHWINDOW (gw_application_get_window_by_type (application, GW_TYPE_SEARCHWINDOW));
 
    return window;
 }
@@ -604,10 +631,16 @@ GtkListStore*
 gw_application_get_vocabularyliststore (GwApplication *application)
 {
   GwApplicationPrivate *priv;
+  LwPreferences *preferences;
+
   priv = application->priv;
 
   if (priv->vocabulary == NULL)
+  {
+    preferences = gw_application_get_preferences (application);
     priv->vocabulary = gw_vocabularyliststore_new ();
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabulary), preferences);
+  }
 
   return priv->vocabulary;
 }
@@ -627,14 +660,24 @@ gw_application_get_tagtable (GwApplication *application)
 static void 
 gw_application_activate (GApplication *application)
 {
+    GwApplicationPrivate *priv;
     GwSearchWindow *searchwindow;
+    GwVocabularyWindow *vocabularywindow;
     GwSettingsWindow *settingswindow;
     LwDictInfoList *dictinfolist;
 
+    priv = GW_APPLICATION (application)->priv;
     searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
 
-    if (searchwindow == NULL)
+    if (priv->arg_new_vocabulary_window_switch)
+    {
+      vocabularywindow = GW_VOCABULARYWINDOW (gw_vocabularywindow_new (GTK_APPLICATION (application)));
+      gtk_widget_show (GTK_WIDGET (vocabularywindow));
+      return;
+    }
+
+    else if (searchwindow == NULL)
     {
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
@@ -645,10 +688,13 @@ gw_application_activate (GApplication *application)
         gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
         gtk_widget_show (GTK_WIDGET (settingswindow));
       }
+      return;
     }
     else
     {
+      printf("presenting window\n");
       gtk_window_present (GTK_WINDOW (searchwindow));
+      return;
     }
 }
 
@@ -669,15 +715,15 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
     argv = g_application_command_line_get_arguments (command_line, &argc);
 
-    g_application_activate (G_APPLICATION (application));
-
     gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
+    g_application_activate (G_APPLICATION (application));
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
-
-    g_assert (window != NULL);
+    if (window == NULL) 
+      return 0;
+    di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary);
 
     //Set the initial dictionary
-    if ((di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary)) != NULL)
+    if (di != NULL)
     {
       gw_searchwindow_set_dictionary (window, di->load_position);
     }
@@ -784,3 +830,19 @@ gw_application_texttagtable_new ()
     return temp;
 }
 
+
+gboolean
+gw_application_should_quit (GwApplication *application)
+{
+    GList *windowlist;
+    GList *link;
+    gboolean should_quit;
+
+    windowlist = gtk_application_get_windows (GTK_APPLICATION (application));
+    should_quit = TRUE;
+
+    for (link = windowlist; should_quit && link != NULL; link = link->next)
+      if (gw_window_is_important (GW_WINDOW (link->data))) should_quit = FALSE;
+
+    return should_quit;
+}

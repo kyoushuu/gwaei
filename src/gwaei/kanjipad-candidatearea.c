@@ -37,7 +37,8 @@
 #include <gtk/gtk.h>
 #include <pango/pangocairo.h>
 
-#include <gwaei/gwaei.h>
+#include <libwaei/libwaei.h>
+#include <gwaei/kanjipadwindow.h>
 #include <gwaei/kanjipadwindow-private.h>
 
 
@@ -350,7 +351,7 @@ G_MODULE_EXPORT gboolean gw_kanjipadwindow_candidatearea_button_press_event_cb (
     //Declarations
     GwKanjipadWindow *window;
     GwKanjipadWindowPrivate *priv;
-    GwSearchWindow *searchwindow;
+    GwKanjipadWindowClass *klass;
     int j;
     gint char_height;
     GtkClipboard *clipboard;
@@ -360,8 +361,7 @@ G_MODULE_EXPORT gboolean gw_kanjipadwindow_candidatearea_button_press_event_cb (
     window = GW_KANJIPADWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_KANJIPADWINDOW));
     if (window == NULL) return FALSE;
     priv = window->priv;
-    searchwindow = GW_SEARCHWINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
-    g_assert (searchwindow != NULL);
+    klass = GW_KANJIPADWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     clipboard = gtk_clipboard_get (GDK_SELECTION_PRIMARY);
 
     static const GtkTargetEntry targets[] = {
@@ -396,20 +396,9 @@ G_MODULE_EXPORT gboolean gw_kanjipadwindow_candidatearea_button_press_event_cb (
     gtk_widget_queue_draw (widget);
 
 
-    //Copy to clipboard if output_widget is NULL
-    if ((priv->kselected[0] || priv->kselected[1]) && searchwindow == NULL)
-    {
-      string_utf = _kanjipadwindow_utf8_for_char (priv->kselected);
-      gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_CLIPBOARD), string_utf, -1);
-      g_free (string_utf);
-    }
-    //Insert the text into the editable widget
-    else if (priv->kselected[0] || priv->kselected[1])
-    {
-      string_utf = _kanjipadwindow_utf8_for_char (priv->kselected);
-      gw_searchwindow_entry_insert_text (searchwindow, string_utf);
-      g_free (string_utf);
-    }
+    string_utf = _kanjipadwindow_utf8_for_char (priv->kselected);
+    g_signal_emit (G_OBJECT (window), klass->signalid[GW_KANJIPADWINDOW_CLASS_SIGNALID_KANJI_SELECTED], 0, string_utf);
+    g_free (string_utf);
 
     //Cleanup so the user can draw the next character
     gw_kanjipadwindow_clear_drawingarea (window);

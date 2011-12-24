@@ -9,10 +9,17 @@ typedef enum {
 } GwVocabularyWordStoreClassSignalId;
 
 typedef enum { 
+  GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER,
+  GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING,
   GW_VOCABULARYWORDSTORE_COLUMN_KANJI,
   GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA,
   GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS,
-  GW_VOCABULARYWORDSTORE_COLUMN_CHANGED,
+  GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES,
+  GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES,
+  GW_VOCABULARYWORDSTORE_COLUMN_SCORE,
+  GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP,
+  GW_VOCABULARYWORDSTORE_COLUMN_DAYS,
+  GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT,
   TOTAL_GW_VOCABULARYWORDSTORE_COLUMNS
 } GwVocabularyWordStoreColumn;
 
@@ -43,8 +50,8 @@ struct _GwVocabularyWordStoreClass {
 GtkListStore* gw_vocabularywordstore_new (const gchar*);
 GType gw_vocabularywordstore_get_type (void) G_GNUC_CONST;
 
-void gw_vocabularywordstore_save (GwVocabularyWordStore*);
-void gw_vocabularywordstore_load (GwVocabularyWordStore*);
+void gw_vocabularywordstore_save (GwVocabularyWordStore*, const gchar*);
+void gw_vocabularywordstore_load (GwVocabularyWordStore*, const gchar*);
 gboolean gw_vocabularywordstore_loaded (GwVocabularyWordStore*);
 const gchar* gw_vocabularywordstore_get_name (GwVocabularyWordStore*);
 gchar* gw_vocabularywordstore_get_filename (GwVocabularyWordStore*);
@@ -59,6 +66,16 @@ void gw_vocabularywordstore_remove_path_list (GwVocabularyWordStore*, GList*);
 void gw_vocabularywordstore_append_text (GwVocabularyWordStore*, GtkTreeIter*, gboolean, const gchar*);
 void gw_vocabularywordstore_new_word (GwVocabularyWordStore*, GtkTreeIter*, GtkTreeIter*, const gchar*, const gchar*, const gchar*);
 void gw_vocabularywordstore_set_string (GwVocabularyWordStore*, GtkTreeIter*, gint, const gchar*);
+gchar* gw_vocabularywordstore_iter_to_string (GwVocabularyWordStore*, GtkTreeIter*);
+
+void gw_vocabularywordstore_update_timestamp_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+
+gint gw_vocabularywordstore_get_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+void gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+
+gint gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
+void gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
+
 
 G_END_DECLS
 
