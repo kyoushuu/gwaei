@@ -402,9 +402,13 @@ gw_vocabularyliststore_load_list_order (GwVocabularyListStore *store, LwPreferen
         valid = gtk_tree_model_iter_next (model, &iter);
       }
 
-      gtk_list_store_reorder (GTK_LIST_STORE (store), reorder);
-    }
 
+      valid = TRUE;
+      for (new_pos = 0; new_pos < reorder_length && valid; new_pos++) 
+        if (reorder[new_pos] == -1) valid = FALSE;
+
+      if (valid) gtk_list_store_reorder (GTK_LIST_STORE (store), reorder);
+    }
     if (atoms != NULL) g_strfreev (atoms);
     if (reorder != NULL) g_free (reorder);
     if (oldhash != NULL) g_hash_table_destroy (oldhash);
