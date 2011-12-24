@@ -81,7 +81,7 @@ size_t skip_parens(str_p s, size_t si, size_t sz) /*@*/
 
 	for (pi = si; pi < sz; pi = ei) {
 		if (s[pi] != '(')
-			break;
+			return pi;
 		for (ei = pi + 1; ei < sz; ei++) {
 			if (s[ei] == ')')
 				/*@innerbreak@*/
@@ -95,7 +95,7 @@ size_t skip_parens(str_p s, size_t si, size_t sz) /*@*/
 		}
 	}
 
-	return pi;
+	return sz;
 }
 
 str_p edict_idx_key_english_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
@@ -106,23 +106,23 @@ str_p edict_idx_key_english_exact(size_t* pkey_sz, str_p entry, size_t entry_sz,
 	*pkey_sz = 0;
 
 	ci = (size_t)*ppos;
-	if (ci >= entry_sz)
-		return 0;
 
 	for (li = ci; li < entry_sz; li++) {
 		if (entry[li] == '/')
 			break;
 	}
 
-	si = skip_parens(entry, li + 1, entry_sz);
-
-	for (ri = si + 1; ri < entry_sz; ri++) {
-		if (entry[ri] == '/') {
-			*ppos = (int)ri;
-			*pkey_sz = ri - si;
-			return &entry[si];
-		}
+	for (ri = li + 1; ri < entry_sz; ri++) {
+		if (entry[ri] == '/')
+			break;
 	}
 
-	return 0;
+	if (ri >= entry_sz)
+		return 0;
+
+	si = skip_parens(entry, li + 1, ri);
+
+	*ppos = (int)ri;
+	*pkey_sz = ri - si;
+	return &entry[si];
 }

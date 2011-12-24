@@ -1,6 +1,0 @@
-#!/bin/sh
-
-DIR=testdata
-
-test -d ${DIR} && rm -rf ${DIR}
-true

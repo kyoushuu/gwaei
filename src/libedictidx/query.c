@@ -15,24 +15,31 @@ htab_index_t edict_idx_htab_index(edict_idx* s, uint32_t hash)
 int edict_idx_htab_look(edict_idx* s, htab_index_t* pindex,
 			uint32_t* poffset, uint32_t cksum)
 {
-	htab_index_t hi = *pindex;
+	htab_index_t hi, hi0;
 
-	while (s->htab[hi].cksum != cksum) {
+	hi = hi0 = *pindex;
+
+	do {
 		if (s->htab[hi].cksum == 0
 		    && s->htab[hi].offset == 0) {
 			*pindex = hi;
 			*poffset = 0;
 			return -1;
 		}
+
+		if (s->htab[hi].cksum == cksum) {
+			*poffset = s->htab[hi].offset;
+			*pindex = (hi + 1) & (s->htab_size - 1);
+			return 0;
+		}
+
 		hi = (hi + 1) & (s->htab_size - 1);
-	}
+	} while (hi != hi0);
 
-	*poffset = s->htab[hi].offset;
+	fprintf(stderr, "Hash table search wrapped at %08X!\n", hi);
 
-	hi = (hi + 1) & (s->htab_size - 1);
-	*pindex = hi;
-
-	return 0;
+	*poffset = 0;
+	return -1;
 }
 
 edict_idx_query*
