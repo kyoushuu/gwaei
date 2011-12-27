@@ -1107,13 +1107,18 @@ gw_searchwindow_key_press_modify_status_update_cb (GtkWidget *widget,
 
     guint keyval = ((GdkEventKey*)event)->keyval;
 
-    if ((keyval == GDK_KEY_ISO_Enter || keyval == GDK_KEY_Return) && gtk_widget_is_focus (GTK_WIDGET (priv->entry)) && priv->new_tab == TRUE)
+    if ((keyval == GDK_KEY_ISO_Enter || 
+         keyval == GDK_KEY_Return) 
+         && gtk_widget_is_focus (GTK_WIDGET (priv->entry)) && priv->new_tab == TRUE)
     {
       gtk_widget_activate (GTK_WIDGET (priv->entry));
       return TRUE;
     }
 
-    if (keyval == GDK_KEY_Shift_L || keyval == GDK_KEY_Shift_R || keyval == GDK_KEY_ISO_Next_Group || keyval == GDK_KEY_ISO_Prev_Group)
+    if (keyval == GDK_KEY_Shift_L || 
+        keyval == GDK_KEY_Shift_R || 
+        keyval == GDK_KEY_ISO_Next_Group || 
+        keyval == GDK_KEY_ISO_Prev_Group)
     {
       priv->new_tab = TRUE;
     }
@@ -1145,7 +1150,10 @@ gw_searchwindow_key_release_modify_status_update_cb (GtkWidget *widget,
     priv = window->priv;
     keyval = ((GdkEventKey*)event)->keyval;
 
-    if (keyval == GDK_KEY_Shift_L || keyval == GDK_KEY_Shift_R || keyval == GDK_KEY_ISO_Next_Group || keyval == GDK_KEY_ISO_Prev_Group)
+    if (keyval == GDK_KEY_Shift_L || 
+        keyval == GDK_KEY_Shift_R || 
+        keyval == GDK_KEY_ISO_Next_Group || 
+        keyval == GDK_KEY_ISO_Prev_Group)
     {
       priv->new_tab = FALSE;
     }
@@ -1171,6 +1179,8 @@ gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
     guint keyval;
     guint modifiers;
     GtkTextView *view;
+    gint page_num;
+    GtkScrolledWindow *scrolledwindow;
 
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return FALSE;
@@ -1189,6 +1199,8 @@ gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
        GDK_KEY_Alt_R
     );
     view = gw_searchwindow_get_current_textview (window);
+    page_num = gtk_notebook_get_current_page (priv->notebook);
+    scrolledwindow = GTK_SCROLLED_WINDOW (gtk_notebook_get_nth_page (priv->notebook, page_num));
 
     //Make sure no modifier keys are pressed
     if (
@@ -1230,6 +1242,44 @@ gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
       {
         gw_searchwindow_select_none (window, GTK_WIDGET (view));
         gtk_widget_grab_focus (GTK_WIDGET (view));
+        return TRUE;
+      }
+
+      //A manual reimplimentation of scroll for the textview/scollbox
+      else if ( 
+           ( keyval == GDK_KEY_Up        ||
+             keyval == GDK_KEY_Down      ||
+             keyval == GDK_KEY_Page_Up   ||
+             keyval == GDK_KEY_Page_Down   
+           ) &&
+           (
+             widget == GTK_WIDGET (view)
+           )
+         )
+      {
+        GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment (scrolledwindow);
+        gdouble increment = 0.0;
+        gdouble value = gtk_adjustment_get_value (adjustment);
+
+        switch (keyval)
+        {
+          case GDK_KEY_Up:
+            increment = -gtk_adjustment_get_step_increment (adjustment);
+            break;
+          case GDK_KEY_Down:
+            increment = gtk_adjustment_get_step_increment (adjustment);
+            break;
+          case GDK_KEY_Page_Up:
+            increment = -gtk_adjustment_get_page_increment (adjustment);
+            break;
+          case GDK_KEY_Page_Down:
+            increment = gtk_adjustment_get_page_increment (adjustment);
+            break;
+          default:
+            break;
+        }
+        gtk_adjustment_set_value (adjustment, increment + value);
+        gtk_adjustment_value_changed (adjustment);
         return TRUE;
       }
 

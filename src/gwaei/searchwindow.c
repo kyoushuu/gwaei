@@ -1725,7 +1725,6 @@ gw_searchwindow_new_tab (GwSearchWindow *window)
     g_signal_connect (G_OBJECT (view), "key_press_event", G_CALLBACK (gw_searchwindow_focus_change_on_key_press_cb), window);
     g_signal_connect (G_OBJECT (view), "scroll_event", G_CALLBACK (gw_searchwindow_scroll_or_zoom_cb), window);
 
-
     //Set up the scrolled window
     gtk_box_pack_start (GTK_BOX (scrollbox), GTK_WIDGET (infobar), FALSE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX (scrollbox), GTK_WIDGET (view), TRUE, TRUE, 0);
