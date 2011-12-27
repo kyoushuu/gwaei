@@ -1988,25 +1988,17 @@ gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
     LwPreferences *preferences;
     gboolean state;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     state = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
 
     lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK, !state);
-
-    if (priv->spellcheck != NULL)
-    {
-      if (priv->spellcheck->query_text != NULL) g_free (priv->spellcheck->query_text);
-      priv->spellcheck->query_text = g_strdup ("FORCE UPDATE");
-    }
 }
 
 
@@ -2042,11 +2034,13 @@ gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer da
 
     if (request == TRUE && priv->spellcheck == NULL)
     {
-      priv->spellcheck =  gw_spellcheck_new (priv->entry);
+      priv->spellcheck =  gw_spellcheck_new_with_entry (application, priv->entry);
+      g_object_add_weak_pointer (G_OBJECT (priv->spellcheck), (gpointer*) &(priv->spellcheck));
     }
     else if (request == FALSE && priv->spellcheck != NULL)
     {
-      gw_spellcheck_free (priv->spellcheck); priv->spellcheck = NULL;
+      if (priv->spellcheck != NULL)
+        g_object_unref (G_OBJECT (priv->spellcheck));
     }
 }
 

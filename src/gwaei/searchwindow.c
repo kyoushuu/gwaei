@@ -98,7 +98,7 @@ gw_searchwindow_finalize (GObject *object)
     if (gw_application_get_last_focused_searchwindow (application) == window)
       gw_application_set_last_focused_searchwindow (application, NULL);
 
-    if (priv->spellcheck) gw_spellcheck_free (priv->spellcheck); priv->spellcheck = NULL;
+    if (priv->spellcheck) g_object_unref (priv->spellcheck); priv->spellcheck = NULL;
     if (priv->history) lw_history_free (priv->history); priv->history = NULL;
     if (priv->tablist) g_list_free (priv->tablist); priv->tablist = NULL;
     if (priv->keep_searching_query) g_free (priv->keep_searching_query); priv->keep_searching_query = NULL;

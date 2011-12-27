@@ -1,3 +1,5 @@
+#ifndef GW_VOCABULARYWINDOW_CALLBACKS_INCLUDED
+#define GW_VOCABULARYWINDOW_CALLBACKS_INCLUDED
 
 void gw_vocabularywindow_close_cb (GtkWidget*, gpointer);
 gboolean gw_vocabularywindow_delete_event_cb (GtkWidget*, GdkEvent*, gpointer);
@@ -19,3 +21,5 @@ void gw_vocabularywindow_toolbar_toggled_cb (GtkAction*, gpointer);
 void gw_vocabularywindow_position_column_toggled_cb (GtkAction*, gpointer);
 void gw_vocabularywindow_score_column_toggled_cb (GtkAction*, gpointer);
 void gw_vocabularywindow_timestamp_column_toggled_cb (GtkAction*, gpointer);
+
+#endif

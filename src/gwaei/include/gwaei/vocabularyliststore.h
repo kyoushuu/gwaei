@@ -61,4 +61,6 @@ gboolean gw_vocabularyliststore_list_exists (GwVocabularyListStore*, const gchar
 gboolean gw_vocabularyliststore_has_changes (GwVocabularyListStore*);
 void gw_vocabularyliststore_set_has_changes (GwVocabularyListStore*, gboolean);
 
+G_END_DECLS
+
 #endif

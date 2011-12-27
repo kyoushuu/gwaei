@@ -32,7 +32,7 @@
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
-
+#include <gwaei/spellcheck-private.h>
 
 void gw_spellcheck_menuitem_activated_cb (GtkWidget *widget, gpointer data)
 {
@@ -91,6 +91,7 @@ static int _get_string_index (GtkEntry *entry, int x, int y)
 gboolean _get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int endindex, int *x, int *y, int *x2, int *y2)
 {
     //Declarations
+    GwSpellcheckPrivate *priv;
     int index;
     PangoLayout *layout;
     PangoRectangle rect;
@@ -98,7 +99,8 @@ gboolean _get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int en
     int xoffset, yoffset;
 
     //Initializations
-    layout = gtk_entry_get_layout (spellcheck->entry);
+    priv = spellcheck->priv;
+    layout = gtk_entry_get_layout (priv->entry);
     iter = pango_layout_get_iter (layout);
     xoffset = gw_spellcheck_get_x_offset (spellcheck);
     yoffset = gw_spellcheck_get_y_offset (spellcheck);
@@ -162,6 +164,7 @@ void gw_spellcheck_populate_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;
+    GwSpellcheckPrivate *priv;
     GtkWidget *menuitem;
     char **split;
     char **info;
@@ -169,6 +172,7 @@ void gw_spellcheck_populate_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
     GList *iter;
 
     spellcheck = GW_SPELLCHECK (data);
+    priv = spellcheck->priv;
     int index;
     int xpointer, ypointer, xoffset, yoffset, x, y;
     _SpellingReplacementData *srd;
@@ -183,8 +187,8 @@ void gw_spellcheck_populate_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
     y = yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
     index =  _get_string_index (entry, x, y);
 
-    g_mutex_lock (spellcheck->mutex);
-    for (iter = spellcheck->corrections; index > -1 && iter != NULL; iter = iter->next)
+    g_mutex_lock (priv->mutex);
+    for (iter = priv->corrections; index > -1 && iter != NULL; iter = iter->next)
     {
       //Create the start and end offsets 
       split = g_strsplit (iter->data, ":", 2);
@@ -225,7 +229,7 @@ void gw_spellcheck_populate_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
       g_strfreev (split);
       g_strfreev (info);
     }
-    g_mutex_unlock (spellcheck->mutex);
+    g_mutex_unlock (priv->mutex);
 }
 
 
@@ -233,6 +237,7 @@ gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpoint
 {
     //Declarations
     GwSpellcheck *spellcheck;
+    GwSpellcheckPrivate *priv;
     gint x, y, x2, y2;
     GList *iter;
     char **info;
@@ -241,9 +246,10 @@ gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpoint
 
     //Initializations
     spellcheck = GW_SPELLCHECK (data);
+    priv = spellcheck->priv;
 
-    g_mutex_lock (spellcheck->mutex);
-    for (iter = spellcheck->corrections; iter != NULL; iter = iter->next)
+    g_mutex_lock (priv->mutex);
+    for (iter = priv->corrections; iter != NULL; iter = iter->next)
     {
       if (iter->data == NULL) continue;
 
@@ -264,7 +270,7 @@ gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpoint
       g_strfreev (info);
       g_strfreev (atoms);
     }
-    g_mutex_unlock (spellcheck->mutex);
+    g_mutex_unlock (priv->mutex);
 
     return FALSE;
 }
@@ -274,31 +280,30 @@ void gw_spellcheck_queue_cb (GtkEditable *editable, gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;
-    const char *query;
+    GwSpellcheckPrivate *priv;
 
     //Initializations
     spellcheck = GW_SPELLCHECK (data);
-    g_mutex_lock (spellcheck->mutex);
-    if (spellcheck->query_text == NULL)
-      spellcheck->query_text = g_strdup (gtk_entry_get_text (GTK_ENTRY (editable)));
-    query = gtk_entry_get_text (GTK_ENTRY (editable));
+    priv = spellcheck->priv;
 
-    if (strcmp(spellcheck->query_text, query) != 0)
+    if (priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] != 0)
     {
-      //Clear out the old links
-      while (spellcheck->corrections != NULL)
-      {
-        g_free (spellcheck->corrections->data);
-        spellcheck->corrections = g_list_delete_link (spellcheck->corrections, spellcheck->corrections);
-      }
-
-      g_free (spellcheck->query_text);
-      spellcheck->query_text = g_strdup (gtk_entry_get_text (GTK_ENTRY (editable)));
-
-      spellcheck->needs_spellcheck = TRUE;
-      spellcheck->timeout = 0;
+      priv->timeout = 0;
     }
-    g_mutex_unlock (spellcheck->mutex);
+
+    else
+    {
+      priv->timeout = 0;
+      priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] = g_timeout_add_full (
+          G_PRIORITY_LOW, 
+          100, (GSourceFunc) 
+          gw_spellcheck_update_timeout, 
+          spellcheck, 
+          NULL
+      );
+      gw_spellcheck_reset (spellcheck);
+      gtk_widget_queue_draw (GTK_WIDGET (editable));
+    }
 }
 
 
@@ -327,211 +332,71 @@ void gw_spellcheck_streamwithdata_free (GwSpellcheckStreamWithData *swd)
 }
 
 
-static gpointer _infunc (gpointer data)
-{
-    //Declarations
-    GwSpellcheckStreamWithData *swd;
-    FILE *file;
-    int stream;
-    char *text;
-
-    //Initializations
-    swd = data;
-    stream = swd->stream;
-    text = swd->data;
-    file = fdopen(stream, "w");
-
-    if (file != NULL)
-    {
-      if (ferror(file) == 0 && feof(file) == 0)
-      {
-        fwrite(text, sizeof(char), strlen(text), file);
-      }
-
-      fclose(file);
-    }
-
-    gw_spellcheck_streamwithdata_free (swd);
-
-    return NULL;
-}
-
-
-static gpointer _outfunc (gpointer data)
-{
-    //Declarations
-    const int MAX = 500;
-    GwSpellcheckStreamWithData *swd;
-    FILE *file;
-    char buffer[MAX];
-    GwSpellcheck *spellcheck;
-
-    //Initializations
-    swd = data;
-    spellcheck = swd->spellcheck;
-    file = fdopen (swd->stream, "r");
-
-    if (file != NULL)
-    {
-
-      //Clear out the old links
-      while (spellcheck->corrections != NULL)
-      {
-        g_mutex_lock (spellcheck->mutex);
-        g_free (spellcheck->corrections->data);
-        spellcheck->corrections = g_list_delete_link (spellcheck->corrections, spellcheck->corrections);
-        g_mutex_unlock (spellcheck->mutex);
-      }
-
-      //Add the new links
-      while (file != NULL && ferror(file) == 0 && feof(file) == 0 && fgets(buffer, MAX, file) != NULL)
-      {
-        g_mutex_lock (spellcheck->mutex);
-        if (buffer[0] != '@' && buffer[0] != '*' && buffer[0] != '#' && strlen(buffer) > 1)
-          spellcheck->corrections = g_list_append (spellcheck->corrections, g_strdup (buffer));
-        g_mutex_unlock (spellcheck->mutex);
-      }
-
-      //Cleanup
-      fclose (file);
-    }
-
-    g_spawn_close_pid (swd->pid);
-
-    gw_spellcheck_streamwithdata_free (swd);
-
-    g_mutex_lock (spellcheck->mutex);
-    spellcheck->running_check = FALSE;
-    g_mutex_unlock (spellcheck->mutex);
-
-    return NULL;
-}
-
-
 gboolean gw_spellcheck_update_timeout (gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;
-    GwSearchWindow *window;
-    GwApplication *application;
-    LwPreferences *preferences;
+    GwSpellcheckPrivate *priv;
+    GwSpellcheckStatus status;
+    gboolean return_value;
 
     //Initializaitons
     spellcheck = GW_SPELLCHECK (data);
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (spellcheck->entry), GW_TYPE_SEARCHWINDOW));
-    if (window == NULL) return FALSE;
-    application = gw_window_get_application (GW_WINDOW (window));
-    preferences = gw_application_get_preferences (application);
-
-    if (spellcheck->thread != NULL) 
-    {
-      g_thread_join (spellcheck->thread); 
-      spellcheck->thread = NULL;
-    }
+    priv = spellcheck->priv;
+    status = gw_spellcheck_get_status (spellcheck);
+    return_value = FALSE;
 
     //Sanity check
-    if (spellcheck->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0) return TRUE;
+    if (priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0) return FALSE;
 
-    g_mutex_lock (spellcheck->mutex);
-    if (spellcheck->running_check == TRUE)
+    switch (status)
     {
-      g_mutex_unlock (spellcheck->mutex);
-      return TRUE;
-    }
-    else if (spellcheck->timeout < 5) {
-      spellcheck->timeout++;
-      g_mutex_unlock (spellcheck->mutex);
-      return TRUE;
-    }
-    else 
-    {
-      spellcheck->running_check = TRUE;
-      spellcheck->timeout = 0;
-      g_mutex_unlock (spellcheck->mutex);
-    }
-
-    //Declarations
-    gboolean spellcheck_pref;
-    int rk_conv_pref;
-    gboolean want_conv;
-    const char *query;
-    gboolean is_convertable_to_hiragana;
-    const int MAX = 300;
-    char kana[MAX];
-    gboolean exists;
-    GError *error;
-
-    char *argv[] = { ENCHANT, "-a", "-d", "en", NULL};
-    GPid pid;
-    int stdin_stream;
-    int stdout_stream;
-    gboolean success;
-    GwSpellcheckStreamWithData *indata;
-    GwSpellcheckStreamWithData *outdata;
-    
-    //Initializations
-    rk_conv_pref = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
-    want_conv = (rk_conv_pref == 0 || (rk_conv_pref == 2 && !lw_util_is_japanese_locale()));
-    query = gtk_entry_get_text (spellcheck->entry);
-    is_convertable_to_hiragana = (want_conv && lw_util_str_roma_to_hira (query, kana, MAX));
-    spellcheck_pref = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
-    exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
-    error = NULL;
-
-    //Sanity checks
-    if (
-      exists == FALSE    || 
-      strlen(query) == 0 || 
-      !spellcheck_pref   || 
-      !spellcheck->sensitive        || 
-      !spellcheck->needs_spellcheck || 
-      is_convertable_to_hiragana
-    )
-    {
-      spellcheck->running_check = FALSE;
-      return TRUE;
+      case GW_SPELLCHECKSTATUS_IDLE:
+        if (priv->timeout < priv->threshold) //Wait for the user to stop typing
+          priv->timeout++;
+        else //Start the check
+          gw_spellcheck_start_check (spellcheck);
+      case GW_SPELLCHECKSTATUS_CHECKING: //Do nothing but wait while a spellcheck is running
+        return_value = TRUE;
+        break;
+      case GW_SPELLCHECKSTATUS_FINISHING: //Cleanup from the spellcheck
+        if (priv->thread != NULL) g_thread_join (priv->thread); priv->thread = NULL;
+        gw_spellcheck_set_status (spellcheck, GW_SPELLCHECKSTATUS_IDLE);
+        priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] = 0;
+        if (priv->timeout < priv->threshold) //Clear out the results if another check was scheduled and start over
+        {
+          gw_spellcheck_reset (spellcheck);
+          return_value = TRUE;
+        }
+        else //There wasn't one scheduled so don't clear the results
+        {
+          return_value = FALSE;
+        }
+        gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
+        break;
+      default:
+        g_assert_not_reached ();
+        return_value = FALSE;
+        break;
     }
 
-    spellcheck->needs_spellcheck = FALSE;
-
-    success = g_spawn_async_with_pipes (
-      NULL, 
-      argv,
-      NULL,
-      0,
-      NULL,
-      NULL,
-      &pid,
-      &stdin_stream,
-      &stdout_stream,
-      NULL,
-      &error
-    );
-
-    if (success)
-    {
-      indata = gw_spellcheck_streamwithdata_new (spellcheck, stdin_stream, query, strlen(query) + 1, pid);
-      outdata = gw_spellcheck_streamwithdata_new (spellcheck, stdout_stream, query, strlen(query) + 1, pid);
-
-      if (indata != NULL && outdata != NULL)
-      {
-        _infunc ((gpointer) indata);
-        spellcheck->thread = g_thread_create (_outfunc, (gpointer) outdata, TRUE, &error);
-      }
-
-      if (spellcheck->thread == NULL)
-      {
-        spellcheck->running_check = FALSE;
-      }
-    }
-    
-    gw_application_handle_error (application, NULL, FALSE, &error);
-
-    //gtk_widget_queue_draw (GTK_WIDGET (data));
-  
-    return TRUE;
+    return return_value;
 }
 
+
+void
+gw_spellcheck_free_menuitem_data_cb (GtkWidget *widget, gpointer data)
+{
+    //Declarations
+    _SpellingReplacementData *srd;
+
+    //Initializations
+    srd = data;
+
+    //Cleanup
+    g_free (srd->replacement_text);
+    free (srd);
+}
 
 
 
