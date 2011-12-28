@@ -651,7 +651,7 @@ void
 gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
-    GtkWidget *label;
+    GtkLabel *label;
     gchar *markup;
     gint64 time;
     gint64 difference;

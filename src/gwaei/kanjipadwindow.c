@@ -132,7 +132,6 @@ static void gw_kanjipadwindow_constructed (GObject *object)
     GwKanjipadWindow *window;
     GwKanjipadWindowPrivate *priv;
     GtkAccelGroup *accelgroup;
-    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -153,15 +152,15 @@ static void gw_kanjipadwindow_constructed (GObject *object)
 
     priv->drawingarea = GTK_DRAWING_AREA (gw_window_get_object (GW_WINDOW (window), "kdrawing_area"));
     priv->candidates = GTK_DRAWING_AREA (gw_window_get_object (GW_WINDOW (window), "kguesses"));
+    priv->close_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "close_button"));
 
     gw_kanjipadwindow_initialize_drawingarea (window);
     gw_kanjipadwindow_initialize_candidates (window);
     _kanjipadwindow_initialize_engine (window);
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "close_button"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->close_button), "activate", 
       accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->close_button), "activate", 
       accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
 
     gw_window_unload_xml (GW_WINDOW (window));

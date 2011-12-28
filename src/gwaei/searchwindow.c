@@ -102,6 +102,8 @@ gw_searchwindow_finalize (GObject *object)
     if (priv->history) lw_history_free (priv->history); priv->history = NULL;
     if (priv->tablist) g_list_free (priv->tablist); priv->tablist = NULL;
     if (priv->keep_searching_query) g_free (priv->keep_searching_query); priv->keep_searching_query = NULL;
+    if (priv->forward_popup != NULL) g_object_unref (priv->forward_popup);
+    if (priv->back_popup != NULL) g_object_unref (priv->back_popup);
 
     gw_window_save_size (GW_WINDOW (window));
 

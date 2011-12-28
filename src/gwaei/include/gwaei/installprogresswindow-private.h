@@ -9,6 +9,7 @@ struct _GwInstallProgressWindowPrivate {
   GtkLabel *label;
   GtkLabel *sublabel;
   GtkProgressBar* progressbar;
+  GtkButton *cancel_button;
 
   double install_fraction;
   GMutex *mutex;

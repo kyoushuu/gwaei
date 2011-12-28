@@ -955,20 +955,13 @@ G_MODULE_EXPORT void
 gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
-    GError *error;
-    GwSearchWindow *window;
-    GwApplication *application;
+    GtkWindow *window;
 
     //Initializations
-    error = NULL;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    window = GTK_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GTK_TYPE_WINDOW));
     if (window == NULL) return;
-    application = gw_window_get_application (GW_WINDOW (window));
 
-    gtk_show_uri (NULL, "ghelp:gwaei", gtk_get_current_event_time (), &error);
-
-    //Cleanup
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
+    gtk_show_uri (NULL, "ghelp:gwaei", gtk_get_current_event_time (), NULL);
 }
 
 

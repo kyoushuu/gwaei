@@ -92,7 +92,6 @@ gw_installprogresswindow_constructed (GObject *object)
     GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
     GtkAccelGroup *accelgroup;
-    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -107,6 +106,7 @@ gw_installprogresswindow_constructed (GObject *object)
     priv->label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "progress_label"));
     priv->sublabel = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "sub_progress_label"));
     priv->progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "progress_progressbar"));
+    priv->cancel_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "cancel_button"));
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("Installing Dictionaries..."));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
@@ -122,10 +122,9 @@ gw_installprogresswindow_constructed (GObject *object)
     gtk_container_set_border_width (GTK_CONTAINER (window), 4);
 
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "cancel_button"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->cancel_button), "activate", 
       accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->cancel_button), "activate", 
       accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
 
     gw_window_unload_xml (GW_WINDOW (window));
