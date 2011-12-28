@@ -128,6 +128,7 @@ gw_installprogresswindow_constructed (GObject *object)
     gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
       accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
 
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 

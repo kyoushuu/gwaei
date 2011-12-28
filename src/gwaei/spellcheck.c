@@ -271,22 +271,29 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
     priv = spellcheck->priv;
 
     //Remove the old signals
-    if (entry != NULL && priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW] != 0)
-      g_signal_handler_disconnect (G_OBJECT (entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
+    if (priv->entry != NULL)
+    {
+      if (priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW] != 0)
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
 
-    if (entry != NULL && priv->signalid[GW_SPELLCHECK_SIGNALID_CHANGED] != 0)
-      g_signal_handler_disconnect (G_OBJECT (entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
+      if (priv->signalid[GW_SPELLCHECK_SIGNALID_CHANGED] != 0)
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
 
-    if (entry != NULL && priv->signalid[GW_SPELLCHECK_SIGNALID_POPULATE_POPUP] != 0)
-      g_signal_handler_disconnect (G_OBJECT (entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
+      if (priv->signalid[GW_SPELLCHECK_SIGNALID_POPULATE_POPUP] != 0)
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
 
-    if (entry != NULL && priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY] != 0)
-    g_signal_handler_disconnect (G_OBJECT (entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY]);
+      if (priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY] != 0)
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY]);
+
+      g_object_remove_weak_pointer (G_OBJECT (priv->entry), (gpointer*) (&(priv->entry)));
+    }
 
     //Set the entry pointer
     priv->entry = entry;
 
     if (entry == NULL) return;
+
+    g_object_add_weak_pointer (G_OBJECT (priv->entry), (gpointer*) (&(priv->entry)));
 
     //set the new signals
     priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW] = g_signal_connect_after (

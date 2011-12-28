@@ -35,7 +35,7 @@
 #include <gwaei/settingswindow-private.h>
 
 
-static void gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow*, GtkTreeView*);
+static void gw_settingswindow_init_dictionary_treeview (GwSettingsWindow*);
 static void gw_settingswindow_attach_signals (GwSettingsWindow*);
 static void gw_settingswindow_remove_signals (GwSettingsWindow*);
 
@@ -93,10 +93,8 @@ gw_settingswindow_constructed (GObject *object)
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GtkTreeView *view;
     GwDictInfoList *dictinfolist;
     GtkAccelGroup *accelgroup;
-    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -109,7 +107,28 @@ gw_settingswindow_constructed (GObject *object)
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
     dictinfolist = gw_application_get_dictinfolist (application);
-    view = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "manage_dictionaries_treeview"));
+
+    priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "manage_dictionaries_treeview"));
+    priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
+    priv->close_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "close_button"));
+    priv->spellcheck_checkbutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_checkbutton"));
+    priv->please_install_dictionary_hbox = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "please_install_dictionary_hbox"));
+    priv->custom_font_fontbutton = GTK_FONT_BUTTON (gw_window_get_object (GW_WINDOW (window), "custom_font_fontbutton"));
+
+    priv->match_foreground = GTK_COLOR_BUTTON (gw_window_get_object (GW_WINDOW (window), "match_foreground_colorbutton"));
+    priv->match_background = GTK_COLOR_BUTTON (gw_window_get_object (GW_WINDOW (window), "match_background_colorbutton"));
+    priv->comment_foreground = GTK_COLOR_BUTTON (gw_window_get_object (GW_WINDOW (window), "comment_foreground_colorbutton"));
+    priv->header_foreground = GTK_COLOR_BUTTON (gw_window_get_object (GW_WINDOW (window), "header_foreground_colorbutton"));
+    priv->header_background = GTK_COLOR_BUTTON (gw_window_get_object (GW_WINDOW (window), "header_background_colorbutton"));
+    priv->system_document_font_hbox = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "system_document_font_hbox"));
+    priv->system_font_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "system_font_checkbutton"));
+    priv->search_as_you_type_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "search_as_you_type_checkbutton"));
+    priv->romaji_to_kana_combobox = GTK_COMBO_BOX (gw_window_get_object (GW_WINDOW (window), "romaji_to_kana_combobox"));
+    priv->hiragana_to_katakana_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "hiragana_to_katakana_checkbutton"));
+    priv->katakana_to_hiragana_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "katakana_to_hiragana_checkbutton"));
+    priv->remove_dictionary_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "remove_dictionary_button"));
+
+
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Settings"));
     gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
@@ -125,30 +144,28 @@ gw_settingswindow_constructed (GObject *object)
 
     if (g_main_current_source () != NULL) gw_application_block_searches (application);
 
-    priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
 
-    gw_settingswindow_initialize_dictionary_tree_view (window, view);
+    gw_settingswindow_init_dictionary_treeview (window);
 
     if (lw_dictinfolist_get_total (LW_DICTINFOLIST (dictinfolist)) == 0)
       gtk_notebook_set_current_page (priv->notebook, 1);
     gw_settingswindow_check_for_dictionaries (window);
 
     //We are going to lazily update the sensitivity of the spellcheck buttons only when the window is created
-    GtkToggleButton *checkbox;
     gboolean enchant_exists;
 
-    checkbox = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "query_spellcheck")); 
     enchant_exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
 
-    gtk_widget_set_sensitive (GTK_WIDGET (checkbox), enchant_exists);
+    gtk_widget_set_sensitive (GTK_WIDGET (priv->spellcheck_checkbutton), enchant_exists);
 
     gw_settingswindow_attach_signals (window);
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "settings_close_button"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->close_button), "activate", 
       accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->close_button), "activate", 
       accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 
@@ -251,7 +268,7 @@ gw_settingswindow_attach_signals (GwSettingsWindow *window)
         LW_SCHEMA_HIGHLIGHT,
         LW_KEY_MATCH_FG,
         gw_settingswindow_sync_swatch_color_cb,
-        gw_window_get_object (GW_WINDOW (window), "match_foreground")
+        priv->match_foreground
     );
 
     priv->signalids[GW_SETTINGSWINDOW_SIGNALID_MATCH_BG] = lw_preferences_add_change_listener_by_schema (
@@ -259,7 +276,7 @@ gw_settingswindow_attach_signals (GwSettingsWindow *window)
         LW_SCHEMA_HIGHLIGHT,
         LW_KEY_MATCH_BG,
         gw_settingswindow_sync_swatch_color_cb,
-        gw_window_get_object (GW_WINDOW (window), "match_background")
+        priv->match_background
     );
 
     priv->signalids[GW_SETTINGSWINDOW_SIGNALID_COMMENT_FG] = lw_preferences_add_change_listener_by_schema (
@@ -267,7 +284,7 @@ gw_settingswindow_attach_signals (GwSettingsWindow *window)
         LW_SCHEMA_HIGHLIGHT,
         LW_KEY_COMMENT_FG,
         gw_settingswindow_sync_swatch_color_cb,
-        gw_window_get_object (GW_WINDOW (window), "comment_foreground")
+        priv->comment_foreground
     );
 
     priv->signalids[GW_SETTINGSWINDOW_SIGNALID_HEADER_FG] = lw_preferences_add_change_listener_by_schema (
@@ -275,7 +292,7 @@ gw_settingswindow_attach_signals (GwSettingsWindow *window)
         LW_SCHEMA_HIGHLIGHT,
         LW_KEY_HEADER_FG,
         gw_settingswindow_sync_swatch_color_cb,
-        gw_window_get_object (GW_WINDOW (window), "header_foreground")
+        priv->header_foreground
     );
 
     priv->signalids[GW_SETTINGSWINDOW_SIGNALID_HEADER_BG] = lw_preferences_add_change_listener_by_schema (
@@ -283,7 +300,7 @@ gw_settingswindow_attach_signals (GwSettingsWindow *window)
         LW_SCHEMA_HIGHLIGHT,
         LW_KEY_HEADER_BG,
         gw_settingswindow_sync_swatch_color_cb,
-        gw_window_get_object (GW_WINDOW (window), "header_background")
+        priv->header_background
     );
 }
 
@@ -401,16 +418,20 @@ gw_settings_set_dictionary_source (GtkWidget *widget, const char* value)
 
 
 static void 
-gw_settingswindow_initialize_dictionary_tree_view (GwSettingsWindow *window, GtkTreeView *view)
+gw_settingswindow_init_dictionary_treeview (GwSettingsWindow *window)
 {
       //Declarations
+      GwSettingsWindowPrivate *priv;
       GwApplication *application;
       GwDictInfoList *dictinfolist;
+      GtkTreeView *view;
       GtkCellRenderer *renderer;
       GtkTreeViewColumn *column;
 
+      priv = window->priv;
       application = gw_window_get_application (GW_WINDOW (window));
       dictinfolist = gw_application_get_dictinfolist (application);
+      view = priv->manage_dictionaries_treeview;
 
       gtk_tree_view_set_model (GTK_TREE_VIEW (view), GTK_TREE_MODEL (dictinfolist->model));
 
@@ -453,14 +474,16 @@ void
 gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
 {
     //Declarations
+    GwSettingsWindowPrivate *priv;
     GwApplication *application;
     GwDictInfoList *dictinfolist;
     GtkWidget *message;
 
     //Initializations
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictinfolist = gw_application_get_dictinfolist (application);
-    message = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "please_install_dictionary_hbox"));
+    message = GTK_WIDGET (priv->please_install_dictionary_hbox);
 
     //Set the show state of the dictionaries required message
     if (lw_dictinfolist_get_total (LW_DICTINFOLIST (dictinfolist)) > 0)

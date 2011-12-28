@@ -116,7 +116,6 @@ gw_searchwindow_constructed (GObject *object)
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
     GwApplication *application;
-    GtkToolButton *toolbutton;
     gboolean enchant_exists;
 
     //Chain the parent class
@@ -130,12 +129,56 @@ gw_searchwindow_constructed (GObject *object)
     application = gw_window_get_application (GW_WINDOW (window));
 
     //Set up the gtkbuilder links
-    priv->entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "search_entry"));
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "notebook"));
-    priv->toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "toolbar"));
-    priv->statusbar = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "statusbar"));
+
+    priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));
+    priv->spellcheck_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_toolbutton")); 
+
+    priv->search_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "search_toolbar"));
+    priv->entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "search_entry"));
     priv->combobox = GTK_COMBO_BOX (gw_window_get_object (GW_WINDOW (window), "dictionary_combobox"));
+    priv->submit_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "submit_toolbutton"));
+    priv->search_entry_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "search_entry_label"));
+
     priv->history = lw_history_new (20);
+
+    priv->cut_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "cut_action"));
+    priv->copy_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "copy_action"));
+    priv->paste_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "paste_action"));
+    priv->select_all_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "select_all_action"));
+    priv->previous_tab_action  = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "previous_tab_action"));
+    priv->next_tab_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "next_tab_action"));
+    priv->close_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "close_action"));
+    priv->back_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "back_action"));
+    priv->forward_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "forward_action"));
+    priv->append_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "append_action"));
+    priv->save_as_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "save_as_action"));
+    priv->print_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "print_action"));
+    priv->print_preview_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "print_preview_action"));
+    priv->zoom_in_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_in_action"));
+    priv->zoom_out_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_out_action"));
+    priv->zoom_100_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_100_action"));
+
+    priv->show_toolbar_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_toolbar_toggleaction"));
+    priv->show_statusbar_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_statusbar_toggleaction"));
+    priv->show_radicals_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_radicals_toggleaction"));
+    priv->show_kanjipad_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_kanjipad_toggleaction"));
+
+    priv->statusbar = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "statusbar"));
+    priv->statusbar_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "statusbar_label"));
+    priv->statusbar_progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "statusbar_progressbar"));
+
+    priv->dictionary_popup = GTK_MENU (gw_window_get_object (GW_WINDOW (window), "dictionary_popup"));
+    priv->history_popup = GTK_MENU (gw_window_get_object (GW_WINDOW (window), "history_popup"));
+    priv->vocabulary_popup = GTK_MENU (gw_window_get_object (GW_WINDOW (window), "vocabulary_popup"));
+    priv->forward_popup = GTK_MENU (gw_window_get_object (GW_WINDOW (window), "forward_popup"));
+    g_object_ref (priv->forward_popup);
+    priv->back_popup = GTK_MENU (gw_window_get_object (GW_WINDOW (window), "back_popup"));
+    g_object_ref (priv->back_popup);
 
     //Set up the gtk window
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
@@ -149,7 +192,6 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_guarantee_first_tab (window);
 
     //We are going to lazily update the sensitivity of the spellcheck buttons only when the window is created
-    toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_toolbutton")); 
     enchant_exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
 
     //This code should probalby be moved to when the window is realized
@@ -159,13 +201,15 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_update_vocabulary_menuitems (window);
 
     gtk_widget_set_sensitive (GTK_WIDGET (priv->entry), enchant_exists);
-    gtk_widget_set_sensitive (GTK_WIDGET (toolbutton), enchant_exists);
+    gtk_widget_set_sensitive (GTK_WIDGET (priv->spellcheck_toolbutton), enchant_exists);
     if (!enchant_exists) g_warning ("Enchant is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
     gw_searchwindow_init_accelerators (window);
 
     gw_searchwindow_attach_signals (window);
 
     gw_application_set_last_focused_searchwindow (application, window);;
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 
@@ -566,15 +610,13 @@ gw_searchwindow_set_title_by_searchitem (GwSearchWindow* window, LwSearchItem *i
 void 
 gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, LwSearchItem* item)
 {
-    //Declarations
-    GtkWidget *label;
-    
-    //Initializations
-    label = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "progress_label"));
+    GwSearchWindowPrivate *priv;
+
+    priv = window->priv;
 
     if (item == NULL)
     {
-      gtk_label_set_text(GTK_LABEL (label), "");
+      gtk_label_set_text(priv->statusbar_label, "");
     }
     else
     {
@@ -599,7 +641,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
       {
         case LW_SEARCHSTATUS_IDLE:
             if (item->current == 0L)
-              gtk_label_set_text (GTK_LABEL (label), idle_message_none);
+              gtk_label_set_text (priv->statusbar_label, idle_message_none);
             else if (relevant == total)
               final_message = g_strdup_printf (idle_message_total, total);
             else
@@ -611,7 +653,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
             break;
         case LW_SEARCHSTATUS_SEARCHING:
             if (item->total_results == 0)
-              gtk_label_set_text(GTK_LABEL (label), searching_message_none);
+              gtk_label_set_text(priv->statusbar_label, searching_message_none);
             else if (relevant == total)
               final_message = g_strdup_printf (searching_message_total, total);
             else
@@ -630,7 +672,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
         g_free (base_message);
       if (final_message != NULL)
       {
-        gtk_label_set_text(GTK_LABEL (label), final_message);
+        gtk_label_set_text(priv->statusbar_label, final_message);
         g_free (final_message);
       }
     }
@@ -662,7 +704,7 @@ gw_searchwindow_set_dictionary (GwSearchWindow *window, int request)
     priv->dictinfo = di;
 
     //Make sure the correct radio menuitem is selected
-    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "dictionary_popup"));
+    shell = GTK_MENU_SHELL (priv->dictionary_popup);
     if (shell != NULL)
     {
       list = gtk_container_get_children (GTK_CONTAINER (shell));
@@ -721,19 +763,15 @@ gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, Lw
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    GtkWidget *progressbar;
-    GtkWidget *statusbar;
     double fraction;
 
     //Initializations
     priv = window->priv;
-    progressbar = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "search_progressbar"));
-    statusbar = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "statusbar"));
     fraction = lw_searchitem_get_progress (item);
 
-    if (gtk_widget_get_visible (statusbar))
+    if (gtk_widget_get_visible (GTK_WIDGET (priv->statusbar)))
     {
-      gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (progressbar), fraction);
+      gtk_progress_bar_set_fraction (priv->statusbar_progressbar, fraction);
       gtk_entry_set_progress_fraction (priv->entry, 0.0);
     }
     else
@@ -751,7 +789,6 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    const char *ID;
     GtkMenuShell *shell;
     GList *children;
     GList *list;
@@ -761,8 +798,7 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
 
     //Initializations
     priv = window->priv;
-    ID = "history_popup";
-    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), ID));
+    shell = GTK_MENU_SHELL (priv->history_popup);
     children = gtk_container_get_children (GTK_CONTAINER (shell));
     iter = children;
 
@@ -830,11 +866,11 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
 //! @param id Id of the popuplist
 //! @param list history list to compair against
 //!
-static void _rebuild_history_button_popup (GwSearchWindow *window, char* id, GList* list)
+static void _rebuild_history_button_popup (GwSearchWindow *window, GtkMenu *menu, GList* list)
 {
     //Get a reference to the history_popup
     GtkWidget *popup;
-    popup = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), id));
+    popup = GTK_WIDGET (menu);
 
     GList     *children;
     children = gtk_container_get_children(GTK_CONTAINER (popup));
@@ -894,28 +930,20 @@ gw_searchwindow_update_history_popups (GwSearchWindow* window)
 {
     GwSearchWindowPrivate *priv;
     GList* list;
-    const char *id;
-    GtkAction *action;
 
     priv = window->priv;
 
     gw_searchwindow_update_history_menu_popup (window);
 
     list = lw_history_get_forward_list (priv->history);
-    _rebuild_history_button_popup(window, "forward_popup", list);
+    _rebuild_history_button_popup(window, priv->forward_popup, list);
 
     list = lw_history_get_back_list (priv->history);
-    _rebuild_history_button_popup(window, "back_popup", list);
+    _rebuild_history_button_popup(window, priv->back_popup, list);
 
     //Update back button
-    id = "history_back_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
-    gtk_action_set_sensitive (action, lw_history_has_back (priv->history));
-
-    //Update forward button
-    id = "history_forward_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
-    gtk_action_set_sensitive (action, lw_history_has_forward (priv->history));
+    gtk_action_set_sensitive (priv->back_action, lw_history_has_back (priv->history));
+    gtk_action_set_sensitive (priv->forward_action, lw_history_has_forward (priv->history));
 }
 
 
@@ -941,7 +969,7 @@ gw_searchwindow_set_toolbar_style (GwSearchWindow *window, const char *request)
     else
       style = GTK_TOOLBAR_BOTH;
 
-    gtk_toolbar_set_style (priv->toolbar, style);
+    gtk_toolbar_set_style (priv->primary_toolbar, style);
 }
 
 
@@ -1867,10 +1895,7 @@ gw_searchwindow_set_current_searchitem (GwSearchWindow *window, LwSearchItem *it
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    GtkAction *action;
-    GtkLabel *label;
     gboolean enable;
-    const char *id;
     GList *link;
     int page_num;
 
@@ -1891,33 +1916,23 @@ gw_searchwindow_set_current_searchitem (GwSearchWindow *window, LwSearchItem *it
     gw_searchwindow_set_search_progressbar_by_searchitem (window, item);
 
     //Update Save sensitivity state
-    id = "file_append_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
     enable = (item != NULL);
-    gtk_action_set_sensitive (action, enable);
+    gtk_action_set_sensitive (priv->append_action, enable);
 
     //Update Save as sensitivity state
-    id = "file_save_as_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
     enable = (item != NULL);
-    gtk_action_set_sensitive (action, enable);
+    gtk_action_set_sensitive (priv->save_as_action, enable);
 
     //Update Print sensitivity state
-    id = "file_print_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
     enable = (item != NULL);
-    gtk_action_set_sensitive (action, enable);
+    gtk_action_set_sensitive (priv->print_action, enable);
 
     //Update Print preview sensitivity state
-    id = "file_print_preview_action";
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
     enable = (item != NULL);
-    gtk_action_set_sensitive (action, enable);
+    gtk_action_set_sensitive (priv->print_preview_action, enable);
 
     //Set the label's mnemonic widget since glade doesn't seem to want to
-    id = "search_entry_label";
-    label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), id));
-    gtk_label_set_mnemonic_widget (label, GTK_WIDGET (priv->entry));
+    gtk_label_set_mnemonic_widget (priv->search_entry_label, GTK_WIDGET (priv->entry));
 }
 
 
@@ -1999,8 +2014,6 @@ gw_searchwindow_set_font (GwSearchWindow *window)
     char font[50];
     PangoFontDescription *desc;
     int i;
-    const char *id;
-    GtkAction *action;
     gboolean enable;
 
 
@@ -2047,22 +2060,16 @@ gw_searchwindow_set_font (GwSearchWindow *window)
       pango_font_description_free (desc);
 
       //Update Zoom in sensitivity state
-      id = "view_zoom_in_action";
-      action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
       enable = (magnification < GW_APPLICATION_MAX_FONT_MAGNIFICATION);
-      gtk_action_set_sensitive (action, enable);
+      gtk_action_set_sensitive (priv->zoom_in_action, enable);
 
       //Update Zoom out sensitivity state
-      id = "view_zoom_out_action";
-      action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
       enable = (magnification > GW_APPLICATION_MIN_FONT_MAGNIFICATION);
-      gtk_action_set_sensitive (action, enable);
+      gtk_action_set_sensitive (priv->zoom_out_action, enable);
 
       //Update Zoom 100 sensitivity state
-      id = "view_zoom_100_action";
-      action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), id));
       enable = (magnification != GW_APPLICATION_DEFAULT_FONT_MAGNIFICATION);
-      gtk_action_set_sensitive (action, enable);
+      gtk_action_set_sensitive (priv->zoom_100_action, enable);
     }
 }
 
@@ -2314,6 +2321,7 @@ gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow *window)
 void 
 gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
 {
+    GwSearchWindowPrivate *priv;
     GwApplication *application;
     GtkMenuShell *shell;
     GList *list, *iter;
@@ -2321,8 +2329,9 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     GwDictInfoList *dictinfolist;
     GtkAccelGroup *accelgroup;
 
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "dictionary_popup"));
+    shell = GTK_MENU_SHELL (priv->dictionary_popup);
     dictinfolist = gw_application_get_dictinfolist (application);
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
@@ -2385,11 +2394,13 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
 static void
 gw_searchwindow_clear_vocabularylist_menuitems (GwSearchWindow *window)
 {
+    GwSearchWindowPrivate *priv;
     GtkMenuShell *shell;
     GList *children, *link;
     GtkWidget *widget;
 
-    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "vocabulary_popup"));
+    priv = window->priv;
+    shell = GTK_MENU_SHELL (priv->vocabulary_popup);
     children = gtk_container_get_children (GTK_CONTAINER (shell));
     link = g_list_last (children);
 
@@ -2407,6 +2418,7 @@ gw_searchwindow_clear_vocabularylist_menuitems (GwSearchWindow *window)
 static void
 gw_searchwindow_append_vocabularylist_menuitems (GwSearchWindow *window)
 {
+    GwSearchWindowPrivate *priv;
     GwApplication *application;
     GtkMenuShell *shell;
     GtkWidget *menuitem;
@@ -2417,10 +2429,11 @@ gw_searchwindow_append_vocabularylist_menuitems (GwSearchWindow *window)
     gboolean valid;
     gchar *name;
 
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     liststore = gw_application_get_vocabularyliststore (application);
     model = GTK_TREE_MODEL (liststore);
-    shell = GTK_MENU_SHELL (gw_window_get_object (GW_WINDOW (window), "vocabulary_popup"));
+    shell = GTK_MENU_SHELL (priv->vocabulary_popup);
 
     valid = gtk_tree_model_get_iter_first (model, &iter);
     while (valid)

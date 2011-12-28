@@ -290,7 +290,7 @@ gw_dictionaryinstallwindow_cursor_changed_cb (GtkTreeView *view, gpointer data)
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
     if (window == NULL) return;
     priv = window->priv;
-    hbox = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_install_details_hbox"));
+    hbox = GTK_WIDGET (priv->details_hbox);
 
     selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (view));
     model = GTK_TREE_MODEL (priv->dictionary_store);
@@ -406,7 +406,7 @@ static void _dictinstwindow_clear_details_box (GwDictionaryInstallWindow *window
 
     //Initializations
     priv = window->priv;
-    hbox = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_install_details_hbox"));
+    hbox = GTK_WIDGET (priv->details_hbox);
     children = gtk_container_get_children (GTK_CONTAINER (hbox));
 
     //Set the volatile widget pointers to null
@@ -451,7 +451,7 @@ static void _dictinstwindow_fill_details_box (GwDictionaryInstallWindow *window,
 
     //Initializations
     priv = window->priv;
-    parent = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_install_details_hbox"));
+    parent = GTK_WIDGET (priv->details_hbox);
     table = gtk_table_new (7, 2, FALSE);
     gtk_table_set_row_spacings (GTK_TABLE (table), 1);
     gtk_table_set_col_spacings (GTK_TABLE (table), 0);

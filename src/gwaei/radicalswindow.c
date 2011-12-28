@@ -398,7 +398,10 @@ gw_radicalswindow_constructed (GObject *object)
     gtk_widget_show_all (GTK_WIDGET (priv->radicals_table));
 
     gw_radicalswindow_init_accelerators (window);
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
+
 
 static void
 gw_radicalswindow_class_init (GwRadicalsWindowClass *klass)

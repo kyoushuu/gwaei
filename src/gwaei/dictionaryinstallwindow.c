@@ -101,7 +101,6 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     GtkTreeIter treeiter;
     int i;
     GtkAccelGroup *accelgroup;
-    GtkWidget *widget;
 
     //Chain the parent class
     {
@@ -129,9 +128,11 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
 
     //Initializations
     priv->dictionary_store = gtk_list_store_new (TOTAL_GW_DICTINSTWINDOW_DICTSTOREFIELDS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_INT);
-    priv->view = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "dictionary_install_treeview"));
-    priv->add_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "dictionary_install_add_button"));
+    priv->view = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "treeview"));
+    priv->add_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "add_button"));
+    priv->cancel_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "cancel_button"));
     priv->details_togglebutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "show_dictionary_detail_checkbutton"));
+    priv->details_hbox = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "details_hbox"));
 
     //Set up the dictionary liststore
     for (iter = dictinstlist->list; iter != NULL; iter = iter->next)
@@ -201,11 +202,12 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     column = gtk_tree_view_column_new_with_attributes ("Name", renderer, "text", GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME, NULL);
     gtk_tree_view_append_column (priv->view, column);
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_install_cancel_button"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->cancel_button), "activate", 
       accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
+    gtk_widget_add_accelerator (GTK_WIDGET (priv->cancel_button), "activate", 
       accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 

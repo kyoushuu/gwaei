@@ -7,6 +7,7 @@ struct _GwRadicalsWindowPrivate {
   GtkToggleButton *strokes_checkbutton;
   GtkTable *radicals_table;
   GtkSpinButton *strokes_spinbutton;
+
   char cache[300 * 4];
 };
 

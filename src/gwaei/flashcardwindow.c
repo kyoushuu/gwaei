@@ -149,6 +149,7 @@ gw_flashcardwindow_constructed (GObject *object)
     priv->status_progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "status_progressbar"));
     priv->status_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "status_label"));
     priv->track_togglebutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "track_checkbutton"));
+    priv->finished_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "finished_label"));
 
     //Set up the gtk window
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
@@ -170,6 +171,8 @@ gw_flashcardwindow_constructed (GObject *object)
     gw_flashcardwindow_attach_signals (window);
 
     priv->time = g_get_monotonic_time ();
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 
@@ -648,7 +651,7 @@ void
 gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
-    GtkWidget *finished_label;
+    GtkWidget *label;
     gchar *markup;
     gint64 time;
     gint64 difference;
@@ -656,7 +659,7 @@ gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
     gint percent;
 
     priv = window->priv;
-    finished_label = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "finished_label"));
+    label = priv->finished_label;
     time = g_get_monotonic_time ();
     difference = (time - priv->time) / 1000000;
     hours = difference / 60 / 60;
@@ -673,7 +676,7 @@ gw_flashcardwindow_set_finished (GwFlashCardWindow *window)
       gettext("Completion Time"), hours, minutes, seconds);
     if (markup != NULL)
     {
-      gtk_label_set_markup (GTK_LABEL (finished_label), markup);
+      gtk_label_set_markup (GTK_LABEL (label), markup);
       g_free (markup);
     }
 

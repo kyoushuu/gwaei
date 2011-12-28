@@ -57,27 +57,27 @@
     <property name="sensitive">False</property>
     <signal name="activate" handler="gw_vocabularywindow_save_cb" object="toplevel" swapped="no"/>
   </object>
+  <object class="GtkToggleAction" id="show_position_column_toggleaction">
+    <property name="label" translatable="yes">Show _Position Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_position_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="show_score_column_toggleaction">
+    <property name="label" translatable="yes">Show _Score Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_score_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="show_timestamp_column_toggleaction">
+    <property name="label" translatable="yes">Show _Last Studied Column</property>
+    <signal name="toggled" handler="gw_vocabularywindow_timestamp_column_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="show_toolbar_toggleaction">
+    <property name="label" translatable="yes">Show _Toolbar</property>
+    <signal name="toggled" handler="gw_vocabularywindow_toolbar_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
   <object class="GtkToggleAction" id="shuffle_toggleaction">
     <property name="label" translatable="yes">Shuffle Flashcards</property>
     <property name="short_label" translatable="yes">Shuffle</property>
     <property name="icon_name">media-playlist-shuffle</property>
     <signal name="toggled" handler="gw_vocabularywindow_shuffle_toggled_cb" object="toplevel" swapped="no"/>
-  </object>
-  <object class="GtkToggleAction" id="toggle_position_column_action">
-    <property name="label" translatable="yes">Show _Position Column</property>
-    <signal name="toggled" handler="gw_vocabularywindow_position_column_toggled_cb" object="toplevel" swapped="no"/>
-  </object>
-  <object class="GtkToggleAction" id="toggle_score_column_action">
-    <property name="label" translatable="yes">Show _Score Column</property>
-    <signal name="toggled" handler="gw_vocabularywindow_score_column_toggled_cb" object="toplevel" swapped="no"/>
-  </object>
-  <object class="GtkToggleAction" id="toggle_timestamp_column_action">
-    <property name="label" translatable="yes">Show _Last Studied Column</property>
-    <signal name="toggled" handler="gw_vocabularywindow_timestamp_column_toggled_cb" object="toplevel" swapped="no"/>
-  </object>
-  <object class="GtkToggleAction" id="toggle_toolbar_action">
-    <property name="label" translatable="yes">Show _Toolbar</property>
-    <signal name="toggled" handler="gw_vocabularywindow_toolbar_toggled_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkToggleAction" id="track_results_toggleaction">
     <property name="label" translatable="yes">Track Score Results</property>
@@ -353,7 +353,7 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkCheckMenuItem" id="view_toolbar_toggle_menuitem">
-                        <property name="related_action">toggle_toolbar_action</property>
+                        <property name="related_action">show_toolbar_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -367,21 +367,21 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="view_position_column_toggle_menuitem">
-                        <property name="related_action">toggle_position_column_action</property>
+                        <property name="related_action">show_position_column_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="view_timestamp_column_toggle_menuitem">
-                        <property name="related_action">toggle_timestamp_column_action</property>
+                        <property name="related_action">show_timestamp_column_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="view_score_column_toggle_menuitem">
-                        <property name="related_action">toggle_score_column_action</property>
+                        <property name="related_action">show_score_column_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>

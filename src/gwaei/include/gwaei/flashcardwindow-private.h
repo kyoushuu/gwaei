@@ -25,6 +25,7 @@ struct _GwFlashCardWindowPrivate {
     GtkLabel *incorrect_label;
     GtkProgressBar *status_progressbar;
     GtkLabel *status_label;
+    GtkLabel *finished_label;
     GtkToolbar *card_toolbar;
 
     GtkBox *content_box;

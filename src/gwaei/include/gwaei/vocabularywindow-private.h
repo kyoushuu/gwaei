@@ -32,6 +32,27 @@ struct _GwVocabularyWindowPrivate {
   GtkToggleToolButton *edit_toolbutton;
   GtkPaned     *paned;
 
+  GtkMenuItem *cut_menuitem;
+  GtkMenuItem *copy_menuitem;
+  GtkMenuItem *paste_menuitem;
+  GtkMenuItem *delete_menuitem;
+
+  GtkAction *save_action;
+  GtkAction *revert_action;
+  GtkAction *kanji_definition_flashcards_action;
+  GtkAction *definition_kanji_flashcards_action;
+  GtkAction *kanji_furigana_flashcards_action;
+  GtkAction *furigana_kanji_flashcards_action;
+  GtkAction *definition_furigana_flashcards_action;
+  GtkAction *furigana_definition_flashcards_action;
+
+  GtkToggleAction *shuffle_toggleaction;
+  GtkToggleAction *track_results_toggleaction;
+  GtkToggleAction *show_toolbar_toggleaction;
+  GtkToggleAction *show_position_column_toggleaction;
+  GtkToggleAction *show_score_column_toggleaction;
+  GtkToggleAction *show_timestamp_column_toggleaction;
+
   gboolean has_changes;
   gboolean shuffle;
   gboolean track;

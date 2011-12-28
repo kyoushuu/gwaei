@@ -25,11 +25,49 @@ typedef enum {
 } GwSearchWindowSignalId;
 
 struct _GwSearchWindowPrivate {
-  GtkEntry *entry;
   GtkNotebook *notebook;
-  GtkToolbar *toolbar;
-  GtkWidget *statusbar;
+
+  GtkToolbar *primary_toolbar;
+  GtkToolButton *spellcheck_toolbutton;
+
+  GtkToolbar *search_toolbar;
+  GtkEntry *entry;
   GtkComboBox *combobox;
+  GtkToolButton *submit_toolbutton;
+  GtkLabel *search_entry_label;
+
+  GtkWidget *statusbar;
+  GtkLabel *statusbar_label;
+  GtkProgressBar *statusbar_progressbar;
+
+  GtkMenu *dictionary_popup;
+  GtkMenu *history_popup;
+  GtkMenu *vocabulary_popup;
+  GtkMenu *forward_popup;
+  GtkMenu *back_popup;
+
+  GtkAction *previous_tab_action;
+  GtkAction *next_tab_action;
+  GtkAction *close_action;
+  GtkAction *cut_action;
+  GtkAction *copy_action;
+  GtkAction *paste_action;
+  GtkAction *select_all_action;
+  GtkAction *back_action;
+  GtkAction *forward_action;
+  GtkAction *append_action;
+  GtkAction *save_as_action;
+  GtkAction *print_action;
+  GtkAction *print_preview_action;
+  GtkAction *zoom_in_action;
+  GtkAction *zoom_out_action;
+  GtkAction *zoom_100_action;
+
+  GtkToggleAction *show_toolbar_toggleaction;
+  GtkToggleAction *show_statusbar_toggleaction;
+  GtkToggleAction *show_radicals_toggleaction;
+  GtkToggleAction *show_kanjipad_toggleaction;
+
   LwDictInfo *dictinfo;
 
   //Tabs

@@ -217,7 +217,8 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     GtkTreeSelection *selection;
     GtkTreeIter iter;
     gboolean has_changes;
-    GtkAction *action;
+    gchar *title;
+    const gchar *name;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
@@ -235,10 +236,17 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
     has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
-    gtk_action_set_sensitive (action, has_changes);
+    gtk_action_set_sensitive (priv->revert_action, has_changes);
 
     gw_vocabularywindow_update_flashcard_sensitivities (window);
+
+    name = gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore));
+    title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary Manager"));
+    if (title != NULL)
+    {
+      gtk_window_set_title (GTK_WINDOW (window), title);
+      g_free (title); title = NULL;
+    }
 }
 
 
@@ -645,21 +653,24 @@ gw_vocabularywindow_event_after_cb (GtkWidget *widget, GdkEvent *event, gpointer
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *focus;
-    GtkWidget *menuitem;
     gboolean sensitive;
-    gchar *ids[] = { "copy_menuitem", "paste_menuitem", "cut_menuitem", "delete_menuitem", NULL };
     int i = 0;
 
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     if (window == NULL) return FALSE;
     priv = window->priv;
+    GtkMenuItem *menuitem[] = { 
+      priv->copy_menuitem, 
+      priv->paste_menuitem, 
+      priv->cut_menuitem, 
+      priv->delete_menuitem, 
+      NULL };
     focus = gtk_window_get_focus (GTK_WINDOW (window));
     sensitive = (GTK_WIDGET (priv->word_treeview) == focus);
 
-    for (i = 0; ids[i] != NULL; i++)
+    for (i = 0; menuitem[i] != NULL; i++)
     {
-      menuitem = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), ids[i]));
-      gtk_widget_set_sensitive (menuitem, sensitive);
+      gtk_widget_set_sensitive (GTK_WIDGET (menuitem[i]), sensitive);
     }
 
     return FALSE;
@@ -907,7 +918,7 @@ gw_vocabularywindow_sync_shuffle_flashcards_cb (GSettings *settings, gchar *key,
     if (window == NULL) return;
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_toggleaction"));
+    action = priv->shuffle_toggleaction;
     request = lw_preferences_get_boolean (settings, key);
     priv->shuffle = request;
 
@@ -952,7 +963,7 @@ gw_vocabularywindow_sync_track_results_cb (GSettings *settings, gchar *key, gpoi
     if (window == NULL) return;
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "track_results_toggleaction"));
+    action = priv->track_results_toggleaction;
     request = lw_preferences_get_boolean (settings, key);
     priv->track = request;
 
@@ -1356,17 +1367,7 @@ gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow *window)
 {
     //Declarations
     GwVocabularyWindowPrivate *priv;
-    GtkAction *action;
-    gint i, n_children;
-    const gchar *flashcard_id[6] =
-    {
-      "kanji_definition_flashcards_action",
-      "definition_kanji_flashcards_action",
-      "kanji_furigana_flashcards_action",
-      "furigana_kanji_flashcards_action",
-      "definition_furigana_flashcards_action",
-      "furigana_definition_flashcards_action"
-    };
+    gint n_children;
     GtkTreeModel *model;
 
     //Initializations
@@ -1377,11 +1378,12 @@ gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow *window)
     else 
       n_children = 0;
 
-    for (i = 0; i < 6; i++) 
-    {
-      action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), flashcard_id[i]));
-      gtk_action_set_sensitive (action, n_children);
-    }
+    gtk_action_set_sensitive (priv->kanji_definition_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->definition_kanji_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->kanji_furigana_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->furigana_kanji_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->definition_furigana_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->furigana_definition_flashcards_action, n_children);
 }
 
 
@@ -1393,7 +1395,7 @@ gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpoin
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
-    GtkAction *action;
+    GtkToggleAction *action;
     gboolean request;
 
     //Initializations
@@ -1407,10 +1409,10 @@ gw_vocabularywindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpoin
       gtk_widget_show (GTK_WIDGET (priv->study_toolbar));
     else
       gtk_widget_hide (GTK_WIDGET (priv->study_toolbar));
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_toolbar_action"));
+    action = priv->show_toolbar_toggleaction;
 
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_toolbar_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    gtk_toggle_action_set_active (action, request);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_toolbar_toggled_cb, toplevel);
 
 }
@@ -1423,7 +1425,7 @@ gw_vocabularywindow_sync_position_column_show_cb (GSettings *settings, gchar *ke
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
-    GtkAction *action;
+    GtkToggleAction *action;
     gboolean request;
 
     //Initializations
@@ -1432,12 +1434,12 @@ gw_vocabularywindow_sync_position_column_show_cb (GSettings *settings, gchar *ke
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, key);
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_position_column_action"));
+    action = priv->show_position_column_toggleaction;
 
     gtk_tree_view_column_set_visible (priv->position_column, request);
 
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_position_column_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    gtk_toggle_action_set_active (action, request);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_position_column_toggled_cb, toplevel);
 }
 
@@ -1449,7 +1451,7 @@ gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, 
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
-    GtkAction *action;
+    GtkToggleAction *action;
     gboolean request;
 
     //Initializations
@@ -1458,12 +1460,12 @@ gw_vocabularywindow_sync_score_column_show_cb (GSettings *settings, gchar *key, 
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, key);
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_score_column_action"));
+    action = priv->show_score_column_toggleaction;
 
     gtk_tree_view_column_set_visible (priv->score_column, request);
 
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_score_column_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    gtk_toggle_action_set_active (action, request);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_score_column_toggled_cb, toplevel);
 }
 
@@ -1475,7 +1477,7 @@ gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings *settings, gchar *k
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *toplevel;
-    GtkAction *action;
+    GtkToggleAction *action;
     gboolean request;
 
     //Initializations
@@ -1484,12 +1486,12 @@ gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings *settings, gchar *k
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, key);
-    action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "toggle_timestamp_column_action"));
+    action = priv->show_timestamp_column_toggleaction;
 
     gtk_tree_view_column_set_visible (priv->timestamp_column, request);
 
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_vocabularywindow_timestamp_column_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
+    gtk_toggle_action_set_active (action, request);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_vocabularywindow_timestamp_column_toggled_cb, toplevel);
 }
 

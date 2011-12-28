@@ -47,8 +47,6 @@ typedef enum
 } GwWindowProps;
 
 static gboolean gw_window_load_ui_xml (GwWindow*, const char*);
-static gboolean gw_window_configure_event_cb (GtkWidget*, GdkEvent*, gpointer);
-
 
 static void 
 gw_window_init (GwWindow *window)
@@ -248,6 +246,17 @@ gw_window_load_ui_xml (GwWindow *window, const char *filename)
 }
 
 
+void
+gw_window_unload_xml (GwWindow *window) {
+  GwWindowPrivate *priv;
+
+  priv = window->priv;
+
+  g_object_unref (priv->builder);
+  priv->builder = NULL;
+}
+
+
 GObject* 
 gw_window_get_object (GwWindow *window, const char *ID)
 {
@@ -425,23 +434,4 @@ gw_window_save_size (GwWindow *window)
     }
 }
 
-
-static gboolean 
-gw_window_configure_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
-{
-    GwWindow *window;
-    GwWindowPrivate *priv;
-    GdkEventConfigure *event_configure;
-
-    window = GW_WINDOW (widget);
-    priv = window->priv;
-    event_configure = (GdkEventConfigure*) event;
-
-    priv->x = event_configure->x;
-    priv->y = event_configure->y;
-    priv->width = event_configure->width;
-    priv->height = event_configure->height;
-
-    return FALSE;
-}
 

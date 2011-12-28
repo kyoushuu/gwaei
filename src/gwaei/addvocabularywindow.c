@@ -127,6 +127,8 @@ gw_addvocabularywindow_constructed (GObject *object)
 
     gw_addvocabularywindow_init_accelerators (window);
     gw_addvocabularywindow_init_combobox (window);
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 

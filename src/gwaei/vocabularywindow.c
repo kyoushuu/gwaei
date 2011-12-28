@@ -146,6 +146,40 @@ gw_vocabularywindow_constructed (GObject *object)
     priv->edit_toolbutton = GTK_TOGGLE_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "edit_toolbutton"));
     priv->paned =           GTK_PANED (gw_window_get_object (GW_WINDOW (window), "vocabulary_paned"));
 
+    priv->copy_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "copy_menuitem"));
+    priv->paste_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "paste_menuitem"));
+    priv->cut_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "cut_menuitem"));
+    priv->delete_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "delete_menuitem"));
+
+    priv->save_action =     GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "save_action"));
+    priv->revert_action =     GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
+
+    priv->shuffle_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_toggleaction"));
+    priv->track_results_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "track_results_toggleaction"));
+    priv->show_toolbar_toggleaction =
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_toolbar_toggleaction"));
+    priv->show_position_column_toggleaction =
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_position_column_toggleaction"));
+    priv->show_score_column_toggleaction =
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_score_column_toggleaction"));
+    priv->show_timestamp_column_toggleaction =
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_timestamp_column_toggleaction"));
+
+    priv->kanji_definition_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "kanji_definition_flashcards_action"));
+    priv->definition_kanji_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "definition_kanji_flashcards_action"));
+    priv->kanji_furigana_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "kanji_furigana_flashcards_action"));
+    priv->furigana_kanji_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "furigana_kanji_flashcards_action"));
+    priv->definition_furigana_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "definition_furigana_flashcards_action"));
+    priv->furigana_definition_flashcards_action = 
+      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "furigana_definition_flashcards_action"));
+
     //Set up the gtk window
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Manager"));
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
@@ -191,6 +225,8 @@ gw_vocabularywindow_constructed (GObject *object)
       }
     }
     gtk_widget_grab_focus (GTK_WIDGET (priv->list_treeview));
+
+    gw_window_unload_xml (GW_WINDOW (window));
 }
 
 
@@ -714,19 +750,14 @@ void
 gw_vocabularywindow_set_has_changes (GwVocabularyWindow *window, gboolean has_changes)
 {
    GwVocabularyWindowPrivate *priv;
-   GtkAction *action;
    gboolean wordstore_has_changes;
-
 
    priv = window->priv;
    priv->has_changes = has_changes;
    wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
 
-   action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "save_action"));
-   gtk_action_set_sensitive (action, has_changes);
-
-   action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
-   gtk_action_set_sensitive (action, wordstore_has_changes);
+   gtk_action_set_sensitive (priv->save_action, has_changes);
+   gtk_action_set_sensitive (priv->revert_action, wordstore_has_changes);
 }
 
 

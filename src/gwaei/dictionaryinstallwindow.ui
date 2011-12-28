@@ -46,7 +46,7 @@
                             <property name="resize_mode">queue</property>
                             <property name="shadow_type">none</property>
                             <child>
-                              <object class="GtkTreeView" id="dictionary_install_treeview">
+                              <object class="GtkTreeView" id="treeview">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="headers_clickable">False</property>
@@ -73,6 +73,7 @@
                         <child>
                           <object class="GtkCheckButton" id="show_dictionary_detail_checkbutton">
                             <property name="label" translatable="yes">Show Dictionary Install Details</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
@@ -108,7 +109,7 @@
                     <property name="can_focus">False</property>
                     <property name="top_padding">4</property>
                     <child>
-                      <object class="GtkVBox" id="dictionary_install_details_hbox">
+                      <object class="GtkVBox" id="details_hbox">
                         <property name="can_focus">False</property>
                         <property name="border_width">6</property>
                         <property name="spacing">8</property>
@@ -117,7 +118,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkLabel" id="dictionary_install_details_title_label">
+                              <object class="GtkLabel" id="details_title_label">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label">&lt;b&gt;Details&lt;/b&gt;</property>
@@ -146,7 +147,7 @@
                                 <property name="can_focus">False</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkLabel" id="dictionary_install_details_description_label">
+                                  <object class="GtkLabel" id="details_description_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="label">label</property>
@@ -173,7 +174,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkHBox" id="dictionary_install_details_control_hbox">
+                          <object class="GtkHBox" id="details_control_hbox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
@@ -216,6 +217,7 @@
             <child>
               <object class="GtkLinkButton" id="linkbutton1">
                 <property name="label" translatable="yes">Where can I get other dictionaries?</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -244,8 +246,9 @@
             <property name="spacing">6</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="dictionary_install_cancel_button">
+              <object class="GtkButton" id="cancel_button">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -261,8 +264,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="dictionary_install_add_button">
+              <object class="GtkButton" id="add_button">
                 <property name="label">gtk-add</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">True</property>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 2.12 -->
-  <object class="GtkListStore" id="query_romaji_to_kana_list_store">
+  <object class="GtkListStore" id="romaji_to_kana_liststore">
     <columns>
       <!-- column-name query_romaji_to_kana_column -->
       <column type="gchararray"/>
@@ -62,8 +62,9 @@
                             <property name="can_focus">False</property>
                             <property name="homogeneous">True</property>
                             <child>
-                              <object class="GtkCheckButton" id="system_font_checkbox">
+                              <object class="GtkCheckButton" id="system_font_checkbutton">
                                 <property name="label" translatable="yes">_Use the system document font (Sans 10)</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -98,6 +99,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkFontButton" id="custom_font_fontbutton">
+                                    <property name="use_action_appearance">False</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
@@ -168,7 +170,8 @@
                                     <property name="column_spacing">6</property>
                                     <property name="homogeneous">True</property>
                                     <child>
-                                      <object class="GtkColorButton" id="comment_background">
+                                      <object class="GtkColorButton" id="comment_background_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="sensitive">False</property>
                                         <property name="can_focus">True</property>
@@ -186,7 +189,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkColorButton" id="comment_foreground">
+                                      <object class="GtkColorButton" id="comment_foreground_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -203,7 +207,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkColorButton" id="header_foreground">
+                                      <object class="GtkColorButton" id="header_foreground_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -220,7 +225,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkColorButton" id="header_background">
+                                      <object class="GtkColorButton" id="header_background_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="sensitive">False</property>
                                         <property name="can_focus">True</property>
@@ -238,7 +244,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkColorButton" id="match_foreground">
+                                      <object class="GtkColorButton" id="match_foreground_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -253,7 +260,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkColorButton" id="match_background">
+                                      <object class="GtkColorButton" id="match_background_colorbutton">
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -302,8 +310,9 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="button5">
+                                      <object class="GtkButton" id="color_reset_button">
                                         <property name="label" translatable="yes">_Reset</property>
+                                        <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -453,6 +462,7 @@
                         <child>
                           <object class="GtkButton" id="add_dictionary_button">
                             <property name="label">gtk-add</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -470,6 +480,7 @@
                         <child>
                           <object class="GtkButton" id="remove_dictionary_button">
                             <property name="label">gtk-remove</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -567,6 +578,7 @@
                         <child>
                           <object class="GtkButton" id="add_plugin_button">
                             <property name="label">gtk-add</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -582,6 +594,7 @@
                         <child>
                           <object class="GtkButton" id="remove_plugin_button">
                             <property name="label">gtk-remove</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
@@ -667,10 +680,10 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBox" id="query_romaji_to_kana">
+                                  <object class="GtkComboBox" id="romaji_to_kana_combobox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="model">query_romaji_to_kana_list_store</property>
+                                    <property name="model">romaji_to_kana_liststore</property>
                                     <property name="active">0</property>
                                     <signal name="changed" handler="gw_settingswindow_romaji_kana_conv_changed_cb" object="toplevel" swapped="no"/>
                                     <child>
@@ -694,8 +707,9 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="query_hiragana_to_katakana">
+                              <object class="GtkCheckButton" id="hiragana_to_katakana_checkbutton">
                                 <property name="label" translatable="yes">Convert Hiragana to _Katakana</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -711,8 +725,9 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="query_katakana_to_hiragana">
+                              <object class="GtkCheckButton" id="katakana_to_hiragana_checkbutton">
                                 <property name="label" translatable="yes">Convert Katakana to _Hiragana</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -728,8 +743,9 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="query_spellcheck">
+                              <object class="GtkCheckButton" id="spellcheck_checkbutton">
                                 <property name="label" translatable="yes">Enable Spell _Checking</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -745,8 +761,9 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkCheckButton" id="search_as_you_type_checkbox">
+                              <object class="GtkCheckButton" id="search_as_you_type_checkbutton">
                                 <property name="label" translatable="yes">Search as you Type</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
@@ -801,6 +818,7 @@
                             <child>
                               <object class="GtkButton" id="open_gwaei_folder_button">
                                 <property name="label" translatable="yes">_Open the gWaei dictionary folder</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -817,6 +835,7 @@
                             <child>
                               <object class="GtkButton" id="open_gwaei_folder_button1">
                                 <property name="label" translatable="yes">_Update dictionaries using Rsync</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
                                 <property name="use_action_appearance">False</property>
@@ -878,8 +897,9 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkButton" id="button2">
+              <object class="GtkButton" id="help_button">
                 <property name="label">gtk-help</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -895,8 +915,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="settings_close_button">
+              <object class="GtkButton" id="close_button">
                 <property name="label">gtk-close</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
