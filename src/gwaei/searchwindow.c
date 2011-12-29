@@ -695,11 +695,13 @@ gw_searchwindow_set_dictionary (GwSearchWindow *window, int request)
     GtkMenuShell *shell;
     GList *list;
     GtkWidget *radioitem;
+    GwDictionaryStore *dictionarystore;
     LwDictInfoList *dictinfolist;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
+    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
     di = lw_dictinfolist_get_dictinfo_by_load_position (dictinfolist, request);
     if (di == NULL) return;
 
@@ -2084,14 +2086,14 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
-    GwDictInfoList *dictinfolist;
-    GtkListStore *liststore;
+    GtkListStore *dictionarystore;
+    GtkListStore *vocabularyliststore;
     LwPreferences *preferences;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictinfolist = gw_application_get_dictinfolist (application);
-    liststore = gw_application_get_vocabularyliststore (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    vocabularyliststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
 
@@ -2164,20 +2166,20 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     );
 
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED] = g_signal_connect (
-        G_OBJECT (dictinfolist->model),
+        G_OBJECT (dictionarystore),
         "row-inserted",
         G_CALLBACK (gw_searchwindow_dictionaries_added_cb),
         window 
     );
 
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED] = g_signal_connect (
-        G_OBJECT (dictinfolist->model),
+        G_OBJECT (dictionarystore),
         "row-deleted",
         G_CALLBACK (gw_searchwindow_dictionaries_deleted_cb),
         window 
     );
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED] = g_signal_connect (
-        G_OBJECT (liststore),
+        G_OBJECT (vocabularyliststore),
         "changed",
         G_CALLBACK (gw_searchwindow_vocabulary_changed_cb),
         window 
@@ -2214,16 +2216,16 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
-    GwDictInfoList *dictinfolist;
-    GtkListStore *liststore;
+    GtkListStore *dictionarystore;
+    GtkListStore *vocabularyliststore;
     LwPreferences *preferences;
     GSource *source;
     gint i;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictinfolist = gw_application_get_dictinfolist (application);
-    liststore = gw_application_get_vocabularyliststore (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    vocabularyliststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
     for (i = 0; i < TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS; i++)
@@ -2279,17 +2281,17 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     );
 
     g_signal_handler_disconnect (
-        G_OBJECT (dictinfolist->model),
+        G_OBJECT (dictionarystore),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED]
     );
 
     g_signal_handler_disconnect (
-        G_OBJECT (dictinfolist->model),
+        G_OBJECT (dictionarystore),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED]
     );
 
     g_signal_handler_disconnect (
-        G_OBJECT (liststore),
+        G_OBJECT (vocabularyliststore),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED]
     );
 }
@@ -2302,20 +2304,20 @@ gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow *window)
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     GtkCellRenderer *renderer;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
     renderer = gtk_cell_renderer_text_new ();
-    dictinfolist = gw_application_get_dictinfolist (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
 
     gtk_combo_box_set_model (priv->combobox, NULL);
     gtk_cell_layout_clear (GTK_CELL_LAYOUT (priv->combobox));
 
-    gtk_combo_box_set_model (priv->combobox, GTK_TREE_MODEL (dictinfolist->model));
+    gtk_combo_box_set_model (priv->combobox, GTK_TREE_MODEL (dictionarystore));
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (priv->combobox), renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (priv->combobox), renderer, "text", GW_DICTINFOLIST_COLUMN_LONG_NAME, NULL);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (priv->combobox), renderer, "text", GW_DICTIONARYSTORE_COLUMN_LONG_NAME, NULL);
     gtk_combo_box_set_active (priv->combobox, 0);
 }
 
@@ -2326,23 +2328,25 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     GwSearchWindowPrivate *priv;
     GwApplication *application;
     GtkMenuShell *shell;
-    GList *list, *iter;
+    GList *list, *link;
     GtkWidget *widget;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
+    LwDictInfoList *dictinfolist;
     GtkAccelGroup *accelgroup;
 
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     shell = GTK_MENU_SHELL (priv->dictionary_popup);
-    dictinfolist = gw_application_get_dictinfolist (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
     if (shell != NULL)
     {
       list = gtk_container_get_children (GTK_CONTAINER (shell));
-      for (iter = list; iter != NULL; iter = iter->next)
+      for (link = list; link != NULL; link = link->next)
       {
-        widget = GTK_WIDGET (iter->data);
+        widget = GTK_WIDGET (link->data);
         if (widget != NULL)
         {
           gtk_widget_destroy(widget);
@@ -2357,9 +2361,9 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     group = NULL;
 
     //Refill the menu
-    for (iter = dictinfolist->list; iter != NULL; iter = iter->next)
+    for (link = dictinfolist->list; link != NULL; link = link->next)
     {
-      di = LW_DICTINFO (iter->data);
+      di = LW_DICTINFO (link->data);
       if (di != NULL)
       {
         widget = GTK_WIDGET (gtk_radio_menu_item_new_with_label (group, di->longname));

@@ -21,7 +21,6 @@ struct _GwApplicationPrivate {
   GError *error;
 
   LwPreferences *preferences;
-  GwDictInfoList *dictinfolist;
   LwDictInstList *dictinstlist;
   GtkTextTagTable *tagtable;
   GwSearchWindow *last_focused;
@@ -35,6 +34,7 @@ struct _GwApplicationPrivate {
   gboolean arg_version_switch;
   gboolean arg_new_vocabulary_window_switch;
 
+  GtkListStore *dictionarystore;
   GtkListStore *vocabulary;
 
   gint block_new_searches;

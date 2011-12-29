@@ -1152,6 +1152,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     priv = window->priv;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     gint32 temp = g_random_int_range (0,9);
     while (temp == priv->previous_tip)
@@ -1175,7 +1176,8 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
     GwSearchData *sdata;
 
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     sdata = (GwSearchData*) lw_searchitem_get_data (item);
     view = GTK_TEXT_VIEW (sdata->view);
     buffer = gtk_text_view_get_buffer (view);

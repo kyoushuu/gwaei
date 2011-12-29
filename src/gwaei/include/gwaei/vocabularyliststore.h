@@ -25,8 +25,8 @@ typedef struct _GwVocabularyListStorePrivate GwVocabularyListStorePrivate;
 #define GW_TYPE_VOCABULARYLISTSTORE              (gw_vocabularyliststore_get_type())
 #define GW_VOCABULARYLISTSTORE(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), GW_TYPE_VOCABULARYLISTSTORE, GwVocabularyListStore))
 #define GW_VOCABULARYLISTSTORE_CLASS(klass)      (G_TYPE_CHECK_CLASS_CAST((klass), GW_TYPE_VOCABULARYLISTSTORE, GwVocabularyListStoreClass))
-#define GW_IS_VOCABULARYLISTSTORE(obj)                    (G_TYPE_CHECK_INSTANCE_TYPE((obj), GW_TYPE_VOCABULARYLISTSTORE))
-#define GW_IS_VOCABULARYLISTSTORE_CLASS(klass)            (G_TYPE_CHECK_CLASS_TYPE ((klass), GW_TYPE_VOCABULARYLISTSTORE))
+#define GW_IS_VOCABULARYLISTSTORE(obj)           (G_TYPE_CHECK_INSTANCE_TYPE((obj), GW_TYPE_VOCABULARYLISTSTORE))
+#define GW_IS_VOCABULARYLISTSTORE_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), GW_TYPE_VOCABULARYLISTSTORE))
 #define GW_VOCABULARYLISTSTORE_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS((obj), GW_TYPE_VOCABULARYLISTSTORE, GwVocabularyListStoreClass))
 
 struct _GwVocabularyListStore {

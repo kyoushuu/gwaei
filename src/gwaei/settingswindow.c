@@ -35,6 +35,7 @@
 #include <gwaei/settingswindow-private.h>
 
 
+static void gw_settingswindow_init_styles (GwSettingsWindow*);
 static void gw_settingswindow_init_dictionary_treeview (GwSettingsWindow*);
 static void gw_settingswindow_attach_signals (GwSettingsWindow*);
 static void gw_settingswindow_remove_signals (GwSettingsWindow*);
@@ -93,7 +94,8 @@ gw_settingswindow_constructed (GObject *object)
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
+    LwDictInfoList *dictinfolist;
     GtkAccelGroup *accelgroup;
 
     //Chain the parent class
@@ -106,9 +108,10 @@ gw_settingswindow_constructed (GObject *object)
     priv = window->priv;
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = gw_application_get_dictinfolist (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
 
-    priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "manage_dictionaries_treeview"));
+    priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "dictionary_treeview"));
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
     priv->close_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "close_button"));
     priv->spellcheck_checkbutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_checkbutton"));
@@ -126,7 +129,7 @@ gw_settingswindow_constructed (GObject *object)
     priv->romaji_to_kana_combobox = GTK_COMBO_BOX (gw_window_get_object (GW_WINDOW (window), "romaji_to_kana_combobox"));
     priv->hiragana_to_katakana_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "hiragana_to_katakana_checkbutton"));
     priv->katakana_to_hiragana_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "katakana_to_hiragana_checkbutton"));
-    priv->remove_dictionary_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "remove_dictionary_button"));
+    priv->remove_dictionary_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "remove_dictionary_toolbutton"));
 
 
 
@@ -145,6 +148,7 @@ gw_settingswindow_constructed (GObject *object)
     if (g_main_current_source () != NULL) gw_application_block_searches (application);
 
 
+    gw_settingswindow_init_styles (window);
     gw_settingswindow_init_dictionary_treeview (window);
 
     if (lw_dictinfolist_get_total (LW_DICTINFOLIST (dictinfolist)) == 0)
@@ -417,23 +421,56 @@ gw_settings_set_dictionary_source (GtkWidget *widget, const char* value)
 }
 
 
+static void
+gw_settingswindow_init_styles (GwSettingsWindow *window)
+{
+    //Declarations
+    GtkStyleContext *context;
+    GtkWidget *widget;
+
+    //Vocabulary list pane
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_scrolledwindow"));
+    context = gtk_widget_get_style_context (widget);
+    gtk_style_context_set_junction_sides (context, GTK_JUNCTION_BOTTOM);
+    gtk_widget_reset_style (widget);
+
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_toolbar"));
+    context = gtk_widget_get_style_context (widget);
+    gtk_style_context_add_class (context, "inline-toolbar");
+    gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);
+    gtk_widget_reset_style (widget);
+
+    //Vocabulary listitem pane
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "plugin_scrolledwindow"));
+    context = gtk_widget_get_style_context (widget);
+    gtk_style_context_set_junction_sides (context, GTK_JUNCTION_BOTTOM);
+    gtk_widget_reset_style (widget);
+
+    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "plugin_toolbar"));
+    context = gtk_widget_get_style_context (widget);
+    gtk_style_context_add_class (context, "inline-toolbar");
+    gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);
+    gtk_widget_reset_style (widget);
+}
+
+
 static void 
 gw_settingswindow_init_dictionary_treeview (GwSettingsWindow *window)
 {
       //Declarations
       GwSettingsWindowPrivate *priv;
       GwApplication *application;
-      GwDictInfoList *dictinfolist;
+      GtkListStore *dictionarystore;
       GtkTreeView *view;
       GtkCellRenderer *renderer;
       GtkTreeViewColumn *column;
 
       priv = window->priv;
       application = gw_window_get_application (GW_WINDOW (window));
-      dictinfolist = gw_application_get_dictinfolist (application);
+      dictionarystore = gw_application_get_dictionarystore (application);
       view = priv->manage_dictionaries_treeview;
 
-      gtk_tree_view_set_model (GTK_TREE_VIEW (view), GTK_TREE_MODEL (dictinfolist->model));
+      gtk_tree_view_set_model (GTK_TREE_VIEW (view), GTK_TREE_MODEL (dictionarystore));
 
       //Create the columns and renderer for each column
       renderer = gtk_cell_renderer_pixbuf_new();
@@ -441,28 +478,28 @@ gw_settingswindow_init_dictionary_treeview (GwSettingsWindow *window)
       column = gtk_tree_view_column_new ();
       gtk_tree_view_column_set_title (column, " ");
       gtk_tree_view_column_pack_start (column, renderer, TRUE);
-      gtk_tree_view_column_set_attributes (column, renderer, "icon-name", GW_DICTINFOLIST_COLUMN_IMAGE, NULL);
+      gtk_tree_view_column_set_attributes (column, renderer, "icon-name", GW_DICTIONARYSTORE_COLUMN_IMAGE, NULL);
       gtk_tree_view_append_column (view, column);
 
       renderer = gtk_cell_renderer_text_new();
       gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-      column = gtk_tree_view_column_new_with_attributes ("#", renderer, "text", GW_DICTINFOLIST_COLUMN_POSITION, NULL);
+      column = gtk_tree_view_column_new_with_attributes ("#", renderer, "text", GW_DICTIONARYSTORE_COLUMN_POSITION, NULL);
       gtk_tree_view_append_column (view, column);
 
       renderer = gtk_cell_renderer_text_new();
       gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-      column = gtk_tree_view_column_new_with_attributes (gettext("Name"), renderer, "text", GW_DICTINFOLIST_COLUMN_LONG_NAME, NULL);
+      column = gtk_tree_view_column_new_with_attributes (gettext("Name"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_LONG_NAME, NULL);
       gtk_tree_view_column_set_min_width (column, 100);
       gtk_tree_view_append_column (view, column);
 
       renderer = gtk_cell_renderer_text_new();
       gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-      column = gtk_tree_view_column_new_with_attributes (gettext("Engine"), renderer, "text", GW_DICTINFOLIST_COLUMN_ENGINE, NULL);
+      column = gtk_tree_view_column_new_with_attributes (gettext("Engine"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_ENGINE, NULL);
       gtk_tree_view_append_column (view, column);
 
       renderer = gtk_cell_renderer_text_new();
       gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-      column = gtk_tree_view_column_new_with_attributes (gettext("Shortcut"), renderer, "text", GW_DICTINFOLIST_COLUMN_SHORTCUT, NULL);
+      column = gtk_tree_view_column_new_with_attributes (gettext("Shortcut"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_SHORTCUT, NULL);
       gtk_tree_view_append_column (view, column);
 }
 
@@ -476,13 +513,15 @@ gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
     //Declarations
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
+    LwDictInfoList *dictinfolist;
     GtkWidget *message;
 
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = gw_application_get_dictinfolist (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     message = GTK_WIDGET (priv->please_install_dictionary_hbox);
 
     //Set the show state of the dictionaries required message

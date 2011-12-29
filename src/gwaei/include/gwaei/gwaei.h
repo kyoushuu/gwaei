@@ -12,7 +12,7 @@
 
 #include <gwaei/application.h>
 
-#include <gwaei/dictinfolist.h>
+#include <gwaei/dictionarystore.h>
 #include <gwaei/spellcheck.h>
 #include <gwaei/printing.h>
 

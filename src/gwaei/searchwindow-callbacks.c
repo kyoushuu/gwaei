@@ -97,6 +97,7 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
     gint x;
     gint y;
     const gchar *vocabulary_data;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     LwDictInfo *dictinfo;
     GtkWidget *tooltip_window;
@@ -111,7 +112,8 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     dictinfo = lw_dictinfolist_get_dictinfo (dictinfolist, LW_DICTTYPE_KANJI, "Kanji");
     tooltip_window = GTK_WIDGET (gtk_widget_get_tooltip_window (GTK_WIDGET (view)));
 
@@ -201,6 +203,7 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     gint x;
     gint y;
     const gchar *vocabulary_data;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     LwDictInfo *dictinfo;
     GtkTextWindowType type;
@@ -217,7 +220,8 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     dictinfo = lw_dictinfolist_get_dictinfo (dictinfolist, LW_DICTTYPE_KANJI, "Kanji");
     within_movement_threshold = (abs (priv->mouse_button_press_x - x) < 3 && abs (priv->mouse_button_press_y - y) < 3);
 
@@ -2209,6 +2213,7 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
     //Declarations
     GwSearchWindow *searchwindow;
     GwApplication *application;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     LwDictInfo *di;
     char *text_query;
@@ -2219,7 +2224,8 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
     searchwindow = GW_SEARCHWINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
     g_assert (searchwindow != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
     di = lw_dictinfolist_get_dictinfo (dictinfolist, LW_DICTTYPE_KANJI, "Kanji");
     if (di == NULL) return;
 
@@ -2374,6 +2380,7 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
     GwApplication *application;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     GtkAction *action;
     gboolean enable;
@@ -2383,7 +2390,8 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (application));
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
 
     //Update radicals window tool menuitem
     action = GTK_ACTION (priv->show_radicals_toggleaction);
@@ -2397,7 +2405,15 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
     if (lw_dictinfolist_get_total (dictinfolist) > 0)
       gw_searchwindow_set_dictionary (window, 0);
 
+    //Reset history and searchitems
+    if (priv->history != NULL) lw_history_free (priv->history);
+    priv->history = lw_history_new(20);
 
+    LwSearchItem *item = gw_searchwindow_get_current_searchitem (window);
+    gw_searchwindow_set_current_searchitem (window, NULL);
+    if (item != NULL) lw_searchitem_free (item);
+
+    gw_searchwindow_update_history_popups (window);
 }
 
 

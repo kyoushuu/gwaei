@@ -261,11 +261,12 @@ w_application_get_dictinfolist (WApplication *application)
     LwPreferences *preferences;
 
     priv = application->priv;
+    preferences = w_application_get_preferences (application);
 
     if (priv->dictinfolist == NULL)
     {
-      preferences = w_application_get_preferences (application);
-      priv->dictinfolist = lw_dictinfolist_new (20, preferences);
+      priv->dictinfolist = lw_dictinfolist_new (20);
+      lw_dictinfolist_load_order (priv->dictinfolist, preferences);
     }
 
     return priv->dictinfolist;

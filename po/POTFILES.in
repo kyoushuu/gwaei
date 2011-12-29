@@ -28,8 +28,8 @@ src/waei/waei.c
 
 src/gwaei/application-callbacks.c
 src/gwaei/application.c
-src/gwaei/dictinfolist-callbacks.c
-src/gwaei/dictinfolist.c
+src/gwaei/dictionarystore-callbacks.c
+src/gwaei/dictionarystore.c
 src/gwaei/dictionaryinstallwindow-callbacks.c
 src/gwaei/dictionaryinstallwindow.c
 src/gwaei/gwaei.c

@@ -85,10 +85,10 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     GwInstallProgressWindowPrivate *priv;
     GtkWindow *settingswindow;
     GwApplication *application;
+    GtkListStore *dictionarystore;
     LwDictInstList *dictinstlist;
-    GwDictInfoList *dictinfolist;
     LwDictInst *di;
-    GList *iter;
+    GList *link;
     int current_to_install;
     int total_to_install;
     char *text_installing;
@@ -101,6 +101,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
     if (window == NULL) return FALSE;
     application = gw_window_get_application (GW_WINDOW (window));
+    dictionarystore = gw_application_get_dictionarystore (application);
     dictinstlist = gw_application_get_dictinstlist (application);
     priv = window->priv;
     current_to_install = 0;
@@ -110,9 +111,8 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     if (priv->di == NULL)
     {
       settingswindow = gtk_window_get_transient_for (GTK_WINDOW (window));
-      dictinfolist = gw_application_get_dictinfolist (application);
 
-      gw_dictinfolist_reload (dictinfolist);
+      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore));
 
       gtk_widget_destroy (GTK_WIDGET (window));
 
@@ -127,20 +127,20 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     g_mutex_lock (priv->mutex);
 
     //Calculate the number of dictionaries left to install
-    for (iter = dictinstlist->list; iter != NULL; iter = iter->next)
+    for (link = dictinstlist->list; link != NULL; link = link->next)
     {
-      di = LW_DICTINST (iter->data);
+      di = LW_DICTINST (link->data);
       if (di != NULL && di->selected)
       {
         current_to_install++;
       }
-      if (iter->data == priv->di) break;
+      if (link->data == priv->di) break;
     }
 
     //Calculate the number of dictionaries left to install
-    for (iter = dictinstlist->list; iter != NULL; iter = iter->next)
+    for (link = dictinstlist->list; link != NULL; link = link->next)
     {
-      di = LW_DICTINST (iter->data);
+      di = LW_DICTINST (link->data);
       if (di->selected)
       {
         total_to_install++;

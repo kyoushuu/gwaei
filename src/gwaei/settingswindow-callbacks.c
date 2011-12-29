@@ -424,18 +424,24 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwSettingsWindow *window;
     GwApplication *application;
+    GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
+    LwPreferences *preferences;
     
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
+    preferences = gw_application_get_preferences (application);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
 
     gtk_widget_destroy (GTK_WIDGET (window));
 
     if (lw_dictinfolist_get_total (dictinfolist) == 0)
       gw_application_quit (application);
+
+    gw_dictionarystore_save_order (GW_DICTIONARYSTORE (dictionarystore), preferences);
 }
 
 
@@ -576,7 +582,8 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
+    LwDictInfoList *dictinfolist;
 
     GtkWidget *button;
     GtkTreePath *path;
@@ -584,7 +591,7 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     LwDictInfo *di;
     GError *error;
     GtkTreeSelection *selection;
-    GtkTreeModel *tmodel;
+    GtkTreeModel *model;
     gboolean has_selection;
     gint* indices;
     GtkTreeView *view;
@@ -594,25 +601,26 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = gw_application_get_dictinfolist (application);
-    button = GTK_WIDGET (priv->remove_dictionary_button);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    button = GTK_WIDGET (priv->remove_dictionary_toolbutton);
     view = priv->manage_dictionaries_treeview;
     selection = gtk_tree_view_get_selection (view);
-    tmodel = GTK_TREE_MODEL (dictinfolist->model);
-    has_selection = gtk_tree_selection_get_selected (selection, &tmodel, &iter);
+    model = GTK_TREE_MODEL (dictionarystore);
+    has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
     error = NULL;
 
     //Sanity check
     if (!has_selection) return;
 
-    path = gtk_tree_model_get_path (GTK_TREE_MODEL (dictinfolist->model), &iter);
+    path = gtk_tree_model_get_path (model, &iter);
     indices = gtk_tree_path_get_indices (path);
-    di = lw_dictinfolist_get_dictinfo_by_load_position (LW_DICTINFOLIST (dictinfolist), *indices);
+    di = lw_dictinfolist_get_dictinfo_by_load_position (dictinfolist, *indices);
 
     if (di != NULL)
     {
       lw_dictinfo_uninstall (di, NULL, &error);
-      gw_dictinfolist_reload (dictinfolist);
+      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore));
     }
 
     //Cleanup
@@ -647,11 +655,11 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GwDictInfoList *dictinfolist;
+    GtkListStore *dictionarystore;
     GtkWidget *button;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
-    GtkTreeModel *tmodel;
+    GtkTreeModel *model;
     gboolean has_selection;
 
     //Initializations
@@ -659,11 +667,11 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinfolist = gw_application_get_dictinfolist (application);
-    button = GTK_WIDGET (priv->remove_dictionary_button);
+    dictionarystore = gw_application_get_dictionarystore (application);
+    button = GTK_WIDGET (priv->remove_dictionary_toolbutton);
     selection = gtk_tree_view_get_selection (view);
-    tmodel = GTK_TREE_MODEL (dictinfolist->model);
-    has_selection = gtk_tree_selection_get_selected (selection, &tmodel, &iter);
+    model = GTK_TREE_MODEL (dictionarystore);
+    has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
 
     gtk_widget_set_sensitive (GTK_WIDGET (button), has_selection);
 }

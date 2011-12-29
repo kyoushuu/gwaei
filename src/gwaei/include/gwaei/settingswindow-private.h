@@ -25,7 +25,7 @@ struct _GwSettingsWindowPrivate {
   GtkNotebook *notebook;
   GtkTreeView *manage_dictionaries_treeview;
   GtkButton *close_button;
-  GtkButton *remove_dictionary_button;
+  GtkToolButton *remove_dictionary_toolbutton;
 
   GtkColorButton *match_foreground;
   GtkColorButton *match_background;

@@ -91,8 +91,6 @@ gw_application_constructed (GObject *object)
     application = GW_APPLICATION (object);
     priv = application->priv;
 
-    priv->preferences = lw_preferences_new (NULL);
-    priv->dictinfolist = gw_dictinfolist_new (20, application);
     priv->tagtable = gw_application_texttagtable_new ();
 
     lw_regex_initialize ();
@@ -127,11 +125,11 @@ gw_application_finalize (GObject *object)
     if (priv->error != NULL) g_error_free (priv->error); priv->error = NULL;
 
     if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist); priv->dictinstlist = NULL;
-    if (priv->dictinfolist != NULL) gw_dictinfolist_free (priv->dictinfolist); priv->dictinfolist = NULL;
+    if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); priv->dictionarystore = NULL;
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query != NULL) g_free(priv->arg_query); priv->arg_query = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
-    //if (priv->vocabulary != NULL) g_object_unref (priv->vocabulary); priv->vocabulary = NULL;
+    if (priv->vocabulary != NULL) g_object_unref (priv->vocabulary); priv->vocabulary = NULL;
 
     lw_regex_free ();
 
@@ -600,17 +598,32 @@ gw_application_get_preferences (GwApplication *application)
 
     priv = application->priv;
 
+    if (priv->preferences == NULL)
+    {
+      priv->preferences = lw_preferences_new (NULL);
+    }
+
     return priv->preferences;
 }
 
 
-GwDictInfoList* 
-gw_application_get_dictinfolist (GwApplication *application)
+GtkListStore* 
+gw_application_get_dictionarystore (GwApplication *application)
 {
     GwApplicationPrivate *priv;
+    LwPreferences *preferences;
+
     priv = application->priv;
 
-    return priv->dictinfolist;
+    if (priv->dictionarystore == NULL)
+    {
+      priv->dictionarystore = gw_dictionarystore_new ();
+      g_object_ref (priv->dictionarystore);
+      preferences = gw_application_get_preferences (application);
+      gw_dictionarystore_load_order (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
+    }
+
+    return priv->dictionarystore;
 }
 
 
@@ -639,6 +652,7 @@ gw_application_get_vocabularyliststore (GwApplication *application)
   {
     preferences = gw_application_get_preferences (application);
     priv->vocabulary = gw_vocabularyliststore_new ();
+    g_object_ref (priv->vocabulary);
     gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabulary), preferences);
   }
 
@@ -664,11 +678,13 @@ gw_application_activate (GApplication *application)
     GwSearchWindow *searchwindow;
     GwVocabularyWindow *vocabularywindow;
     GwSettingsWindow *settingswindow;
+    GwDictionaryStore *dictionarystore;
     LwDictInfoList *dictinfolist;
 
     priv = GW_APPLICATION (application)->priv;
     searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
+    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
+    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
 
     if (priv->arg_new_vocabulary_window_switch)
     {
@@ -705,6 +721,7 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     //Declarations
     LwDictInfo *di;
     GwSearchWindow *window;
+    GwDictionaryStore *dictionarystore;
     LwDictInfoList *dictinfolist;
     GwApplicationPrivate *priv;
     int argc;
@@ -712,7 +729,8 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
 
     //Initializations
     priv = GW_APPLICATION (application)->priv;
-    dictinfolist = LW_DICTINFOLIST (gw_application_get_dictinfolist (GW_APPLICATION (application)));
+    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
+    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
     argv = g_application_command_line_get_arguments (command_line, &argc);
 
     gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
