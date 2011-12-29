@@ -35,7 +35,7 @@ struct _GwApplicationPrivate {
   gboolean arg_new_vocabulary_window_switch;
 
   GtkListStore *dictionarystore;
-  GtkListStore *vocabulary;
+  GtkListStore *vocabularyliststore;
 
   gint block_new_searches;
 };

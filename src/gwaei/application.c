@@ -126,10 +126,10 @@ gw_application_finalize (GObject *object)
 
     if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist); priv->dictinstlist = NULL;
     if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); priv->dictionarystore = NULL;
+    if (priv->vocabularyliststore != NULL) g_object_unref (priv->vocabularyliststore); priv->vocabularyliststore = NULL;
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query != NULL) g_free(priv->arg_query); priv->arg_query = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
-    if (priv->vocabulary != NULL) g_object_unref (priv->vocabulary); priv->vocabulary = NULL;
 
     lw_regex_free ();
 
@@ -612,15 +612,17 @@ gw_application_get_dictionarystore (GwApplication *application)
 {
     GwApplicationPrivate *priv;
     LwPreferences *preferences;
+    gpointer *pointer;
 
     priv = application->priv;
 
     if (priv->dictionarystore == NULL)
     {
       priv->dictionarystore = gw_dictionarystore_new ();
-      g_object_ref (priv->dictionarystore);
       preferences = gw_application_get_preferences (application);
       gw_dictionarystore_load_order (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
+      pointer = (gpointer*) &(priv->dictionarystore);
+      g_object_add_weak_pointer (G_OBJECT (priv->dictionarystore), pointer);
     }
 
     return priv->dictionarystore;
@@ -645,18 +647,21 @@ gw_application_get_vocabularyliststore (GwApplication *application)
 {
   GwApplicationPrivate *priv;
   LwPreferences *preferences;
+  gpointer* pointer;
 
   priv = application->priv;
 
-  if (priv->vocabulary == NULL)
+  if (priv->vocabularyliststore == NULL)
   {
     preferences = gw_application_get_preferences (application);
-    priv->vocabulary = gw_vocabularyliststore_new ();
-    g_object_ref (priv->vocabulary);
-    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabulary), preferences);
+    priv->vocabularyliststore = gw_vocabularyliststore_new ();
+    g_object_ref (priv->vocabularyliststore);
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabularyliststore), preferences);
+    pointer = (gpointer*) &(priv->vocabularyliststore);
+    g_object_add_weak_pointer (G_OBJECT (priv->vocabularyliststore), pointer);
   }
 
-  return priv->vocabulary;
+  return priv->vocabularyliststore;
 }
 
 
