@@ -77,11 +77,11 @@ gw_vocabularyliststore_init (GwVocabularyListStore *store)
 static void 
 gw_vocabularyliststore_finalize (GObject *object)
 {
+/*
     GwVocabularyListStore *store;
 
     store = GW_VOCABULARYLISTSTORE (object);
-
-    gtk_list_store_clear (GTK_LIST_STORE (store));
+*/
 
     G_OBJECT_CLASS (gw_vocabularyliststore_parent_class)->finalize (object);
 }

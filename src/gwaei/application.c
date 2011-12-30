@@ -125,8 +125,11 @@ gw_application_finalize (GObject *object)
     if (priv->error != NULL) g_error_free (priv->error); priv->error = NULL;
 
     if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist); priv->dictinstlist = NULL;
-    if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); priv->dictionarystore = NULL;
-    if (priv->vocabularyliststore != NULL) g_object_unref (priv->vocabularyliststore); priv->vocabularyliststore = NULL;
+
+    if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); 
+
+    if (priv->vocabularyliststore != NULL) g_object_unref (priv->vocabularyliststore); 
+
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query != NULL) g_free(priv->arg_query); priv->arg_query = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
@@ -619,9 +622,9 @@ gw_application_get_dictionarystore (GwApplication *application)
     if (priv->dictionarystore == NULL)
     {
       priv->dictionarystore = gw_dictionarystore_new ();
+      pointer = (gpointer*) &(priv->dictionarystore);
       preferences = gw_application_get_preferences (application);
       gw_dictionarystore_load_order (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
-      pointer = (gpointer*) &(priv->dictionarystore);
       g_object_add_weak_pointer (G_OBJECT (priv->dictionarystore), pointer);
     }
 
@@ -655,10 +658,9 @@ gw_application_get_vocabularyliststore (GwApplication *application)
   {
     preferences = gw_application_get_preferences (application);
     priv->vocabularyliststore = gw_vocabularyliststore_new ();
-    g_object_ref (priv->vocabularyliststore);
-    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabularyliststore), preferences);
     pointer = (gpointer*) &(priv->vocabularyliststore);
     g_object_add_weak_pointer (G_OBJECT (priv->vocabularyliststore), pointer);
+    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (priv->vocabularyliststore), preferences);
   }
 
   return priv->vocabularyliststore;
