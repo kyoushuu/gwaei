@@ -242,6 +242,10 @@ lw_vocabularyitem_free (LwVocabularyItem *item)
       item->fields[i] = NULL;
     }
   }
+
+  g_free (item->score); item->score = NULL;
+  g_free (item->days); item->days = NULL;
+
   g_free (item);
 }
 

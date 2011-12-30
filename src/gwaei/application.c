@@ -760,6 +760,9 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
       gw_searchwindow_search_cb (GTK_WIDGET (window), window);
     }
 
+    //Cleanup
+    if (argv != NULL) g_strfreev (argv); argv = NULL;
+
     return 0;
 }
 

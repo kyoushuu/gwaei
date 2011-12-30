@@ -279,7 +279,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     //Declarations
     GwVocabularyWordStorePrivate *priv;
     GtkTreeModel *model;
-    GtkTreeIter treeiter;
+    GtkTreeIter iter;
     GList *link;
     LwVocabularyItem *item;
     const int BUFFER_SIZE = 100;
@@ -299,8 +299,8 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     {
       item = LW_VOCABULARYITEM (link->data);
       g_snprintf (buffer, BUFFER_SIZE, "%d", i + 1);
-      gtk_list_store_append (GTK_LIST_STORE (model), &treeiter);
-      gtk_list_store_set (GTK_LIST_STORE (model), &treeiter, 
+      gtk_list_store_append (GTK_LIST_STORE (model), &iter);
+      gtk_list_store_set (GTK_LIST_STORE (model), &iter, 
           GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER, i, 
           GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING, buffer, 
           GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item), 

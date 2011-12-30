@@ -115,25 +115,32 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
       uri = g_strdup (FILENAME);
     else
       uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
-    stream = fopen (uri, "r");
-    if (stream == NULL) return;
-    buffer[MAX] = '\0';
 
-    while (stream != NULL && feof(stream) == 0)
+    if (uri != NULL)
     {
-      if (fgets (buffer, MAX, stream) != NULL)
+      stream = fopen (uri, "r");
+      if (stream != NULL)
       {
         buffer[MAX] = '\0';
-        item = lw_vocabularyitem_new_from_string (buffer);
-        if (item != NULL)
+
+        while (stream != NULL && feof(stream) == 0)
         {
-          list->items = g_list_append (list->items, item);
+          if (fgets (buffer, MAX, stream) != NULL)
+          {
+            buffer[MAX] = '\0';
+            item = lw_vocabularyitem_new_from_string (buffer);
+            if (item != NULL)
+            {
+              list->items = g_list_append (list->items, item);
+            }
+          }
+          if (strchr(buffer, '\n') == NULL && feof(stream) == 0)
+          {
+            while (fgetc(stream) != '\n' && feof(stream) == 0);
+          }
         }
       }
-      if (strchr(buffer, '\n') == NULL && feof(stream) == 0)
-      {
-        while (fgetc(stream) != '\n' && feof(stream) == 0);
-      }
+      g_free (uri); uri = NULL;
     }
 }
 

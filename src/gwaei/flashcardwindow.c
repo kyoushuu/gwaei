@@ -101,6 +101,7 @@ gw_flashcardwindow_finalize (GObject *object)
     if (priv->question_title != NULL) g_free (priv->question_title); priv->question_title = NULL;
     if (priv->question != NULL) g_free (priv->question); priv->question = NULL;
     if (priv->answer != NULL) g_free (priv->answer); priv->answer = NULL;
+    if (priv->flash_cards_type != NULL) g_free (priv->flash_cards_type); priv->flash_cards_type = NULL;
 
     if (priv->model != NULL) 
     {
@@ -269,43 +270,52 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
 
     priv->source_question_column = question_column;
     priv->source_answer_column = answer_column;
-    priv->source_model = source_model;
+    priv->source_model = source_model; g_object_ref (G_OBJECT (priv->source_model));
+
+    if (priv->list_name != NULL) g_free (priv->list_name);
     priv->list_name = g_strdup (list_name);
+
+    if (priv->question_title != NULL) g_free (priv->question_title);
     priv->question_title = g_strdup (question_title);
+
+    if (priv->flash_cards_type != NULL) g_free (priv->flash_cards_type);
     priv->flash_cards_type = g_strdup (flash_cards_type);
 
     gw_flashcardwindow_update_title (window);
-    g_object_ref (G_OBJECT (priv->source_model));
 
     valid = gtk_tree_model_get_iter_first (source_model, &source_iter);
     while (valid)
     {
       gtk_tree_model_get (source_model, &source_iter, question_column, &question, answer_column, &answer, -1);
       path = gtk_tree_model_get_path (source_model, &source_iter);
-      if (question != NULL && strlen (question) && answer != NULL && strlen (answer))
+      if (path != NULL)
       {
-        if (randomize)
+        if (question != NULL && strlen (question) && answer != NULL && strlen (answer))
         {
-          if (priv->total_cards == 0)
-            position = 0;
+          if (randomize)
+          {
+            if (priv->total_cards == 0)
+              position = 0;
+            else
+              position = g_rand_int_range (random_generator, 0, priv->total_cards);
+            gtk_list_store_insert (GTK_LIST_STORE (priv->model), &target_iter, position);
+          }
           else
-            position = g_rand_int_range (random_generator, 0, priv->total_cards);
-          gtk_list_store_insert (GTK_LIST_STORE (priv->model), &target_iter, position);
+          {
+            gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
+          }
+          gtk_list_store_set (GTK_LIST_STORE (priv->model), &target_iter,
+              COLUMN_QUESTION, question,
+              COLUMN_ANSWER, answer,
+              COLUMN_TREE_PATH, path,
+              COLUMN_IS_COMPLETED, FALSE,
+              -1);
+          priv->total_cards++;
         }
-        else
-        {
-          gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
-        }
-        gtk_list_store_set (GTK_LIST_STORE (priv->model), &target_iter,
-            COLUMN_QUESTION, question,
-            COLUMN_ANSWER, answer,
-            COLUMN_TREE_PATH, path,
-            COLUMN_IS_COMPLETED, FALSE,
-            -1);
-        priv->total_cards++;
+        if (question != NULL) g_free (question); question = NULL;
+        if (answer != NULL) g_free (answer); answer = NULL;
+        //gtk_tree_path_free (path); path = NULL; //PATH SHOULD NOT BE FREED HERE. ONLY WHEN THE MODEL IS FINALIZED
       }
-      if (question != NULL) g_free (question); question = NULL;
-      if (answer != NULL) g_free (answer); answer = NULL;
       valid = gtk_tree_model_iter_next (source_model, &source_iter);
     }
 
@@ -643,7 +653,7 @@ gw_flashcardwindow_finalize_inner_path (GtkTreeModel *model,
 
     if (inner_path != NULL) gtk_tree_path_free (inner_path);
 
-    return TRUE;
+    return FALSE;
 }
 
 
