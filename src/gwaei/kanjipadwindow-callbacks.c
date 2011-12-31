@@ -44,7 +44,8 @@
 //!
 //! @brief Does the needed calls to kpad to look up the kanji
 //! 
-G_MODULE_EXPORT gboolean gw_kanjipadwindow_look_up_cb (GtkWidget *widget, GdkEventButton *event, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_kanjipadwindow_look_up_cb (GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     //Declarations
     GwKanjipadWindow *window;
@@ -90,7 +91,7 @@ G_MODULE_EXPORT gboolean gw_kanjipadwindow_look_up_cb (GtkWidget *widget, GdkEve
       exit (EXIT_FAILURE);
     }
 
-    g_string_free (message, FALSE);
+    g_string_free (message, TRUE);
 
     return FALSE;
 }

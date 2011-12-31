@@ -52,7 +52,8 @@ G_DEFINE_TYPE (GwKanjipadWindow, gw_kanjipadwindow, GW_TYPE_WINDOW)
 //!
 //! @brief Sets up the variables in main-interface.c and main-callbacks.c for use
 //!
-GtkWindow* gw_kanjipadwindow_new (GtkApplication *application)
+GtkWindow* 
+gw_kanjipadwindow_new (GtkApplication *application)
 {
     g_assert (application != NULL);
 
@@ -70,23 +71,34 @@ GtkWindow* gw_kanjipadwindow_new (GtkApplication *application)
 }
 
 
-void gw_kanjipadwindow_init (GwKanjipadWindow *window)
+static void
+gw_kanjipadwindow_init (GwKanjipadWindow *window)
 {
     window->priv = GW_KANJIPADWINDOW_GET_PRIVATE (window);
     memset(window->priv, 0, sizeof(GwKanjipadWindowPrivate));
 }
 
 
-void gw_kanjipadwindow_finalize (GObject *object)
+static void
+gw_kanjipadwindow_finalize (GObject *object)
 {
     GwKanjipadWindow *window;
     GwKanjipadWindowPrivate *priv;
     GSource *source;
     GError *error;
+    GList *link;
 
     window = GW_KANJIPADWINDOW (object);
     priv = window->priv;
     error = NULL;
+
+    for (link = priv->strokes; link != NULL; link = link->next)
+      gw_kanjipadwindow_free_drawingarea_stroke (link->data);
+    if (priv->strokes != NULL) g_list_free (priv->strokes); priv->strokes = NULL;
+    if (priv->strokes != NULL) g_list_free (priv->curstroke); priv->curstroke = NULL;
+
+    if (priv->ksurface != NULL) cairo_surface_destroy (priv->ksurface); priv->ksurface = NULL;
+    if (priv->surface != NULL) cairo_surface_destroy (priv->surface); priv->surface = NULL;
 
     if (g_main_current_source () != NULL &&
         !g_source_is_destroyed (g_main_current_source ()) &&
@@ -127,7 +139,8 @@ void gw_kanjipadwindow_finalize (GObject *object)
 }
 
 
-static void gw_kanjipadwindow_constructed (GObject *object)
+static void 
+gw_kanjipadwindow_constructed (GObject *object)
 {
     GwKanjipadWindow *window;
     GwKanjipadWindowPrivate *priv;

@@ -45,7 +45,8 @@ static void _kanjipadwindow_initialize_drawingarea (GwKanjipadWindow*);
 //!
 //! @brief To be written
 //!
-void gw_kanjipadwindow_free_drawingarea_stroke (GList *stroke)
+void 
+gw_kanjipadwindow_free_drawingarea_stroke (GList *stroke)
 {
     //Declarations
     GList *iter;
@@ -122,7 +123,8 @@ static void gw_kanjipadwindow_annotate_drawingarea_stroke (GwKanjipadWindow *win
 //!
 //! @brief To be written
 //!
-static void _kanjipadwindow_initialize_drawingarea (GwKanjipadWindow *window)
+static void 
+_kanjipadwindow_initialize_drawingarea (GwKanjipadWindow *window)
 {
     //Declarations
     GwKanjipadWindowPrivate *priv;
@@ -241,6 +243,7 @@ G_MODULE_EXPORT int gw_kanjipadwindow_drawingarea_configure_event_cb (GtkWidget 
     if (priv->surface != NULL)
     {
       cairo_surface_destroy (priv->surface);
+      priv->surface = NULL;
     }
 
     priv->surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, event->width, event->height);
@@ -403,7 +406,8 @@ G_MODULE_EXPORT int gw_kanjipadwindow_drawingarea_motion_event_cb (GtkWidget *wi
 //!
 //! @brief To be written
 //!
-void gw_kanjipadwindow_clear_drawingarea (GwKanjipadWindow *window)
+void 
+gw_kanjipadwindow_clear_drawingarea (GwKanjipadWindow *window)
 {
     //Declarations
     GwKanjipadWindowPrivate *priv;
@@ -415,12 +419,8 @@ void gw_kanjipadwindow_clear_drawingarea (GwKanjipadWindow *window)
     {
       gw_kanjipadwindow_free_drawingarea_stroke (iter->data);
     }
-    g_list_free (priv->strokes);
-
-    g_list_free (priv->curstroke);
-
-    priv->strokes = NULL;
-    priv->curstroke = NULL;
+    g_list_free (priv->strokes); priv->strokes = NULL;
+    g_list_free (priv->curstroke); priv->curstroke = NULL;
 
     _kanjipadwindow_initialize_drawingarea (window);
 }

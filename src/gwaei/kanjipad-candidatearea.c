@@ -227,6 +227,9 @@ void gw_kanjipadwindow_draw_candidates (GwKanjipadWindow *window)
     }
 
     gtk_widget_queue_draw (GTK_WIDGET (priv->candidates));
+
+    cairo_destroy (cr);
+    cr = NULL;
 }
 
 
