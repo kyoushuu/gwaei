@@ -273,7 +273,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
 {
     //Sanity checks
     g_assert (store != NULL);
-    if (gw_vocabularywordstore_loaded (store) && FILENAME == NULL) return;
+    if (gw_vocabularywordstore_loaded (store)) return;
     g_assert (store->priv->name != NULL);
 
     //Declarations
@@ -282,26 +282,28 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     GtkTreeIter iter;
     GList *link;
     LwVocabularyItem *item;
-    const int BUFFER_SIZE = 100;
-    gchar buffer[BUFFER_SIZE];
-    guint i;
+    const gint MAX = 100;
+    gchar buffer[MAX];
+    guint position;
 
     //Initializations
     priv = store->priv;
     model = GTK_TREE_MODEL (store);
-    i = 0;
+    position = 1;
 
     if (priv->vocabulary_list != NULL) lw_vocabularylist_free (priv->vocabulary_list);
     priv->vocabulary_list = lw_vocabularylist_new (priv->name);
+
     lw_vocabularylist_load (priv->vocabulary_list, FILENAME, NULL);
 
     for (link = priv->vocabulary_list->items; link != NULL; link = link->next)
     {
       item = LW_VOCABULARYITEM (link->data);
-      g_snprintf (buffer, BUFFER_SIZE, "%d", i + 1);
+      g_snprintf (buffer, MAX, "%d", position);
+
       gtk_list_store_append (GTK_LIST_STORE (model), &iter);
       gtk_list_store_set (GTK_LIST_STORE (model), &iter, 
-          GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER, i, 
+          GW_VOCABULARYWORDSTORE_COLUMN_POSITION_INTEGER, position, 
           GW_VOCABULARYWORDSTORE_COLUMN_POSITION_STRING, buffer, 
           GW_VOCABULARYWORDSTORE_COLUMN_KANJI, lw_vocabularyitem_get_kanji (item), 
           GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA, lw_vocabularyitem_get_furigana (item), 
@@ -313,7 +315,8 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
           GW_VOCABULARYWORDSTORE_COLUMN_SCORE, lw_vocabularyitem_get_score_as_string (item),
           GW_VOCABULARYWORDSTORE_COLUMN_WEIGHT, PANGO_WEIGHT_NORMAL,
       -1);
-      i++;
+
+      position++;
     }
 
     priv->loaded = TRUE;

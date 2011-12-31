@@ -102,6 +102,7 @@ lw_vocabularylist_free (LwVocabularyList *list)
       g_list_foreach (list->items, (GFunc) lw_vocabularyitem_free, NULL);
       g_list_free (list->items); list->items = NULL;
     }
+    g_free (list);
 }
 
 
@@ -124,8 +125,7 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
       stream = fopen (uri, "r");
       if (stream != NULL)
       {
-        buffer[MAX] = '\0';
-        while (stream != NULL && feof(stream) == 0)
+        while (feof(stream) == 0)
         {
           if (fgets (buffer, MAX, stream) != NULL)
           {

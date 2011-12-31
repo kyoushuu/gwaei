@@ -196,19 +196,21 @@ lw_vocabularyitem_new ()
 LwVocabularyItem*
 lw_vocabularyitem_new_from_string (const gchar *text)
 {
+    //Declarations
     LwVocabularyItem *item;
     gchar *ptr;
     gchar *endptr;
+    gchar **atoms;
+    gint i;
+
     item = g_new0 (LwVocabularyItem, 1);
     if (item != NULL)
     {
-      gchar **atoms;
-      gint i;
 
       atoms = g_strsplit (text, ";", TOTAL_LW_VOCABULARYITEM_FIELDS);
-
       if (atoms != NULL)
       {
+        //Set up the strings
         for (i = 0; atoms[i] != NULL && i < TOTAL_LW_VOCABULARYITEM_FIELDS; i++)
         {
           item->fields[i] = g_strdup (g_strstrip(atoms[i]));
@@ -217,7 +219,8 @@ lw_vocabularyitem_new_from_string (const gchar *text)
         {
           if (item->fields[i] == NULL) item->fields[i] = g_strdup ("");
         }
-        g_strfreev (atoms); atoms = NULL;
+
+        //Set up the integers
         ptr = item->fields[LW_VOCABULARYITEM_FIELD_CORRECT_GUESSES];
         item->correct_guesses = (gint) g_ascii_strtoll (ptr, &endptr, 10);
         ptr = item->fields[LW_VOCABULARYITEM_FIELD_INCORRECT_GUESSES];
@@ -225,10 +228,12 @@ lw_vocabularyitem_new_from_string (const gchar *text)
         ptr = item->fields[LW_VOCABULARYITEM_FIELD_TIMESTAMP];
         item->timestamp =  (guint32) g_ascii_strtoll (ptr, &endptr, 10);
       }
+      g_strfreev (atoms); atoms = NULL;
     }
 
     return item;
 }
+
 
 void
 lw_vocabularyitem_free (LwVocabularyItem *item)
