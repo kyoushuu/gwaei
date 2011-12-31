@@ -311,7 +311,7 @@ gw_application_print_about (GwApplication *application)
     printf ("\n\n");
 
     printf ("Check for the latest updates at <http://gwaei.sourceforge.net/>\n");
-    printf ("Code Copyright (C) 2009-2011 Zachary Dovel\n\n");
+    printf ("Code Copyright (C) 2009-2012 Zachary Dovel\n\n");
 
     printf ("License:\n");
     printf ("Copyright (C) 2008 Free Software Foundation, Inc.\nLicense GPLv3+: "

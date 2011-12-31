@@ -1026,7 +1026,9 @@ gw_searchwindow_about_cb (GtkWidget *widget, gpointer data)
     GtkWidget *about = g_object_new (GTK_TYPE_ABOUT_DIALOG,
                "program-name", "gWaei", 
                "version", VERSION,
-               "copyright", "gWaei (C) 2008-2010 Zachary Dovel\nKanjipad backend (C) 2002 Owen Taylor\nJStroke backend (C) 1997 Robert Wells",
+               "copyright", "gWaei (C) 2008-2012 Zachary Dovel\n" 
+                            "Kanjipad backend (C) 2002 Owen Taylor\n"
+                            "JStroke backend (C) 1997 Robert Wells",
                "comments", gettext("Program for Japanese translation and reference. The\ndictionaries are supplied by Jim Breen's WWWJDIC.\nSpecial thanks to the maker of GJITEN who served as an inspiration.\n Dedicated to Chuus"),
                "license", "This software is GPL Licensed.\n\ngWaei is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\n the Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\ngWaei is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with gWaei.  If not, see <http://www.gnu.org/licenses/>.",
                "logo", logo,
