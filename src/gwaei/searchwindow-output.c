@@ -73,7 +73,10 @@ gw_searchwindow_insert_addlink (GwSearchWindow   *window,
 
 
 void
-gw_searchwindow_insert_edict_addlink (GwSearchWindow *window, LwResultLine *resultline, GtkTextBuffer *buffer, GtkTextIter *iter)
+gw_searchwindow_insert_edict_addlink (GwSearchWindow *window, 
+                                      LwResultLine   *resultline, 
+                                      GtkTextBuffer  *buffer, 
+                                      GtkTextIter    *iter)
 {
     //Declarations
     gchar *kanji, *furigana, *definitions;
@@ -96,6 +99,8 @@ gw_searchwindow_insert_edict_addlink (GwSearchWindow *window, LwResultLine *resu
         lw_vocabularyitem_set_definitions (item, definitions);
 
         gw_searchwindow_insert_addlink (window, buffer, iter, item);
+
+        lw_vocabularyitem_free (item);
       }
       g_free (definitions);
     }
@@ -594,6 +599,8 @@ gw_searchwindow_insert_kanjidict_addlink (GwSearchWindow *window, LwResultLine *
         lw_vocabularyitem_set_definitions (item, definitions);
 
         gw_searchwindow_insert_addlink (window, buffer, iter, item);
+
+        lw_vocabularyitem_free (item);
       }
       g_free (furigana);
     }
