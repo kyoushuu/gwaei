@@ -1277,6 +1277,7 @@ lw_util_get_romaji_atoms_from_string (const char *string)
     //Initializations;
     delimitor = "&";
     buffer = (char*) malloc(sizeof(char) * (strlen(string) * 2) + 1); //max size is if there is a delimitor for every character
+    buffer[0] = '\0';
     string_ptr = string;
     buffer_ptr = buffer;
     new_atom_start = FALSE;
@@ -1347,6 +1348,7 @@ lw_util_get_furigana_atoms_from_string (const char *string)
     //Initializations;
     delimitor = "&";
     buffer = (char*) malloc(sizeof(char) * (strlen(string) * 2) + 1); //max size is if there is a delimitor for every character
+    buffer[0] = '\0';
     string_ptr = string;
     buffer_ptr = buffer;
     new_atom_start = FALSE;
