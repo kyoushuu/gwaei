@@ -156,7 +156,7 @@ gw_flashcardwindow_constructed (GObject *object)
     gtk_window_set_position (GTK_WINDOW (window), GTK_WIN_POS_MOUSE);
     gtk_window_set_default_size (GTK_WINDOW (window), 450, 300);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
-    gtk_window_set_has_resize_grip (GTK_WINDOW (window), FALSE);
+    gtk_window_set_has_resize_grip (GTK_WINDOW (window), TRUE);
     gw_window_set_is_important (GW_WINDOW (window), TRUE);
     gw_window_load_size (GW_WINDOW (window));
 
