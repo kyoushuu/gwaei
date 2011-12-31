@@ -209,6 +209,7 @@ gw_vocabularyliststore_get_wordstore_by_name (GwVocabularyListStore *store, cons
         -1);
       g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
       gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), TRUE);
+      g_object_unref (wordstore);
     }
 
     return wordstore;
@@ -479,6 +480,7 @@ gw_vocabularyliststore_revert_all (GwVocabularyListStore* store)
           -1);
         gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), FALSE);
         g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
+        g_object_unref (wordstore);
       }
       g_strfreev (lists); lists = NULL;
     }
@@ -527,6 +529,7 @@ gw_vocabularyliststore_new_list (GwVocabularyListStore *store, GtkTreeIter *iter
 
     g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
     gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), TRUE);
+    g_object_unref (wordstore);
 
     g_free (name);
 }

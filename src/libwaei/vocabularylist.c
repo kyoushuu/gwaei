@@ -97,8 +97,11 @@ void
 lw_vocabularylist_free (LwVocabularyList *list)
 {
     if (list->name != NULL) g_free (list->name);
-    g_list_foreach (list->items, (GFunc) lw_vocabularyitem_free, NULL);
-    g_list_free (list->items); list->items = NULL;
+    if (list->items != NULL)
+    {
+      g_list_foreach (list->items, (GFunc) lw_vocabularyitem_free, NULL);
+      g_list_free (list->items); list->items = NULL;
+    }
 }
 
 
@@ -122,7 +125,6 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
       if (stream != NULL)
       {
         buffer[MAX] = '\0';
-
         while (stream != NULL && feof(stream) == 0)
         {
           if (fgets (buffer, MAX, stream) != NULL)
@@ -139,6 +141,7 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
             while (fgetc(stream) != '\n' && feof(stream) == 0);
           }
         }
+        fclose(stream); stream = NULL;
       }
       g_free (uri); uri = NULL;
     }
@@ -158,30 +161,33 @@ lw_vocabularylist_save (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
       uri = g_strdup (FILENAME);
     else
       uri = lw_util_build_filename (LW_PATH_VOCABULARY, list->name);
-    stream = fopen (uri, "w");
 
-    if (stream == NULL) return;
-
-    for (iter = list->items; iter != NULL; iter = iter->next)
+    if (uri != NULL)
     {
-      item = LW_VOCABULARYITEM (iter->data);
-      if (item != NULL)
+      stream = fopen (uri, "w");
+      if (stream != NULL)
       {
-        for (i = 0; i < TOTAL_LW_VOCABULARYITEM_FIELDS - 1 && feof (stream) == 0; i++)
+        for (iter = list->items; iter != NULL; iter = iter->next)
         {
-          if (item->fields[i] != NULL)
+          item = LW_VOCABULARYITEM (iter->data);
+          if (item != NULL)
           {
-            fputs(item->fields[i], stream);
-            fputc(';', stream);
+            for (i = 0; i < TOTAL_LW_VOCABULARYITEM_FIELDS - 1 && feof (stream) == 0; i++)
+            {
+              if (item->fields[i] != NULL)
+              {
+                fputs(item->fields[i], stream);
+                fputc(';', stream);
+              }
+            }
+            if (item->fields[i] != NULL) fputs(item->fields[i], stream);
+            fputc('\n', stream);
           }
         }
-        if (item->fields[i] != NULL) fputs(item->fields[i], stream);
-        fputc('\n', stream);
+        fclose(stream);
       }
+      g_free (uri);
     }
-
-    fclose(stream);
-    g_free (uri);
 }
 
 void
