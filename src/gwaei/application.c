@@ -685,12 +685,15 @@ GtkTextTagTable*
 gw_application_get_tagtable (GwApplication *application)
 {
     GwApplicationPrivate *priv;
+    gpointer *pointer;
 
     priv = application->priv;
 
     if (priv->tagtable == NULL)
     {
       priv->tagtable = gw_application_texttagtable_new ();
+      pointer = (gpointer*) &(priv->tagtable);
+      g_object_add_weak_pointer (G_OBJECT (priv->tagtable), pointer);
     }
 
     return priv->tagtable;

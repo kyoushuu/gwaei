@@ -2609,3 +2609,4 @@ gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer da
 
 }
 
+

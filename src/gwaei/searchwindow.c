@@ -1873,14 +1873,18 @@ gw_searchwindow_remove_tab (GwSearchWindow *window, int index)
     if (iter != NULL)
     {
       item = LW_SEARCHITEM (iter->data);
-      if (lw_searchitem_has_history_relevance (item, priv->keep_searching_enabled))
+      if (item != NULL)
       {
-        lw_history_add_searchitem (priv->history, item);
-        gw_searchwindow_update_history_popups (window);
-      }
-      else if (item != NULL)
-      {
-        lw_searchitem_free (item);
+        gw_searchwindow_initialize_buffer_by_searchitem (window, item);
+        if (lw_searchitem_has_history_relevance (item, priv->keep_searching_enabled))
+        {
+          lw_history_add_searchitem (priv->history, item);
+          gw_searchwindow_update_history_popups (window);
+        }
+        else if (item != NULL)
+        {
+          lw_searchitem_free (item);
+        }
       }
     }
     priv->tablist = g_list_delete_link (priv->tablist, iter);
