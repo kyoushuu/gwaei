@@ -91,6 +91,7 @@ lw_preferences_deinit (LwPreferences *pm)
 {
     lw_preferences_free_settings (pm);
     if (pm->mutex != NULL) g_mutex_free (pm->mutex); pm->mutex = NULL;
+    if (pm->backend != NULL) g_object_unref (pm->backend); pm->backend = NULL;
 }
 
 

@@ -73,6 +73,7 @@ GtkListStore* gw_application_get_dictionarystore (GwApplication*);
 struct _LwDictInstList* gw_application_get_dictinstlist (GwApplication*);
 GtkTextTagTable* gw_application_get_tagtable (GwApplication*);
 GtkListStore* gw_application_get_vocabularyliststore (GwApplication*);
+LwMorphologyEngine* gw_application_get_morphologyengine (GwApplication*);
 
 gboolean gw_application_should_quit (GwApplication *application);
 

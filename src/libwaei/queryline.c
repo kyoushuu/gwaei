@@ -216,11 +216,12 @@ static char *_queryline_get_morphology_regexp (LwQueryLine *ql)
    gchar *result;
    const char *ptr;
 
-   if (ql->morphology) {
-       g_free(ql->morphology);
+   if (ql->morphology)
+   {
+     g_free (ql->morphology);
+     ql->morphology = NULL;
    }
 
-   ql->morphology = NULL;
    result = NULL;
 
    // Do analysis only on alpha-kana-kanji strings
@@ -238,7 +239,8 @@ static char *_queryline_get_morphology_regexp (LwQueryLine *ql)
            return result;
    }
 
-   morph = lw_morphology_new (ql->string);
+   morph = lw_morphology_new ();
+   lw_morphology_analize (lw_morphologyengine_get_default (), morph, ql->string);
 
    for (it = morph->items; it; it = it->next) {
        LwMorphologyItem *item = (LwMorphologyItem *)it->data;
@@ -262,7 +264,7 @@ static char *_queryline_get_morphology_regexp (LwQueryLine *ql)
        }
        if (item->explanation) {
            if (ql->morphology == NULL) {
-               ql->morphology = g_strdup(item->explanation);
+               ql->morphology = g_strdup (item->explanation);
            }
            else {
                temp = g_strdup_printf ("%s + %s", ql->morphology, item->explanation);
@@ -379,15 +381,15 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
      if (morpho_expression && iter == atoms) {
          // Stuff morphology regexp to the first atom
          if (expression == NULL) {
-             expression_low = g_strdup(morpho_expression);
+             expression_low = g_strdup (morpho_expression);
          }
          else {
-             expression_low = g_strdup_printf("%s|%s", expression, morpho_expression);
+             expression_low = g_strdup_printf ("%s|%s", expression, morpho_expression);
          }
      }
 
      if (expression_low && expression == NULL) {
-         expression = g_strdup("----------------");
+         expression = g_strdup ("----------------");
      }
 
      if (expression) {

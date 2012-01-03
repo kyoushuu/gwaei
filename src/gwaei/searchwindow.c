@@ -369,19 +369,19 @@ gw_searchwindow_init_accelerators (GwSearchWindow *window)
 //! @param item A LwSearchItem pointer to gleam information from.
 //! @returns Currently always returns TRUE
 //!
-  gboolean 
+gboolean 
 gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
 {
-  //Sanity checks
-  if (gtk_widget_get_visible (GTK_WIDGET (window)) == FALSE) return TRUE;
+    //Sanity checks
+    if (gtk_widget_get_visible (GTK_WIDGET (window)) == FALSE) return TRUE;
 
-  //Declarations
-  GwSearchWindowPrivate *priv;
-  LwSearchItem *item;
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    LwSearchItem *item;
 
-  //Initializations
-  priv = window->priv;
-  item = gw_searchwindow_get_current_searchitem (window);
+    //Initializations
+    priv = window->priv;
+    item = gw_searchwindow_get_current_searchitem (window);
 
     if (item != NULL) 
     {
@@ -404,7 +404,7 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
       lw_searchitem_unlock_mutex (item);
     }
 
-   return TRUE;
+    return TRUE;
 }
 
 
@@ -1027,21 +1027,31 @@ gw_searchwindow_append_to_buffer (GwSearchWindow *window, LwSearchItem *item, co
 static void
 gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
 {
-    GtkTextTagTable *table;
+    GtkTextTagTable *tagtable;
     gchar *name;
+    GtkTextBuffer *tagbuffer;
+    GtkTextBuffer *viewbuffer;
+    LwSearchItem *item;
+    GwSearchData *sdata;
+    GwApplication *application;
 
-    g_object_get (G_OBJECT (tag), "name", &name, NULL);
+    item = LW_SEARCHITEM (data);
+    sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
+    application = gw_window_get_application (GW_WINDOW (sdata->window));
+    tagtable = gw_application_get_tagtable (application);
+    tagbuffer = GTK_TEXT_BUFFER (g_object_get_data (G_OBJECT (tag), "buffer"));
+    viewbuffer = gtk_text_view_get_buffer (sdata->view);
 
     //This is not the tag we were looking for
+    g_object_get (G_OBJECT (tag), "name", &name, NULL);
     if (name != NULL)
     {
       g_free (name);
     }
     //Remove the anonymous tag
-    else
+    else if (tagbuffer == viewbuffer)
     {
-      table = GTK_TEXT_TAG_TABLE (data);
-      gtk_text_tag_table_remove (table, tag);
+      gtk_text_tag_table_remove (tagtable, tag);
     }
 }
 
@@ -1103,9 +1113,12 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
 
     gw_searchwindow_set_total_results_label_by_searchitem (window, item);
 
-    GtkTextTagTable *table;
-    table = gtk_text_buffer_get_tag_table (buffer);
-    gtk_text_tag_table_foreach (table, gw_searchwindow_remove_anonymous_tags, table);
+    GtkTextTagTable *tagtable;
+    tagtable = gtk_text_buffer_get_tag_table (buffer);
+    if (tagtable != NULL)
+    {
+      gtk_text_tag_table_foreach (tagtable, gw_searchwindow_remove_anonymous_tags, item);
+    }
 }
 
 
@@ -1726,6 +1739,7 @@ gw_searchwindow_new_tab (GwSearchWindow *window)
     scrolledwindow = GTK_WIDGET (gtk_scrolled_window_new (NULL, NULL));
     buffer = GTK_TEXT_BUFFER (gtk_text_buffer_new (tagtable));
     view = GTK_TEXT_VIEW (gtk_text_view_new_with_buffer (buffer));
+    g_object_unref (buffer);
     infobar = GTK_WIDGET (_construct_infobar());
     scrollbox = GTK_WIDGET (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
     viewport = GTK_WIDGET (gtk_viewport_new (NULL, NULL));
@@ -1880,13 +1894,13 @@ gw_searchwindow_remove_tab (GwSearchWindow *window, int index)
 void 
 gw_searchwindow_sync_current_searchitem (GwSearchWindow *window)
 {
-  //Declarations
-  LwSearchItem *item;
-  
-  //Initializations
-  item = gw_searchwindow_get_current_searchitem (window);
+    //Declarations
+    LwSearchItem *item;
+    
+    //Initializations
+    item = gw_searchwindow_get_current_searchitem (window);
 
-  gw_searchwindow_set_current_searchitem (window, item);
+    gw_searchwindow_set_current_searchitem (window, item);
 }
 
 
@@ -1937,6 +1951,8 @@ gw_searchwindow_set_current_searchitem (GwSearchWindow *window, LwSearchItem *it
 
     //Set the label's mnemonic widget since glade doesn't seem to want to
     gtk_label_set_mnemonic_widget (priv->search_entry_label, GTK_WIDGET (priv->entry));
+
+    gw_searchwindow_update_progress_feedback_timeout (window);
 }
 
 

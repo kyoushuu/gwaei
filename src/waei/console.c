@@ -338,6 +338,7 @@ w_console_search (WApplication *application, GError **error)
 
     //Cleanup
     lw_searchitem_free (item);
+    g_main_loop_unref (loop);
 
     return 0;
 }

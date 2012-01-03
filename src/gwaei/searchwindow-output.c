@@ -62,9 +62,8 @@ gw_searchwindow_insert_addlink (GwSearchWindow   *window,
         "weight", PANGO_WEIGHT_BOLD,
         NULL);
     data = lw_vocabularyitem_to_string (item);
-    g_object_set_data_full (G_OBJECT (tag), 
-        "vocabulary-data", 
-        data, g_free);
+    g_object_set_data_full (G_OBJECT (tag), "vocabulary-data", data, g_free);
+    g_object_set_data (G_OBJECT (tag), "buffer", (gpointer) buffer);
 
     gtk_text_buffer_insert (buffer, iter, " ", -1);
     gtk_text_buffer_insert_with_tags (buffer, iter, "+", -1, tag, NULL);

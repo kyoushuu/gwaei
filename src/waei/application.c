@@ -68,19 +68,20 @@ static void
 w_application_constructed (GObject *object)
 {
     //Declarations
-//    WApplication *application;
-//    WApplicationPrivate *priv;
+    WApplication *application;
+    WApplicationPrivate *priv;
 
     //Chain the parent class
     {
       G_OBJECT_CLASS (w_application_parent_class)->constructed (object);
     }
 
-    //Initialization
-//    application = W_APPLICATION (object);
-//    priv = application->priv;
+    //Initializations
+    application = W_APPLICATION (object);
+    priv = application->priv;
 
     lw_regex_initialize ();
+    priv->morphologyengine = lw_morphologyengine_get_default ();
 }
 
 
@@ -99,6 +100,7 @@ w_application_finalize (GObject *object)
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
+    if (priv->morphologyengine != NULL) lw_morphologyengine_free (priv->morphologyengine); priv->morphologyengine = NULL;
 
     lw_regex_free ();
 
@@ -291,6 +293,21 @@ w_application_get_dictinstlist (WApplication *application)
 }
 
 
+LwMorphologyEngine *w_application_get_morphologyengine (WApplication *application)
+{
+    WApplicationPrivate *priv;
+
+    priv = application->priv;
+
+    if (priv->morphologyengine == NULL)
+    {
+      priv->morphologyengine = lw_morphologyengine_get_default ();
+    }
+
+    return priv->morphologyengine;
+}
+
+
 //!
 //! @brief Equivalent to the main function for many programs.  This is what starts the program
 //! @param argc Your argc from your main function
@@ -421,5 +438,4 @@ w_application_get_query_text_data (WApplication *application)
   priv = application->priv;
   return priv->arg_query_text_data;
 }
-
 
