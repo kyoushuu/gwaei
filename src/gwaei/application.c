@@ -42,7 +42,6 @@ static void gw_application_remove_signals (GwApplication*);
 static void gw_application_activate (GApplication*);
 static gboolean gw_application_local_command_line (GApplication*, gchar***, gint*);
 static int gw_application_command_line (GApplication*, GApplicationCommandLine*);
-static GtkTextTagTable* gw_application_texttagtable_new (void);
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
 
@@ -130,7 +129,6 @@ gw_application_finalize (GObject *object)
     if (priv->arg_query != NULL) g_free(priv->arg_query); priv->arg_query = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
     if (priv->morphologyengine != NULL) lw_morphologyengine_free (priv->morphologyengine); priv->morphologyengine = NULL;
-    if (priv->tagtable != NULL) g_object_unref (priv->tagtable);  priv->tagtable = NULL;
 
     lw_regex_free ();
 
@@ -160,88 +158,12 @@ gw_application_class_init (GwApplicationClass *klass)
 static void 
 gw_application_attach_signals (GwApplication *application)
 {
-    //Declarations
-    GwApplicationPrivate* priv;
-    LwPreferences *preferences;
-
-    //Initializations
-    priv = application->priv;
-    preferences = gw_application_get_preferences (application);
-
-    priv->signalid[GW_APPLICATION_SIGNALID_MATCH_FG] = lw_preferences_add_change_listener_by_schema (
-        preferences, 
-        LW_SCHEMA_HIGHLIGHT, 
-        LW_KEY_MATCH_FG, 
-        gw_application_sync_tag_cb, 
-        application
-    );
-    priv->signalid[GW_APPLICATION_SIGNALID_MATCH_BG] = lw_preferences_add_change_listener_by_schema (
-        preferences, 
-        LW_SCHEMA_HIGHLIGHT, 
-        LW_KEY_MATCH_BG, 
-        gw_application_sync_tag_cb, 
-        application
-    );
-    priv->signalid[GW_APPLICATION_SIGNALID_HEADER_FG] = lw_preferences_add_change_listener_by_schema (
-        preferences, 
-        LW_SCHEMA_HIGHLIGHT, 
-        LW_KEY_HEADER_FG, 
-        gw_application_sync_tag_cb, 
-        application
-    );
-    priv->signalid[GW_APPLICATION_SIGNALID_HEADER_BG] = lw_preferences_add_change_listener_by_schema (
-        preferences, 
-        LW_SCHEMA_HIGHLIGHT, 
-        LW_KEY_HEADER_BG, 
-        gw_application_sync_tag_cb, 
-        application
-    );
-    priv->signalid[GW_APPLICATION_SIGNALID_COMMENT_FG] = lw_preferences_add_change_listener_by_schema (
-        preferences, 
-        LW_SCHEMA_HIGHLIGHT, 
-        LW_KEY_COMMENT_FG, 
-        gw_application_sync_tag_cb, 
-        application
-    );
 }
 
 
 static void 
 gw_application_remove_signals (GwApplication *application)
 {
-    //Declarations
-    GwApplicationPrivate* priv;
-    LwPreferences *preferences;
-
-    //Initializations
-    priv = application->priv;
-    preferences = gw_application_get_preferences (application);
-
-    lw_preferences_remove_change_listener_by_schema (
-        preferences,
-        LW_SCHEMA_HIGHLIGHT,
-        priv->signalid[GW_APPLICATION_SIGNALID_MATCH_FG]
-    );
-    lw_preferences_remove_change_listener_by_schema (
-        preferences,
-        LW_SCHEMA_HIGHLIGHT,
-        priv->signalid[GW_APPLICATION_SIGNALID_MATCH_BG]
-    );
-    lw_preferences_remove_change_listener_by_schema (
-        preferences,
-        LW_SCHEMA_HIGHLIGHT,
-        priv->signalid[GW_APPLICATION_SIGNALID_HEADER_FG]
-    );
-    lw_preferences_remove_change_listener_by_schema (
-        preferences,
-        LW_SCHEMA_HIGHLIGHT,
-        priv->signalid[GW_APPLICATION_SIGNALID_HEADER_BG]
-    );
-    lw_preferences_remove_change_listener_by_schema (
-        preferences,
-        LW_SCHEMA_HIGHLIGHT,
-        priv->signalid[GW_APPLICATION_SIGNALID_COMMENT_FG]
-    );
 }
 
 
@@ -681,25 +603,6 @@ gw_application_get_morphologyengine (GwApplication *application)
 }
 
 
-GtkTextTagTable* 
-gw_application_get_tagtable (GwApplication *application)
-{
-    GwApplicationPrivate *priv;
-    gpointer *pointer;
-
-    priv = application->priv;
-
-    if (priv->tagtable == NULL)
-    {
-      priv->tagtable = gw_application_texttagtable_new ();
-      pointer = (gpointer*) &(priv->tagtable);
-      g_object_add_weak_pointer (G_OBJECT (priv->tagtable), pointer);
-    }
-
-    return priv->tagtable;
-}
-
-
 static void 
 gw_application_activate (GApplication *application)
 {
@@ -820,65 +723,6 @@ gw_application_local_command_line (GApplication *application,
 
     return handled;
 } 
-
-
-//!
-//! @brief Adds the tags to stylize the buffer text
-//!
-static GtkTextTagTable* 
-gw_application_texttagtable_new ()
-{
-    GtkTextTagTable *temp;
-    GtkTextTag *tag;
-
-    temp = gtk_text_tag_table_new ();
-
-    if (temp != NULL)
-    {
-      tag = gtk_text_tag_new ("italic");
-      g_object_set (tag, "style", PANGO_STYLE_ITALIC, NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("gray");
-      g_object_set (tag, "foreground", "#888888", NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("smaller");
-      g_object_set (tag, "size", "smaller", NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("small");
-      g_object_set (tag, "font", "Serif 6", NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("important");
-      g_object_set (tag, "weight", PANGO_WEIGHT_BOLD, NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("larger");
-      g_object_set (tag, "font", "Sans 20", NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("large");
-      g_object_set (tag, "font", "Serif 40", NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("center");
-      g_object_set (tag, "justification", GTK_JUSTIFY_LEFT, NULL);
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("comment");
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("match");
-      gtk_text_tag_table_add (temp, tag);
-
-      tag = gtk_text_tag_new ("header");
-      gtk_text_tag_table_add (temp, tag);
-    }
-
-    return temp;
-}
 
 
 gboolean

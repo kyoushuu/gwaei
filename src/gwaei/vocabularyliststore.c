@@ -623,3 +623,4 @@ gw_vocabularyliststore_has_changes (GwVocabularyListStore *store)
     return (store->priv->has_changes || store->priv->has_removed_lists); 
 }
 
+

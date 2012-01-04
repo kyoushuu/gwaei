@@ -159,34 +159,34 @@ gw_window_get_property (GObject      *object,
 static void
 gw_window_class_init (GwWindowClass *klass)
 {
-  //Declarations
-  GParamSpec *pspec;
-  GObjectClass *object_class;
+    //Declarations
+    GParamSpec *pspec;
+    GObjectClass *object_class;
 
-  //Initializations
-  object_class = G_OBJECT_CLASS (klass);
-  object_class->set_property = gw_window_set_property;
-  object_class->get_property = gw_window_get_property;
-  object_class->constructed = gw_window_constructed;
-  object_class->finalize = gw_window_finalize;
+    //Initializations
+    object_class = G_OBJECT_CLASS (klass);
+    object_class->set_property = gw_window_set_property;
+    object_class->get_property = gw_window_get_property;
+    object_class->constructed = gw_window_constructed;
+    object_class->finalize = gw_window_finalize;
 
-  g_type_class_add_private (object_class, sizeof (GwWindowPrivate));
+    g_type_class_add_private (object_class, sizeof (GwWindowPrivate));
 
-  pspec = g_param_spec_object ("application",
-                               "Application construct prop",
-                               "Set GwWindow's Application",
-                               GW_TYPE_APPLICATION,
-                               G_PARAM_CONSTRUCT | G_PARAM_READWRITE
-  );
-  g_object_class_install_property (object_class, PROP_APPLICATION, pspec);
+    pspec = g_param_spec_object ("application",
+                                 "Application construct prop",
+                                 "Set GwWindow's Application",
+                                 GW_TYPE_APPLICATION,
+                                 G_PARAM_CONSTRUCT | G_PARAM_READWRITE
+    );
+    g_object_class_install_property (object_class, PROP_APPLICATION, pspec);
 
-  pspec = g_param_spec_string ("ui-xml",
-                               "XML filename construct prop",
-                               "Set GwWindow's ui xml",
-                               "",
-                               G_PARAM_CONSTRUCT | G_PARAM_READWRITE
-  );
-  g_object_class_install_property (object_class, PROP_UI_XML, pspec);
+    pspec = g_param_spec_string ("ui-xml",
+                                 "XML filename construct prop",
+                                 "Set GwWindow's ui xml",
+                                 "",
+                                 G_PARAM_CONSTRUCT | G_PARAM_READWRITE
+    );
+    g_object_class_install_property (object_class, PROP_UI_XML, pspec);
 }
 
 

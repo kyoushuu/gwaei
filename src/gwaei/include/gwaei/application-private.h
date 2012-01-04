@@ -23,7 +23,6 @@ struct _GwApplicationPrivate {
   LwPreferences *preferences;
   LwDictInstList *dictinstlist;
   LwMorphologyEngine *morphologyengine;
-  GtkTextTagTable *tagtable;
   GwSearchWindow *last_focused;
 
   guint signalid[TOTAL_GW_APPLICATION_SIGNALIDS];

@@ -34,6 +34,8 @@ struct _GwSearchWindowClass {
   GwWindowClass parent_class;
   guint signalid[TOTAL_GW_SEARCHWINDOW_CLASS_SIGNALIDS];
   void (*word_added) (GwSearchWindow* window, LwResultLine *line);
+  GtkSizeGroup *tablabel_sizegroup;
+  GtkCssProvider *tablabel_cssprovider;
 };
 
 GtkWindow* gw_searchwindow_new (GtkApplication *application);

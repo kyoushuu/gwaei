@@ -12,6 +12,7 @@
 
 #include <gwaei/application.h>
 
+#include <gwaei/texttagtable.h>
 #include <gwaei/dictionarystore.h>
 #include <gwaei/spellcheck.h>
 #include <gwaei/printing.h>

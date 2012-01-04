@@ -224,6 +224,9 @@ gw_searchwindow_class_init (GwSearchWindowClass *klass)
 
     g_type_class_add_private (object_class, sizeof (GwSearchWindowPrivate));
 
+    klass->tablabel_sizegroup = NULL;
+    klass->tablabel_cssprovider = NULL;
+
     klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED] = g_signal_new (
         "word-added",
         G_OBJECT_CLASS_TYPE (object_class),
@@ -234,7 +237,6 @@ gw_searchwindow_class_init (GwSearchWindowClass *klass)
         G_TYPE_NONE, 
         1, G_TYPE_POINTER
     );
-
 }
 
 
@@ -1021,18 +1023,8 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
 {
     GtkTextTagTable *tagtable;
     gchar *name;
-    gpointer *tagbuffer;
-    GtkTextBuffer *viewbuffer;
-    LwSearchItem *item;
-    GwSearchData *sdata;
-    GwApplication *application;
 
-    item = LW_SEARCHITEM (data);
-    sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
-    application = gw_window_get_application (GW_WINDOW (sdata->window));
-    tagtable = gw_application_get_tagtable (application);
-    tagbuffer = g_object_get_data (G_OBJECT (tag), "buffer");
-    viewbuffer = gtk_text_view_get_buffer (sdata->view);
+    tagtable = GTK_TEXT_TAG_TABLE (data);
 
     //This is not the tag we were looking for
     g_object_get (G_OBJECT (tag), "name", &name, NULL);
@@ -1041,7 +1033,7 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
       g_free (name);
     }
     //Remove the anonymous tag
-    else if (!GTK_IS_TEXT_BUFFER (tagbuffer) || GTK_TEXT_BUFFER (tagbuffer) == viewbuffer)
+    else
     {
       gtk_text_tag_table_remove (tagtable, tag);
     }
@@ -1109,7 +1101,7 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
     tagtable = gtk_text_buffer_get_tag_table (buffer);
     if (tagtable != NULL)
     {
-      gtk_text_tag_table_foreach (tagtable, gw_searchwindow_remove_anonymous_tags, item);
+      gtk_text_tag_table_foreach (tagtable, gw_searchwindow_remove_anonymous_tags, tagtable);
     }
 }
 
@@ -1640,10 +1632,8 @@ gw_searchwindow_update_tab_text_by_index (GwSearchWindow *window, gint index)
     //Declarations
     GwSearchWindowPrivate *priv;
     GtkWidget *container;
-    GtkWidget *hbox;
-    GtkWidget *vbox;
-    GList *hchildren;
-    GList *vchildren;
+    GtkWidget *box;
+    GList *children;
     GtkWidget *label;
     const char *text;
     LwSearchItem *item;
@@ -1656,33 +1646,50 @@ gw_searchwindow_update_tab_text_by_index (GwSearchWindow *window, gint index)
     else
       text = item->queryline->string;
 
-    hbox = GTK_WIDGET (gtk_notebook_get_tab_label (priv->notebook, GTK_WIDGET (container)));
+    box = GTK_WIDGET (gtk_notebook_get_tab_label (priv->notebook, GTK_WIDGET (container)));
 
-    hchildren = gtk_container_get_children (GTK_CONTAINER (hbox));
-    if (hchildren != NULL)
+    children = gtk_container_get_children (GTK_CONTAINER (box));
+    if (children != NULL)
     {
-      vbox = GTK_WIDGET (hchildren->data);
-      vchildren = gtk_container_get_children (GTK_CONTAINER (vbox));
-      if (vchildren != NULL)
-      {
-        label = GTK_WIDGET (vchildren->data);
-        gtk_label_set_text (GTK_LABEL (label), text);
-        g_list_free (vchildren); vchildren = NULL;
-      }
-      g_list_free (hchildren); hchildren = NULL;
+      label = GTK_WIDGET (children->data);
+      gtk_label_set_text (GTK_LABEL (label), text);
+      g_list_free (children); children = NULL;
     }
 }
 
 
-//!
-//! @brief Creats a new tab.  The focus and other details are handled by gw_tabs_new_cb ()
-//!
-int 
-gw_searchwindow_new_tab (GwSearchWindow *window)
+GtkCssProvider* gw_searchwindowclass_get_tablabel_style_provider (GwSearchWindowClass *klass)
 {
+    const gchar *STYLE_DATA;
+    if (klass->tablabel_cssprovider == NULL)
+    {
+      klass->tablabel_cssprovider = gtk_css_provider_new ();
+      STYLE_DATA = "* {\n"
+                   "-GtkButton-default-border : 0;\n"
+                   "-GtkButton-default-outside-border : 0;\n"
+                   "-GtkButton-inner-border: 0;\n"
+                   "-GtkWidget-focus-line-width : 0;\n"
+                   "-GtkWidget-focus-padding : 0;\n"
+                   "padding: 1px;\n"
+                   "}";
+      gtk_css_provider_load_from_data (klass->tablabel_cssprovider, STYLE_DATA, -1, NULL);
+      g_object_add_weak_pointer (G_OBJECT (klass->tablabel_cssprovider), (gpointer*) &(klass->tablabel_cssprovider));
+    }
+    else
+    {
+      g_object_ref (klass->tablabel_cssprovider);
+    }
+
+    return klass->tablabel_cssprovider;
+}
+
+
+static GtkWidget*
+gw_searchwindow_tabcontent_new (GwSearchWindow *window)
+{
+
     //Declarations
     GwApplication *application;
-    GwSearchWindowPrivate *priv;
     GtkWidget *scrollbox;
     GtkWidget *viewport;
     GtkWidget *infobar;
@@ -1694,15 +1701,16 @@ gw_searchwindow_new_tab (GwSearchWindow *window)
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
-    priv = window->priv;
-    tagtable = gw_application_get_tagtable (application);
+    tagtable = gw_texttagtable_new (application);
     scrolledwindow = GTK_WIDGET (gtk_scrolled_window_new (NULL, NULL));
     buffer = GTK_TEXT_BUFFER (gtk_text_buffer_new (tagtable));
     view = GTK_TEXT_VIEW (gtk_text_view_new_with_buffer (buffer));
-    g_object_unref (buffer);
     infobar = GTK_WIDGET (_construct_infobar());
     scrollbox = GTK_WIDGET (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
     viewport = GTK_WIDGET (gtk_viewport_new (NULL, NULL));
+
+    g_object_unref (G_OBJECT (tagtable));
+    g_object_unref (G_OBJECT (buffer));
 
     //Set up the text buffer
     gtk_text_buffer_get_start_iter (buffer, &iter);
@@ -1740,61 +1748,103 @@ gw_searchwindow_new_tab (GwSearchWindow *window)
     gtk_container_add (GTK_CONTAINER (scrolledwindow), GTK_WIDGET (viewport));
     gtk_widget_show_all (GTK_WIDGET (scrolledwindow));
 
+    return GTK_WIDGET (scrolledwindow);
+}
+
+
+GtkSizeGroup* gw_searchwindowclass_get_tablabel_sizegroup (GwSearchWindowClass *klass)
+{
+    if (klass->tablabel_sizegroup == NULL)
+    {
+      klass->tablabel_sizegroup = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
+      g_object_add_weak_pointer (G_OBJECT (klass->tablabel_sizegroup), (gpointer*) &(klass->tablabel_sizegroup));
+    }
+    else
+    {
+      g_object_ref (G_OBJECT (klass->tablabel_sizegroup));
+    }
+
+    return klass->tablabel_sizegroup;
+}
+
+
+static GtkWidget*
+gw_searchwindow_tablabel_new (GwSearchWindow *window, const gchar *TEXT, GtkWidget *contents)
+{
     //Create the tab label
-    GtkWidget *vbox;
-    GtkWidget *hbox;
+    GwSearchWindowClass *klass;
+    GtkWidget *container;
     GtkWidget *label;
     GtkWidget *close_button;
     GtkWidget *button_image;
-    GtkCssProvider *provider;
-    char *style_data;
     GtkStyleContext *context;
+    GtkCssProvider *provider;
+    GtkSizeGroup *sizegroup;
 
     //Initializations
-    hbox = GTK_WIDGET (gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
-    label = GTK_WIDGET (gtk_label_new (NULL));
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (G_OBJECT (window)));
+    container = GTK_WIDGET (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10));
+    label = GTK_WIDGET (gtk_label_new (TEXT));
     close_button = GTK_WIDGET (gtk_button_new ());
     button_image = GTK_WIDGET (gtk_image_new_from_stock (GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU));
-    style_data = "* {\n"
-                 "-GtkButton-default-border : 0;\n"
-                 "-GtkButton-default-outside-border : 0;\n"
-                 "-GtkButton-inner-border: 0;\n"
-                 "-GtkWidget-focus-line-width : 0;\n"
-                 "-GtkWidget-focus-padding : 0;\n"
-                 "padding: 0;\n"
-                 "}";
-    provider = gtk_css_provider_new ();
+    provider = gw_searchwindowclass_get_tablabel_style_provider (klass);
     context = gtk_widget_get_style_context (close_button);
+    sizegroup = gw_searchwindowclass_get_tablabel_sizegroup (klass);
+
+    //Set up the label
+    gtk_misc_set_alignment (GTK_MISC (label), 0.5, 0.5);
 
     //Set up the button
+    gtk_widget_set_margin_top (close_button, 1);
     gtk_button_set_relief (GTK_BUTTON (close_button), GTK_RELIEF_NONE);
     gtk_button_set_focus_on_click (GTK_BUTTON (close_button), FALSE);
     gtk_container_set_border_width (GTK_CONTAINER (close_button), 0);
     gtk_misc_set_padding (GTK_MISC (button_image), 0, 0);
-    gtk_widget_set_size_request (GTK_WIDGET (button_image), 14, 14);
-    gtk_css_provider_load_from_data (provider,  style_data, strlen(style_data), NULL); 
+    gtk_misc_set_alignment (GTK_MISC (button_image), 0.5, 0.5);
     gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    g_object_unref (provider);
-
-    //Put all the elements together
     gtk_container_add (GTK_CONTAINER (close_button), button_image);
-    g_signal_connect (G_OBJECT (close_button), "clicked", G_CALLBACK (gw_searchwindow_remove_tab_cb), scrolledwindow);
-    vbox = GTK_WIDGET (gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
-    gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 1);
-    gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
-    vbox = GTK_WIDGET (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
-    gtk_box_pack_start (GTK_BOX (vbox), close_button, FALSE, FALSE, 1);
-    gtk_box_pack_start (GTK_BOX (hbox), vbox, TRUE, TRUE, 0);
-    gtk_widget_show_all (GTK_WIDGET (hbox));
+    g_signal_connect (G_OBJECT (close_button), "clicked", G_CALLBACK (gw_searchwindow_remove_tab_cb), contents);
+
+    //Combine the elements
+    gtk_box_pack_start (GTK_BOX (container), label, TRUE, TRUE, 0);
+    gtk_size_group_add_widget (sizegroup, label);
+
+    gtk_box_pack_start (GTK_BOX (container), close_button, TRUE, TRUE, 0);
+    gtk_size_group_add_widget (sizegroup, close_button);
+
+    gtk_widget_show_all (GTK_WIDGET (container));
+
+    g_object_unref (provider);
+    g_object_unref (sizegroup);
+
+    return GTK_WIDGET (container);
+}
+
+
+//!
+//! @brief Creats a new tab.  The focus and other details are handled by gw_tabs_new_cb ()
+//!
+int 
+gw_searchwindow_new_tab (GwSearchWindow *window)
+{
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GtkWidget *tabcontent;
+    GtkWidget *tablabel;
+
+    //Initializations
+    priv = window->priv;
+    tabcontent = gw_searchwindow_tabcontent_new (window);
+    tablabel = gw_searchwindow_tablabel_new (window, NULL, tabcontent);
 
     //Initializations
     int position;
 
     //Initializations
-    position = gtk_notebook_append_page (priv->notebook, scrolledwindow, hbox);
+    position = gtk_notebook_append_page (priv->notebook, tabcontent, tablabel);
 
     //Put everything together
-    gtk_notebook_set_tab_reorderable (priv->notebook, scrolledwindow, TRUE);
+    gtk_notebook_set_tab_reorderable (priv->notebook, tabcontent, TRUE);
     gw_searchwindow_set_font (window);
     gtk_notebook_set_current_page (priv->notebook, position);
     gw_searchwindow_set_entry_text_by_searchitem (window, NULL);
@@ -2021,7 +2071,7 @@ gw_searchwindow_set_font (GwSearchWindow *window)
       }
 
       //Cleanup
-      pango_font_description_free (desc);
+      pango_font_description_free (desc); desc = NULL;
 
       //Update Zoom in sensitivity state
       enable = (magnification < GW_APPLICATION_MAX_FONT_MAGNIFICATION);
