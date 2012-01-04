@@ -293,9 +293,13 @@ gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
     pages = gtk_notebook_get_n_pages (priv->notebook);
 
     if (pages > 1)
+    {
       gw_searchwindow_remove_current_tab_cb (widget, data);
+    }
     else
+    {
       gtk_widget_destroy (GTK_WIDGET (window));
+    }
 
     if (gw_application_should_quit (application))
       gw_application_quit (application);

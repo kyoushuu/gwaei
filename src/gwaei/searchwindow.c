@@ -1021,7 +1021,7 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
 {
     GtkTextTagTable *tagtable;
     gchar *name;
-    GtkTextBuffer *tagbuffer;
+    gpointer *tagbuffer;
     GtkTextBuffer *viewbuffer;
     LwSearchItem *item;
     GwSearchData *sdata;
@@ -1031,7 +1031,7 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
     sdata = GW_SEARCHDATA (lw_searchitem_get_data (item));
     application = gw_window_get_application (GW_WINDOW (sdata->window));
     tagtable = gw_application_get_tagtable (application);
-    tagbuffer = GTK_TEXT_BUFFER (g_object_get_data (G_OBJECT (tag), "buffer"));
+    tagbuffer = g_object_get_data (G_OBJECT (tag), "buffer");
     viewbuffer = gtk_text_view_get_buffer (sdata->view);
 
     //This is not the tag we were looking for
@@ -1041,7 +1041,7 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
       g_free (name);
     }
     //Remove the anonymous tag
-    else if (tagbuffer == viewbuffer)
+    else if (!GTK_IS_TEXT_BUFFER (tagbuffer) || GTK_TEXT_BUFFER (tagbuffer) == viewbuffer)
     {
       gtk_text_tag_table_remove (tagtable, tag);
     }
