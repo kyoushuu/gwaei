@@ -31,8 +31,8 @@
 #include <libwaei/libwaei.h>
 #include "config.h"
 
-static LwMorphologyItem *lw_morphology_item_new ();
-static void lw_morphology_item_free (LwMorphologyItem *item);
+static LwMorphologyItem *lw_morphologyitem_new ();
+static void lw_morphologyitem_free (LwMorphologyItem *item);
 
 static LwMorphologyEngine *_engine = NULL;
 
@@ -60,7 +60,7 @@ void
 lw_morphology_free (LwMorphology *item)
 {
     if (item->items)
-      g_list_free_full (item->items, (GDestroyNotify)lw_morphology_item_free);
+      g_list_free_full (item->items, (GDestroyNotify)lw_morphologyitem_free);
     free(item);
 }
 
@@ -68,7 +68,7 @@ lw_morphology_free (LwMorphology *item)
 //! @brief Allocates a new empty LwMorphologyItem object.
 //!
 static LwMorphologyItem*
-lw_morphology_item_new ()
+lw_morphologyitem_new ()
 {
     LwMorphologyItem *item;
     item = g_new0 (LwMorphologyItem, 1);
@@ -79,7 +79,7 @@ lw_morphology_item_new ()
 //! @brief Frees an allocated LwMorphologyItem object.
 //!
 static void 
-lw_morphology_item_free (LwMorphologyItem *item)
+lw_morphologyitem_free (LwMorphologyItem *item)
 {
     if (item->word != NULL)
       g_free (item->word); item->word = NULL;
@@ -200,6 +200,8 @@ lw_morphologyengine_decode_from_mecab (LwMorphologyEngine *engine, const gchar *
 void
 lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const gchar *INPUT_RAW)
 {
+    g_assert (result->items == NULL);
+
     const mecab_node_t *node;
     gchar **fields = NULL, *surface = NULL;
     gchar *temp;
@@ -282,7 +284,7 @@ lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const g
           if (item) {
             FLUSH_ITEM;
           }
-        item = lw_morphology_item_new();
+        item = lw_morphologyitem_new();
         item->word = g_strdup (surface);
         item->base_form = g_strdup (base_form);
         item->explanation = NULL;
@@ -328,7 +330,7 @@ lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const g
 fail:
     g_mutex_unlock (engine->mutex);
 
-    if (item != NULL) lw_morphology_item_free (item);
+    if (item != NULL) lw_morphologyitem_free (item);
     if (fields != NULL) g_strfreev (fields);
     if (surface != NULL) g_free (surface);
     if (input != NULL) g_free (input);

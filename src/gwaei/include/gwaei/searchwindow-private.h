@@ -70,9 +70,6 @@ struct _GwSearchWindowPrivate {
 
   LwDictInfo *dictinfo;
 
-  //Tabs
-  GList *tablist; //!< Stores the current search item set to each tab
-
   //History
   LwHistory *history;
 

@@ -368,8 +368,8 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     GtkMenuShell *shell;
     GList *children;
     GList *list;
-    int pre_menu_items;
-    int i;
+    gint pre_menu_items;
+    gint i;
     LwSearchItem *item;
 
     //Initializations
@@ -382,35 +382,50 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     pre_menu_items = 3;
 
     children = gtk_container_get_children (GTK_CONTAINER (shell));
-    i = g_list_index (children, widget) - pre_menu_items;
-    g_list_free (children);
-    children = NULL;
+    i = 0;
+    if (children != NULL)
+    {
+      i = g_list_index (children, widget) - pre_menu_items;
+      g_list_free (children);
+      children = NULL;
+    }
 
     list = lw_history_get_combined_list (priv->history);
-    item = LW_SEARCHITEM (g_list_nth_data (list, i));
-    g_list_free (list);
-    list = NULL;
-
-    if (item == NULL) return;
+    item = NULL;
+    if (list != NULL)
+    {
+      item = LW_SEARCHITEM (g_list_nth_data (list, i));
+      g_list_free (list);
+      list = NULL;
+      if (item == NULL) return;
+    }
 
     is_in_back_index = (g_list_index (priv->history->back, item) != -1);
     is_in_forward_index = (g_list_index (priv->history->forward, item) != -1);
 
     if (!is_in_back_index && !is_in_forward_index) return;
 
-    current = gw_searchwindow_get_current_searchitem (window);
     sdata = lw_searchitem_get_data (item);
     sdata->view = gw_searchwindow_get_current_textview (window);
     
     //Checks to make sure everything is sane
     gw_searchwindow_cancel_search_for_current_tab (window);
 
-    //Remove the current searchitem if it has no history relevance
-    if (current != NULL && !lw_searchitem_has_history_relevance (current, priv->keep_searching_enabled))
+
+    gint page_num = gtk_notebook_get_current_page (priv->notebook);
+    GtkWidget *container = gtk_notebook_get_nth_page (priv->notebook, page_num);
+    current = NULL;
+    if (container != NULL)
     {
-      lw_searchitem_free (current);
-      current = NULL;
+      current = g_object_steal_data (G_OBJECT (container), "searchitem");
+      if (current != NULL && !lw_searchitem_has_history_relevance (current, priv->keep_searching_enabled))
+      {
+        lw_searchitem_free (current); current = NULL;
+      }
+
     }
+
+
 
     //Cycle the history
     if (is_in_back_index)
@@ -1387,11 +1402,16 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     //Push the previous searchitem or replace it with the new one
     if (item != NULL && lw_searchitem_has_history_relevance (item, priv->keep_searching_enabled))
     {
-      lw_history_add_searchitem (priv->history, item);
-    }
-    else if (item != NULL)
-    {
-      lw_searchitem_free (item);
+      gint page_num = gtk_notebook_get_current_page (priv->notebook);
+      GtkWidget *container = gtk_notebook_get_nth_page (priv->notebook, page_num);
+      if (container != NULL)
+      {
+        item = g_object_steal_data (G_OBJECT (container), "searchitem");
+        if (item != NULL) 
+        {
+          lw_history_add_searchitem (priv->history, item);
+        }
+      }
     }
 
     gw_searchwindow_start_search (window, new_item);
@@ -1766,7 +1786,7 @@ gw_searchwindow_remove_tab_cb (GtkWidget *widget, gpointer data)
     page_num = gtk_notebook_page_num (priv->notebook, GTK_WIDGET (data));
 
     if (page_num != -1)
-      gw_searchwindow_remove_tab (window, page_num);
+      gw_searchwindow_remove_tab_by_index (window, page_num);
 }
 
 
@@ -1790,7 +1810,7 @@ gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, gpointer data)
     page_num = gtk_notebook_get_current_page (priv->notebook);
 
     if (page_num != -1)
-      gw_searchwindow_remove_tab (window, page_num);
+      gw_searchwindow_remove_tab_by_index (window, page_num);
 }
 
 
@@ -1807,12 +1827,27 @@ gw_searchwindow_switch_tab_cb (GtkNotebook *notebook,
 {
     //Declarations
     GwSearchWindow *window;
+    GwSearchWindowPrivate *priv;
+    LwSearchItem *item;
+    GtkWidget *container;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
+    priv = window->priv;
+    item = NULL;
 
-    gw_searchwindow_sync_current_searchitem (window);
+    container = gtk_notebook_get_nth_page (priv->notebook, page_num);
+    if (container != NULL)
+    {
+      item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
+
+      gw_searchwindow_set_dictionary_by_searchitem (window, item);
+      gw_searchwindow_set_entry_text_by_searchitem (window, item);
+      gw_searchwindow_set_title_by_searchitem (window, item);
+      gw_searchwindow_set_total_results_label_by_searchitem (window, item);
+      gw_searchwindow_set_search_progressbar_by_searchitem (window, item);
+    }
 }
 
 
@@ -1832,7 +1867,6 @@ gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer data)
     priv = window->priv;
 
     gtk_notebook_next_page (priv->notebook);
-    gw_searchwindow_sync_current_searchitem (window);
 }
 
 
@@ -1852,7 +1886,6 @@ gw_searchwindow_previous_tab_cb (GtkWidget *widget, gpointer data)
     priv = window->priv;
 
     gtk_notebook_prev_page (priv->notebook);
-    gw_searchwindow_sync_current_searchitem (window);
 }
 
 
@@ -2409,11 +2442,19 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
 
     //Reset history and searchitems
     if (priv->history != NULL) lw_history_free (priv->history);
-    priv->history = lw_history_new(20);
+    priv->history = lw_history_new (20);
 
-    LwSearchItem *item = gw_searchwindow_get_current_searchitem (window);
-    gw_searchwindow_set_current_searchitem (window, NULL);
-    if (item != NULL) lw_searchitem_free (item);
+    GList *children, *link;
+    children = link = gtk_container_get_children (GTK_CONTAINER (priv->notebook));
+    if (children != NULL)
+    {
+      while (link != NULL)
+      {
+        if (link->data != NULL) g_object_set_data (G_OBJECT (link->data), "searchitem", NULL);
+        link = link->next;
+      }
+      g_list_free (children); children = NULL;
+    }
 
     gw_searchwindow_update_history_popups (window);
 }

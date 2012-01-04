@@ -102,7 +102,7 @@ void
 lw_searchitem_free (LwSearchItem* item)
 {
     //Sanity check
-    g_assert (item != NULL && item->status == LW_SEARCHSTATUS_IDLE);
+    g_assert (item != NULL);
 
     lw_searchitem_deinit (item);
 
@@ -180,8 +180,7 @@ lw_searchitem_deinit (LwSearchItem *item)
     if (lw_searchitem_has_data (item))
       lw_searchitem_free_data (item);
 
-    g_mutex_free (item->mutex);
-    item->mutex = NULL;
+    g_mutex_free (item->mutex); item->mutex = NULL;
 }
 
 
@@ -713,7 +712,6 @@ lw_searchitem_parse_result_string (LwSearchItem *item)
     }
 }
 
-static int _locks = 0;
 
 //!
 //! @brief A wrapper around gmutex made for LwSearchItem objects
@@ -722,8 +720,6 @@ static int _locks = 0;
 void 
 lw_searchitem_lock_mutex (LwSearchItem *item)
 {
-  _locks++;
-//  printf("LOCKS %d\n", _locks);
   g_mutex_lock (item->mutex);
 }
 
@@ -734,9 +730,7 @@ lw_searchitem_lock_mutex (LwSearchItem *item)
 void 
 lw_searchitem_unlock_mutex (LwSearchItem *item)
 {
-  _locks--;
-//  printf("LOCKS %d\n", _locks);
-  g_mutex_unlock(item->mutex);
+  g_mutex_unlock (item->mutex);
 }
 
 

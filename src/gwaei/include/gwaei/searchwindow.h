@@ -119,11 +119,10 @@ void gw_searchwindow_hide_infobars (GwSearchWindow*);
 void gw_searchwindow_set_tab_text_by_searchitem (GwSearchWindow*, LwSearchItem*);
 void gw_searchwindow_set_current_searchitem (GwSearchWindow*, LwSearchItem*);
 LwSearchItem* gw_searchwindow_get_current_searchitem (GwSearchWindow*);
-void gw_searchwindow_sync_current_searchitem (GwSearchWindow*);
 void gw_searchwindow_no_results_search_for_dictionary_cb (GtkWidget*, gpointer);
 
 int gw_searchwindow_new_tab (GwSearchWindow*);
-void gw_searchwindow_remove_tab (GwSearchWindow*, int);
+void gw_searchwindow_remove_tab_by_index (GwSearchWindow*, int);
 
 void gw_searchwindow_start_search (GwSearchWindow*, LwSearchItem*);
 
