@@ -1998,10 +1998,10 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
 
     if (item->queryline->morphology)
     {
-      char *message;
-      message = g_strdup_printf (gettext("Showing results also for 「%s」"), item->queryline->morphology);
+      gchar *message;
+      message = g_strdup_printf (gettext("Showing results also for: 「%s」"), item->queryline->morphology);
       gw_searchwindow_show_current_infobar (window, message);
-      g_free(message);
+      g_free(message); message = NULL;
     }
     else
     {
@@ -2482,23 +2482,31 @@ gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow *window)
 static GtkInfoBar* _construct_infobar ()
 {
     GtkInfoBar *infobar;
-    GtkWidget *message_label;
+    GtkWidget *label;
     GtkWidget *content_area;
+    GtkWidget *image;
 
     infobar = GTK_INFO_BAR (gtk_info_bar_new ());
+    content_area = gtk_info_bar_get_content_area (infobar);
+    label = gtk_label_new ("");
+    image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_INFO, GTK_ICON_SIZE_BUTTON);
 
     gtk_widget_set_no_show_all (GTK_WIDGET (infobar), TRUE);
 
-    message_label = gtk_label_new ("");
+    gtk_widget_set_margin_left (image, 8);
 
-    gtk_label_set_selectable (GTK_LABEL (message_label), TRUE);
-    gtk_widget_set_can_focus (GTK_WIDGET (message_label), FALSE);
+    gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+    gtk_widget_set_can_focus (GTK_WIDGET (label), FALSE);
 
-    gtk_widget_show (message_label);
-    content_area = gtk_info_bar_get_content_area (infobar);
-    gtk_container_add (GTK_CONTAINER (content_area), message_label);
-    g_signal_connect (G_OBJECT (infobar), "response",
-		      G_CALLBACK (gtk_widget_hide), NULL);
+    gtk_box_set_spacing (GTK_BOX (content_area), 0);
+    gtk_container_set_border_width (GTK_CONTAINER (content_area), 20);
+    gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (image), FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (content_area), GTK_WIDGET (label), FALSE, TRUE, 0);
+
+    g_signal_connect (G_OBJECT (infobar), "response", G_CALLBACK (gtk_widget_hide), NULL);
+
+    gtk_widget_show (label);
+    gtk_widget_show (image);
 
     return infobar;
 }
@@ -2509,22 +2517,31 @@ void gw_searchwindow_show_current_infobar (GwSearchWindow *window, char *message
     GtkLabel *label;
     GList *children;
     GtkInfoBar *infobar;
-    char *markup;
+    gchar *markup;
 
     infobar = gw_searchwindow_get_current_infobar (window);
 
     container = GTK_CONTAINER (gtk_info_bar_get_content_area (infobar));
     children = gtk_container_get_children (container);
-    label = GTK_LABEL (g_list_nth_data (children, 0));
 
-    markup = g_markup_printf_escaped ("<small>%s</small>", message);
-    gtk_label_set_markup (GTK_LABEL (label), markup);
-    g_free (markup);
+    if (children != NULL)
+    {
+      label = GTK_LABEL (g_list_nth_data (children, 1));
 
-    gtk_info_bar_set_message_type (infobar, GTK_MESSAGE_INFO);
+      if (label != NULL)
+      {
+        markup = g_markup_printf_escaped ("<small><b>%s</b></small>", message);
+        gtk_label_set_markup (GTK_LABEL (label), markup);
+        g_free (markup);
 
-    if (!gtk_widget_get_visible (GTK_WIDGET (infobar)))
-      gtk_widget_show (GTK_WIDGET (infobar));
+        gtk_info_bar_set_message_type (infobar, GTK_MESSAGE_OTHER);
+
+        if (!gtk_widget_get_visible (GTK_WIDGET (infobar)))
+          gtk_widget_show (GTK_WIDGET (infobar));
+      }
+
+      g_list_free (children); children = NULL;
+    }
 }
 
 void gw_searchwindow_hide_current_infobar (GwSearchWindow *window)
