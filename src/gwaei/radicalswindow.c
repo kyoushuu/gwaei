@@ -372,7 +372,7 @@ gw_radicalswindow_constructed (GObject *object)
     window = GW_RADICALSWINDOW (object);
     priv = window->priv;
 
-    toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "radical_selection_table"));
+    toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "radical_selection_grid"));
     gtk_widget_set_halign (toplevel, GTK_ALIGN_CENTER);
     gtk_widget_set_valign (toplevel, GTK_ALIGN_START);
 
@@ -389,13 +389,13 @@ gw_radicalswindow_constructed (GObject *object)
     gtk_window_set_destroy_with_parent (GTK_WINDOW (window), TRUE);
     gtk_window_set_icon_name (GTK_WINDOW (window), "gwaei");
 
-    priv->radicals_table = GTK_TABLE (gw_window_get_object (GW_WINDOW (window), "radical_selection_table"));
+    priv->radicals_grid = GTK_GRID (gw_window_get_object (GW_WINDOW (window), "radical_selection_grid"));
     priv->strokes_checkbutton = GTK_TOGGLE_BUTTON (gw_window_get_object (GW_WINDOW (window), "strokes_checkbox"));
     priv->strokes_spinbutton = GTK_SPIN_BUTTON (gw_window_get_object (GW_WINDOW (window), "strokes_spinbutton"));
 
     gtk_spin_button_set_value (priv->strokes_spinbutton, 1.0);
     gw_radicalswindow_fill_radicals (window);
-    gtk_widget_show_all (GTK_WIDGET (priv->radicals_table));
+    gtk_widget_show_all (GTK_WIDGET (priv->radicals_grid));
 
     gw_radicalswindow_init_accelerators (window);
 
@@ -449,29 +449,21 @@ gw_radicalswindow_fill_radicals (GwRadicalsWindow *window)
 {
     //Declarations
     GwRadicalsWindowPrivate *priv;
-    int total_columns;
-    int rows;
-    int i;
-    int cols;
-    const char *stroke;
+    gint i, column, row;
+    const gchar *stroke;
     GtkWidget *button;
     GtkWidget *label;
-    int ncols;
-    int nrows;
+    gchar *tooltip;
+    gchar *markup;
+    const gint total_columns = 14;
 
     //Initializations
     priv = window->priv;
-    total_columns = 14;
-    g_object_get (G_OBJECT (priv->radicals_table), "n-columns", &ncols, "n-rows", &nrows, NULL);
-    if (ncols < total_columns) gtk_table_resize (priv->radicals_table, nrows, total_columns);
-    rows = nrows - 1;
 
-    i = 0;
-    cols = 0;
     stroke = NULL;
     button = NULL;
     label = NULL;
-
+    i = row = column = 0;
 
     while (_radical_array[i][0] != NULL)
     {
@@ -480,43 +472,42 @@ gw_radicalswindow_fill_radicals (GwRadicalsWindow *window)
       {
         stroke = _radical_array[i][GW_RADARRAY_STROKES];
         label = gtk_label_new (stroke);
-        char *markup = g_markup_printf_escaped ("<span color=\"red\"><b>%s</b></span>", _radical_array[i][GW_RADARRAY_STROKES]);
+        markup = g_markup_printf_escaped ("<span color=\"red\"><b>%s</b></span>", _radical_array[i][GW_RADARRAY_STROKES]);
         if (markup != NULL)
         {
           gtk_label_set_markup (GTK_LABEL (label), markup);
           g_free (markup);
         }
-        gtk_table_attach (priv->radicals_table, label, cols, cols + 1, rows, rows + 1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+        gtk_grid_attach (priv->radicals_grid, label, column, row, 1, 1);
       }
       //Add a radical button
       else
       {
-        g_object_get (G_OBJECT (priv->radicals_table), "n-columns", &ncols, NULL);
-        if (cols == total_columns && rows != 0) gtk_table_resize (priv->radicals_table, rows, ncols);
         button = gtk_toggle_button_new_with_label (_radical_array[i][GW_RADARRAY_ACTUAL]);
         gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_HALF);
 
-        char *tooltip = g_markup_printf_escaped (
+        tooltip = g_markup_printf_escaped (
             gettext("<b>Substitution Radical:</b> %s\n<b>Actual Radical:</b> %s\n<b>Radical Name:</b> %s"),
-            _radical_array[i][GW_RADARRAY_REPRESENTATIVE], _radical_array[i][GW_RADARRAY_ACTUAL], _radical_array[i][GW_RADARRAY_NAME]
+            _radical_array[i][GW_RADARRAY_REPRESENTATIVE], 
+            _radical_array[i][GW_RADARRAY_ACTUAL], 
+            _radical_array[i][GW_RADARRAY_NAME]
         );
-        gtk_buildable_set_name (GTK_BUILDABLE (button), _radical_array[i][GW_RADARRAY_REPRESENTATIVE]);
         if (tooltip != NULL)
         {
           gtk_widget_set_tooltip_markup (GTK_WIDGET (button), tooltip);
-          g_free (tooltip);
-          tooltip = NULL;
+          g_free (tooltip); tooltip = NULL;
         }
+        gtk_buildable_set_name (GTK_BUILDABLE (button), _radical_array[i][GW_RADARRAY_REPRESENTATIVE]);
         g_signal_connect(G_OBJECT (button), "toggled", G_CALLBACK (gw_radicalswindow_toggled_cb), window);
-        gtk_table_attach (priv->radicals_table, button, cols, cols + 1, rows, rows + 1, GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 0);
+        gtk_grid_attach (priv->radicals_grid, button, column, row, 1, 1);
         i++;
       }
 
-      cols++;
-      if (cols == total_columns + 1)
+      column++;
+      if (column == total_columns)
       {
-        rows++;
-        cols = 0;
+        row++;
+        column = 0;
       }
     }
 }
@@ -540,7 +531,7 @@ gw_radicalswindow_strdup_all_selected (GwRadicalsWindow *window)
 
     //Initializations
     priv = window->priv;
-    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_table));
+    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_grid));
     temp_string = NULL;
     final_string = NULL;
     label_text = NULL;
@@ -612,7 +603,7 @@ gw_radicalswindow_set_button_sensitive_when_label_is (GwRadicalsWindow *window, 
     priv = window->priv;
     label_text = NULL;
     jump = string;
-    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_table));
+    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_grid));
     type = g_type_from_name ("GtkToggleButton");
 
     if (jump[0] != '\0' && jump[1] != '\0' && jump[2] != '\0')
@@ -692,7 +683,7 @@ gw_radicalswindow_deselect_all_radicals (GwRadicalsWindow *window)
 
     //Initializations
     priv = window->priv;
-    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_table));
+    list = gtk_container_get_children (GTK_CONTAINER (priv->radicals_grid));
     type = g_type_from_name ("GtkToggleButton");
 
     //Reset all of the toggle buttons
