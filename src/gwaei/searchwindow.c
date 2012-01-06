@@ -377,10 +377,12 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
     //Declarations
     GwSearchWindowPrivate *priv;
     LwSearchItem *item;
+    gint index;
 
     //Initializations
     priv = window->priv;
-    item = gw_searchwindow_get_current_searchitem (window);
+    index = gw_searchwindow_get_current_tab_index (window);
+    item = gw_searchwindow_get_searchitem_by_index (window, index);
 
     if (item != NULL) 
     {
@@ -416,12 +418,14 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
     //Declarations
     GwSearchWindowPrivate *priv;
     LwSearchItem *item;
-    int chunk;
-    int max_chunk;
+    gint index;
+    gint chunk;
+    gint max_chunk;
 
     //Initializations
     priv = window->priv;
-    item = gw_searchwindow_get_current_searchitem (window);
+    index = gw_searchwindow_get_current_tab_index (window);
+    item = gw_searchwindow_get_searchitem_by_index (window, index);
     chunk = 0;
     max_chunk = 10;
     
@@ -1838,20 +1842,20 @@ gw_searchwindow_new_tab (GwSearchWindow *window)
     tablabel = gw_searchwindow_tablabel_new (window, NULL, tabcontent);
 
     //Initializations
-    int position;
+    gint index;
 
     //Initializations
-    position = gtk_notebook_append_page (priv->notebook, tabcontent, tablabel);
+    index = gtk_notebook_append_page (priv->notebook, tabcontent, tablabel);
 
     //Put everything together
     gtk_notebook_set_tab_reorderable (priv->notebook, tabcontent, TRUE);
     gw_searchwindow_set_font (window);
-    gtk_notebook_set_current_page (priv->notebook, position);
+    gtk_notebook_set_current_page (priv->notebook, index);
     gw_searchwindow_set_entry_text_by_searchitem (window, NULL);
     gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
-    gw_searchwindow_set_current_searchitem (window, NULL);
+    gw_searchwindow_set_searchitem_by_index (window, index, NULL);
 
-    return position;
+    return index;
 }
 
 
@@ -1863,13 +1867,11 @@ gw_searchwindow_remove_tab_by_index (GwSearchWindow *window, gint index)
 
     //Declarations
     GwSearchWindowPrivate *priv;
-    GtkWidget *container;
     LwSearchItem *item;
 
     //Initializations
     priv = window->priv;
-    container = gtk_notebook_get_nth_page (priv->notebook, index);
-    item = LW_SEARCHITEM (g_object_steal_data (G_OBJECT (container), "searchitem"));
+    item = gw_searchwindow_steal_searchitem_by_index (window, index);
 
     gw_searchwindow_cancel_search_by_tab_number (window, index);
 
@@ -1892,31 +1894,42 @@ gw_searchwindow_remove_tab_by_index (GwSearchWindow *window, gint index)
 }
 
 
+gint
+gw_searchwindow_get_current_tab_index (GwSearchWindow *window)
+{
+    GwSearchWindowPrivate *priv;
+    gint index;
+
+    priv = window->priv;
+    index = gtk_notebook_get_current_page (priv->notebook);
+
+    return index;
+}
+
+
 //!
 //! @brief The searchwindow searchitem should be set when a new search takes place
 //!        using a newly made searchitem.
 //!
 void 
-gw_searchwindow_set_current_searchitem (GwSearchWindow *window, LwSearchItem *item)
+gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwSearchItem *item)
 {
     //Declarations
     GwSearchWindowPrivate *priv;
     gboolean enable;
-    gint page_num;
     GtkWidget *container;
 
     //Initializations
     priv = window->priv;
-    page_num = gtk_notebook_get_current_page (priv->notebook);
-    if (page_num > -1)
+    if (index > -1)
     {
-      container = gtk_notebook_get_nth_page (priv->notebook, page_num);
+      container = gtk_notebook_get_nth_page (priv->notebook, index);
       if (container != NULL)
       {
         g_object_set_data_full (G_OBJECT (container), "searchitem", item, (GDestroyNotify) lw_searchitem_free);
 
         //Update the window to match the searchitem data
-        gw_searchwindow_update_tab_text_by_index (window, page_num);
+        gw_searchwindow_update_tab_text_by_index (window, index);
         gw_searchwindow_set_dictionary_by_searchitem (window, item);
         gw_searchwindow_set_entry_text_by_searchitem (window, item);
         gw_searchwindow_set_title_by_searchitem (window, item);
@@ -1946,25 +1959,40 @@ gw_searchwindow_set_current_searchitem (GwSearchWindow *window, LwSearchItem *it
 }
 
 
-//!
-//! @brief The searchwindow searchitem will be the one currently loaded in the current tab
-//!
-LwSearchItem* 
-gw_searchwindow_get_current_searchitem (GwSearchWindow *window)
+LwSearchItem*
+gw_searchwindow_get_searchitem_by_index (GwSearchWindow *window, gint index)
 {
     GwSearchWindowPrivate *priv;
     LwSearchItem *item;
-    int page_num;
     GtkWidget *container;
 
     priv = window->priv;
-    page_num = gtk_notebook_get_current_page (priv->notebook);
     item = NULL;
 
-    container = gtk_notebook_get_nth_page (priv->notebook, page_num);
+    container = gtk_notebook_get_nth_page (priv->notebook, index);
     if (container != NULL)
     {
       item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
+    }
+
+    return item;
+}
+
+
+LwSearchItem*
+gw_searchwindow_steal_searchitem_by_index (GwSearchWindow *window, gint index)
+{
+    GwSearchWindowPrivate *priv;
+    LwSearchItem *item;
+    GtkWidget *container;
+
+    priv = window->priv;
+    item = NULL;
+
+    container = gtk_notebook_get_nth_page (priv->notebook, index);
+    if (container != NULL)
+    {
+      item = LW_SEARCHITEM (g_object_steal_data (G_OBJECT (container), "searchitem"));
     }
 
     return item;
@@ -1981,6 +2009,7 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
     GwApplication *application;
     GwSearchData *sdata;
     GtkTextView *view;
+    gint index;
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
@@ -1990,7 +2019,8 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
 
     gw_searchwindow_guarantee_first_tab (window);
     lw_searchitem_set_data (item, sdata, LW_SEARCHITEM_DATA_FREE_FUNC (gw_searchdata_free));
-    gw_searchwindow_set_current_searchitem (window, item);
+    index = gw_searchwindow_get_current_tab_index (window);
+    gw_searchwindow_set_searchitem_by_index (window, index, item);
     gw_searchwindow_initialize_buffer_by_searchitem (sdata->window, item);
 
     lw_searchitem_start_search (item, TRUE, FALSE);

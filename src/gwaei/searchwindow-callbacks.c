@@ -375,6 +375,7 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     gint pre_menu_items;
     gint i;
     LwSearchItem *item;
+    gint index;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -415,21 +416,12 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     //Checks to make sure everything is sane
     gw_searchwindow_cancel_search_for_current_tab (window);
 
-
-    gint page_num = gtk_notebook_get_current_page (priv->notebook);
-    GtkWidget *container = gtk_notebook_get_nth_page (priv->notebook, page_num);
-    current = NULL;
-    if (container != NULL)
+    index = gw_searchwindow_get_current_tab_index (window);
+    current = gw_searchwindow_steal_searchitem_by_index (window, index);
+    if (item != NULL && !lw_searchitem_has_history_relevance (current, priv->keep_searching_enabled))
     {
-      current = g_object_steal_data (G_OBJECT (container), "searchitem");
-      if (current != NULL && !lw_searchitem_has_history_relevance (current, priv->keep_searching_enabled))
-      {
-        lw_searchitem_free (current); current = NULL;
-      }
-
+      lw_searchitem_free (current); current = NULL;
     }
-
-
 
     //Cycle the history
     if (is_in_back_index)
@@ -1344,6 +1336,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     GError *error;
     GwSearchData *sdata;
     GtkTextView *view;
+    gint index;
 
     //Initializations
     error = NULL;
@@ -1356,7 +1349,8 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
 
     preferences = gw_application_get_preferences (application);
     strncpy (query, gtk_entry_get_text (priv->entry), 50);
-    item = gw_searchwindow_get_current_searchitem (window);
+    index = gw_searchwindow_get_current_tab_index (window);
+    item = gw_searchwindow_get_searchitem_by_index (window, index);
     di = gw_searchwindow_get_dictionary (window);
     gw_searchwindow_guarantee_first_tab (window);
 
@@ -1406,15 +1400,10 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     //Push the previous searchitem or replace it with the new one
     if (item != NULL && lw_searchitem_has_history_relevance (item, priv->keep_searching_enabled))
     {
-      gint page_num = gtk_notebook_get_current_page (priv->notebook);
-      GtkWidget *container = gtk_notebook_get_nth_page (priv->notebook, page_num);
-      if (container != NULL)
+      item = gw_searchwindow_steal_searchitem_by_index (window, index);
+      if (item != NULL) 
       {
-        item = g_object_steal_data (G_OBJECT (container), "searchitem");
-        if (item != NULL) 
-        {
-          lw_history_add_searchitem (priv->history, item);
-        }
+        lw_history_add_searchitem (priv->history, item);
       }
     }
 
