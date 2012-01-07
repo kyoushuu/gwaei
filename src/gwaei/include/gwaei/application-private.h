@@ -22,7 +22,7 @@ struct _GwApplicationPrivate {
 
   LwPreferences *preferences;
   LwDictInstList *dictinstlist;
-#if HAVE_MECAB
+#if WITH_MECAB
   LwMorphologyEngine *morphologyengine;
 #endif
   GwSearchWindow *last_focused;

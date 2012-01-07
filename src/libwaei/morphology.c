@@ -91,8 +91,6 @@ lw_morphologyitem_free (LwMorphologyItem *item)
 }
 
 
-#if defined(HAVE_MECAB)
-
 //
 // Morphological analysis using the Mecab engine
 //
@@ -338,12 +336,3 @@ fail:
     return;
 }
 
-#else
-
-//
-// Dummy implementation: no analysis
-//
-
-void lw_morphology_analize (LwMorphologyEngine* engine, LwMorphology* result, const gchar* INPUT) {}
-
-#endif

@@ -128,7 +128,7 @@ gw_application_finalize (GObject *object)
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query != NULL) g_free(priv->arg_query); priv->arg_query = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
-#if HAVE_MECAB
+#if WITH_MECAB
     if (priv->morphologyengine != NULL) lw_morphologyengine_free (priv->morphologyengine); priv->morphologyengine = NULL;
 #endif
 
@@ -589,7 +589,7 @@ gw_application_get_vocabularyliststore (GwApplication *application)
 }
 
 
-#if HAVE_MECAB
+#if WITH_MECAB
 LwMorphologyEngine*
 gw_application_get_morphologyengine (GwApplication *application)
 {

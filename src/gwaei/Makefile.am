@@ -14,11 +14,16 @@ gwaei_SOURCES = gwaei.c application.c application-callbacks.c window.c window-ca
 gwaei_LDADD =  $(GWAEI_LIBS) ../libwaei/libwaei.la
 gwaei_CPPFLAGS = $(DEFINITIONS) $(GWAEI_CFLAGS) $(GWAEI_DEFS) -I$(top_srcdir)/src/libwaei/include -I$(top_srcdir)/src/gwaei/include
 
+if WITH_MECAB
+MECAB_DEFS =-DWITH_MECAB
+gwaei_CPPFLAGS +=$(MECAB_DEFS)
+endif
+
 if OS_MINGW
-gwaei_LDFLAGS = -Wl,-subsystem,windows 
-MINGW_DEFS = -DCURL_STATICLIB 
-gwaei_LDADD += $(MINGW_LIBS) 
-gwaei_CPPFLAGS += $(MINGW_CFLAGS) $(MINGW_DEFS)
+gwaei_LDFLAGS =-Wl,-subsystem,windows 
+MINGW_DEFS =-DCURL_STATICLIB 
+gwaei_LDADD +=$(MINGW_LIBS) 
+gwaei_CPPFLAGS +=$(MINGW_CFLAGS) $(MINGW_DEFS)
 endif
 
 pkgdata_DATA = addvocabularywindow.ui dictionaryinstallwindow.ui installprogresswindow.ui kanjipadwindow.ui radicalswindow.ui searchwindow.ui settingswindow.ui vocabularywindow.ui flashcardwindow.ui

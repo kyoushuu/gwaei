@@ -2026,11 +2026,11 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
     lw_searchitem_start_search (item, TRUE, FALSE);
     gw_searchwindow_update_history_popups (window);
 
-#if HAVE_MECAB
+#if WITH_MECAB
     if (item->queryline->morphology)
     {
       gchar *message;
-      message = g_strdup_printf (gettext("Showing results also for: 「%s」"), item->queryline->morphology);
+      message = g_strdup_printf (gettext("Also showing results for: 「%s」"), item->queryline->morphology);
       gw_searchwindow_show_current_infobar (window, message);
       g_free(message); message = NULL;
     }

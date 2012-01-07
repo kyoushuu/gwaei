@@ -87,6 +87,7 @@ if test x$mecab = xtrue; then
   AC_CHECK_HEADER([mecab.h],
                   [AC_DEFINE([HAVE_MECAB], [0], [Mecab]) MECAB_LIBS="-lmecab -lstdc++" AC_SUBST(MECAB_LIBS)], 
                   [AC_MSG_ERROR([Could not find mecab.h! Make sure you install the mecab development files or or you can disable mecab support with ./configure --without-mecab])])
+AM_CONDITIONAL([HAVE_MECAB],true)
 else
 AM_CONDITIONAL([HAVE_MECAB],false)
 fi
