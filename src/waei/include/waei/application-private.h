@@ -10,7 +10,9 @@ struct _WApplicationPrivate {
   LwPreferences *preferences;
   LwDictInfoList *dictinfolist;
   LwDictInstList *dictinstlist;
+#if HAVE_MECAB
   LwMorphologyEngine *morphologyengine;
+#endif
 
   gboolean arg_quiet_switch;
   gboolean arg_exact_switch;

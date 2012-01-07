@@ -37,7 +37,7 @@ yes) gnome=true ;;
 no)  gnome=false ;;
 *) AC_MSG_ERROR([bad value ${withval} for --without-gnome]) ;;
 esac],[gnome=true])
-AM_CONDITIONAL([WITH_GNOME], [test x$gnome = xtrue || test x$win32 = xtrue])
+AM_CONDITIONAL([WITH_GNOME], [test x$gnome = xtrue])
 
 AC_ARG_WITH([mecab],
 [  --without-mecab        turn off Mecab morphological analysis],
@@ -69,7 +69,7 @@ PKG_CHECK_MODULES(WAEI, glib-2.0           >= $GLIB_REQUIRED_VERSION
 AC_SUBST(WAEI_CFLAGS)
 AC_SUBST(WAEI_LIBS)
 
-if test $gnome = true; then
+if test x$gnome = xtrue; then
   PKG_CHECK_MODULES(GWAEI, gtk+-3.0           >= $GTK3_REQUIRED_VERSION
                            glib-2.0           >= $GLIB_REQUIRED_VERSION
                            gobject-2.0        >= $GLIB_REQUIRED_VERSION
@@ -83,9 +83,12 @@ if test $gnome = true; then
   GNOME_DOC_INIT
 fi
 
-if test $mecab = true; then
+if test x$mecab = xtrue; then
   AC_CHECK_HEADER([mecab.h],
-         [AC_DEFINE([HAVE_MECAB], [1], [Mecab]) LIBS="-lmecab -lstdc++ $LIBS"])
+                  [AC_DEFINE([HAVE_MECAB], [0], [Mecab]) MECAB_LIBS="-lmecab -lstdc++" AC_SUBST(MECAB_LIBS)], 
+                  [AC_MSG_ERROR([Could not find mecab.h! Make sure you install the mecab development files or or you can disable mecab support with ./configure --without-mecab])])
+else
+AM_CONDITIONAL([HAVE_MECAB],false)
 fi
 
 
@@ -93,15 +96,8 @@ GLIB_GSETTINGS
 
 AC_PATH_PROG(PERL, perl)
 AC_PATH_PROG(ENCHANT, enchant)
-if test x$win32 = xtrue; then
-  GZIP="gzip.exe"
-  AC_SUBST(GZIP)
-  UNZIP="unzip.exe"
-  AC_SUBST(UNZIP)
-else
 AC_PATH_PROG(GZIP, gzip)
 AC_PATH_PROG(UNZIP, unzip)
-fi
 
 AC_PROG_CC
 AC_PROG_CC_STDC
@@ -126,11 +122,18 @@ AC_OUTPUT
 
 echo ""
 
-if test $gnome = true || test $win32 = true; then
+if test x$gnome = xtrue; then
   echo -e "* Gnome is\tENABLED"
 else
   echo -e "* Gnome is\tDISABLED"
 fi
+if test x$mecab = xtrue; then
+  echo -e "* Mecab is\tENABLED"
+else
+  echo -e "* Mecab is\tDISABLED"
+fi
+
+
 
 echo ""
 echo "If these aren't the options you wanted, please rerun the configure script."

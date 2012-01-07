@@ -81,7 +81,9 @@ w_application_constructed (GObject *object)
     priv = application->priv;
 
     lw_regex_initialize ();
+#if HAVE_MECAB
     priv->morphologyengine = lw_morphologyengine_get_default ();
+#endif
 }
 
 
@@ -100,7 +102,9 @@ w_application_finalize (GObject *object)
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
+#if HAVE_MECAB
     if (priv->morphologyengine != NULL) lw_morphologyengine_free (priv->morphologyengine); priv->morphologyengine = NULL;
+#endif
 
     lw_regex_free ();
 
@@ -293,6 +297,7 @@ w_application_get_dictinstlist (WApplication *application)
 }
 
 
+#if HAVE_MECAB
 LwMorphologyEngine *w_application_get_morphologyengine (WApplication *application)
 {
     WApplicationPrivate *priv;
@@ -306,6 +311,7 @@ LwMorphologyEngine *w_application_get_morphologyengine (WApplication *applicatio
 
     return priv->morphologyengine;
 }
+#endif
 
 
 //!

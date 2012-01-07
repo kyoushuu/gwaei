@@ -80,7 +80,9 @@ void
 lw_queryline_init (LwQueryLine *ql)
 {
     ql->string = NULL;
+#ifdef WITH_MECAB
     ql->morphology = NULL;
+#endif
     ql->re_kanji = NULL;
     ql->re_furi = NULL;
     ql->re_roma = NULL;
@@ -201,6 +203,7 @@ static GRegex*** _queryline_allocate_pointers (int length)
 }
 
 
+#ifdef WITH_MECAB
 //!
 //! @brief Construct a regexp for getting the morphologically deduced base forms of words
 //!
@@ -278,6 +281,7 @@ static char *_queryline_get_morphology_regexp (LwQueryLine *ql)
 
    return result;
 }
+#endif
 
 
 //!
@@ -307,7 +311,10 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
    char *temp;
    char *expression;
    char *half;
-   char *morpho_expression, *expression_low;
+#ifdef WITH_MECAB
+   char *morpho_expression;
+#endif
+   char *expression_low;
    char buffer[300];
    int rk_conv_pref;
    gboolean want_rk_conv;
@@ -338,7 +345,10 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
 
    //Start analysis
    atoms = _queryline_initialize_pointers (ql, STRING);
+
+#ifdef WITH_MECAB
    morpho_expression = _queryline_get_morphology_regexp(ql);
+#endif
 
    length = g_strv_length (atoms);
 
@@ -378,6 +388,7 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
        }
      }
 
+#ifdef WITH_MECAB
      if (morpho_expression && iter == atoms) {
          // Stuff morphology regexp to the first atom
          if (expression == NULL) {
@@ -387,6 +398,7 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
              expression_low = g_strdup_printf ("%s|%s", expression, morpho_expression);
          }
      }
+#endif
 
      if (expression_low && expression == NULL) {
          expression = g_strdup ("----------------");
@@ -452,6 +464,7 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
        }
      }
 
+#ifdef WITH_MECAB
      if (morpho_expression && iter == atoms) {
          // Stuff morphology regexp to the first atom
          if (expression == NULL) {
@@ -461,6 +474,7 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
              expression_low = g_strdup_printf("%s|%s", expression, morpho_expression);
          }
      }
+#endif
 
      if (expression_low && expression == NULL) {
          expression = g_strdup("----------------");
@@ -528,8 +542,10 @@ lw_queryline_parse_edict_string (LwQueryLine *ql, LwPreferences *pm, const char*
    g_strfreev (atoms);
    atoms = NULL;
 
+#ifdef WITH_MECAB
    if (morpho_expression)
        g_free(morpho_expression);
+#endif
 
    return all_regex_built;
 }

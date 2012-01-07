@@ -22,7 +22,9 @@ struct _GwApplicationPrivate {
 
   LwPreferences *preferences;
   LwDictInstList *dictinstlist;
+#if HAVE_MECAB
   LwMorphologyEngine *morphologyengine;
+#endif
   GwSearchWindow *last_focused;
 
   guint signalid[TOTAL_GW_APPLICATION_SIGNALIDS];

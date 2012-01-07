@@ -2026,6 +2026,7 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
     lw_searchitem_start_search (item, TRUE, FALSE);
     gw_searchwindow_update_history_popups (window);
 
+#if HAVE_MECAB
     if (item->queryline->morphology)
     {
       gchar *message;
@@ -2037,6 +2038,7 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
     {
       gw_searchwindow_hide_current_infobar (window);
     }
+#endif
 }
 
 
