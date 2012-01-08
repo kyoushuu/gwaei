@@ -158,10 +158,9 @@ lw_morphologyengine_free (LwMorphologyEngine *engine)
 {
     g_assert (engine != NULL);
 
-    if (engine == _engine) _engine = NULL;
-
     if (engine != NULL)
     {
+      if (engine == _engine) _engine = NULL;
       if (engine->mecab != NULL) mecab_destroy (engine->mecab);
       if (engine->mutex != NULL) g_mutex_free (engine->mutex);
     }

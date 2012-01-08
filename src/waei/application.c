@@ -67,23 +67,12 @@ w_application_init (WApplication *application)
 static void 
 w_application_constructed (GObject *object)
 {
-    //Declarations
-    WApplication *application;
-    WApplicationPrivate *priv;
-
     //Chain the parent class
     {
       G_OBJECT_CLASS (w_application_parent_class)->constructed (object);
     }
 
-    //Initializations
-    application = W_APPLICATION (object);
-    priv = application->priv;
-
     lw_regex_initialize ();
-#if WITH_MECAB
-    priv->morphologyengine = lw_morphologyengine_get_default ();
-#endif
 }
 
 
@@ -103,7 +92,10 @@ w_application_finalize (GObject *object)
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
 #if WITH_MECAB
-    if (priv->morphologyengine != NULL) lw_morphologyengine_free (priv->morphologyengine); priv->morphologyengine = NULL;
+    if (lw_morphologyengine_has_default ()) 
+    {
+      lw_morphologyengine_free (lw_morphologyengine_get_default ()); 
+    }
 #endif
 
     lw_regex_free ();
@@ -295,23 +287,6 @@ w_application_get_dictinstlist (WApplication *application)
 
   return priv->dictinstlist;
 }
-
-
-#if WITH_MECAB
-LwMorphologyEngine *w_application_get_morphologyengine (WApplication *application)
-{
-    WApplicationPrivate *priv;
-
-    priv = application->priv;
-
-    if (priv->morphologyengine == NULL)
-    {
-      priv->morphologyengine = lw_morphologyengine_get_default ();
-    }
-
-    return priv->morphologyengine;
-}
-#endif
 
 
 //!

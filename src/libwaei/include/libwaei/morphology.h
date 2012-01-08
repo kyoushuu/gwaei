@@ -16,6 +16,8 @@ LwMorphologyEngine* lw_morphologyengine_new (void);
 LwMorphologyEngine* lw_morphologyengine_get_default (void);
 void lw_morphologyengine_free (LwMorphologyEngine*);
 
+gboolean lw_morphologyengine_has_default (void);
+
 
 //!
 //! @brief Morphological analysis of input
