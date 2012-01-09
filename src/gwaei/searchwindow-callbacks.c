@@ -1672,7 +1672,8 @@ gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget *widget,
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    int length;
+    const gchar* NAME;
+    gint length;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1683,15 +1684,11 @@ gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget *widget,
 
     //Show the clear icon when approprate
     if (length > 0)
-      gtk_entry_set_icon_from_stock (GTK_ENTRY (priv->entry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_CLEAR);
+      NAME = "edit-clear-symbolic";
     else
-      gtk_entry_set_icon_from_stock (GTK_ENTRY (priv->entry), GTK_ENTRY_ICON_SECONDARY, NULL);
+      NAME = NULL;
 
-/*
-    //Return widget colors back to normal
-    gtk_widget_override_background_color (GTK_WIDGET (priv->entry), GTK_STATE_NORMAL, NULL);
-    gtk_widget_override_color (GTK_WIDGET (priv->entry), GTK_STATE_NORMAL, NULL);
-*/
+    gtk_entry_set_icon_from_icon_name (GTK_ENTRY (priv->entry), GTK_ENTRY_ICON_SECONDARY, NAME);
 }
 
 
