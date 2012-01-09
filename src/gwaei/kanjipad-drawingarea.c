@@ -338,7 +338,8 @@ G_MODULE_EXPORT int gw_kanjipadwindow_drawingarea_button_release_event_cb (GtkWi
 //!
 //! @brief To be written
 //!
-G_MODULE_EXPORT int gw_kanjipadwindow_drawingarea_motion_event_cb (GtkWidget *widget, GdkEventMotion *event, gpointer data)
+G_MODULE_EXPORT gint 
+gw_kanjipadwindow_drawingarea_motion_event_cb (GtkWidget *widget, GdkEventMotion *event, gpointer data)
 {
     //Declarations
     GwKanjipadWindow *window;
@@ -357,7 +358,13 @@ G_MODULE_EXPORT int gw_kanjipadwindow_drawingarea_motion_event_cb (GtkWidget *wi
 
     if (event->is_hint)
     {
-      gdk_window_get_pointer (gtk_widget_get_window (widget), &x, &y, &state);
+      gdk_window_get_device_position (
+        gtk_widget_get_window (GTK_WIDGET (widget)),
+        gdk_event_get_device ((GdkEvent*) event),
+        &x, 
+        &y, 
+        &state
+      );
     }
     else
     {

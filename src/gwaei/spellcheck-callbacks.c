@@ -34,7 +34,8 @@
 #include <gwaei/gwaei.h>
 #include <gwaei/spellcheck-private.h>
 
-void gw_spellcheck_menuitem_activated_cb (GtkWidget *widget, gpointer data)
+void 
+gw_spellcheck_menuitem_activated_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     _SpellingReplacementData *srd;
@@ -69,26 +70,8 @@ void gw_spellcheck_menuitem_activated_cb (GtkWidget *widget, gpointer data)
 }
 
 
-static int _get_string_index (GtkEntry *entry, int x, int y)
-{
-    //Declarations
-    int layout_index;
-    int entry_index;
-    int trailing;
-    PangoLayout *layout;
-
-    //Initalizations
-    layout = gtk_entry_get_layout (GTK_ENTRY (entry));
-    if (pango_layout_xy_to_index (layout, x * PANGO_SCALE, y * PANGO_SCALE, &layout_index, &trailing))
-      entry_index = gtk_entry_layout_index_to_text_index (GTK_ENTRY (entry), layout_index);
-    else
-      entry_index = -1;
-
-    return entry_index;
-}
-
-
-gboolean _get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int endindex, int *x, int *y, int *x2, int *y2)
+gboolean 
+_get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int endindex, int *x, int *y, int *x2, int *y2)
 {
     //Declarations
     GwSpellcheckPrivate *priv;
@@ -127,7 +110,8 @@ gboolean _get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int en
     return (*x > 0 && *y > 0 && *x2 > 0 && *y2 > 0);
 }
 
-void _draw_line (cairo_t *cr, int x, int y, int x2, int y2)
+void 
+_draw_line (cairo_t *cr, int x, int y, int x2, int y2)
 {
     //Declarations
     int ydelta;
@@ -160,80 +144,32 @@ void _draw_line (cairo_t *cr, int x, int y, int x2, int y2)
 }
 
 
-void gw_spellcheck_populate_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
+G_MODULE_EXPORT gboolean 
+gw_spellcheck_button_press_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    //Declarations
     GwSpellcheck *spellcheck;
-    GwSpellcheckPrivate *priv;
-    GtkWidget *menuitem;
-    char **split;
-    char **info;
-    char **replacements;
-    GList *iter;
 
     spellcheck = GW_SPELLCHECK (data);
-    priv = spellcheck->priv;
-    int index;
-    int xpointer, ypointer, xoffset, yoffset, x, y;
-    _SpellingReplacementData *srd;
-    int start_offset, end_offset;
-    int i;
 
-    //Initializations
-    gtk_widget_get_pointer (GTK_WIDGET (entry), &xpointer, &ypointer);
-    xoffset = gw_spellcheck_get_x_offset (spellcheck);
-    yoffset = gw_spellcheck_get_y_offset (spellcheck);
-    x = xpointer - xoffset;
-    y = yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
-    index =  _get_string_index (entry, x, y);
+    gw_spellcheck_update_cordinates (spellcheck, event);
 
-    g_mutex_lock (priv->mutex);
-    for (iter = priv->corrections; index > -1 && iter != NULL; iter = iter->next)
-    {
-      //Create the start and end offsets 
-      split = g_strsplit (iter->data, ":", 2);
-      info = g_strsplit (split[0], " ", -1); 
-      start_offset = (int) g_ascii_strtoull (info[3], NULL, 10);
-      end_offset = strlen(info[1]) + start_offset;
-
-      //If the mouse position is between the offsets, create the popup menuitems
-      if (index >= start_offset && index <= end_offset)
-      {
-        replacements = g_strsplit (split[1], ",", -1);
-
-        //Separator
-        if (replacements[0] != NULL)
-        {
-          menuitem = gtk_separator_menu_item_new ();
-          gtk_widget_show (GTK_WIDGET (menuitem));
-          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
-        }
-
-        //Menuitems
-        for (i = 0; replacements[i] != NULL; i++)
-        {
-          g_strstrip(replacements[i]);
-          menuitem = gtk_menu_item_new_with_label (replacements[i]);
-          srd = (_SpellingReplacementData*) malloc (sizeof(_SpellingReplacementData));
-          srd->entry = entry;
-          srd->start_offset = start_offset;
-          srd->end_offset = end_offset;
-          srd->replacement_text = g_strdup (replacements[i]);
-          g_signal_connect (G_OBJECT (menuitem), "destroy", G_CALLBACK (gw_spellcheck_free_menuitem_data_cb), (gpointer) srd);
-          g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), (gpointer) srd);
-          gtk_widget_show (GTK_WIDGET (menuitem));
-          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
-        }
-        g_strfreev (replacements);
-      }
-      g_strfreev (split);
-      g_strfreev (info);
-    }
-    g_mutex_unlock (priv->mutex);
+    return FALSE;
 }
 
 
-gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
+G_MODULE_EXPORT void 
+gw_spellcheck_populate_popup_cb (GtkEntry *entry, GtkMenu *menu, gpointer data)
+{
+    GwSpellcheck *spellcheck;
+
+    spellcheck = GW_SPELLCHECK (data);
+
+    gw_spellcheck_populate_popup (spellcheck, menu);
+}
+
+
+G_MODULE_EXPORT gboolean 
+gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;
@@ -248,7 +184,7 @@ gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpoint
     spellcheck = GW_SPELLCHECK (data);
     priv = spellcheck->priv;
 
-    g_mutex_lock (priv->mutex);
+    g_mutex_lock (&priv->mutex);
     for (iter = priv->corrections; iter != NULL; iter = iter->next)
     {
       if (iter->data == NULL) continue;
@@ -270,13 +206,14 @@ gboolean gw_spellcheck_draw_underline_cb (GtkWidget *widget, cairo_t *cr, gpoint
       g_strfreev (info);
       g_strfreev (atoms);
     }
-    g_mutex_unlock (priv->mutex);
+    g_mutex_unlock (&priv->mutex);
 
     return FALSE;
 }
 
 
-void gw_spellcheck_queue_cb (GtkEditable *editable, gpointer data)
+G_MODULE_EXPORT void 
+gw_spellcheck_queue_cb (GtkEditable *editable, gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;
@@ -325,14 +262,16 @@ GwSpellcheckStreamWithData* gw_spellcheck_streamwithdata_new (GwSpellcheck *spel
 }
 
 
-void gw_spellcheck_streamwithdata_free (GwSpellcheckStreamWithData *swd)
+void 
+gw_spellcheck_streamwithdata_free (GwSpellcheckStreamWithData *swd)
 {
     free(swd->data);
     free(swd);
 }
 
 
-gboolean gw_spellcheck_update_timeout (gpointer data)
+gboolean 
+gw_spellcheck_update_timeout (gpointer data)
 {
     //Declarations
     GwSpellcheck *spellcheck;

@@ -76,7 +76,7 @@ gw_installprogresswindow_finalize (GObject *object)
     window = GW_INSTALLPROGRESSWINDOW (object);
     priv = window->priv;
  
-    g_mutex_free (priv->mutex); priv->mutex = NULL;
+    g_mutex_clear (&priv->mutex); 
     priv->label = NULL;
     priv->sublabel = NULL;
     priv->progressbar = NULL;
@@ -102,7 +102,7 @@ gw_installprogresswindow_constructed (GObject *object)
     priv = window->priv;
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
-    priv->mutex = g_mutex_new ();
+    g_mutex_init (&priv->mutex);
     priv->label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "progress_label"));
     priv->sublabel = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "sub_progress_label"));
     priv->progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "progress_progressbar"));
@@ -163,7 +163,12 @@ gw_installprogresswindow_start (GwInstallProgressWindow *window)
     error = NULL;
 
     //Set the new window
-    g_thread_create (_installprogresswindow_install_thread, window, FALSE, &error);
+    g_thread_try_new (
+      "gwaei-install-thread", 
+      _installprogresswindow_install_thread, 
+      window, 
+      &error
+    );
 
     gw_application_handle_error (application, gtk_window_get_transient_for (GTK_WINDOW (window)), TRUE, &error);
 }
@@ -195,9 +200,9 @@ static gpointer _installprogresswindow_install_thread (gpointer data)
       di = LW_DICTINST (iter->data);
       if (di->selected)
       {
-        g_mutex_lock (priv->mutex);
+        g_mutex_lock (&priv->mutex);
         priv->di = di;
-        g_mutex_unlock (priv->mutex);
+        g_mutex_unlock (&priv->mutex);
         lw_dictinst_install (di, gw_installprogresswindow_update_dictinst_cb, window, &error);
       }
     }
@@ -205,10 +210,10 @@ static gpointer _installprogresswindow_install_thread (gpointer data)
     gw_application_set_error (application, error);
     error = NULL;
 
-    g_mutex_lock (priv->mutex);
+    g_mutex_lock (&priv->mutex);
     //This will clue the progress window to close itself
     priv->di = NULL;
-    g_mutex_unlock (priv->mutex);
+    g_mutex_unlock (&priv->mutex);
 
     return NULL;
 }

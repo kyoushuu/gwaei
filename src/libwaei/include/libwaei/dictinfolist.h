@@ -35,7 +35,7 @@
 
 #define EXTENDS_LW_DICTINFOLIST \
   GList *list; \
-  GMutex *mutex; \
+  GMutex mutex; \
   int max;
 
 //!

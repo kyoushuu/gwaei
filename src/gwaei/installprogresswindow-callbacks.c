@@ -62,9 +62,9 @@ gw_installprogresswindow_update_dictinst_cb (double fraction, gpointer data)
     if (window == NULL) return 0;
     priv = window->priv;
 
-    g_mutex_lock (priv->mutex); 
+    g_mutex_lock (&priv->mutex); 
     priv->install_fraction = lw_dictinst_get_total_progress (priv->di, fraction);
-    g_mutex_unlock (priv->mutex);
+    g_mutex_unlock (&priv->mutex);
 
     return 0;
 }
@@ -124,7 +124,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
       return FALSE;
     }
 
-    g_mutex_lock (priv->mutex);
+    g_mutex_lock (&priv->mutex);
 
     //Calculate the number of dictionaries left to install
     for (link = dictinstlist->list; link != NULL; link = link->next)
@@ -160,7 +160,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     gtk_progress_bar_set_fraction (priv->progressbar, priv->install_fraction);
     gtk_progress_bar_set_text (priv->progressbar, text_progressbar);
 
-    g_mutex_unlock (priv->mutex);
+    g_mutex_unlock (&priv->mutex);
 
     //Cleanup
     g_free (text_progressbar);

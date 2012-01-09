@@ -213,7 +213,7 @@ lw_dictinst_init (LwDictInst *di,
     di->listenerid = 0;
     di->uri_group_index = -1;
     di->uri_atom_index = -1;
-    di->mutex = g_mutex_new ();
+    g_mutex_init (&di->mutex);
     di->current_source_uris = NULL;
     di->current_target_uris = NULL;
     di->pm = NULL;
@@ -258,7 +258,7 @@ lw_dictinst_deinit (LwDictInst *di)
     if (di->schema != NULL) g_free (di->schema);
     if (di->key != NULL) g_free (di->key);
 
-    g_mutex_free (di->mutex);
+    g_mutex_clear (&di->mutex);
 
 
 }

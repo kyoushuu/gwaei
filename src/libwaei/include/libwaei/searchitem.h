@@ -62,7 +62,7 @@ struct _LwSearchItem {
 
     FILE* fd;                               //!< File descriptor for file search position
     GThread *thread;                        //!< Thread the search is processed in
-    GMutex *mutex;                          //!< Mutext to help ensure threadsafe operation
+    GMutex mutex;                          //!< Mutext to help ensure threadsafe operation
 
     LwSearchStatus status;                  //!< Used to test if a search is in progress.
     char *scratch_buffer;                   //!< Scratch space

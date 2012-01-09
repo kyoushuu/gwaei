@@ -75,7 +75,7 @@ void
 lw_dictinfolist_init (LwDictInfoList *dil, const int MAX)
 {
     dil->list = NULL;
-    dil->mutex = g_mutex_new();
+    g_mutex_init (&dil->mutex);
     dil->max = MAX;
 
     lw_dictinfolist_reload (dil);
@@ -86,7 +86,7 @@ void
 lw_dictinfolist_deinit (LwDictInfoList *dil)
 {
     lw_dictinfolist_clear (dil);
-    g_mutex_free (dil->mutex);
+    g_mutex_clear (&dil->mutex);
 }
 
 

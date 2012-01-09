@@ -44,7 +44,7 @@ struct _LwDictInst {
   char **current_target_uris;
   gboolean split;
   gboolean merge;
-  GMutex *mutex;
+  GMutex mutex;
 };
 typedef struct _LwDictInst LwDictInst;
 

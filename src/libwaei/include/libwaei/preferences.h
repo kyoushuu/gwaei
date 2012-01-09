@@ -64,7 +64,7 @@
 
 struct _LwPreferences {
   GList *settingslist;
-  GMutex *mutex;
+  GMutex mutex;
   GSettingsBackend *backend;
 
   gboolean toolbar_show; 

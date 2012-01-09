@@ -219,6 +219,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     gboolean has_changes;
     gchar *title;
     const gchar *name;
+    gboolean valid;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
@@ -229,19 +230,27 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
 
-    gtk_tree_selection_get_selected (selection, &model, &iter);
+    valid = gtk_tree_selection_get_selected (selection, &model, &iter);
 
-    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
-    gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+    if (valid)
+    {
+      wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
+      gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
+      gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
-    has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
-    gtk_action_set_sensitive (priv->revert_action, has_changes);
+      has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
+      gtk_action_set_sensitive (priv->revert_action, has_changes);
 
-    gw_vocabularywindow_update_flashcard_sensitivities (window);
+      gw_vocabularywindow_update_flashcard_sensitivities (window);
 
-    name = gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore));
-    title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary Manager"));
+      name = gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore));
+      title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary Manager"));
+    }
+    else
+    {
+      title = g_strdup_printf (gettext("gWaei Vocabulary Manager"));
+    }
+
     if (title != NULL)
     {
       gtk_window_set_title (GTK_WINDOW (window), title);

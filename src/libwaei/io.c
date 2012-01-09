@@ -878,8 +878,18 @@ lw_io_pipe_data (char                 **argv,
     stdout_data.error = NULL;
 
     //Process the data through the external program
-    stdin_thread = g_thread_create (_stdin_func, &stdin_data, TRUE, error);
-    stdout_thread = g_thread_create (_stdout_func, &stdout_data, TRUE, error);
+    stdin_thread = g_thread_try_new (
+      "libwaei-io-in",
+      _stdin_func, 
+      &stdin_data, 
+      error
+    );
+    stdout_thread = g_thread_try_new (
+      "libwaei-io-out", 
+      _stdout_func, 
+      &stdout_data, 
+      error
+    );
 
     //Wait for it to finish
     g_thread_join (stdin_thread);

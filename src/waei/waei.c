@@ -48,7 +48,6 @@ main (int argc, char *argv[])
     textdomain(GETTEXT_PACKAGE);
 
     g_type_init ();
-    g_thread_init (NULL);
 
     application = w_application_new ();
     resolution = w_application_run (W_APPLICATION (application), &argc, &argv);

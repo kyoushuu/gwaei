@@ -168,14 +168,6 @@ static gpointer _stream_results_thread (gpointer data)
 }
 
 
-static void
-lw_searchitem_count_threads (GThread *thread, gpointer user_data)
-{
-    gint* count = (gint*) user_data;
-    g_message ("Thread %d with address %"G_GINTPTR_FORMAT"\n", *count, (gintptr)thread);
-    (*count) += 1;
-}
-
 //!
 //! @brief Start a dictionary search
 //! @param item a LwSearchItem argument to calculate results
@@ -186,23 +178,24 @@ void lw_searchitem_start_search (LwSearchItem *item, gboolean create_thread, gbo
 {
     GError *error;
     gpointer data;
-    gint count;
 
     error = NULL;
     data = lw_enginedata_new (item, exact);
-    count = 0;
 
     if (data != NULL)
     {
       lw_searchitem_prepare_search (item);
       if (create_thread)
       {
-        item->thread = g_thread_create ((GThreadFunc) _stream_results_thread, (gpointer) data, TRUE, &error);
+        item->thread = g_thread_try_new (
+          "libwaei-search",
+          (GThreadFunc) _stream_results_thread, 
+          (gpointer) data, 
+          &error
+        );
         if (item->thread == NULL)
         {
           g_warning ("Thread Creation Error: %s\n", error->message);
-          g_thread_foreach ((GFunc)lw_searchitem_count_threads, &count);
-          g_warning ("There are a total of %d threads running", count);
           g_error_free (error);
           error = NULL;
         }
@@ -262,7 +255,7 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
 
     LwResultLine *line;
 
-    g_mutex_lock (item->mutex);
+    g_mutex_lock (&item->mutex);
 
     if (item->results_high != NULL)
     {
@@ -284,7 +277,7 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
       line = NULL;
     }
 
-    g_mutex_unlock (item->mutex);
+    g_mutex_unlock (&item->mutex);
 
     return line;
 }
@@ -301,9 +294,9 @@ gboolean lw_searchitem_should_check_results (LwSearchItem *item)
     gboolean should_check_results;
     LwSearchStatus status;
 
-    g_mutex_lock (item->mutex);
+    g_mutex_lock (&item->mutex);
       status = item->status;
-    g_mutex_unlock (item->mutex);
+    g_mutex_unlock (&item->mutex);
 
 
     if (status == LW_SEARCHSTATUS_FINISHING)
@@ -313,12 +306,12 @@ gboolean lw_searchitem_should_check_results (LwSearchItem *item)
     }
     else
     {
-      g_mutex_lock (item->mutex);
+      g_mutex_lock (&item->mutex);
       should_check_results = (item->status != LW_SEARCHSTATUS_IDLE ||
                               item->results_high != NULL ||
                               item->results_medium != NULL ||
                               item->results_low != NULL);
-      g_mutex_unlock (item->mutex);
+      g_mutex_unlock (&item->mutex);
     }
 
     return should_check_results;

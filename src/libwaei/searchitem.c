@@ -128,7 +128,7 @@ lw_searchitem_init (LwSearchItem *item, const char* query, LwDictInfo* dictionar
     item->results_medium = NULL;
     item->results_low = NULL;
     item->thread = NULL;
-    item->mutex = g_mutex_new ();
+    g_mutex_init (&item->mutex);
 
     //Set the internal pointers to the correct global variables
     item->fd = NULL;
@@ -180,7 +180,7 @@ lw_searchitem_deinit (LwSearchItem *item)
     if (lw_searchitem_has_data (item))
       lw_searchitem_free_data (item);
 
-    g_mutex_free (item->mutex); item->mutex = NULL;
+    g_mutex_clear (&item->mutex);
 }
 
 
@@ -720,7 +720,7 @@ lw_searchitem_parse_result_string (LwSearchItem *item)
 void 
 lw_searchitem_lock_mutex (LwSearchItem *item)
 {
-  g_mutex_lock (item->mutex);
+  g_mutex_lock (&item->mutex);
 }
 
 //!
@@ -730,7 +730,7 @@ lw_searchitem_lock_mutex (LwSearchItem *item)
 void 
 lw_searchitem_unlock_mutex (LwSearchItem *item)
 {
-  g_mutex_unlock (item->mutex);
+  g_mutex_unlock (&item->mutex);
 }
 
 

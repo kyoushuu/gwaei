@@ -7,10 +7,11 @@ struct _GwSpellcheckPrivate {
   GwApplication *application;
   GtkEntry *entry;
   GList *corrections;
-  GMutex *mutex;
+  GMutex mutex;
   GThread *thread;
   GwSpellcheckStatus status;
   int timeout;
+  gint x, y;
   guint threshold;
   guint signalid[TOTAL_GW_SPELLCHECK_SIGNALIDS];
   guint timeoutid[TOTAL_GW_SPELLCHECK_TIMEOUTIDS];

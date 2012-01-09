@@ -121,11 +121,11 @@ lw_morphologyengine_new ()
     if (engine != NULL)
     {
       engine->mecab = mecab_new (sizeof(argv)/sizeof(gchar*)-1, argv);
-      engine->mutex = g_mutex_new ();
+      g_mutex_init (&engine->mutex);
     }
 
     //Error checking
-    if (engine->mecab == NULL || engine->mutex == NULL) {
+    if (engine->mecab == NULL) {
       if (engine->mecab == NULL) 
         g_warning ("Failed to initialize Mecab engine: %s", mecab_strerror (NULL));
       lw_morphologyengine_free (engine);
@@ -162,7 +162,7 @@ lw_morphologyengine_free (LwMorphologyEngine *engine)
     {
       if (engine == _engine) _engine = NULL;
       if (engine->mecab != NULL) mecab_destroy (engine->mecab);
-      if (engine->mutex != NULL) g_mutex_free (engine->mutex);
+      g_mutex_clear (&engine->mutex);
     }
     g_free (engine);
 }
@@ -197,7 +197,9 @@ lw_morphologyengine_decode_from_mecab (LwMorphologyEngine *engine, const gchar *
 void
 lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const gchar *INPUT_RAW)
 {
-    g_assert (result->items == NULL);
+    if (engine == NULL) return;
+
+    g_assert (result != NULL && result->items == NULL);
 
     const mecab_node_t *node;
     gchar **fields = NULL, *surface = NULL;
@@ -205,9 +207,7 @@ lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const g
     gchar *input = NULL;
     LwMorphologyItem *item = NULL;
 
-    g_assert (engine != NULL && result != NULL);
-
-    g_mutex_lock (engine->mutex);
+    g_mutex_lock (&engine->mutex);
 
     input = lw_morphologyengine_encode_to_mecab (engine, INPUT_RAW, -1);
     if (!input)
@@ -318,14 +318,14 @@ lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const g
 
     g_free(input);
 
-    g_mutex_unlock (engine->mutex);
+    g_mutex_unlock (&engine->mutex);
 
     result->items = g_list_reverse(result->items);
 
     return;
 
 fail:
-    g_mutex_unlock (engine->mutex);
+    g_mutex_unlock (&engine->mutex);
 
     if (item != NULL) lw_morphologyitem_free (item);
     if (fields != NULL) g_strfreev (fields);

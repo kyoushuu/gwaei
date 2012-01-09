@@ -13,6 +13,7 @@ typedef enum {
   GW_SPELLCHECK_SIGNALID_DRAW,
   GW_SPELLCHECK_SIGNALID_CHANGED,
   GW_SPELLCHECK_SIGNALID_POPULATE_POPUP,
+  GW_SPELLCHECK_SIGNALID_BUTTON_PRESS_EVENT,
   GW_SPELLCHECK_SIGNALID_DESTROY,
   TOTAL_GW_SPELLCHECK_SIGNALIDS
 } GwSpellcheckSignalId;
@@ -78,6 +79,8 @@ GwSpellcheckStatus gw_spellcheck_get_status (GwSpellcheck*);
 void gw_spellcheck_set_status (GwSpellcheck*, GwSpellcheckStatus);
 void gw_spellcheck_set_timeout_threshold (GwSpellcheck*, guint);
 void gw_spellcheck_reset (GwSpellcheck*);
+void gw_spellcheck_update_cordinates (GwSpellcheck*, GdkEvent*);
+void  gw_spellcheck_populate_popup (GwSpellcheck*, GtkMenu*);
 
 #include <gwaei/spellcheck-callbacks.h>
 

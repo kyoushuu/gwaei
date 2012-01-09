@@ -128,7 +128,7 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
       gdkwindow = gtk_text_view_get_window (view, GTK_TEXT_WINDOW_TEXT);
       cursor = gdk_cursor_new (GDK_HAND1);
       gdk_window_set_cursor (gdkwindow, cursor);
-      gdk_cursor_unref (cursor);
+      g_object_unref (cursor); cursor = NULL;
     }
     else
     {

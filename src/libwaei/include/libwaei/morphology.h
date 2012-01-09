@@ -6,7 +6,7 @@
 
 
 struct _LwMorphologyEngine {
-  GMutex *mutex;
+  GMutex mutex;
   mecab_t *mecab;
 };
 typedef struct _LwMorphologyEngine LwMorphologyEngine;

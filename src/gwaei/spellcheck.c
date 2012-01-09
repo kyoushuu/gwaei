@@ -81,7 +81,7 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
     GwSpellcheckPrivate *priv;
 
     priv = spellcheck->priv;
-    priv->mutex = g_mutex_new ();
+    g_mutex_init (&priv->mutex);
 
     gw_spellcheck_set_timeout_threshold (spellcheck, 3);
 
@@ -103,7 +103,7 @@ gw_spellcheck_finalize (GObject *object)
 
     if (priv->entry != NULL) gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
     if (priv->thread != NULL) g_thread_join (priv->thread); priv->thread = NULL;
-    if (priv->mutex != NULL) g_mutex_free (priv->mutex); priv->mutex = NULL;
+    g_mutex_clear (&priv->mutex);
 
     G_OBJECT_CLASS (gw_spellcheck_parent_class)->finalize (object);
 }
@@ -244,9 +244,9 @@ gw_spellcheck_get_status (GwSpellcheck *spellcheck)
   GwSpellcheckPrivate *priv = spellcheck->priv;
   GwSpellcheckStatus status;
 
-  g_mutex_lock (priv->mutex);
+  g_mutex_lock (&priv->mutex);
   status = priv->status;
-  g_mutex_unlock (priv->mutex);
+  g_mutex_unlock (&priv->mutex);
   return status;
 }
 
@@ -256,9 +256,9 @@ gw_spellcheck_set_status (GwSpellcheck *spellcheck, GwSpellcheckStatus status)
 {
   GwSpellcheckPrivate *priv = spellcheck->priv;
 
-  g_mutex_lock (priv->mutex);
+  g_mutex_lock (&priv->mutex);
   priv->status = status;
-  g_mutex_unlock (priv->mutex);
+  g_mutex_unlock (&priv->mutex);
 }
 
 
@@ -308,10 +308,18 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
         G_CALLBACK (gw_spellcheck_queue_cb), 
         spellcheck
     );
+
+    priv->signalid[GW_SPELLCHECK_SIGNALID_BUTTON_PRESS_EVENT] = g_signal_connect (
+        G_OBJECT (entry), 
+        "button-press-event", 
+        G_CALLBACK (gw_spellcheck_button_press_event_cb), 
+        spellcheck
+    );
+
     priv->signalid[GW_SPELLCHECK_SIGNALID_POPULATE_POPUP] = g_signal_connect (
         G_OBJECT (entry), 
         "populate-popup", 
-        G_CALLBACK (gw_spellcheck_populate_cb), 
+        G_CALLBACK (gw_spellcheck_populate_popup_cb), 
         spellcheck
     );
 
@@ -336,11 +344,11 @@ gw_spellcheck_reset (GwSpellcheck *spellcheck)
 
     if (priv->corrections == NULL) return;
 
-    g_mutex_lock (priv->mutex);
+    g_mutex_lock (&priv->mutex);
     for (link = priv->corrections; link != NULL; link = link->next)
       g_free (link->data);
     g_list_free (priv->corrections); priv->corrections = NULL;
-    g_mutex_unlock (priv->mutex);
+    g_mutex_unlock (&priv->mutex);
 }
 
 
@@ -442,10 +450,10 @@ gw_spellcheck_outfunc (gpointer data)
       //Add the new links
       while (file != NULL && ferror(file) == 0 && feof(file) == 0 && fgets(buffer, MAX, file) != NULL)
       {
-        g_mutex_lock (priv->mutex);
+        g_mutex_lock (&priv->mutex);
         if (buffer[0] != '@' && buffer[0] != '*' && buffer[0] != '#' && strlen(buffer) > 1)
           priv->corrections = g_list_append (priv->corrections, g_strdup (buffer));
-        g_mutex_unlock (priv->mutex);
+        g_mutex_unlock (&priv->mutex);
       }
 
       //Cleanup
@@ -535,7 +543,12 @@ gw_spellcheck_start_check (GwSpellcheck *spellcheck)
       if (indata != NULL && outdata != NULL)
       {
         gw_spellcheck_infunc ((gpointer) indata);
-        priv->thread = g_thread_create (gw_spellcheck_outfunc, (gpointer) outdata, TRUE, &error);
+        priv->thread = g_thread_try_new (
+          "spellcheck", 
+          gw_spellcheck_outfunc, 
+          (gpointer) outdata, 
+          &error
+        );
       }
 
       if (priv->thread == NULL)
@@ -547,6 +560,125 @@ gw_spellcheck_start_check (GwSpellcheck *spellcheck)
     gw_application_handle_error (priv->application, NULL, FALSE, &error);
   
     return;
+}
+
+
+void
+gw_spellcheck_update_cordinates (GwSpellcheck *spellcheck, GdkEvent *event)
+{
+    GwSpellcheckPrivate *priv;
+    GtkWidget *toplevel;
+    gint toplevel_x, toplevel_y;
+
+    priv = spellcheck->priv;
+    toplevel = GTK_WIDGET (gtk_widget_get_ancestor (GTK_WIDGET (priv->entry), GTK_TYPE_WINDOW));
+
+    gdk_window_get_device_position (
+      gtk_widget_get_window (GTK_WIDGET (priv->entry)),
+      gdk_event_get_device (event),
+      &toplevel_x, 
+      &toplevel_y, 
+      NULL
+    );
+
+    gtk_widget_translate_coordinates (
+      toplevel, 
+      GTK_WIDGET (priv->entry), 
+      toplevel_x, 
+      toplevel_y, 
+      &priv->x, 
+      &priv->y
+    );
+}
+
+
+static int 
+_get_string_index (GtkEntry *entry, int x, int y)
+{
+    //Declarations
+    int layout_index;
+    int entry_index;
+    int trailing;
+    PangoLayout *layout;
+
+    //Initalizations
+    layout = gtk_entry_get_layout (GTK_ENTRY (entry));
+    if (pango_layout_xy_to_index (layout, x * PANGO_SCALE, y * PANGO_SCALE, &layout_index, &trailing))
+      entry_index = gtk_entry_layout_index_to_text_index (GTK_ENTRY (entry), layout_index);
+    else
+      entry_index = -1;
+
+    return entry_index;
+}
+
+
+void 
+gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
+{
+    //Declarations
+    GwSpellcheckPrivate *priv;
+    GtkWidget *menuitem;
+    char **split;
+    char **info;
+    char **replacements;
+    GList *iter;
+
+    priv = spellcheck->priv;
+    int index;
+    int xoffset, yoffset, x, y;
+    _SpellingReplacementData *srd;
+    int start_offset, end_offset;
+    int i;
+
+    xoffset = gw_spellcheck_get_x_offset (spellcheck);
+    yoffset = gw_spellcheck_get_y_offset (spellcheck);
+    x = priv->x - xoffset;
+    y = yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
+    index =  _get_string_index (priv->entry, x, y);
+
+    g_mutex_lock (&priv->mutex);
+    for (iter = priv->corrections; index > -1 && iter != NULL; iter = iter->next)
+    {
+      //Create the start and end offsets 
+      split = g_strsplit (iter->data, ":", 2);
+      info = g_strsplit (split[0], " ", -1); 
+      start_offset = (int) g_ascii_strtoull (info[3], NULL, 10);
+      end_offset = strlen(info[1]) + start_offset;
+
+      //If the mouse position is between the offsets, create the popup menuitems
+      if (index >= start_offset && index <= end_offset)
+      {
+        replacements = g_strsplit (split[1], ",", -1);
+
+        //Separator
+        if (replacements[0] != NULL)
+        {
+          menuitem = gtk_separator_menu_item_new ();
+          gtk_widget_show (GTK_WIDGET (menuitem));
+          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
+        }
+
+        //Menuitems
+        for (i = 0; replacements[i] != NULL; i++)
+        {
+          g_strstrip(replacements[i]);
+          menuitem = gtk_menu_item_new_with_label (replacements[i]);
+          srd = (_SpellingReplacementData*) malloc (sizeof(_SpellingReplacementData));
+          srd->entry = priv->entry;
+          srd->start_offset = start_offset;
+          srd->end_offset = end_offset;
+          srd->replacement_text = g_strdup (replacements[i]);
+          g_signal_connect (G_OBJECT (menuitem), "destroy", G_CALLBACK (gw_spellcheck_free_menuitem_data_cb), (gpointer) srd);
+          g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), (gpointer) srd);
+          gtk_widget_show (GTK_WIDGET (menuitem));
+          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
+        }
+        g_strfreev (replacements);
+      }
+      g_strfreev (split);
+      g_strfreev (info);
+    }
+    g_mutex_unlock (&priv->mutex);
 }
 
 
