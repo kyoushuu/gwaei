@@ -618,7 +618,7 @@ gw_application_activate (GApplication *application)
       return;
     }
 
-    else if (searchwindow == NULL)
+    else if (searchwindow == NULL || priv->arg_new_window_switch)
     {
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
