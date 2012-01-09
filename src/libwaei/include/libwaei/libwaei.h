@@ -22,7 +22,9 @@
 #include <libwaei/searchitem.h>
 #include <libwaei/engine.h>
 #include <libwaei/history.h>
-#include <libwaei/morphology.h>
 
+#ifdef WITH_MECAB
+#include <libwaei/morphology.h>
+#endif
 
 #endif

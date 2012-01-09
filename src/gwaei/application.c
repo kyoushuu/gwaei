@@ -58,7 +58,11 @@ gw_application_new ()
 
     //Initializations
     id = "gtk.org.gWaei";
+#ifdef OS_MINGW
+    flags = G_APPLICATION_NON_UNIQUE;
+#else
     flags = G_APPLICATION_FLAGS_NONE;
+#endif
     application = g_object_new (GW_TYPE_APPLICATION, 
                                 "application-id", id, 
                                 "flags", flags, NULL);
@@ -629,7 +633,6 @@ gw_application_activate (GApplication *application)
     }
     else
     {
-      printf("presenting window\n");
       gtk_window_present (GTK_WINDOW (searchwindow));
       return;
     }
@@ -652,9 +655,13 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     priv = GW_APPLICATION (application)->priv;
     dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
     dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
-    argv = g_application_command_line_get_arguments (command_line, &argc);
 
-    gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
+    if (command_line != NULL)
+    {
+      argv = g_application_command_line_get_arguments (command_line, &argc);
+
+      gw_application_parse_args (GW_APPLICATION (application), &argc, &argv);
+    }
     g_application_activate (G_APPLICATION (application));
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     if (window == NULL) 
@@ -683,7 +690,7 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
 
 static gboolean 
 gw_application_local_command_line (GApplication *application, 
-                                                 gchar ***argv, gint *exit_status)
+                                   gchar ***argv, gint *exit_status)
 {
     //Declarations
     int argc;

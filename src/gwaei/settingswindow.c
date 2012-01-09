@@ -131,8 +131,6 @@ gw_settingswindow_constructed (GObject *object)
     priv->katakana_to_hiragana_checkbutton = GTK_CHECK_BUTTON (gw_window_get_object (GW_WINDOW (window), "katakana_to_hiragana_checkbutton"));
     priv->remove_dictionary_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "remove_dictionary_toolbutton"));
 
-
-
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Settings"));
     gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
     gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_DIALOG);

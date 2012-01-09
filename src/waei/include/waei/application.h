@@ -47,7 +47,6 @@ const gchar* w_application_get_dictionary_switch_data (WApplication*);
 const gchar* w_application_get_install_switch_data (WApplication*);
 const gchar* w_application_get_uninstall_switch_data (WApplication*);
 const gchar* w_application_get_query_text_data (WApplication*);
-LwMorphologyEngine* w_application_get_morphologyengine (WApplication*);
 
 G_END_DECLS
 

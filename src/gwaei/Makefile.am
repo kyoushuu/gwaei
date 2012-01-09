@@ -21,7 +21,7 @@ endif
 
 if OS_MINGW
 gwaei_LDFLAGS =-Wl,-subsystem,windows 
-MINGW_DEFS =-DCURL_STATICLIB 
+MINGW_DEFS =-DCURL_STATICLIB -DOS_MINGW
 gwaei_LDADD +=$(MINGW_LIBS) 
 gwaei_CPPFLAGS +=$(MINGW_CFLAGS) $(MINGW_DEFS)
 endif
