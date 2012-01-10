@@ -1,35 +1,9 @@
 #ifndef LW_DICTINFOLIST_INCLUDED
 #define LW_DICTINFOLIST_INCLUDED
-/******************************************************************************
-    AUTHOR:
-    File written and Copyrighted by Zachary Dovel. All Rights Reserved.
-
-    LICENSE:
-    This file is part of gWaei.
-
-    gWaei is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    gWaei is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    You should have received a copy of the GNU General Public License
-    along with gWaei.  If not, see <http://www.gnu.org/licenses/>.
-*******************************************************************************/
-
-//!
-//! @file src/include/libwaei/dictlist.h
-//!
-//! @brief To be written.
-//!
-//! To be written.
-//!
 
 #include <libwaei/dictinfo.h>
+
+G_BEGIN_DECLS
 
 #define LW_DICTINFOLIST(object) (LwDictInfoList*) object
 
@@ -72,7 +46,7 @@ void lw_dictinfolist_save_order (LwDictInfoList*, LwPreferences*);
 void lw_dictinfolist_reload (LwDictInfoList*);
 void lw_dictinfolist_sort_and_normalize_order (LwDictInfoList*);
 
-
+G_END_DECLS
 
 
 #endif

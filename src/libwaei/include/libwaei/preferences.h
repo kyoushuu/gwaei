@@ -5,6 +5,8 @@
 #define G_SETTINGS_ENABLE_BACKEND
 #include <gio/gsettingsbackend.h>
 
+G_BEGIN_DECLS
+
 //GSettings
 #define LW_SCHEMA_GNOME_INTERFACE   "org.gnome.desktop.interface"
 #define LW_KEY_TOOLBAR_STYLE        "toolbar-style"
@@ -133,10 +135,8 @@ gulong lw_preferences_add_change_listener_by_schema (LwPreferences*, const char*
 void lw_preferences_remove_change_listener (GSettings*, gulong);
 void lw_preferences_remove_change_listener_by_schema (LwPreferences*, const char*, gulong);
 
+G_END_DECLS
 
 #endif
-
-
-
 
 

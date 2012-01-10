@@ -3,7 +3,7 @@
 
 #include <mecab.h>
 
-
+G_BEGIN_DECLS
 
 struct _LwMorphologyEngine {
   GMutex mutex;
@@ -41,5 +41,6 @@ LwMorphology* lw_morphology_new ();
 void lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology*, const gchar*);
 void lw_morphology_free (LwMorphology*);
 
+G_END_DECLS
 
 #endif

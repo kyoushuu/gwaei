@@ -1,6 +1,8 @@
 #ifndef LW_VOCABULARYITEM_INCLUDED
 #define LW_VOCABULARYITEM_INCLUDED
 
+G_BEGIN_DECLS
+
 typedef enum {
   LW_VOCABULARYITEM_FIELD_KANJI,
   LW_VOCABULARYITEM_FIELD_FURIGANA,
@@ -59,5 +61,6 @@ void lw_vocabularyitem_update_timestamp (LwVocabularyItem*);
 gint64 lw_vocabularyitem_get_timestamp (LwVocabularyItem *item);
 const gchar* lw_vocabularyitem_get_timestamp_as_string (LwVocabularyItem *item);
 
+G_END_DECLS
 
 #endif

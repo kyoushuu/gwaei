@@ -718,7 +718,7 @@ lw_searchitem_parse_result_string (LwSearchItem *item)
 //! @param item An LwSearchItem to lock the mutex on
 //!
 void 
-lw_searchitem_lock_mutex (LwSearchItem *item)
+lw_searchitem_lock (LwSearchItem *item)
 {
   g_mutex_lock (&item->mutex);
 }
@@ -728,7 +728,7 @@ lw_searchitem_lock_mutex (LwSearchItem *item)
 //! @param item An LwSearchItem to unlock the mutex on
 //!
 void 
-lw_searchitem_unlock_mutex (LwSearchItem *item)
+lw_searchitem_unlock (LwSearchItem *item)
 {
   g_mutex_unlock (&item->mutex);
 }
@@ -758,3 +758,25 @@ lw_searchitem_get_progress (LwSearchItem *item)
 
     return fraction;
 }
+
+
+void
+lw_searchitem_set_status (LwSearchItem *item, LwSearchStatus status)
+{
+    lw_searchitem_lock (item);
+    item->status = status;
+    lw_searchitem_unlock (item);
+}
+
+
+LwSearchStatus
+lw_searchitem_get_status (LwSearchItem *item)
+{
+    LwSearchStatus status;
+    lw_searchitem_lock (item);
+    status = item->status;
+    lw_searchitem_unlock (item);
+
+    return status;
+}
+

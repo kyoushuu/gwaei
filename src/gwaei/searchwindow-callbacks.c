@@ -1357,7 +1357,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     //Cancel all searches if the search bar is empty
     if (strlen(query) == 0 || di == NULL) 
     {
-      gw_searchwindow_cancel_search_by_searchitem (window, item);
+      lw_searchitem_cancel_search (item);
       return;
     }
 
@@ -1380,7 +1380,10 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
       lw_searchitem_increment_history_relevance_timer (item);
 
       if (new_item != NULL)
+      {
         lw_searchitem_free (new_item);
+        new_item = NULL;
+      }
 
       gw_application_handle_error (application, NULL, FALSE, &error);
 
@@ -1394,7 +1397,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     }
     else
     {
-      gw_searchwindow_cancel_search_by_searchitem (window, item);
+      lw_searchitem_cancel_search (item);
     }
 
     //Push the previous searchitem or replace it with the new one

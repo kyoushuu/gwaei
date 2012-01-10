@@ -386,7 +386,7 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
 
     if (item != NULL) 
     {
-      lw_searchitem_lock_mutex (item);
+      lw_searchitem_lock (item);
         if (
             item->status != LW_SEARCHSTATUS_FINISHING &&
             (item != priv->feedback_item ||
@@ -402,7 +402,7 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
           priv->feedback = item->current;
           priv->feedback_status = item->status;
         }
-      lw_searchitem_unlock_mutex (item);
+      lw_searchitem_unlock (item);
     }
 
     return TRUE;
@@ -1437,13 +1437,6 @@ gw_searchwindow_has_selection (GwSearchWindow *window, GtkWidget *widget)
 }
 
 
-void 
-gw_searchwindow_cancel_search_by_searchitem (GwSearchWindow *window, LwSearchItem *item)
-{
-    lw_searchitem_cancel_search (item);
-}
-
-
 //!
 //! @brief Cancels all searches in all currently open tabs
 //!
@@ -1469,7 +1462,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
           item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
           if (item != NULL) 
           {
-            gw_searchwindow_cancel_search_by_searchitem (window, item);
+            lw_searchitem_cancel_search (item);
           }
         }
         link = link->next;
@@ -1477,7 +1470,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
       g_list_free (children); children = NULL;
     }
 
-    gw_searchwindow_cancel_search_by_searchitem (window, priv->mouse_item);
+    lw_searchitem_cancel_search (priv->mouse_item);
 }
 
 
@@ -1501,7 +1494,7 @@ gw_searchwindow_cancel_search_by_tab_number (GwSearchWindow *window, const int p
       item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (widget), "searchitem"));
       if (item != NULL)
       {
-        gw_searchwindow_cancel_search_by_searchitem (window, item);
+        lw_searchitem_cancel_search (item);
       }
     }
 }
@@ -2000,37 +1993,40 @@ gw_searchwindow_steal_searchitem_by_index (GwSearchWindow *window, gint index)
 
 
 void 
-gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* item)
+gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* new_item)
 {
     //Sanity check
-    g_assert (window != NULL && item != NULL);
+    g_assert (window != NULL && new_item != NULL);
 
     //Declarations
     GwApplication *application;
     GwSearchData *sdata;
     GtkTextView *view;
     gint index;
+    LwSearchItem *item;
 
     //Initializations
+    index = gw_searchwindow_get_current_tab_index (window);
+    item = gw_searchwindow_get_searchitem_by_index (window, index);
     application = gw_window_get_application (GW_WINDOW (window));
     if (!gw_application_can_start_search (application)) return;
+    g_assert (item == NULL || lw_searchitem_get_status (item) != LW_SEARCHSTATUS_FINISHING);
     view = gw_searchwindow_get_current_textview (window);
     sdata = GW_SEARCHDATA (gw_searchdata_new (view, window));
 
     gw_searchwindow_guarantee_first_tab (window);
-    lw_searchitem_set_data (item, sdata, LW_SEARCHITEM_DATA_FREE_FUNC (gw_searchdata_free));
-    index = gw_searchwindow_get_current_tab_index (window);
-    gw_searchwindow_set_searchitem_by_index (window, index, item);
-    gw_searchwindow_initialize_buffer_by_searchitem (sdata->window, item);
+    lw_searchitem_set_data (new_item, sdata, LW_SEARCHITEM_DATA_FREE_FUNC (gw_searchdata_free));
+    gw_searchwindow_set_searchitem_by_index (window, index, new_item);
+    gw_searchwindow_initialize_buffer_by_searchitem (sdata->window, new_item);
 
-    lw_searchitem_start_search (item, TRUE, FALSE);
+    lw_searchitem_start_search (new_item, TRUE, FALSE);
     gw_searchwindow_update_history_popups (window);
 
 #if WITH_MECAB
-    if (item->queryline->morphology)
+    if (new_item->queryline->morphology)
     {
       gchar *message;
-      message = g_strdup_printf (gettext("Also showing results for: 「%s」"), item->queryline->morphology);
+      message = g_strdup_printf (gettext("Also showing results for: 「%s」"), new_item->queryline->morphology);
       gw_searchwindow_show_current_infobar (window, message);
       g_free(message); message = NULL;
     }
