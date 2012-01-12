@@ -95,12 +95,12 @@ _get_line_coordinates (GwSpellcheck *spellcheck, int startindex, int endindex, i
       if (index == startindex)
       {
         *x = PANGO_PIXELS (rect.x) + xoffset;
-        *y = PANGO_PIXELS (rect.y) + yoffset;
+        *y = PANGO_PIXELS (rect.y + rect.height) + yoffset;
       }
       if (index == endindex - 1)
       {
         *x2 = PANGO_PIXELS (rect.width + rect.x) + xoffset;
-        *y2 = PANGO_PIXELS (rect.height + rect.y) + yoffset;
+        *y2 = *y;
       }
     } while (pango_layout_iter_next_char (iter));
 

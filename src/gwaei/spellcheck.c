@@ -359,20 +359,15 @@ gw_spellcheck_get_y_offset (GwSpellcheck *spellcheck)
     GwSpellcheckPrivate *priv;
     PangoRectangle rect;
     PangoLayout *layout;
-
-    int allocation_offset;
-    int layout_offset;
-    int rect_offset;
+    gint layout_offset;
 
     //Initializations
     priv = spellcheck->priv;
     layout = gtk_entry_get_layout (priv->entry);
     pango_layout_get_pixel_extents (layout, &rect, NULL);
-    rect_offset = rect.height;
-    allocation_offset = gtk_widget_get_allocated_height (GTK_WIDGET (priv->entry));
     gtk_entry_get_layout_offsets (priv->entry, NULL, &layout_offset);
 
-    return (((allocation_offset - rect_offset) / 2) - layout_offset);
+    return (layout_offset + 1);
 }
 
 
@@ -633,7 +628,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     xoffset = gw_spellcheck_get_x_offset (spellcheck);
     yoffset = gw_spellcheck_get_y_offset (spellcheck);
     x = priv->x - xoffset;
-    y = yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
+    y = priv->y - yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
     index =  _get_string_index (priv->entry, x, y);
 
     g_mutex_lock (&priv->mutex);

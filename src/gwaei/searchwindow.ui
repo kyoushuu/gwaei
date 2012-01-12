@@ -1083,7 +1083,7 @@
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Search</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-find</property>
+                <property name="icon_name">edit-find-symbolic</property>
                 <signal name="key-press-event" handler="gw_searchwindow_focus_change_on_key_press_cb" object="toplevel" swapped="no"/>
                 <signal name="clicked" handler="gw_searchwindow_search_cb" object="toplevel" swapped="no"/>
               </object>
