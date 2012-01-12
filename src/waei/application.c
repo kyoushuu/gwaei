@@ -331,7 +331,14 @@ w_application_run (WApplication *application, int *argc, char **argv[])
 
     //User didn't specify enough information for an action
     else 
-      printf("%s\n", g_option_context_get_help (priv->context, TRUE, NULL));
+    {
+      gchar *text = g_option_context_get_help (priv->context, FALSE, NULL);
+      if (text != NULL)
+      {
+        printf("%s\n", text);
+        g_free (text); text = NULL;
+      }
+    }
 
     //Cleanup
     w_application_handle_error (application, &error);
