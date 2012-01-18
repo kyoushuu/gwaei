@@ -175,7 +175,7 @@ gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
     GwSettingsWindow *window;
     GwApplication *application;
     LwPreferences *preferences;
-    GdkColor color;
+    GdkRGBA color;
     char *hex_color_string;
     char *pref_key;
     char *letter;
@@ -185,8 +185,8 @@ gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-    gtk_color_button_get_color (GTK_COLOR_BUTTON (widget), &color);
-    hex_color_string = gdk_color_to_string (&color);
+    gtk_color_button_get_rgba (GTK_COLOR_BUTTON (widget), &color);
+    hex_color_string = gdk_rgba_to_string (&color);
     pref_key = g_strdup_printf ("%s", gtk_buildable_get_name (GTK_BUILDABLE (widget)));
     letter = strchr(pref_key, '_');
     if (letter == NULL) return;
@@ -517,7 +517,7 @@ gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointe
     //Declarations
     GwSettingsWindow *window;
     GtkColorButton *swatch;
-    GdkColor color;
+    GdkRGBA color;
     char hex_color_string[20];
 
     //Initializations
@@ -527,10 +527,10 @@ gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointe
     lw_preferences_get_string (hex_color_string, settings, KEY, 20);
     g_assert (swatch != NULL);
 
-    if (gdk_color_parse (hex_color_string, &color) == TRUE)
+    if (gdk_rgba_parse (&color, hex_color_string) == TRUE)
     {
       G_GNUC_EXTENSION g_signal_handlers_block_by_func (swatch, gw_settingswindow_swatch_color_changed_cb, window);
-      gtk_color_button_set_color (swatch, &color);
+      gtk_color_button_set_rgba (swatch, &color);
       G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (swatch, gw_settingswindow_swatch_color_changed_cb, window);
     }
 }
