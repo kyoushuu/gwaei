@@ -1260,7 +1260,8 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
         if (di != di_selected)
         {
           button = gtk_button_new_with_label (di->shortname);
-          g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gw_searchwindow_no_results_search_for_dictionary_cb), di);
+          g_object_set_data (G_OBJECT (button), "load-position", GINT_TO_POINTER (di->load_position));
+          g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gw_searchwindow_no_results_search_for_dictionary_cb), window);
           gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (button));
           gtk_widget_show (GTK_WIDGET (button));
         }

@@ -1887,14 +1887,16 @@ gw_searchwindow_no_results_search_for_dictionary_cb (GtkWidget *widget, gpointer
 {
     //Declarations
     GwSearchWindow *window;
-    LwDictInfo* di;
+    gint load_position;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     if (window == NULL) return;
-    di = LW_DICTINFO (data);
+    load_position = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget), "load-position"));
 
-    gw_searchwindow_set_dictionary (window, di->load_position);
+    gw_searchwindow_set_dictionary (window, load_position);
+
+    gw_searchwindow_search_cb (widget, data);
 }
 
 
