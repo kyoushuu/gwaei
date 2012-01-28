@@ -1954,11 +1954,9 @@ gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer 
 
     if (request == TRUE)
     {
-      context = gtk_widget_get_style_context (GTK_WIDGET (primary_toolbar));
-      gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-
       context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
-      gtk_style_context_remove_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
 
       gtk_widget_show (GTK_WIDGET (primary_toolbar));
     }
@@ -1966,15 +1964,11 @@ gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer 
     {
       context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
       gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-
-      context = gtk_widget_get_style_context (GTK_WIDGET (primary_toolbar));
-      gtk_style_context_remove_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
 
       gtk_widget_hide (GTK_WIDGET (primary_toolbar));
     }
 
-    gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
-    gtk_widget_reset_style (GTK_WIDGET (primary_toolbar));
 
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toolbar_show_toggled_cb, toplevel);
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
