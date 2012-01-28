@@ -22,15 +22,17 @@
     <property name="icon_name">gwaei</property>
     <property name="type_hint">utility</property>
     <child>
-      <object class="GtkVBox" id="toplevel">
+      <object class="GtkBox" id="toplevel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="border_width">8</property>
         <property name="spacing">8</property>
+        <property name="orientation">vertical</property>
         <child>
-          <object class="GtkHBox" id="hbox1">
+          <object class="GtkBox" id="hbox1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="orientation">horizontal</property>
             <child>
               <object class="GtkScrolledWindow" id="radical_selection_scrolledwindow">
                 <property name="visible">True</property>
@@ -68,14 +70,16 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHBox" id="hbox2">
+          <object class="GtkBox" id="hbox2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="spacing">5</property>
+            <property name="orientation">horizontal</property>
             <child>
-              <object class="GtkHBox" id="strokes_hbox">
+              <object class="GtkBox" id="strokes_hbox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">horizontal</property>
                 <child>
                   <object class="GtkCheckButton" id="strokes_checkbox">
                     <property name="label" translatable="yes">_Restrict to Kanji of</property>

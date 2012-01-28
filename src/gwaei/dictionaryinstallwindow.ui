@@ -28,18 +28,21 @@
         <property name="orientation">vertical</property>
         <property name="spacing">8</property>
         <child>
-          <object class="GtkVBox" id="vbox1">
+          <object class="GtkBox" id="vbox1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkHBox" id="hbox1">
+              <object class="GtkBox" id="hbox1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">horizontal</property>
                 <child>
-                  <object class="GtkVBox" id="vbox2">
+                  <object class="GtkBox" id="vbox2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="spacing">2</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkScrolledWindow" id="scrolledwindow1">
                         <property name="visible">True</property>
@@ -67,9 +70,10 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkHBox" id="hbox4">
+                      <object class="GtkBox" id="hbox4">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="orientation">horizontal</property>
                         <child>
                           <object class="GtkCheckButton" id="show_dictionary_detail_checkbutton">
                             <property name="label" translatable="yes">Show Dictionary Install Details</property>
@@ -109,14 +113,16 @@
                     <property name="can_focus">False</property>
                     <property name="top_padding">4</property>
                     <child>
-                      <object class="GtkVBox" id="details_hbox">
+                      <object class="GtkBox" id="details_hbox">
                         <property name="can_focus">False</property>
                         <property name="border_width">6</property>
                         <property name="spacing">8</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkHBox" id="hbox2">
+                          <object class="GtkBox" id="hbox2">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">horizontal</property>
                             <child>
                               <object class="GtkLabel" id="details_title_label">
                                 <property name="visible">True</property>
@@ -138,9 +144,10 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkHBox" id="hbox3">
+                          <object class="GtkBox" id="hbox3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">horizontal</property>
                             <child>
                               <object class="GtkBox" id="box2">
                                 <property name="visible">True</property>
@@ -174,9 +181,10 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkHBox" id="details_control_hbox">
+                          <object class="GtkBox" id="details_control_hbox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">horizontal</property>
                             <child>
                               <placeholder/>
                             </child>
@@ -211,9 +219,10 @@
           </packing>
         </child>
         <child>
-          <object class="GtkHBox" id="hbox7">
+          <object class="GtkBox" id="hbox7">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="orientation">horizontal</property>
             <child>
               <object class="GtkLinkButton" id="linkbutton1">
                 <property name="label" translatable="yes">Where can I get other dictionaries?</property>

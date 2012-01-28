@@ -30,19 +30,21 @@
     <property name="skip_taskbar_hint">True</property>
     <signal name="delete-event" handler="gw_settingswindow_delete_event_action_cb" object="toplevel" swapped="no"/>
     <child>
-      <object class="GtkVBox" id="toplevel">
+      <object class="GtkBox" id="toplevel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="border_width">8</property>
         <property name="spacing">8</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkNotebook" id="settings_notebook">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkVBox" id="vbox2">
+              <object class="GtkBox" id="vbox2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkFrame" id="frame2">
                     <property name="visible">True</property>
@@ -57,10 +59,11 @@
                         <property name="border_width">4</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox5">
+                          <object class="GtkBox" id="vbox5">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="homogeneous">True</property>
+                            <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkCheckButton" id="system_font_checkbutton">
                                 <property name="label" translatable="yes">_Use the system document font (Sans 10)</property>
@@ -81,10 +84,11 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkHBox" id="system_document_font_hbox">
+                              <object class="GtkBox" id="system_document_font_hbox">
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
+                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkLabel" id="label2">
                                     <property name="visible">True</property>
@@ -153,14 +157,16 @@
                         <property name="border_width">4</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox3">
+                          <object class="GtkBox" id="vbox3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkHBox" id="hbox35">
+                              <object class="GtkBox" id="hbox35">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="spacing">8</property>
+                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkTable" id="table1">
                                     <property name="visible">True</property>
@@ -380,15 +386,17 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="install_dictionaries_tab">
+              <object class="GtkBox" id="install_dictionaries_tab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkHBox" id="please_install_dictionary_hbox">
+                  <object class="GtkBox" id="please_install_dictionary_hbox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="border_width">12</property>
                     <property name="spacing">8</property>
+                    <property name="orientation">horizontal</property>
                     <child>
                       <object class="GtkImage" id="image1">
                         <property name="visible">True</property>
@@ -422,10 +430,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkVBox" id="vbox4">
+                  <object class="GtkBox" id="vbox4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="border_width">6</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkScrolledWindow" id="dictionary_scrolledwindow">
                         <property name="visible">True</property>
@@ -523,15 +532,17 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="install_dictionaries_tab1">
+              <object class="GtkBox" id="install_dictionaries_tab1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkVBox" id="vbox8">
+                  <object class="GtkBox" id="vbox8">
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="border_width">6</property>
+                    <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkScrolledWindow" id="plugin_scrolledwindow">
                         <property name="visible">True</property>
@@ -629,9 +640,10 @@
               </packing>
             </child>
             <child>
-              <object class="GtkVBox" id="advanced_tab">
+              <object class="GtkBox" id="advanced_tab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkFrame" id="search_entry_settings_frame">
                     <property name="visible">True</property>
@@ -646,15 +658,17 @@
                         <property name="border_width">4</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox6">
+                          <object class="GtkBox" id="vbox6">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="spacing">2</property>
                             <property name="homogeneous">True</property>
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkHBox" id="hbox25">
+                              <object class="GtkBox" id="hbox25">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkLabel" id="label34">
                                     <property name="visible">True</property>
@@ -800,11 +814,12 @@
                         <property name="border_width">4</property>
                         <property name="left_padding">12</property>
                         <child>
-                          <object class="GtkVBox" id="vbox7">
+                          <object class="GtkBox" id="vbox7">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="spacing">2</property>
                             <property name="homogeneous">True</property>
+                            <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkButton" id="open_gwaei_folder_button">
                                 <property name="label" translatable="yes">_Open the gWaei dictionary folder</property>
