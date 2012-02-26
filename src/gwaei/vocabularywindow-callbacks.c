@@ -36,8 +36,6 @@
 #include <gwaei/vocabularywindow-private.h>
 
 
-static void gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow*);
-
 G_MODULE_EXPORT void
 gw_vocabularywindow_new_list_cb (GtkWidget *widget, gpointer data)
 {
@@ -62,7 +60,7 @@ gw_vocabularywindow_new_list_cb (GtkWidget *widget, gpointer data)
     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
     gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
-    gw_vocabularywindow_update_flashcard_sensitivities (window);
+    gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
     gw_vocabularywindow_show_vocabulary_list (window, TRUE);
 }
 
@@ -110,7 +108,7 @@ gw_vocabularywindow_remove_list_cb (GtkWidget *widget, gpointer data)
     g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
     g_list_free (rowlist); rowlist = NULL;
 
-    gw_vocabularywindow_update_flashcard_sensitivities (window);
+    gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 
     gw_vocabularywindow_show_vocabulary_list (window, TRUE);
 }
@@ -241,7 +239,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
       gtk_action_set_sensitive (priv->revert_action, has_changes);
 
-      gw_vocabularywindow_update_flashcard_sensitivities (window);
+      gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 
       name = gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore));
       title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary Manager"));
@@ -696,7 +694,7 @@ gw_vocabularywindow_liststore_changed_cb (GwVocabularyListStore *store, gpointer
     has_changes = gw_vocabularyliststore_has_changes (store);
 
     gw_vocabularywindow_set_has_changes (window, has_changes);
-    gw_vocabularywindow_update_flashcard_sensitivities (window);
+    gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 }
 
 
@@ -1369,32 +1367,6 @@ gw_vocabularywindow_word_drag_motion_cb (
 
     if (path != NULL) gtk_tree_path_free (path); path = NULL;
 }
-
-
-static void
-gw_vocabularywindow_update_flashcard_sensitivities (GwVocabularyWindow *window)
-{
-    //Declarations
-    GwVocabularyWindowPrivate *priv;
-    gint n_children;
-    GtkTreeModel *model;
-
-    //Initializations
-    priv = window->priv;
-    model = gtk_tree_view_get_model (priv->word_treeview);
-    if (model != NULL)
-      n_children = gtk_tree_model_iter_n_children (model, NULL);
-    else 
-      n_children = 0;
-
-    gtk_action_set_sensitive (priv->kanji_definition_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->definition_kanji_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->kanji_furigana_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->furigana_kanji_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->definition_furigana_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->furigana_definition_flashcards_action, n_children);
-}
-
 
 
 G_MODULE_EXPORT void

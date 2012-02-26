@@ -50,6 +50,7 @@ void gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow*);
 void gw_vocabularywindow_set_selected_list (GwVocabularyWindow*, GtkTreePath*);
 gboolean gw_vocabularywindow_show_save_dialog (GwVocabularyWindow*);
 void gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow*, gboolean);
+void gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window);
 
 #include "vocabularywindow-callbacks.h"
 

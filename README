@@ -40,6 +40,8 @@ TABLE OF CONTENTS
   libncursesw5-dev imagemagick intltool  rarian-compat \
   gsettings-desktop-schemas
 
+  sudo pacman -S autoconf automake make gnome-doc-utils pkg-config
+
   For inputing Japanese queries, installing some software for Japanese
   conversion is highly recommended.  Currently, the three main linux methods are
   UIM or SCIM using the ANTHY engine or iBus.  For emergency situations where users

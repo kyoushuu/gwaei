@@ -185,12 +185,16 @@ gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
     if (window == NULL) return;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-    gtk_color_button_get_rgba (GTK_COLOR_BUTTON (widget), &color);
+    gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (widget), &color);
     hex_color_string = gdk_rgba_to_string (&color);
     pref_key = g_strdup_printf ("%s", gtk_buildable_get_name (GTK_BUILDABLE (widget)));
     letter = strchr(pref_key, '_');
     if (letter == NULL) return;
     *letter = '-';
+
+    letter = strchr(letter, '_');
+    if (letter == NULL) return;
+    *letter = '\0';
 
     //Set the color in the prefs
     if (pref_key != NULL && hex_color_string != NULL)
@@ -516,21 +520,21 @@ gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointe
 {
     //Declarations
     GwSettingsWindow *window;
-    GtkColorButton *swatch;
+    GtkColorChooser *swatch;
     GdkRGBA color;
     char hex_color_string[20];
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
     if (window == NULL) return;
-    swatch = GTK_COLOR_BUTTON (data);
+    swatch = GTK_COLOR_CHOOSER (data);
     lw_preferences_get_string (hex_color_string, settings, KEY, 20);
     g_assert (swatch != NULL);
 
     if (gdk_rgba_parse (&color, hex_color_string) == TRUE)
     {
       G_GNUC_EXTENSION g_signal_handlers_block_by_func (swatch, gw_settingswindow_swatch_color_changed_cb, window);
-      gtk_color_button_set_rgba (swatch, &color);
+      gtk_color_chooser_set_rgba (swatch, &color);
       G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (swatch, gw_settingswindow_swatch_color_changed_cb, window);
     }
 }

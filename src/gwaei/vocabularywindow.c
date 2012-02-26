@@ -227,6 +227,7 @@ gw_vocabularywindow_constructed (GObject *object)
     gtk_widget_grab_focus (GTK_WIDGET (priv->list_treeview));
 
     gw_window_unload_xml (GW_WINDOW (window));
+    gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 }
 
 
@@ -943,4 +944,30 @@ gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow *window, gboolean r
     else
       gtk_paned_set_position (priv->paned, 0);
 }
+
+
+void
+gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window)
+{
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    gint n_children;
+    GtkTreeModel *model;
+
+    //Initializations
+    priv = window->priv;
+    model = gtk_tree_view_get_model (priv->word_treeview);
+    if (model != NULL)
+      n_children = gtk_tree_model_iter_n_children (model, NULL);
+    else 
+      n_children = 0;
+
+    gtk_action_set_sensitive (priv->kanji_definition_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->definition_kanji_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->kanji_furigana_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->furigana_kanji_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->definition_furigana_flashcards_action, n_children);
+    gtk_action_set_sensitive (priv->furigana_definition_flashcards_action, n_children);
+}
+
 
