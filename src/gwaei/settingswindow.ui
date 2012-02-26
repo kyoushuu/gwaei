@@ -34,8 +34,8 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="border_width">8</property>
-        <property name="spacing">8</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">8</property>
         <child>
           <object class="GtkNotebook" id="settings_notebook">
             <property name="visible">True</property>
@@ -62,8 +62,8 @@
                           <object class="GtkBox" id="vbox5">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="homogeneous">True</property>
                             <property name="orientation">vertical</property>
+                            <property name="homogeneous">True</property>
                             <child>
                               <object class="GtkCheckButton" id="system_font_checkbutton">
                                 <property name="label" translatable="yes">_Use the system document font (Sans 10)</property>
@@ -88,7 +88,6 @@
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
-                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkLabel" id="label2">
                                     <property name="visible">True</property>
@@ -166,7 +165,6 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="spacing">8</property>
-                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkTable" id="table1">
                                     <property name="visible">True</property>
@@ -234,7 +232,6 @@
                                       <object class="GtkColorButton" id="header_background_colorbutton">
                                         <property name="use_action_appearance">False</property>
                                         <property name="visible">True</property>
-                                        <property name="sensitive">False</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
                                         <property name="use_action_appearance">False</property>
@@ -396,7 +393,6 @@
                     <property name="can_focus">False</property>
                     <property name="border_width">12</property>
                     <property name="spacing">8</property>
-                    <property name="orientation">horizontal</property>
                     <child>
                       <object class="GtkImage" id="image1">
                         <property name="visible">True</property>
@@ -661,14 +657,13 @@
                           <object class="GtkBox" id="vbox6">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
                             <property name="spacing">2</property>
                             <property name="homogeneous">True</property>
-                            <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkBox" id="hbox25">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="orientation">horizontal</property>
                                 <child>
                                   <object class="GtkLabel" id="label34">
                                     <property name="visible">True</property>
@@ -817,9 +812,9 @@
                           <object class="GtkBox" id="vbox7">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="orientation">vertical</property>
                             <property name="spacing">2</property>
                             <property name="homogeneous">True</property>
-                            <property name="orientation">vertical</property>
                             <child>
                               <object class="GtkButton" id="open_gwaei_folder_button">
                                 <property name="label" translatable="yes">_Open the gWaei dictionary folder</property>
