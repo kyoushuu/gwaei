@@ -81,6 +81,12 @@
       <description>The newly created flashcard decks will be shulled.</description>
     </key>
 
+    <key name="flashcard-deck-size" type="i">
+      <default>20</default>
+      <summary>The maximium size of a generate flashcard deck.</summary>
+      <description>This is number of cards that should be taken from a vocabulary list when the list has more than 20 entries.</description>
+    </key>
+
     <key name="track-results" type="b">
       <default>false</default>
       <summary>Whether the generated flashchard results should be saved</summary>

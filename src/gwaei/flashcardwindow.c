@@ -39,15 +39,6 @@
 //Static declarations
 static void gw_flashcardwindow_attach_signals (GwFlashCardWindow*);
 //static void gw_flashcardwindow_remove_signals (GwFlashCardWindow*);
-static gboolean gw_flashcardwindow_finalize_inner_path (GtkTreeModel*, GtkTreePath*, GtkTreeIter*, gpointer);
-
-enum {
-  COLUMN_QUESTION,
-  COLUMN_ANSWER,
-  COLUMN_IS_COMPLETED,
-  COLUMN_TREE_PATH,
-  TOTAL_COLUMNS
-};
 
 static void gw_flashcardwindow_init_accelerators (GwFlashCardWindow*);
 
@@ -105,7 +96,6 @@ gw_flashcardwindow_finalize (GObject *object)
 
     if (priv->model != NULL) 
     {
-      gtk_tree_model_foreach (priv->model, gw_flashcardwindow_finalize_inner_path, NULL);
       g_object_unref (priv->model); priv->model = NULL;
     }
     if (priv->source_model != NULL) g_object_unref (priv->source_model); priv->source_model = NULL;
@@ -237,20 +227,18 @@ gw_flashcardwindow_update_title (GwFlashCardWindow *window)
 }
 
 
-gboolean
+void
 gw_flashcardwindow_set_model (GwFlashCardWindow *window, 
-                              GtkTreeModel      *source_model, 
+                              GwFlashCardStore  *store,
                               const gchar       *flash_cards_type,
                               const gchar       *list_name,
-                              const gchar       *question_title,
-                              gint               question_column,
-                              gint               answer_column,
-                              gboolean           randomize      )
+                              const gchar       *question_title
+                              )
 {
-    if (source_model == NULL) return FALSE;
+    if (store == NULL) return;
 
+/*
     GwFlashCardWindowPrivate *priv;
-    GRand *random_generator;
     GtkTreeIter source_iter, target_iter;
     GtkTreePath *path;
     gchar *answer, *question;
@@ -258,15 +246,7 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
     gint position;
 
     priv = window->priv;
-    random_generator = g_rand_new ();
     if (priv->model != NULL) g_object_unref (priv->model);
-    priv->model = GTK_TREE_MODEL (gtk_list_store_new (
-        TOTAL_COLUMNS, 
-        G_TYPE_STRING,  //COLUMN_QUESTION
-        G_TYPE_STRING,  //COLUMN_ANSWER
-        G_TYPE_BOOLEAN, //COLUMN_IS_COMPLETED
-        G_TYPE_POINTER  //COLUMN_TREE_PATH
-    ));
 
     priv->source_question_column = question_column;
     priv->source_answer_column = answer_column;
@@ -337,8 +317,7 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
     gw_flashcardwindow_update_progress (window);
 
     gw_flashcardwindow_load_iterator (window, FALSE, FALSE);
-
-    return TRUE;
+*/
 }
 
 
@@ -383,7 +362,9 @@ gw_flashcardwindow_load_iterator (GwFlashCardWindow *window, gboolean show_answe
       gtk_widget_grab_focus (GTK_WIDGET (priv->answer_entry));
     }
 
-    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_QUESTION, &priv->question, COLUMN_ANSWER, &priv->answer, -1);
+    gtk_tree_model_get (priv->model, &(priv->iter), 
+        GW_FLASHCARDSTORE_COLUMN_QUESTION, &priv->question, 
+        GW_FLASHCARDSTORE_COLUMN_ANSWER, &priv->answer, -1);
 
     if (priv->question != NULL && priv->answer != NULL)
     {
@@ -454,7 +435,7 @@ gw_flashcardwindow_iterate (GwFlashCardWindow *window)
     {
       valid = gtk_tree_model_iter_next (priv->model, &(priv->iter));
       if (!valid) valid = gtk_tree_model_get_iter_first (priv->model, &(priv->iter));
-      gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_IS_COMPLETED, &completed, -1);
+      gtk_tree_model_get (priv->model, &(priv->iter), GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, &completed, -1);
     }
 
     gw_flashcardwindow_load_iterator (window, FALSE, FALSE);
@@ -471,50 +452,9 @@ gw_flashcardwindow_set_card_completed (GwFlashCardWindow *window, gboolean compl
 
     if (priv->model == NULL) return;
 
-    gtk_list_store_set (GTK_LIST_STORE (priv->model), &(priv->iter), COLUMN_IS_COMPLETED, completed, -1);
+    gtk_list_store_set (GTK_LIST_STORE (priv->model), &(priv->iter), GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, completed, -1);
 }
 
-
-
-static void
-gw_flashcardwindow_increment_source_incorrect_guesses (GwFlashCardWindow *window)
-{
-    GwFlashCardWindowPrivate *priv;
-    GtkTreePath *path;
-    GtkTreeIter iter;
-    gboolean valid;
-    gint incorrect_guesses;
-    gchar *source_answer, *source_question;
-
-    priv = window->priv;
-
-    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
-
-    if (path == NULL) return;
-
-    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
-    if (valid)
-    {
-        gtk_tree_model_get (priv->source_model, &iter, 
-          priv->source_answer_column, &source_answer,
-          priv->source_question_column, &source_question, 
-          -1);
-        incorrect_guesses = gw_vocabularywordstore_get_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-
-        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
-            source_question != NULL && strcmp(priv->question, source_question) == 0)
-        {
-          incorrect_guesses++;
-          gw_vocabularywordstore_set_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, incorrect_guesses);
-          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
-        }
-
-        if (source_answer != NULL) g_free (source_answer);
-        if (source_question != NULL) g_free (source_question);
-    }
-}
 
 
 void
@@ -532,49 +472,10 @@ gw_flashcardwindow_increment_incorrect_guesses (GwFlashCardWindow *window)
       g_free (text);
     }
 
+/*
     if (priv->incorrect_guesses > 0) 
       gw_flashcardwindow_increment_source_incorrect_guesses (window);
-}
-
-
-static void
-gw_flashcardwindow_increment_source_correct_guesses (GwFlashCardWindow *window)
-{
-    GwFlashCardWindowPrivate *priv;
-    GtkTreePath *path;
-    GtkTreeIter iter;
-    gboolean valid;
-    gint correct_guesses;
-    gchar *source_answer, *source_question;
-
-    priv = window->priv;
-
-    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
-
-    if (path == NULL) return;
-
-    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
-    if (valid)
-    {
-        gtk_tree_model_get (priv->source_model, &iter, 
-          priv->source_answer_column, &source_answer,
-          priv->source_question_column, &source_question, 
-          -1);
-        correct_guesses = gw_vocabularywordstore_get_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-
-        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
-            source_question != NULL && strcmp(priv->question, source_question) == 0)
-        {
-          correct_guesses++;
-          gw_vocabularywordstore_set_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, correct_guesses);
-          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
-        }
-
-        if (source_answer != NULL) g_free (source_answer);
-        if (source_question != NULL) g_free (source_question);
-    }
+*/
 }
 
 
@@ -593,8 +494,10 @@ gw_flashcardwindow_increment_correct_guesses (GwFlashCardWindow *window)
       g_free (text);
     }
 
+/*
     if (priv->correct_guesses > 0) 
       gw_flashcardwindow_increment_source_correct_guesses (window);
+*/
 }
 
 
@@ -640,21 +543,6 @@ gw_flashcardwindow_check_answer (GwFlashCardWindow *window)
     gw_flashcardwindow_load_iterator (window, TRUE, correct);
 }
 
-
-static gboolean
-gw_flashcardwindow_finalize_inner_path (GtkTreeModel *model,
-                                        GtkTreePath  *path,
-                                        GtkTreeIter  *iter,
-                                        gpointer      data  )
-{
-    GtkTreePath *inner_path;
-
-    gtk_tree_model_get (model, iter, COLUMN_TREE_PATH, &inner_path, -1);
-
-    if (inner_path != NULL) gtk_tree_path_free (inner_path);
-
-    return FALSE;
-}
 
 
 void

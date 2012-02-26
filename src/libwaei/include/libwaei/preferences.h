@@ -28,6 +28,7 @@ G_BEGIN_DECLS
 //////////////////////////
 #define LW_SCHEMA_VOCABULARY         "org.gnome.gwaei.vocabulary"
 #define LW_KEY_SHUFFLE_FLASHCARDS    "shuffle-flashcards"
+#define LW_KEY_FLASHCARD_DECK_SIZE   "flashcard-deck-size"
 #define LW_KEY_TRACK_RESULTS         "track-results"
 #define LW_KEY_LIST_ORDER            "list-order"
 #define LW_KEY_POSITION_COLUMN_SHOW  "position-column-show"

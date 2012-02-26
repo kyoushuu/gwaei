@@ -778,43 +778,50 @@ gw_vocabularywindow_start_flashcards (GwVocabularyWindow *window,
 {
     GwVocabularyWindowPrivate *priv;
     GwApplication *application;
+    LwPreferences *preferences;
     GtkWindow *flashcardwindow;
     GtkTreeModel *model;
-    GtkListStore *liststore, *wordstore;
+    GtkListStore *liststore;
+    GwVocabularyWordStore *vocabularywordstore;
+    GwFlashCardStore *flashcardstore;
     GtkTreeSelection *selection;
     GtkTreeIter iter;
     gboolean valid;
+    gint max;
+
 
     if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
     liststore = GTK_LIST_STORE (gtk_tree_view_get_model (priv->list_treeview));
     model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
-    gtk_tree_selection_get_selected (selection, &model, &iter);
-    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
+    valid = gtk_tree_selection_get_selected (selection, &model, &iter);
+    max = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_FLASHCARD_DECK_SIZE);
 
-    if ((gtk_tree_model_iter_n_children (GTK_TREE_MODEL (wordstore), NULL)) == 0) return;
-
-    flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
-    gw_flashcardwindow_set_track_results (GW_FLASHCARDWINDOW (flashcardwindow), priv->track);
-    valid = gw_flashcardwindow_set_model (
-      GW_FLASHCARDWINDOW (flashcardwindow), 
-      GTK_TREE_MODEL (wordstore),
-      flash_cards_type,
-      gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore)),
-      question_text,
-      question_column,
-      answer_column,
-      priv->shuffle
-    );
-
-    if (!valid)
+    if (valid)
     {
-      gtk_widget_destroy (GTK_WIDGET (flashcardwindow));
-    }
-    else
-    {
+      vocabularywordstore = GW_VOCABULARYWORDSTORE (gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter));
+      if ((gtk_tree_model_iter_n_children (GTK_TREE_MODEL (vocabularywordstore), NULL)) == 0) return;
+
+      flashcardstore = GW_FLASHCARDSTORE (gw_flashcardstore_new ());
+      gw_flashcardstore_set_vocabularywordstore (flashcardstore, vocabularywordstore, question_column, answer_column);
+      gw_flashcardstore_trim (GW_FLASHCARDSTORE (flashcardstore), max);
+      if (priv->shuffle) gw_flashcardstore_shuffle (flashcardstore);
+
+      flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));
+/*
+      valid = gw_flashcardwindow_set_model (
+        GW_FLASHCARDWINDOW (flashcardwindow), 
+        GW_FLASHCARDSTORE (flashcardstore),
+        flash_cards_type,
+        gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (vocabularywordstore)),
+        question_text
+      );
+*/
+      gw_flashcardwindow_set_track_results (GW_FLASHCARDWINDOW (flashcardwindow), priv->track);
+
       gtk_widget_show (GTK_WIDGET (flashcardwindow));
     }
 }
