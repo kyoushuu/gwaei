@@ -76,6 +76,7 @@ void gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore*,
 gint gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*);
 void gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore*, GtkTreeIter*, gint);
 
+gint gw_vocabularywordstore_calculate_weight (GwVocabularyWordStore*, GtkTreeIter*);
 
 G_END_DECLS
 

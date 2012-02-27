@@ -13,6 +13,8 @@ typedef enum {
   GW_FLASHCARDSTORE_COLUMN_TREE_PATH,
   GW_FLASHCARDSTORE_COLUMN_WEIGHT,
   GW_FLASHCARDSTORE_COLUMN_ORDER,
+  GW_FLASHCARDSTORE_COLUMN_CORRECT_GUESSES,
+  GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES,
   TOTAL_GW_FLASHCARDSTORE_COLUMNS
 } GwFlashCardStoreColumn;
 
@@ -47,6 +49,14 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore*, GwVocabularyW
 void gw_flashcardstore_trim (GwFlashCardStore*, gint);
 void gw_flashcardstore_shuffle (GwFlashCardStore*);
 
+void gw_flashcardstore_set_correct_guesses (GwFlashCardStore*, GtkTreeIter*, gint);
+gint gw_flashcardstore_get_correct_guesses (GwFlashCardStore*, GtkTreeIter*);
+
+void gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore*, GtkTreeIter*, gint);
+gint gw_flashcardstore_get_incorrect_guesses (GwFlashCardStore*, GtkTreeIter*);
+
+void gw_flashcardstore_set_completed (GwFlashCardStore*, GtkTreeIter*, gboolean);
+gboolean gw_flashcardstore_is_completed (GwFlashCardStore*, GtkTreeIter*);
 
 
 G_END_DECLS

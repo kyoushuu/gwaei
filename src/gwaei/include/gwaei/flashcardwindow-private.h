@@ -45,7 +45,6 @@ struct _GwFlashCardWindowPrivate {
     gint incorrect_guesses;
     gint correct_guesses;
 
-    GtkTreeModel *source_model;
     gint source_question_column;
     gint source_answer_column;
 

@@ -669,6 +669,8 @@ gw_vocabularywordstore_get_incorrect_guesses_by_iter (GwVocabularyWordStore *sto
 void
 gw_vocabularywordstore_set_incorrect_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter, gint guesses)
 {
+    if (guesses < 0) guesses = 0;
+
     LwVocabularyItem *item;
     gchar *text;
 
@@ -705,6 +707,8 @@ gw_vocabularywordstore_get_correct_guesses_by_iter (GwVocabularyWordStore *store
 void
 gw_vocabularywordstore_set_correct_guesses_by_iter (GwVocabularyWordStore *store, GtkTreeIter *iter, gint guesses)
 {
+    if (guesses < 0) guesses = 0;
+
     LwVocabularyItem *item;
     gchar *text;
 
@@ -751,5 +755,39 @@ gw_vocabularywordstore_update_timestamp_by_iter (GwVocabularyWordStore *store, G
       }
       g_free (text);
     }
+}
+
+
+gint
+gw_vocabularywordstore_calculate_weight (GwVocabularyWordStore *store, GtkTreeIter *iter)
+{
+    if (store == NULL) return -1;
+    if (iter == NULL) return -1;
+
+    //The effect of this is short term score is important.
+    //long term, time is important for deciding weight
+    GtkTreeModel *model;
+    gint score;
+    gint numerator;
+    gint denominator;
+    gint incorrect;
+    gint correct;
+    guint32 hours;
+
+    model = GTK_TREE_MODEL (store);
+    gtk_tree_model_get (model, iter, 
+          GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, &hours,
+          GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, &correct,
+          GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &incorrect,
+        -1);
+    numerator = correct * 100;
+    denominator = incorrect + correct;
+  
+    if (denominator != 0)
+      score = (numerator / denominator);
+    else
+      score = 0;
+  
+    return ((gint) hours - score);
 }
 

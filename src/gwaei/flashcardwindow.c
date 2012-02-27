@@ -98,8 +98,6 @@ gw_flashcardwindow_finalize (GObject *object)
     {
       g_object_unref (priv->model); priv->model = NULL;
     }
-    if (priv->source_model != NULL) g_object_unref (priv->source_model); priv->source_model = NULL;
-    
 
     gw_window_save_size (GW_WINDOW (window));
 
@@ -235,89 +233,33 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
                               const gchar       *question_title
                               )
 {
+    if (window == NULL) return;
     if (store == NULL) return;
 
-/*
     GwFlashCardWindowPrivate *priv;
-    GtkTreeIter source_iter, target_iter;
-    GtkTreePath *path;
-    gchar *answer, *question;
-    gboolean valid;
-    gint position;
 
     priv = window->priv;
-    if (priv->model != NULL) g_object_unref (priv->model);
 
-    priv->source_question_column = question_column;
-    priv->source_answer_column = answer_column;
-    priv->source_model = source_model; g_object_ref (G_OBJECT (priv->source_model));
+    if (priv->model != NULL) g_object_unref (priv->model); priv->model = NULL;
+    if (priv->list_name != NULL) g_free (priv->list_name); priv->list_name = NULL;
+    if (priv->question_title != NULL) g_free (priv->question_title); priv->question_title = NULL;
+    if (priv->flash_cards_type != NULL) g_free (priv->flash_cards_type); priv->flash_cards_type = NULL;
 
-    if (priv->list_name != NULL) g_free (priv->list_name);
+    priv->total_cards = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (store), NULL);
+    if (priv->total_cards == 0) return;
+    priv->cards_left = priv->total_cards;
+    priv->model = GTK_TREE_MODEL (store);
     priv->list_name = g_strdup (list_name);
-
-    if (priv->question_title != NULL) g_free (priv->question_title);
     priv->question_title = g_strdup (question_title);
-
-    if (priv->flash_cards_type != NULL) g_free (priv->flash_cards_type);
     priv->flash_cards_type = g_strdup (flash_cards_type);
 
-    gw_flashcardwindow_update_title (window);
-
-    valid = gtk_tree_model_get_iter_first (source_model, &source_iter);
-    while (valid)
-    {
-      gtk_tree_model_get (source_model, &source_iter, question_column, &question, answer_column, &answer, -1);
-      path = gtk_tree_model_get_path (source_model, &source_iter);
-      if (path != NULL)
-      {
-        if (question != NULL && strlen (question) && answer != NULL && strlen (answer))
-        {
-          if (randomize)
-          {
-            if (priv->total_cards == 0)
-              position = 0;
-            else
-              position = g_rand_int_range (random_generator, 0, priv->total_cards);
-            gtk_list_store_insert (GTK_LIST_STORE (priv->model), &target_iter, position);
-          }
-          else
-          {
-            gtk_list_store_append (GTK_LIST_STORE (priv->model), &target_iter);
-          }
-          gtk_list_store_set (GTK_LIST_STORE (priv->model), &target_iter,
-              COLUMN_QUESTION, question,
-              COLUMN_ANSWER, answer,
-              COLUMN_TREE_PATH, path,
-              COLUMN_IS_COMPLETED, FALSE,
-              -1);
-          priv->total_cards++;
-        }
-        if (question != NULL) g_free (question); question = NULL;
-        if (answer != NULL) g_free (answer); answer = NULL;
-        //gtk_tree_path_free (path); path = NULL; //PATH SHOULD NOT BE FREED HERE. ONLY WHEN THE MODEL IS FINALIZED
-      }
-      valid = gtk_tree_model_iter_next (source_model, &source_iter);
-    }
-
-    if (random_generator != NULL) g_rand_free (random_generator);
-
-    if (priv->total_cards == 0)
-    {
-      g_object_unref (G_OBJECT (priv->model)); priv->model = NULL;
-      g_object_unref (G_OBJECT (priv->source_model)); priv->source_model = NULL;
-      return FALSE;
-    }
-
     gtk_tree_model_get_iter_first (priv->model, &(priv->iter));
-    priv->cards_left = priv->total_cards;
-    priv->correct_guesses = -1;
-    priv->incorrect_guesses = -1;
-    gw_flashcardwindow_increment_correct_guesses (window);
-    gw_flashcardwindow_increment_incorrect_guesses (window);
+    gw_flashcardwindow_set_correct_guesses (window, 0);
+    gw_flashcardwindow_set_incorrect_guesses (window, 0);
     gw_flashcardwindow_update_progress (window);
 
+    gw_flashcardwindow_update_title (window);
     gw_flashcardwindow_load_iterator (window, FALSE, FALSE);
-*/
 }
 
 
@@ -447,57 +389,134 @@ gw_flashcardwindow_iterate (GwFlashCardWindow *window)
 void
 gw_flashcardwindow_set_card_completed (GwFlashCardWindow *window, gboolean completed)
 {
+    if (window == NULL) return; 
+
     GwFlashCardWindowPrivate *priv;
+    GwFlashCardStore *store;
+
     priv = window->priv;
-
     if (priv->model == NULL) return;
+    store = GW_FLASHCARDSTORE (priv->model);
 
-    gtk_list_store_set (GTK_LIST_STORE (priv->model), &(priv->iter), GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, completed, -1);
+    gw_flashcardstore_set_completed (store, &(priv->iter), completed);
 }
-
 
 
 void
 gw_flashcardwindow_increment_incorrect_guesses (GwFlashCardWindow *window)
 {
+    gint guesses;
+    guesses = gw_flashcardwindow_get_incorrect_guesses (window);
+    gw_flashcardwindow_set_incorrect_guesses (window, guesses + 1);
+}
+
+
+gint
+gw_flashcardwindow_get_incorrect_guesses (GwFlashCardWindow *window)
+{
+    //Sanity check
+    if (window == NULL) return -1;
+
     GwFlashCardWindowPrivate *priv;
-    gchar *text;
 
     priv = window->priv;
-    priv->incorrect_guesses++;
+
+    return priv->incorrect_guesses;
+}
+
+
+void
+gw_flashcardwindow_set_incorrect_guesses (GwFlashCardWindow *window, gint new_guesses)
+{
+    //Sanity check
+    if (window == NULL) return;
+    if (new_guesses < 0) new_guesses = 0;
+
+    //Declarations
+    GwFlashCardWindowPrivate *priv;
+    GwFlashCardStore *store;
+    gchar *text;
+    gint guess_delta, old_guesses;
+
+    //Initializations
+    priv = window->priv;
+    if (priv->model == NULL) return;
+    store = GW_FLASHCARDSTORE (priv->model);
+    old_guesses = priv->incorrect_guesses;
+    guess_delta = new_guesses - old_guesses;
+    priv->incorrect_guesses = new_guesses;
     text = g_strdup_printf ("%d", priv->incorrect_guesses);
+
+    //Update the totall correct guesses for the flashcard session
     if (text != NULL)
     {
       gtk_label_set_text (priv->incorrect_label, text);
-      g_free (text);
+      g_free (text); text = NULL;
     }
 
-/*
-    if (priv->incorrect_guesses > 0) 
-      gw_flashcardwindow_increment_source_incorrect_guesses (window);
-*/
+    //Update the tally for this specific word
+    old_guesses = gw_flashcardstore_get_incorrect_guesses (store, &(priv->iter));
+    new_guesses = old_guesses + guess_delta;
+    gw_flashcardstore_set_incorrect_guesses (store, &(priv->iter), new_guesses);
 }
 
 
 void
 gw_flashcardwindow_increment_correct_guesses (GwFlashCardWindow *window)
 {
+    gint guesses;
+    guesses = gw_flashcardwindow_get_correct_guesses (window);
+    gw_flashcardwindow_set_correct_guesses (window, guesses + 1);
+}
+
+
+gint
+gw_flashcardwindow_get_correct_guesses (GwFlashCardWindow *window)
+{
+    //Sanity check
+    if (window == NULL) return -1;
+
     GwFlashCardWindowPrivate *priv;
-    gchar *text;
 
     priv = window->priv;
-    priv->correct_guesses++;
+
+    return priv->correct_guesses;
+}
+
+
+void
+gw_flashcardwindow_set_correct_guesses (GwFlashCardWindow *window, gint new_guesses)
+{
+    //Sanity check
+    if (window == NULL) return;
+    if (new_guesses < 0) return;
+
+    //Declarations
+    GwFlashCardWindowPrivate *priv;
+    GwFlashCardStore *store;
+    gchar *text;
+    gint guess_delta, old_guesses;
+
+    //Initializations
+    priv = window->priv;
+    if (priv->model == NULL) return;
+    store = GW_FLASHCARDSTORE (priv->model);
+    old_guesses = priv->correct_guesses;
+    guess_delta = new_guesses - old_guesses;
+    priv->correct_guesses = new_guesses;
     text = g_strdup_printf ("%d", priv->correct_guesses);
+
+    //Update the totall correct guesses for the flashcard session
     if (text != NULL)
     {
       gtk_label_set_text (priv->correct_label, text);
-      g_free (text);
+      g_free (text); text = NULL;
     }
 
-/*
-    if (priv->correct_guesses > 0) 
-      gw_flashcardwindow_increment_source_correct_guesses (window);
-*/
+    //Update the tally for this specific word
+    old_guesses = gw_flashcardstore_get_correct_guesses (store, &(priv->iter));
+    new_guesses = old_guesses + guess_delta;
+    gw_flashcardstore_set_correct_guesses (store, &(priv->iter), new_guesses);
 }
 
 

@@ -62,7 +62,7 @@ gw_flashcardstore_new ()
 
 
 static void 
-gw_flashcardstore_init (GwFlashCardStore *model)
+gw_flashcardstore_init (GwFlashCardStore *store)
 {
     GType types[] = { 
        G_TYPE_STRING,  //GW_FLASHCARDSTORE_COLUMN_QUESTION
@@ -70,13 +70,15 @@ gw_flashcardstore_init (GwFlashCardStore *model)
        G_TYPE_BOOLEAN, //GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED
        G_TYPE_POINTER, //GW_FLASHCARDSTORE_COLUMN_TREE_PATH
        G_TYPE_INT,     //GW_FLASHCARDSTORE_COLUMN_WEIGHT
-       G_TYPE_INT      //GW_FLASHCARDSTORE_ORDER
+       G_TYPE_INT,      //GW_FLASHCARDSTORE_ORDER
+       G_TYPE_INT,      //GW_FLASHCARDSTORE_CORRECT_GUESSES
+       G_TYPE_INT      //GW_FLASHCARDSTORE_INCORRECT_GUESSES
     };
 
-    gtk_list_store_set_column_types (GTK_LIST_STORE (model), TOTAL_GW_FLASHCARDSTORE_COLUMNS, types);
+    gtk_list_store_set_column_types (GTK_LIST_STORE (store), TOTAL_GW_FLASHCARDSTORE_COLUMNS, types);
 
-    model->priv = GW_FLASHCARDSTORE_GET_PRIVATE (model);
-    memset(model->priv, 0, sizeof(GwFlashCardStorePrivate));
+    store->priv = GW_FLASHCARDSTORE_GET_PRIVATE (store);
+    memset(store->priv, 0, sizeof(GwFlashCardStorePrivate));
 }
 
 
@@ -84,12 +86,13 @@ static void
 gw_flashcardstore_finalize (GObject *object)
 {
     GwFlashCardStore *store;
-//    GwFlashCardStorePrivate *priv;
+    GwFlashCardStorePrivate *priv;
 
     store = GW_FLASHCARDSTORE (object);
-//    priv = store->priv;
+    priv = store->priv;
 
     gw_flashcardstore_finalize_inner_paths (store);
+    g_object_unref (priv->store); priv->store = NULL;
 
     G_OBJECT_CLASS (gw_flashcardstore_parent_class)->finalize (object);
 }
@@ -188,17 +191,6 @@ gw_flashcardstore_class_init (GwFlashCardStoreClass *klass)
 }
 
 
-static gint
-gw_flashcardstore_calculate_weight (guint32 hours, gint incorrect, gint correct)
-{
-    //The effect of this is short term score is important.
-    //long term, time is important for deciding weight
-    gint score;
-    score = (correct * 100 / (incorrect + correct));
-    return ((gint) hours - score);
-}
-
-
 void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore      *store, 
                                                 GwVocabularyWordStore *wordstore,
                                                 gint                   question_column,
@@ -214,39 +206,38 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore      *store,
     gtk_list_store_clear (GTK_LIST_STORE (store));
 
     //Declarations
+    GwFlashCardStorePrivate *priv;
     GtkTreeModel *source_model;
     GtkListStore *target_store;
     GtkTreeIter source_iter;
     GtkTreeIter target_iter;
     gint weight;
-    gint incorrect;
-    gint correct;
-    guint32 hours;
     gint order;
     gchar *question, *answer;
     GtkTreePath *path;
     gboolean valid;
 
     //Initializations
+    priv = store->priv;
     source_model = GTK_TREE_MODEL (wordstore);
     target_store = GTK_LIST_STORE (store);
     valid = gtk_tree_model_get_iter_first (source_model, &source_iter);
     order = 0;
 
+    if (priv->store != NULL) g_object_unref (priv->store); 
+    priv->store = wordstore;
+    g_object_ref (priv->store);
+
     //Copy the new entries
     while (valid)
     {
       path = gtk_tree_model_get_path (source_model, &source_iter);
-      gtk_tree_model_get (source_model, &source_iter, question_column, &question, answer_column, &answer,
-            GW_VOCABULARYWORDSTORE_COLUMN_TIMESTAMP, &hours,
-            GW_VOCABULARYWORDSTORE_COLUMN_CORRECT_GUESSES, &correct,
-            GW_VOCABULARYWORDSTORE_COLUMN_INCORRECT_GUESSES, &incorrect,
-          -1);
+      gtk_tree_model_get (source_model, &source_iter, question_column, &question, answer_column, &answer, -1);
 
 
       if (path != NULL && question != NULL && strlen (question) && answer != NULL && strlen (answer))
       {
-        weight = gw_flashcardstore_calculate_weight (hours, incorrect, correct);
+        weight = gw_vocabularywordstore_calculate_weight (wordstore, &source_iter);
         gtk_list_store_append (target_store, &target_iter);
         gtk_list_store_set (target_store, &target_iter,
             GW_FLASHCARDSTORE_COLUMN_QUESTION, question,
@@ -255,6 +246,8 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore      *store,
             GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, FALSE,
             GW_FLASHCARDSTORE_COLUMN_WEIGHT, weight,
             GW_FLASHCARDSTORE_COLUMN_ORDER, order,
+            GW_FLASHCARDSTORE_COLUMN_CORRECT_GUESSES, 0,
+            GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES, 0,
             -1);
         order++;
       }
@@ -265,7 +258,6 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore      *store,
 
       valid = gtk_tree_model_iter_next (source_model, &source_iter);
     }
-
 }
 
 
@@ -366,86 +358,143 @@ gw_flashcardstore_finalize_inner_paths (GwFlashCardStore *store)
 }
 
 
-/*
-static void
-gw_flashcardstore_increment_source_correct_guesses (GwFlashCardStore *store)
+void
+gw_flashcardstore_set_correct_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses)
 {
-    GwFlashCardWindowPrivate *priv;
+    //Sanity checks
+    if (store == NULL) return;
+    if (flashiter == NULL) return;
+    if (new_guesses < 0) new_guesses = 0;
+
+    //Declarations
+    GwFlashCardStorePrivate *priv;
+    GtkTreeModel *model;
     GtkTreePath *path;
     GtkTreeIter iter;
     gboolean valid;
-    gint correct_guesses;
-    gchar *source_answer, *source_question;
+    gint old_guesses, guess_delta;
+    gint guesses;
 
-    priv = window->priv;
+    //Initializations
+    priv = store->priv;
+    model = GTK_TREE_MODEL (store);
+    if (priv->store == NULL) return;
+    gtk_tree_model_get (model, flashiter, GW_FLASHCARDSTORE_COLUMN_TREE_PATH, &path, -1);
+    gtk_tree_model_get (model, flashiter, GW_FLASHCARDSTORE_COLUMN_CORRECT_GUESSES, &old_guesses, -1);
+    if (old_guesses < 0) { old_guesses = 0; new_guesses = 0; }
+    guess_delta = new_guesses - old_guesses;
+    valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path);
 
-    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
-
-    if (path == NULL) return;
-
-    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
+    //Propagate the number change to the vocabulary list
     if (valid)
     {
-        gtk_tree_model_get (priv->source_model, &iter, 
-          priv->source_answer_column, &source_answer,
-          priv->source_question_column, &source_question, 
-          -1);
-        correct_guesses = gw_vocabularywordstore_get_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-
-        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
-            source_question != NULL && strcmp(priv->question, source_question) == 0)
-        {
-          correct_guesses++;
-          gw_vocabularywordstore_set_correct_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, correct_guesses);
-          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
-        }
-
-        if (source_answer != NULL) g_free (source_answer);
-        if (source_question != NULL) g_free (source_question);
+      guesses = gw_vocabularywordstore_get_correct_guesses_by_iter (priv->store, &iter);
+      gw_vocabularywordstore_set_correct_guesses_by_iter (priv->store, &iter, guesses + guess_delta);
+      gw_vocabularywordstore_update_timestamp_by_iter (priv->store, &iter);
+      gw_vocabularywordstore_set_has_changes (priv->store, TRUE);
+      gw_vocabularywordstore_save (priv->store, NULL);
     }
+
+    //set the new flashcard word number
+    gtk_list_store_set (GTK_LIST_STORE (store), flashiter, GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES, new_guesses, -1);
 }
 
 
-static void
-gw_flashcardwindow_increment_source_incorrect_guesses (GwFlashCardWindow *window)
+gint
+gw_flashcardstore_get_correct_guesses (GwFlashCardStore *store, GtkTreeIter *iter)
 {
-    GwFlashCardWindowPrivate *priv;
+    //Sanity checks
+    if (store == NULL) return 0;
+    if (iter == NULL) return 0;
+
+    //Declarations
+    GtkTreeModel *model;
+    gint guesses;
+
+    //Initializations
+    model = GTK_TREE_MODEL (store);
+    gtk_tree_model_get (model, iter, GW_FLASHCARDSTORE_COLUMN_CORRECT_GUESSES, &guesses, -1);
+
+    return guesses;
+}
+
+
+void
+gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses)
+{
+    //Sanity checks
+    if (store == NULL) return;
+    if (flashiter == NULL) return;
+    if (new_guesses < 0) new_guesses = 0;
+
+    //Declarations
+    GwFlashCardStorePrivate *priv;
+    GtkTreeModel *model;
     GtkTreePath *path;
     GtkTreeIter iter;
     gboolean valid;
-    gint incorrect_guesses;
-    gchar *source_answer, *source_question;
+    gint old_guesses, guess_delta;
+    gint guesses;
 
-    priv = window->priv;
+    //Initializations
+    priv = store->priv;
+    model = GTK_TREE_MODEL (store);
+    if (priv->store == NULL) return;
+    gtk_tree_model_get (model, flashiter, GW_FLASHCARDSTORE_COLUMN_TREE_PATH, &path, -1);
+    gtk_tree_model_get (model, flashiter, GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES, &old_guesses, -1);
+    if (old_guesses < 0) { old_guesses = 0; new_guesses = 0; }
+    guess_delta = new_guesses - old_guesses;
+    valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path);
 
-    gtk_tree_model_get (priv->model, &(priv->iter), COLUMN_TREE_PATH, &path, -1);
-
-    if (path == NULL) return;
-
-    valid = gtk_tree_model_get_iter (priv->source_model, &iter, path);
+    //Propagate the number change to the vocabulary list
     if (valid)
     {
-        gtk_tree_model_get (priv->source_model, &iter, 
-          priv->source_answer_column, &source_answer,
-          priv->source_question_column, &source_question, 
-          -1);
-        incorrect_guesses = gw_vocabularywordstore_get_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-
-        if (source_answer != NULL && strcmp(priv->answer, source_answer) == 0 && 
-            source_question != NULL && strcmp(priv->question, source_question) == 0)
-        {
-          incorrect_guesses++;
-          gw_vocabularywordstore_set_incorrect_guesses_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter, incorrect_guesses);
-          gw_vocabularywordstore_update_timestamp_by_iter (GW_VOCABULARYWORDSTORE (priv->source_model), &iter);
-          gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (priv->source_model), TRUE);
-          gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (priv->source_model), NULL);
-        }
-
-        if (source_answer != NULL) g_free (source_answer);
-        if (source_question != NULL) g_free (source_question);
+      guesses = gw_vocabularywordstore_get_incorrect_guesses_by_iter (priv->store, &iter);
+      gw_vocabularywordstore_set_incorrect_guesses_by_iter (priv->store, &iter, guesses + guess_delta);
+      gw_vocabularywordstore_update_timestamp_by_iter (priv->store, &iter);
+      gw_vocabularywordstore_set_has_changes (priv->store, TRUE);
+      gw_vocabularywordstore_save (priv->store, NULL);
     }
+
+    //set the new flashcard word number
+    gtk_list_store_set (GTK_LIST_STORE (store), flashiter, GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES, new_guesses, -1);
 }
-*/
+
+
+gint
+gw_flashcardstore_get_incorrect_guesses (GwFlashCardStore *store, GtkTreeIter *iter)
+{
+    //Sanity checks
+    if (store == NULL) return 0;
+    if (iter == NULL) return 0;
+
+    //Declarations
+    GtkTreeModel *model;
+    gint guesses;
+
+    //Initializations
+    model = GTK_TREE_MODEL (store);
+    gtk_tree_model_get (model, iter, GW_FLASHCARDSTORE_COLUMN_INCORRECT_GUESSES, &guesses, -1);
+
+    return guesses;
+}
+
+
+void
+gw_flashcardstore_set_completed (GwFlashCardStore *store, GtkTreeIter *iter, gboolean completed)
+{
+    gtk_list_store_set (GTK_LIST_STORE (store), iter, GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, completed, -1);
+}
+
+
+gboolean
+gw_flashcardstore_is_completed (GwFlashCardStore *store, GtkTreeIter *iter)
+{
+    gboolean completed;
+
+    gtk_tree_model_get (GTK_TREE_MODEL (store), iter, GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED, &completed, -1);
+
+    return completed;
+}
+
 
