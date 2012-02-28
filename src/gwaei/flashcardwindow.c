@@ -457,7 +457,7 @@ gw_flashcardwindow_set_incorrect_guesses (GwFlashCardWindow *window, gint new_gu
     //Update the tally for this specific word
     old_guesses = gw_flashcardstore_get_incorrect_guesses (store, &(priv->iter));
     new_guesses = old_guesses + guess_delta;
-    gw_flashcardstore_set_incorrect_guesses (store, &(priv->iter), new_guesses);
+    gw_flashcardstore_set_incorrect_guesses (store, &(priv->iter), new_guesses, priv->track);
 }
 
 
@@ -516,7 +516,7 @@ gw_flashcardwindow_set_correct_guesses (GwFlashCardWindow *window, gint new_gues
     //Update the tally for this specific word
     old_guesses = gw_flashcardstore_get_correct_guesses (store, &(priv->iter));
     new_guesses = old_guesses + guess_delta;
-    gw_flashcardstore_set_correct_guesses (store, &(priv->iter), new_guesses);
+    gw_flashcardstore_set_correct_guesses (store, &(priv->iter), new_guesses, priv->track);
 }
 
 

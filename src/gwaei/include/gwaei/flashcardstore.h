@@ -49,10 +49,10 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore*, GwVocabularyW
 void gw_flashcardstore_trim (GwFlashCardStore*, gint);
 void gw_flashcardstore_shuffle (GwFlashCardStore*);
 
-void gw_flashcardstore_set_correct_guesses (GwFlashCardStore*, GtkTreeIter*, gint);
+void gw_flashcardstore_set_correct_guesses (GwFlashCardStore*, GtkTreeIter*, gint, gboolean);
 gint gw_flashcardstore_get_correct_guesses (GwFlashCardStore*, GtkTreeIter*);
 
-void gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore*, GtkTreeIter*, gint);
+void gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore*, GtkTreeIter*, gint, gboolean);
 gint gw_flashcardstore_get_incorrect_guesses (GwFlashCardStore*, GtkTreeIter*);
 
 void gw_flashcardstore_set_completed (GwFlashCardStore*, GtkTreeIter*, gboolean);

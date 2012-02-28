@@ -70,8 +70,8 @@ gw_flashcardstore_init (GwFlashCardStore *store)
        G_TYPE_BOOLEAN, //GW_FLASHCARDSTORE_COLUMN_IS_COMPLETED
        G_TYPE_POINTER, //GW_FLASHCARDSTORE_COLUMN_TREE_PATH
        G_TYPE_INT,     //GW_FLASHCARDSTORE_COLUMN_WEIGHT
-       G_TYPE_INT,      //GW_FLASHCARDSTORE_ORDER
-       G_TYPE_INT,      //GW_FLASHCARDSTORE_CORRECT_GUESSES
+       G_TYPE_INT,     //GW_FLASHCARDSTORE_ORDER
+       G_TYPE_INT,     //GW_FLASHCARDSTORE_CORRECT_GUESSES
        G_TYPE_INT      //GW_FLASHCARDSTORE_INCORRECT_GUESSES
     };
 
@@ -359,7 +359,7 @@ gw_flashcardstore_finalize_inner_paths (GwFlashCardStore *store)
 
 
 void
-gw_flashcardstore_set_correct_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses)
+gw_flashcardstore_set_correct_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses, gboolean record)
 {
     //Sanity checks
     if (store == NULL) return;
@@ -386,7 +386,7 @@ gw_flashcardstore_set_correct_guesses (GwFlashCardStore *store, GtkTreeIter *fla
     valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path);
 
     //Propagate the number change to the vocabulary list
-    if (valid)
+    if (record && valid)
     {
       guesses = gw_vocabularywordstore_get_correct_guesses_by_iter (priv->store, &iter);
       gw_vocabularywordstore_set_correct_guesses_by_iter (priv->store, &iter, guesses + guess_delta);
@@ -420,7 +420,7 @@ gw_flashcardstore_get_correct_guesses (GwFlashCardStore *store, GtkTreeIter *ite
 
 
 void
-gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses)
+gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore *store, GtkTreeIter *flashiter, gint new_guesses, gboolean record)
 {
     //Sanity checks
     if (store == NULL) return;
@@ -447,7 +447,7 @@ gw_flashcardstore_set_incorrect_guesses (GwFlashCardStore *store, GtkTreeIter *f
     valid = gtk_tree_model_get_iter (GTK_TREE_MODEL (priv->store), &iter, path);
 
     //Propagate the number change to the vocabulary list
-    if (valid)
+    if (record && valid)
     {
       guesses = gw_vocabularywordstore_get_incorrect_guesses_by_iter (priv->store, &iter);
       gw_vocabularywordstore_set_incorrect_guesses_by_iter (priv->store, &iter, guesses + guess_delta);
