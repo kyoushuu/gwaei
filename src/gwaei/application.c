@@ -95,6 +95,7 @@ gw_application_constructed (GObject *object)
     lw_regex_initialize ();
 
 #ifdef OS_MINGW
+/*
     GtkSettings *settings;
     settings = gtk_settings_get_default ();
     g_object_set (settings, "gtk-theme-name", "MS-Windows", NULL);
@@ -103,6 +104,7 @@ gw_application_constructed (GObject *object)
     g_object_set (settings, "gtk-cursor-blink", FALSE, NULL);
     g_object_set (settings, "gtk-alternative-button-order", TRUE, NULL);
     g_object_unref (settings);
+*/
 #endif
 
     gw_application_attach_signals (application);

@@ -772,6 +772,7 @@ gw_vocabularywordstore_calculate_weight (GwVocabularyWordStore *store, GtkTreeIt
     gint denominator;
     gint incorrect;
     gint correct;
+    gint weight;
     guint32 hours;
 
     model = GTK_TREE_MODEL (store);
@@ -788,6 +789,8 @@ gw_vocabularywordstore_calculate_weight (GwVocabularyWordStore *store, GtkTreeIt
     else
       score = 0;
   
-    return ((gint) hours - score);
+    weight = ((gint) hours + score);
+  
+    return weight;
 }
 

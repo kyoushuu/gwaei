@@ -274,7 +274,10 @@ void gw_flashcardstore_trim (GwFlashCardStore *store, gint max)
     gboolean valid;
     gint children;
 
-    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store), GW_FLASHCARDSTORE_COLUMN_WEIGHT, GTK_SORT_DESCENDING);
+    gtk_tree_sortable_set_sort_column_id (
+        GTK_TREE_SORTABLE (store), 
+        GW_FLASHCARDSTORE_COLUMN_WEIGHT, 
+        GTK_SORT_DESCENDING);
 
     model = GTK_TREE_MODEL (store);
     children = gtk_tree_model_iter_n_children (model, NULL);
@@ -289,7 +292,14 @@ void gw_flashcardstore_trim (GwFlashCardStore *store, gint max)
       valid = gtk_tree_model_get_iter_first (model, &iter);
     }
 
-    gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE (store), GW_FLASHCARDSTORE_COLUMN_ORDER, GTK_SORT_ASCENDING);
+    gtk_tree_sortable_set_sort_column_id (
+        GTK_TREE_SORTABLE (store), 
+        GW_FLASHCARDSTORE_COLUMN_ORDER, 
+        GTK_SORT_ASCENDING);
+    gtk_tree_sortable_set_sort_column_id (
+        GTK_TREE_SORTABLE (store), 
+        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID, 
+        GTK_SORT_ASCENDING);
 }
 
 
