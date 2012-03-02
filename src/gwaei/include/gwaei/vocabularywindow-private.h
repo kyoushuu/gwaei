@@ -13,6 +13,7 @@ typedef enum {
   GW_VOCABULARYWINDOW_SIGNALID_UNUSED,
   GW_VOCABULARYWINDOW_SIGNALID_CHANGED,
   GW_VOCABULARYWINDOW_SIGNALID_SHUFFLE_CHANGED,
+  GW_VOCABULARYWINDOW_SIGNALID_TRIM_CHANGED,
   GW_VOCABULARYWINDOW_SIGNALID_TRACK_RESULTS_CHANGED,
   GW_VOCABULARYWINDOW_SIGNALID_LIST_ORDER_CHANGED,
   GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED,
@@ -47,6 +48,7 @@ struct _GwVocabularyWindowPrivate {
   GtkAction *furigana_definition_flashcards_action;
 
   GtkToggleAction *shuffle_toggleaction;
+  GtkToggleAction *trim_toggleaction;
   GtkToggleAction *track_results_toggleaction;
   GtkToggleAction *show_toolbar_toggleaction;
   GtkToggleAction *show_position_column_toggleaction;
@@ -55,6 +57,7 @@ struct _GwVocabularyWindowPrivate {
 
   gboolean has_changes;
   gboolean shuffle;
+  gboolean trim;
   gboolean track;
 
   //Main variables

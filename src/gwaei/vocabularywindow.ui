@@ -73,16 +73,21 @@
     <property name="label" translatable="yes">Show _Toolbar</property>
     <signal name="toggled" handler="gw_vocabularywindow_toolbar_toggled_cb" object="toplevel" swapped="no"/>
   </object>
-  <object class="GtkToggleAction" id="shuffle_toggleaction">
-    <property name="label" translatable="yes">Shuffle Flashcards</property>
+  <object class="GtkToggleAction" id="shuffle_flashcards_toggleaction">
+    <property name="label" translatable="yes">_Shuffle Flashcards</property>
     <property name="short_label" translatable="yes">Shuffle</property>
     <property name="icon_name">media-playlist-shuffle</property>
     <signal name="toggled" handler="gw_vocabularywindow_shuffle_toggled_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkToggleAction" id="track_results_toggleaction">
-    <property name="label" translatable="yes">Track Score Results</property>
+    <property name="label" translatable="yes">T_rack Score Results</property>
     <property name="short_label" translatable="yes">Track Results</property>
     <signal name="toggled" handler="gw_vocabularywindow_track_results_toggled_cb" object="toplevel" swapped="no"/>
+  </object>
+  <object class="GtkToggleAction" id="trim_flashcards_toggleaction">
+    <property name="label" translatable="yes">_Trim Flashcards</property>
+    <property name="short_label" translatable="yes">Trim</property>
+    <signal name="toggled" handler="gw_vocabularywindow_trim_toggled_cb" object="toplevel" swapped="no"/>
   </object>
   <object class="GtkMenu" id="toolbar_study_menu">
     <property name="visible">True</property>
@@ -465,8 +470,15 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="shuffle_menuitem">
-                        <property name="related_action">shuffle_toggleaction</property>
+                      <object class="GtkCheckMenuItem" id="shuffle_flashcards_menuitem">
+                        <property name="related_action">shuffle_flashcards_toggleaction</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="trim_flashcards_menuitem">
+                        <property name="related_action">trim_flashcards_toggleaction</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -551,11 +563,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkToggleToolButton" id="shuffle_toolbutton">
-                <property name="related_action">shuffle_toggleaction</property>
+              <object class="GtkToggleToolButton" id="shuffle_flashcards_toolbutton">
+                <property name="related_action">shuffle_flashcards_toggleaction</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="related_action">shuffle_toggleaction</property>
+                <property name="related_action">shuffle_flashcards_toggleaction</property>
                 <property name="label" translatable="yes">Shuffle</property>
                 <property name="use_underline">True</property>
               </object>

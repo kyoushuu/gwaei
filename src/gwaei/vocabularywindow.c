@@ -155,7 +155,9 @@ gw_vocabularywindow_constructed (GObject *object)
     priv->revert_action =     GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
 
     priv->shuffle_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_toggleaction"));
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_flashcards_toggleaction"));
+    priv->trim_toggleaction = 
+      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "trim_flashcards_toggleaction"));
     priv->track_results_toggleaction = 
       GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "track_results_toggleaction"));
     priv->show_toolbar_toggleaction =
@@ -388,6 +390,14 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
         window
     );
 
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRIM_CHANGED] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_VOCABULARY,
+        LW_KEY_TRIM_FLASHCARDS,
+        gw_vocabularywindow_sync_trim_flashcards_cb,
+        window
+    );
+
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_LIST_ORDER_CHANGED] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_VOCABULARY,
@@ -446,6 +456,13 @@ gw_vocabularywindow_remove_signals (GwVocabularyWindow *window)
       priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SHUFFLE_CHANGED]
     );
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_SHUFFLE_CHANGED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRIM_CHANGED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TRIM_CHANGED] = 0;
 
     lw_preferences_remove_change_listener_by_schema (
       preferences, 
@@ -807,7 +824,7 @@ gw_vocabularywindow_start_flashcards (GwVocabularyWindow *window,
 
       flashcardstore = GW_FLASHCARDSTORE (gw_flashcardstore_new ());
       gw_flashcardstore_set_vocabularywordstore (flashcardstore, vocabularywordstore, question_column, answer_column);
-      gw_flashcardstore_trim (GW_FLASHCARDSTORE (flashcardstore), max);
+      if (priv->trim) gw_flashcardstore_trim (GW_FLASHCARDSTORE (flashcardstore), max);
       if (priv->shuffle) gw_flashcardstore_shuffle (flashcardstore);
 
       flashcardwindow = gw_flashcardwindow_new (GTK_APPLICATION (application));

@@ -76,9 +76,15 @@
     </key>
 
     <key name="shuffle-flashcards" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Whether the generated flashchard decks should be shuffled</summary>
       <description>The newly created flashcard decks will be shulled.</description>
+    </key>
+
+    <key name="trim-flashcards" type="b">
+      <default>true</default>
+      <summary>Whether the generated flashchard decks should be trimmed.</summary>
+      <description>The newly created flashcard decks will be trimmed to the flashcard-deck-size.</description>
     </key>
 
     <key name="flashcard-deck-size" type="i">
