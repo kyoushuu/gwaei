@@ -37,10 +37,10 @@ TABLE OF CONTENTS
   required compilation dependancies is:
 
   sudo apt-get install libcurl4-gnutls-dev libgtk-3-dev gnome-doc-utils \
-  libncursesw5-dev imagemagick intltool  rarian-compat \
+  imagemagick intltool  rarian-compat \
   gsettings-desktop-schemas
 
-  sudo pacman -S autoconf automake make gnome-doc-utils pkg-config
+  sudo pacman -S autoconf automake make gnome-doc-utils pkg-config curl gtk3 rarian gsettings-desktop-schemas dconf enchant 
 
   For inputing Japanese queries, installing some software for Japanese
   conversion is highly recommended.  Currently, the three main linux methods are
