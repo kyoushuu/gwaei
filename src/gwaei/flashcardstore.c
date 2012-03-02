@@ -234,7 +234,6 @@ void gw_flashcardstore_set_vocabularywordstore (GwFlashCardStore      *store,
       path = gtk_tree_model_get_path (source_model, &source_iter);
       gtk_tree_model_get (source_model, &source_iter, question_column, &question, answer_column, &answer, -1);
 
-
       if (path != NULL && question != NULL && strlen (question) && answer != NULL && strlen (answer))
       {
         weight = gw_vocabularywordstore_calculate_weight (wordstore, &source_iter);
@@ -273,6 +272,9 @@ void gw_flashcardstore_trim (GwFlashCardStore *store, gint max)
     GtkTreeIter iter;
     gboolean valid;
     gint children;
+    gchar *path_string;
+    GRand *random;
+    gint position;
 
     gtk_tree_sortable_set_sort_column_id (
         GTK_TREE_SORTABLE (store), 
@@ -280,17 +282,30 @@ void gw_flashcardstore_trim (GwFlashCardStore *store, gint max)
         GTK_SORT_DESCENDING);
 
     model = GTK_TREE_MODEL (store);
+    random = g_rand_new ();
     children = gtk_tree_model_iter_n_children (model, NULL);
-    valid = gtk_tree_model_get_iter_first (model, &iter);
 
-    while (valid && children > max)
+    if (random != NULL)
     {
-      gtk_tree_model_get (model, &iter, GW_FLASHCARDSTORE_COLUMN_TREE_PATH, &path, -1);
-      if (path != NULL) gtk_tree_path_free (path); path = NULL;
-      gtk_list_store_remove (GTK_LIST_STORE (store), &iter);
-      children--;
-      valid = gtk_tree_model_get_iter_first (model, &iter);
-    }
+      while (children > max && children > 0)
+      {
+        position = g_rand_int_range (random, 0, children);
+        path_string = g_strdup_printf ("%d", position);
+        if (path_string != NULL)
+        {
+          valid = gtk_tree_model_get_iter_from_string (model, &iter, path_string);
+          if (valid)
+          {
+            gtk_tree_model_get (model, &iter, GW_FLASHCARDSTORE_COLUMN_TREE_PATH, &path, -1);
+            if (path != NULL) gtk_tree_path_free (path); path = NULL;
+            gtk_list_store_remove (GTK_LIST_STORE (store), &iter);
+          }
+          g_free (path_string); path_string = NULL;
+        }
+        children--;
+      }
+      g_rand_free (random); random = NULL;
+    } 
 
     gtk_tree_sortable_set_sort_column_id (
         GTK_TREE_SORTABLE (store), 
