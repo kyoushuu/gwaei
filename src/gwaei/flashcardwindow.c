@@ -529,7 +529,7 @@ gw_flashcardwindow_update_progress (GwFlashCardWindow *window)
 
     priv = window->priv;
     fraction = (gdouble) (priv->total_cards - priv->cards_left) / (gdouble) priv->total_cards;
-    text = g_strdup_printf (ngettext("%d Flashcard Left", "%d Flashcards Left", priv->cards_left), priv->cards_left);
+    text = g_strdup_printf (ngettext("%d Flashcard Left...", "%d Flashcards Left...", priv->cards_left), priv->cards_left);
 
     gtk_progress_bar_set_fraction (priv->status_progressbar, fraction);
     gtk_progress_bar_set_text (priv->status_progressbar, text);

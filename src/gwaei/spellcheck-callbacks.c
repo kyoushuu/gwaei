@@ -295,6 +295,8 @@ gw_spellcheck_update_timeout (gpointer data)
           priv->timeout++;
         else //Start the check
           gw_spellcheck_start_check (spellcheck);
+        return_value = TRUE;
+        break;
       case GW_SPELLCHECKSTATUS_CHECKING: //Do nothing but wait while a spellcheck is running
         return_value = TRUE;
         break;
