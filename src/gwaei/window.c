@@ -367,7 +367,9 @@ gw_window_load_size (GwWindow *window)
         {
           width = (gint) g_ascii_strtoll (atom[1], &endptr, 10);
           height = (gint) g_ascii_strtoll (atom[2], &endptr, 10);
-          if (width > 0 && height > 0)
+          gint default_width, default_height;
+          gtk_window_get_default_size (GTK_WINDOW (window), &default_width, &default_height);
+          if (width > 0 && width != default_width && height > 0 && height != default_height)
           {
             gtk_window_set_default_size (GTK_WINDOW (window), width, height);
           }
