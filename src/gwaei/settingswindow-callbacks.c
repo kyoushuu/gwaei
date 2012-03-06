@@ -51,7 +51,7 @@ gw_settingswindow_hira_kata_conv_toggled_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_HIRA_KATA);
@@ -76,7 +76,7 @@ gw_settingswindow_kata_hira_conv_toggled_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_KATA_HIRA);
@@ -101,7 +101,7 @@ gw_settingswindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
@@ -126,7 +126,7 @@ gw_settingswindow_search_as_you_type_toggled_cb (GtkWidget *widget, gpointer dat
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SEARCH_AS_YOU_TYPE);
@@ -153,7 +153,7 @@ gw_settingswindow_romaji_kana_conv_changed_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -182,7 +182,7 @@ gw_settingswindow_swatch_color_changed_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER (widget), &color);
@@ -232,7 +232,7 @@ gw_settingswindow_reset_all_swatches_activated_cb (GtkWidget *widget, gpointer d
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
 
@@ -260,7 +260,7 @@ gw_settingswindow_use_global_document_font_toggled_cb (GtkWidget *widget, gpoint
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_FONT, LW_KEY_FONT_USE_GLOBAL_FONT);
@@ -284,7 +284,7 @@ gw_settingswindow_custom_document_font_changed_cb (GtkWidget *widget, gpointer d
     const char *font;
 
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -310,7 +310,7 @@ gw_settingswindow_sync_use_global_document_font_cb (GSettings *settings, gchar *
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     request = lw_preferences_get_boolean (settings, KEY);
@@ -337,7 +337,7 @@ gw_settingswindow_sync_global_document_font_cb (GSettings *settings, gchar *KEY,
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -370,7 +370,7 @@ gw_settingswindow_sync_custom_font_cb (GSettings *settings, gchar *KEY, gpointer
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
@@ -403,7 +403,7 @@ gw_settingswindow_sync_search_as_you_type_cb (GSettings *settings, gchar *KEY, g
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -434,7 +434,7 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     dictionarystore = gw_application_get_dictionarystore (application);
@@ -479,7 +479,7 @@ gw_settingswindow_sync_hira_kata_conv_cb (GSettings *settings, gchar *KEY, gpoin
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     togglebutton = GTK_TOGGLE_BUTTON (priv->hiragana_to_katakana_checkbutton);
@@ -503,7 +503,7 @@ gw_settingswindow_sync_kata_hira_conv_cb (GSettings *settings, gchar *KEY, gpoin
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     togglebutton = GTK_TOGGLE_BUTTON (priv->katakana_to_hiragana_checkbutton);
@@ -526,7 +526,7 @@ gw_settingswindow_sync_swatch_color_cb (GSettings *settings, gchar *KEY, gpointe
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     swatch = GTK_COLOR_CHOOSER (data);
     lw_preferences_get_string (hex_color_string, settings, KEY, 20);
     g_assert (swatch != NULL);
@@ -552,7 +552,7 @@ gw_settingswindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer 
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     toplevel = gw_window_get_toplevel (GW_WINDOW (window));
     togglebutton = GTK_TOGGLE_BUTTON (priv->spellcheck_checkbutton);
@@ -602,7 +602,7 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
@@ -643,7 +643,7 @@ gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidget *widget, gpointer d
     GwApplication *application;
 
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
 
     dictionaryinstallwindow = gw_dictionaryinstallwindow_new (GTK_APPLICATION (application));
@@ -655,6 +655,12 @@ gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidget *widget, gpointer d
 G_MODULE_EXPORT void 
 gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data)
 {
+    {
+      GtkTreeViewColumn *focus_column;
+      gtk_tree_view_get_cursor (view, NULL, &focus_column);
+      if (focus_column == NULL) return;
+    }
+
     //Declarations
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
@@ -668,7 +674,7 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
@@ -698,7 +704,7 @@ gw_settingswindow_open_dictionary_folder_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     directory = lw_util_build_filename (LW_PATH_DICTIONARY, NULL);
     uri = g_build_filename ("file://", directory, NULL);

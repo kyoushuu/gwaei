@@ -51,7 +51,7 @@ gw_radicalswindow_clear_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_RADICALSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_RADICALSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     gw_radicalswindow_deselect_all_radicals (window);
@@ -77,7 +77,7 @@ gw_radicalswindow_toggled_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_RADICALSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_RADICALSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     klass = GW_RADICALSWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
 
     g_signal_emit (
@@ -102,7 +102,7 @@ gw_radicalswindow_strokes_checkbox_toggled_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_RADICALSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_RADICALSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     klass = GW_RADICALSWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
     priv = window->priv;
     request = gtk_toggle_button_get_active (priv->strokes_checkbutton);
@@ -125,7 +125,7 @@ gw_radicalswindow_close_cb (GtkWidget* widget, gpointer data)
 
     //Initializations
     window = GW_RADICALSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_RADICALSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
 
     gtk_widget_hide (GTK_WIDGET (window));
 }
@@ -142,7 +142,7 @@ gw_radicalswindow_show_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GTK_WINDOW (widget);
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     scrolledwindow = GTK_SCROLLED_WINDOW (data);
     gtk_scrolled_window_get_policy (scrolledwindow, NULL, &policy);
 

@@ -42,7 +42,7 @@ gw_installprogresswindow_cancel_cb (GtkWidget *widget, gpointer data)
     LwDictInstList *dictinstlist;
 
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     dictinstlist = gw_application_get_dictinstlist (application);
 
@@ -99,7 +99,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
 
     //Initializations
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
-    if (window == NULL) return FALSE;
+    g_return_val_if_fail (window != NULL, FALSE);
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
     dictinstlist = gw_application_get_dictinstlist (application);

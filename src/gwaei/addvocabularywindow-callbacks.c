@@ -37,7 +37,7 @@ gw_addvocabularywindow_add_cb (GtkWidget *widget, gpointer data)
     const gchar *kanji, *furigana, *definitions;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     klass = GW_ADDVOCABULARYWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
 
@@ -68,7 +68,7 @@ gw_addvocabularywindow_cancel_cb (GtkWidget *widget, gpointer data)
     GwAddVocabularyWindow *window;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
 
     gtk_widget_destroy (GTK_WIDGET (window));
 }
@@ -81,7 +81,7 @@ gw_addvocabularywindow_kanji_changed_cb (GtkWidget *widget, gpointer data)
     GwAddVocabularyWindowPrivate *priv;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     if (priv->kanji_text != NULL) g_free (priv->kanji_text);
@@ -99,7 +99,7 @@ gw_addvocabularywindow_furigana_changed_cb (GtkWidget *widget, gpointer data)
     GwAddVocabularyWindowPrivate *priv;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     if (priv->furigana_text != NULL) g_free (priv->furigana_text);
@@ -124,7 +124,7 @@ gw_addvocabularywindow_definitions_paste_done_cb (GtkTextBuffer *buffer,
     gchar *text;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     gtk_text_buffer_get_start_iter (buffer, &start);
@@ -155,7 +155,7 @@ gw_addvocabularywindow_definitions_event_after_cb (GtkWidget *widget, GdkEvent *
     gboolean activate;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     if (priv->pasted == TRUE) { priv->pasted = FALSE; return; }
@@ -208,7 +208,7 @@ gw_addvocabularywindow_list_changed_cb (GtkWidget *widget, gpointer data)
     GtkEntry *entry;
 
     window = GW_ADDVOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_ADDVOCABULARYWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     entry = GTK_ENTRY (gtk_bin_get_child (GTK_BIN (priv->vocabulary_list_combobox)));
 

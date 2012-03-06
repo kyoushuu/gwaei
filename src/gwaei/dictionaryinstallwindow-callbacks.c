@@ -52,7 +52,7 @@ gw_dictionaryinstallwindow_filename_entry_changed_cb (GtkWidget *widget, gpointe
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     value = gtk_entry_get_text (GTK_ENTRY (widget));
 
@@ -75,7 +75,7 @@ gw_dictionaryinstallwindow_engine_combobox_changed_cb (GtkWidget *widget, gpoint
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     value = gtk_combo_box_get_active (GTK_COMBO_BOX (widget));
 
@@ -98,7 +98,7 @@ gw_dictionaryinstallwindow_source_entry_changed_cb (GtkWidget *widget, gpointer 
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -132,7 +132,7 @@ gw_dictionaryinstallwindow_reset_default_uri_cb (GtkWidget *widget, gpointer dat
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -159,7 +159,7 @@ gw_dictionaryinstallwindow_select_file_cb (GtkWidget *widget, gpointer data)
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     dialog = gtk_file_chooser_dialog_new (
       "Select File",
@@ -196,7 +196,7 @@ gw_dictionaryinstallwindow_encoding_combobox_changed_cb (GtkWidget *widget, gpoi
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     value = gtk_combo_box_get_active (GTK_COMBO_BOX (widget));
 
@@ -237,7 +237,7 @@ gw_dictionaryinstallwindow_split_checkbox_toggled_cb (GtkWidget *widget, gpointe
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     value = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
@@ -258,7 +258,7 @@ gw_dictionaryinstallwindow_merge_checkbox_toggled_cb (GtkWidget *widget, gpointe
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     value = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
@@ -288,7 +288,7 @@ gw_dictionaryinstallwindow_cursor_changed_cb (GtkTreeView *view, gpointer data)
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     hbox = GTK_WIDGET (priv->details_hbox);
 
@@ -336,7 +336,7 @@ gw_dictionaryinstallwindow_listitem_toggled_cb (GtkCellRendererToggle *renderer,
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     gtk_tree_model_get_iter_from_string (GTK_TREE_MODEL (priv->dictionary_store), &iter, path);
     gtk_tree_model_get (GTK_TREE_MODEL (priv->dictionary_store), &iter, GW_DICTINSTWINDOW_DICTSTOREFIELD_CHECKBOX_STATE, &state, GW_DICTINSTWINDOW_DICTSTOREFIELD_DICTINST_PTR, &di, -1);
@@ -361,7 +361,7 @@ gw_dictionaryinstallwindow_detail_checkbox_toggled_cb (GtkWidget *widget, gpoint
 
     //Declarations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
 
     //Trigger the list item selection callback
@@ -625,7 +625,7 @@ gw_dictionaryinstallwindow_close_cb (GtkWidget *widget, gpointer data)
     
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
 
     gtk_widget_destroy (GTK_WIDGET (window));
 }
@@ -642,7 +642,7 @@ gw_dictionaryinstallwindow_add_cb (GtkWidget *widget, gpointer data)
     
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     settingswindow = GW_SETTINGSWINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
     application = gw_window_get_application (GW_WINDOW (window));
     installprogresswindow = GW_INSTALLPROGRESSWINDOW (gw_installprogresswindow_new (GTK_APPLICATION (application)));

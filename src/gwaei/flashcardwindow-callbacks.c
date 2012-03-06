@@ -34,7 +34,7 @@ gw_flashcardwindow_next_card_cb (GtkWidget *widget, gpointer data)
     GwFlashCardWindow *window;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     if (window->priv->model == NULL) return;
 
     gw_flashcardwindow_iterate (window);
@@ -47,7 +47,7 @@ gw_flashcardwindow_check_answer_cb (GtkWidget *widget, gpointer data)
     GwFlashCardWindow *window;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     if (window->priv->model == NULL) return;
 
     gw_flashcardwindow_check_answer (window);
@@ -61,7 +61,7 @@ gw_flashcardwindow_dont_know_cb (GtkWidget *widget, gpointer data)
     GwFlashCardWindowPrivate *priv;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     priv = window->priv;
     if (priv->model == NULL) return;
 
@@ -82,7 +82,7 @@ gw_flashcardwindow_key_press_event_cb (GtkWidget *widget, GdkEvent *event, gpoin
     gint modifier;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return FALSE;
+    g_return_val_if_fail (window != NULL, FALSE);
     priv = window->priv;
     if (priv->model == NULL) return FALSE;
     sensitive = gtk_widget_get_sensitive (GTK_WIDGET (priv->answer_entry));
@@ -116,7 +116,7 @@ gw_flashcardwindow_close_cb (GtkWidget *widget, gpointer data)
     GwApplication *application;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
 
     gtk_widget_destroy (GTK_WIDGET (window));
@@ -133,7 +133,7 @@ gw_flashcardwindow_track_results_toggled_cb (GtkWidget *widget, gpointer data)
     gboolean state;
 
     window = GW_FLASHCARDWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_FLASHCARDWINDOW));
-    if (window == NULL) return;
+    g_return_if_fail (window != NULL);
     state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
     gw_flashcardwindow_set_track_results (window, state);
