@@ -387,8 +387,7 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     if (children != NULL)
     {
       i = g_list_index (children, widget) - pre_menu_items;
-      g_list_free (children);
-      children = NULL;
+      g_list_free (children); children = NULL;
     }
 
     list = lw_history_get_combined_list (priv->history);
@@ -396,13 +395,15 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     if (list != NULL)
     {
       item = LW_SEARCHITEM (g_list_nth_data (list, i));
-      g_list_free (list);
-      list = NULL;
+      g_list_free (list); list = NULL;
       if (item == NULL) return;
     }
 
-    is_in_back_index = (g_list_index (priv->history->back, item) != -1);
-    is_in_forward_index = (g_list_index (priv->history->forward, item) != -1);
+    list = lw_history_get_back_list (priv->history);
+    is_in_back_index = (g_list_index (list, item) != -1);
+
+    list = lw_history_get_forward_list (priv->history);
+    is_in_forward_index = (g_list_index (list, item) != -1);
 
     if (!is_in_back_index && !is_in_forward_index) return;
 
@@ -422,13 +423,11 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
     //Cycle the history
     if (is_in_back_index)
     {
-      while (current != item)
-        current = lw_history_go_back (priv->history, current);
+      while (current != item) current = lw_history_go_back (priv->history, current);
     }
     else if (is_in_forward_index)
     {
-      while (current != item)
-        current = lw_history_go_forward (priv->history, current);
+      while (current != item) current = lw_history_go_forward (priv->history, current);
     }
     else
     {
@@ -476,18 +475,16 @@ gw_searchwindow_back_cb (GtkWidget *widget, gpointer data)
     item = LW_SEARCHITEM (link->data);
 
     list = lw_history_get_combined_list (priv->history);
-    i = g_list_index (list, item) + pre_menu_items;;
-    g_list_free (list);
-    list = NULL;
+    i = g_list_index (list, item) + pre_menu_items;
+    g_list_free (list); list = NULL;
 
     children = gtk_container_get_children (GTK_CONTAINER (shell));
     menuitem = GTK_WIDGET (g_list_nth_data (children, i));
-    g_list_free (children);
-    children = NULL;
+    g_list_free (children); children = NULL;
 
     if (lw_history_has_back (priv->history))
     {
-      gw_searchwindow_search_from_history_cb (menuitem, window);
+      gw_searchwindow_search_from_history_cb (menuitem, data);
     }
 }
 
