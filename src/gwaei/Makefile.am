@@ -19,6 +19,9 @@ MECAB_DEFS =-DWITH_MECAB
 gwaei_CPPFLAGS +=$(MECAB_DEFS)
 endif
 
+if OS_CYGWIN
+gwaei_CPPFLAGS +=-DOS_CYGWIN
+endif
 if OS_MINGW
 gwaei_LDFLAGS =-Wl,-subsystem,windows 
 MINGW_DEFS =-DCURL_STATICLIB -DOS_MINGW

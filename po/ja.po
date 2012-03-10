@@ -65,47 +65,47 @@ msgstr "例文"
 #: ../src/libwaei/dictinst.c:881
 #, c-format
 msgid "Downloading %s..."
-msgstr "%sがダウンロード中..."
+msgstr "%sがダウンロード中…"
 
 #: ../src/libwaei/dictinst.c:883
 #, c-format
 msgid "Downloading..."
-msgstr "ダウンロード中..."
+msgstr "ダウンロード中…"
 
 #: ../src/libwaei/dictinst.c:887
 #, c-format
 msgid "Converting the encoding of %s from %s to UTF-8..."
-msgstr "%sのエンコーディングを%sからUTF-8に切り替え中..."
+msgstr "%sのエンコーディングを%sからUTF-8に切り替え中…"
 
 #: ../src/libwaei/dictinst.c:889
 #, c-format
 msgid "Converting the encoding to UTF-8..."
-msgstr "エンコーディングをUTF-8に切り替え中..."
+msgstr "エンコーディングをUTF-8に切り替え中…"
 
 #: ../src/libwaei/dictinst.c:893
 #, c-format
 msgid "Decompressing %s from %s file..."
-msgstr "%sが%sから凍結中..."
+msgstr "%sが%sから凍結中…"
 
 #: ../src/libwaei/dictinst.c:895
 #, c-format
 msgid "Decompressing..."
-msgstr "凍結中..."
+msgstr "凍結中…"
 
 #: ../src/libwaei/dictinst.c:899
 #, c-format
 msgid "Doing postprocessing on %s..."
-msgstr "%sがポストプロせスイング中..."
+msgstr "%sがポストプロせスイング中…"
 
 #: ../src/libwaei/dictinst.c:901
 #, c-format
 msgid "Postprocessing..."
-msgstr "ポストプロせスイング中..."
+msgstr "ポストプロせスイング中…"
 
 #: ../src/libwaei/dictinst.c:904
 #, c-format
 msgid "Finalizing installation of %s..."
-msgstr "%sを仕上げ中..."
+msgstr "%sを仕上げ中…"
 
 #: ../src/libwaei/dictinst.c:907
 #, c-format
@@ -195,12 +195,12 @@ msgstr "%d日前"
 #: ../src/waei/console.c:65
 #, c-format
 msgid "Uninstalling %s...\n"
-msgstr "%sがインストール中...\n"
+msgstr "%sがインストール中…\n"
 
 #: ../src/waei/console.c:108
 #, c-format
 msgid "Installing %s...\n"
-msgstr "%sがインストール中...\n"
+msgstr "%sがインストール中…\n"
 
 #: ../src/waei/console.c:150
 #, c-format
@@ -225,7 +225,7 @@ msgstr "望みの辞書が存在しない!\n"
 #: ../src/waei/console.c:302
 #, c-format
 msgid "Searching for \"%s\" in %s...\n"
-msgstr "「%s」を%sで検索中...\n"
+msgstr "「%s」を%sで検索中…\n"
 
 #: ../src/waei/console.c:326 ../src/gwaei/searchwindow.c:585
 #, c-format
@@ -271,11 +271,11 @@ msgstr "何処で他の辞書を会得する事ができるでしょか?"
 #: ../src/gwaei/installprogresswindow.ui.h:1
 #: ../src/gwaei/installprogresswindow.c:111
 msgid "Installing Dictionaries..."
-msgstr "辞書がインストール中..."
+msgstr "辞書がインストール中…"
 
 #: ../src/gwaei/installprogresswindow.ui.h:2
 msgid "Starting Install..."
-msgstr "インストールの開始中..."
+msgstr "インストールの開始中…"
 
 #: ../src/gwaei/searchwindow.ui.h:1
 msgid "Append"
@@ -835,17 +835,17 @@ msgstr "部首辞書合体させる"
 
 #: ../src/gwaei/dictionaryinstallwindow.c:117
 msgid "Select Dictionaries..."
-msgstr "辞書がインストール中..."
+msgstr "辞書がインストール中…"
 
 #: ../src/gwaei/installprogresswindow-callbacks.c:152
 #, c-format
 msgid "Installing %s..."
-msgstr "%sがインストール中..."
+msgstr "%sがインストール中…"
 
 #: ../src/gwaei/installprogresswindow-callbacks.c:153
 #, c-format
 msgid "Installing dictionary %d of %d..."
-msgstr "辞書の%d／%d冊目がインストール中..."
+msgstr "辞書の%d／%d冊目がインストール中…"
 
 #. Initializations
 #: ../src/gwaei/printing.c:182
@@ -1118,13 +1118,13 @@ msgstr ""
 
 #: ../src/gwaei/searchwindow.c:583
 msgid "Searching..."
-msgstr "検索中... "
+msgstr "検索中… "
 
 #: ../src/gwaei/searchwindow.c:586
 #, c-format
 msgid "Searching... %d result"
 msgid_plural "Searching... %d results"
-msgstr[0] "検索中... %dつの候補"
+msgstr[0] "検索中… %dつの候補"
 
 #: ../src/gwaei/searchwindow.c:1572
 msgid "(Empty)"

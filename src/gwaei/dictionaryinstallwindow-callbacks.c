@@ -269,8 +269,14 @@ gw_dictionaryinstallwindow_merge_checkbox_toggled_cb (GtkWidget *widget, gpointe
 G_MODULE_EXPORT void 
 gw_dictionaryinstallwindow_cursor_changed_cb (GtkTreeView *view, gpointer data)
 {
+    {
+      GtkTreeViewColumn *focus_column;
+      gtk_tree_view_get_cursor (view, NULL, &focus_column);
+      if (focus_column == NULL) return;
+    }
+
     //Sanity check
-    g_assert (data != NULL);
+    g_return_if_fail (data != NULL);
 
     //Declarations
     GwDictionaryInstallWindow *window;

@@ -519,7 +519,7 @@ gw_spellcheck_start_check (GwSpellcheck *spellcheck)
       NULL, 
       argv,
       NULL,
-      0,
+      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDERR_TO_DEV_NULL, 
       NULL,
       NULL,
       &pid,

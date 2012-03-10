@@ -94,17 +94,29 @@ gw_application_constructed (GObject *object)
 
     lw_regex_initialize ();
 
-#ifdef OS_MINGW
-/*
+#ifdef OS_CYGWIN
     GtkSettings *settings;
     settings = gtk_settings_get_default ();
-    g_object_set (settings, "gtk-theme-name", "MS-Windows", NULL);
-    g_object_set (settings, "gtk-menu-images", FALSE, NULL);
-    g_object_set (settings, "gtk-button-images", FALSE, NULL);
-    g_object_set (settings, "gtk-cursor-blink", FALSE, NULL);
-    g_object_set (settings, "gtk-alternative-button-order", TRUE, NULL);
-    g_object_unref (settings);
-*/
+    if (settings != NULL)
+    {
+      g_object_set (settings, "gtk-theme-name", "Adwaita", NULL);
+      g_object_unref (settings);
+      settings = NULL;
+    }
+#endif
+#ifdef OS_MINGW
+    GtkSettings *settings;
+    settings = gtk_settings_get_default ();
+    if (settings != NULL)
+    {
+      g_object_set (settings, "gtk-theme-name", "MS-Windows", NULL);
+      g_object_set (settings, "gtk-menu-images", FALSE, NULL);
+      g_object_set (settings, "gtk-button-images", FALSE, NULL);
+      g_object_set (settings, "gtk-cursor-blink", FALSE, NULL);
+      g_object_set (settings, "gtk-alternative-button-order", TRUE, NULL);
+      g_object_unref (settings);
+      settings = NULL;
+    }
 #endif
 
     gw_application_attach_signals (application);

@@ -28,6 +28,16 @@ case $host_os in
   OS_MINGW=1
   ;;
 esac
+AM_CONDITIONAL([OS_CYGWIN],false)
+case $host_os in
+  *cygwin*)
+  AC_DEFINE([OS_CYGWIN],[1],[Cygwin Host])
+  AM_CONDITIONAL([OS_CYGWIN],true)
+  OS_CYGWIN=1
+  ;;
+esac
+
+
 
 #Custom arguments
 AC_ARG_WITH([gnome],

@@ -831,9 +831,9 @@ gpointer _stdout_func (gpointer data)
 //! @param error A pointer to a GError object to write an error to or NULL
 //!
 gboolean 
-lw_io_pipe_data (char                 **argv, 
-                 const char            *SOURCE_PATH, 
-                 const char            *TARGET_PATH, 
+lw_io_pipe_data (gchar                **argv, 
+                 const gchar           *SOURCE_PATH, 
+                 const gchar           *TARGET_PATH, 
                  LwIoProgressCallback   cb, 
                  gpointer               data, 
                  GError               **error          )
@@ -855,7 +855,7 @@ lw_io_pipe_data (char                 **argv,
           NULL,
           argv, 
           NULL, 
-          G_SPAWN_STDERR_TO_DEV_NULL, 
+          G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDERR_TO_DEV_NULL, 
           NULL, 
           NULL, 
           &pid, 
