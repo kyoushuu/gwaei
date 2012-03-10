@@ -1,2 +1,2 @@
-2012-03-02: gWaei 3.4.0b1
-This is the preliminary gWaei-3.4.0 beta.  The final version should be released in a week or two.  What new are some tweaks to the interface to use more subtle icons with less color.  A vocabulary component which is easy to add vocabulary from words you look up.  And a flashcard component.
+2012-03-10: gWaei 3.4.0
+gWaei-3.4.0 final.  Since 3.2.0, there have been numerous interface tweaks to make it a bit more subtle with less color.  A vocabulary study component was added and integrated including flashcard study and scoring.  There were a few fixes for mingw/cygwin support for when spellcheck occurs or when installing a dictionary.  Lots of old depricated stuff were removed from gtk+-3.2.  Various bugs were fixed and the application made generally more fun to use.  Windows users will get a prebuilt binary once official gtk3 binaries for mingw are released.

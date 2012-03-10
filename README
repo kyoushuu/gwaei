@@ -16,7 +16,7 @@ TABLE OF CONTENTS
 
 1.0 PREREQUISITES:
 
-  To run gWaei 3.2.x, an environment with at least gtk+-3.2.0/glib-2.30.0,
+  To run gWaei 3.4.x, an environment with at least gtk+-3.3.x/glib-2.31.x,
   curl 7.20.0, gnome-doc-utils-0.14.0, and gsettings-desktop-schemas are
   required. Additionally, you will want to have gunzip, enchant, and
   ttf-kanjistrokeorders available.
@@ -40,12 +40,15 @@ TABLE OF CONTENTS
   imagemagick intltool  rarian-compat \
   gsettings-desktop-schemas
 
-  sudo pacman -S autoconf automake make gnome-doc-utils pkg-config curl gtk3 rarian gsettings-desktop-schemas dconf enchant 
+  Arch Linux users will do something like the below:
+
+  sudo pacman -S autoconf automake make gnome-doc-utils pkg-config curl \
+  gtk3 rarian gsettings-desktop-schemas dconf enchant 
 
   For inputing Japanese queries, installing some software for Japanese
   conversion is highly recommended.  Currently, the three main linux methods are
-  UIM or SCIM using the ANTHY engine or iBus.  For emergency situations where users
-  can't install either, gWaei has internal support for converting romanji
+  UIM or SCIM using the ANTHY engine or iBus.  For emergency situations where
+  users can't install either, gWaei has internal support for converting romanji
   searches to hiragana/katakana automatically.  (This conversion is disabled
   for Japanese locals by default in the preferences.)
 
@@ -75,11 +78,12 @@ TABLE OF CONTENTS
   maintain builds sporadically through Wine.  Your success will largely depend
   on how well you have your MinGW environment set up.
 
-  I currently test using MinGW cross compilation and Wine on Fedora.  You will have to
-  install the correct MinGW packages through yum, and download a binary of gzip and
-  the source to gnome-doc-utils manually.
+  I currently test using MinGW cross compilation and Wine on Fedora. 
+  You will have to install the correct MinGW packages through yum, and
+  download a binary of gzip and the source to gnome-doc-utils manually.
 
-  yum install mingw32-gtk3 mingw32-curl mingw32-libxslt mingw32-libxml2 mingw32-enchant
+  yum install mingw32-gtk3 mingw32-curl mingw32-libxslt mingw32-libxml2 \
+  mingw32-enchant
 
   ftp://ftp.gnome.org/pub/gnome/sources/gnome-doc-utils/
   ftp://ftp.gnome.org/pub/gnome/sources/gsettings-desktop-schemas/
@@ -92,7 +96,8 @@ TABLE OF CONTENTS
        mingw32-make
        sudo mingw32-make install
 
-  2. Copy the contents of the gzip binary to the bin directory of your installation.  That would
+  2. Copy the contents of the gzip binary to the bin directory of your
+     installation.  That would
   be /usr/i686-pc-mingw32/sys-root/mingw/bin/ for me.
 
   3. Build gwaei by doing
@@ -101,7 +106,9 @@ TABLE OF CONTENTS
       mingw32-make
       sudo mingw32-make install
 
-  The mingw32-configure script will take care of PKG_CONFIG_PATH and such for you.  You should in general compile any needed deps with --disable-scrollkeeper.
+  The mingw32-configure script will take care of PKG_CONFIG_PATH and such for
+  you.  You should in general compile any needed deps with
+  --disable-scrollkeeper.
 
 
 END
