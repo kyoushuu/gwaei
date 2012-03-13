@@ -343,18 +343,18 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     if (*error != NULL) return FALSE;
 
     //Declarations
-    FILE *in;
-    FILE *out;
+    FILE *infd;
+    FILE *outfd;
     size_t chunk;
     size_t end;
     size_t curpos;
-    const int MAX_CHUNK = 128;
-    char buffer[MAX_CHUNK];
+    const int MAX = 1024;
+    char buffer[MAX];
     double fraction;
 
     //Initalizations
-    in = fopen(SOURCE_PATH, "rb");
-    out = fopen(TARGET_PATH, "wb");
+    infd = fopen(SOURCE_PATH, "rb");
+    outfd = fopen(TARGET_PATH, "wb");
     chunk = 1;
     end = lw_io_get_filesize (SOURCE_PATH);
     curpos = 0;
@@ -364,16 +364,16 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     {
       fraction = ((double) curpos) / ((double) end);
       if (cb != NULL) cb (fraction, data);
-      chunk = fread(buffer, sizeof(char), MAX_CHUNK, in);
-      chunk = fwrite(buffer, sizeof(char), chunk, out);
+      chunk = fread(buffer, sizeof(char), MAX, infd);
+      chunk = fwrite(buffer, sizeof(char), chunk, outfd);
       curpos += chunk;
     }
     fraction = 1.0;
     if (cb != NULL) cb (fraction, data);
 
     //Cleanup
-    fclose(in);
-    fclose(out);
+    fclose(infd);
+    fclose(outfd);
 
     return (error == NULL && *error == NULL);;
 }
