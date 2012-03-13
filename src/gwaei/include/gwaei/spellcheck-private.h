@@ -1,18 +1,23 @@
 #ifndef GW_SPELLCHECK_PRIVATE_INCLUDED
 #define GW_SPELLCHECK_PRIVATE_INCLUDED
 
+#include <enchant/enchant.h>
+
 G_BEGIN_DECLS
 
 struct _GwSpellcheckPrivate {
   GwApplication *application;
+
   GtkEntry *entry;
-  GList *corrections;
-  GMutex mutex;
-  GThread *thread;
-  GwSpellcheckStatus status;
-  int timeout;
-  gint x, y;
-  guint threshold;
+
+  EnchantBroker *broker;
+  EnchantDict *dictionary;
+
+  gchar** tolkens;           //A list of tolkens taken from the search entry
+  GList *misspelled; //gchar* pointers to individual tolkens above
+
+  guint timeout, threshold;  //Timer variables to prevent immediate spellchecks
+  gint x, y; //mouse position
   guint signalid[TOTAL_GW_SPELLCHECK_SIGNALIDS];
   guint timeoutid[TOTAL_GW_SPELLCHECK_TIMEOUTIDS];
 };

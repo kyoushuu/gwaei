@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include <gtk/gtk.h>
+#include <enchant/enchant.h>
 
 #include <gwaei/gwaei.h>
 #include <gwaei/spellcheck-private.h>
@@ -81,7 +82,9 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
     GwSpellcheckPrivate *priv;
 
     priv = spellcheck->priv;
-    g_mutex_init (&priv->mutex);
+
+    priv->broker = enchant_broker_init();
+    priv->dictionary = enchant_broker_request_dict (priv->broker, "en");
 
     gw_spellcheck_set_timeout_threshold (spellcheck, 3);
 
@@ -98,12 +101,13 @@ gw_spellcheck_finalize (GObject *object)
     spellcheck = GW_SPELLCHECK (object);
     priv = spellcheck->priv;
 
+    if (priv->dictionary != NULL) enchant_broker_free_dict (priv->broker, priv->dictionary); priv->dictionary = NULL;
+    if (priv->broker != NULL) enchant_broker_free (priv->broker); priv->broker = NULL;
+
     gw_spellcheck_remove_signals (spellcheck);
-    gw_spellcheck_reset (spellcheck);
+    gw_spellcheck_clear (spellcheck);
 
     if (priv->entry != NULL) gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
-    if (priv->thread != NULL) g_thread_join (priv->thread); priv->thread = NULL;
-    g_mutex_clear (&priv->mutex);
 
     G_OBJECT_CLASS (gw_spellcheck_parent_class)->finalize (object);
 }
@@ -238,30 +242,6 @@ gw_spellcheck_set_timeout_threshold (GwSpellcheck *spellcheck, guint threshold)
 }
 
 
-GwSpellcheckStatus 
-gw_spellcheck_get_status (GwSpellcheck *spellcheck)
-{
-  GwSpellcheckPrivate *priv = spellcheck->priv;
-  GwSpellcheckStatus status;
-
-  g_mutex_lock (&priv->mutex);
-  status = priv->status;
-  g_mutex_unlock (&priv->mutex);
-  return status;
-}
-
-
-void 
-gw_spellcheck_set_status (GwSpellcheck *spellcheck, GwSpellcheckStatus status)
-{
-  GwSpellcheckPrivate *priv = spellcheck->priv;
-
-  g_mutex_lock (&priv->mutex);
-  priv->status = status;
-  g_mutex_unlock (&priv->mutex);
-}
-
-
 void
 gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
 {
@@ -330,31 +310,32 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
         spellcheck
     );
 
-    gw_spellcheck_start_check (spellcheck);
+    gw_spellcheck_queue (spellcheck);
 }
 
 
 void
-gw_spellcheck_reset (GwSpellcheck *spellcheck)
+gw_spellcheck_clear (GwSpellcheck *spellcheck)
 {
-    GwSpellcheckPrivate *priv;
-    GList *link;
+    g_return_if_fail (spellcheck != NULL);
 
+    GwSpellcheckPrivate *priv;
     priv = spellcheck->priv;
 
-    if (priv->corrections == NULL) return;
-
-    g_mutex_lock (&priv->mutex);
-    for (link = priv->corrections; link != NULL; link = link->next)
-      g_free (link->data);
-    g_list_free (priv->corrections); priv->corrections = NULL;
-    g_mutex_unlock (&priv->mutex);
+    priv->timeout = 0;
+    
+    if (priv->tolkens != NULL)
+      g_strfreev (priv->tolkens); priv->tolkens = NULL;
+    if (priv->misspelled != NULL)
+      g_list_free (priv->misspelled); priv->misspelled = NULL;
 }
 
 
 gint
-gw_spellcheck_get_y_offset (GwSpellcheck *spellcheck)
+gw_spellcheck_get_layout_y_offset (GwSpellcheck *spellcheck)
 {
+    g_return_val_if_fail (spellcheck != NULL, 0);
+
     //Declarations
     GwSpellcheckPrivate *priv;
     PangoRectangle rect;
@@ -372,8 +353,10 @@ gw_spellcheck_get_y_offset (GwSpellcheck *spellcheck)
 
 
 gint
-gw_spellcheck_get_x_offset (GwSpellcheck *spellcheck)
+gw_spellcheck_get_layout_x_offset (GwSpellcheck *spellcheck)
 {
+    g_return_val_if_fail (spellcheck != NULL, 0);
+
     //Declarations
     GwSpellcheckPrivate *priv;
     PangoRectangle rect;
@@ -390,83 +373,11 @@ gw_spellcheck_get_x_offset (GwSpellcheck *spellcheck)
 }
 
 
-static gpointer 
-gw_spellcheck_infunc (gpointer data)
-{
-    //Declarations
-    GwSpellcheckStreamWithData *swd;
-    FILE *file;
-    int stream;
-    char *text;
-
-    //Initializations
-    swd = data;
-    stream = swd->stream;
-    text = swd->data;
-    file = fdopen(stream, "w");
-
-    if (file != NULL)
-    {
-      if (ferror(file) == 0 && feof(file) == 0)
-      {
-        fwrite(text, sizeof(char), strlen(text), file);
-      }
-
-      fclose(file);
-    }
-
-    gw_spellcheck_streamwithdata_free (swd);
-
-    return NULL;
-}
-
-
-static gpointer 
-gw_spellcheck_outfunc (gpointer data)
-{
-    //Declarations
-    const int MAX = 500;
-    GwSpellcheckStreamWithData *swd;
-    FILE *file;
-    char buffer[MAX];
-    GwSpellcheck *spellcheck;
-    GwSpellcheckPrivate *priv;
-
-    //Initializations
-    swd = data;
-    spellcheck = swd->spellcheck;
-    priv = spellcheck->priv;
-    file = fdopen (swd->stream, "r");
-
-    if (file != NULL)
-    {
-      gw_spellcheck_reset (spellcheck);
-
-      //Add the new links
-      while (file != NULL && ferror(file) == 0 && feof(file) == 0 && fgets(buffer, MAX, file) != NULL)
-      {
-        g_mutex_lock (&priv->mutex);
-        if (buffer[0] != '@' && buffer[0] != '*' && buffer[0] != '#' && strlen(buffer) > 1)
-          priv->corrections = g_list_append (priv->corrections, g_strdup (buffer));
-        g_mutex_unlock (&priv->mutex);
-      }
-
-      //Cleanup
-      fclose (file); file = NULL;
-    }
-
-    g_spawn_close_pid (swd->pid);
-
-    gw_spellcheck_streamwithdata_free (swd);
-
-    gw_spellcheck_set_status (spellcheck, GW_SPELLCHECKSTATUS_FINISHING);
-
-    return NULL;
-}
-
 void
-gw_spellcheck_start_check (GwSpellcheck *spellcheck)
+gw_spellcheck_queue (GwSpellcheck *spellcheck)
 {
+    g_return_if_fail (spellcheck != NULL);
+
     //Declarations
     GwSpellcheckPrivate *priv;
     LwPreferences *preferences;
@@ -477,17 +388,9 @@ gw_spellcheck_start_check (GwSpellcheck *spellcheck)
     gboolean is_convertable_to_hiragana;
     const int MAX = 300;
     char kana[MAX];
-    gboolean enchant_exists;
-    GError *error;
+    gboolean needs_spellcheck;
+    gboolean should_redraw;
 
-    char *argv[] = { ENCHANT, "-a", "-d", "en", NULL};
-    GPid pid;
-    int stdin_stream;
-    int stdout_stream;
-    gboolean success;
-    GwSpellcheckStreamWithData *indata;
-    GwSpellcheckStreamWithData *outdata;
-    
     //Initializations
     priv = spellcheck->priv;
     preferences = gw_application_get_preferences (priv->application);
@@ -496,70 +399,76 @@ gw_spellcheck_start_check (GwSpellcheck *spellcheck)
     query = gtk_entry_get_text (priv->entry);
     is_convertable_to_hiragana = (want_conv && lw_util_str_roma_to_hira (query, kana, MAX));
     spellcheck_pref = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
-    enchant_exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
-    error = NULL;
+    needs_spellcheck = (query != NULL && *query != '\0' && spellcheck_pref && !is_convertable_to_hiragana);
+    should_redraw = (priv->misspelled != NULL);
+    g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
 
-    //Sanity checks
-    if (
-      enchant_exists == FALSE || 
-      query == NULL           ||
-      strlen(query) == 0      || 
-      !spellcheck_pref        || 
-      is_convertable_to_hiragana
-    )
+    if (needs_spellcheck)
     {
-      return;
+      priv->timeout = 0;
+      if (priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0)
+        priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] = g_timeout_add_full (
+          G_PRIORITY_LOW, 
+          100, (GSourceFunc) 
+          gw_spellcheck_update_timeout, 
+          spellcheck, 
+          NULL
+      );
     }
 
-    gw_spellcheck_set_status (spellcheck, GW_SPELLCHECKSTATUS_CHECKING);
-    gw_spellcheck_reset (spellcheck);
+    gw_spellcheck_clear (spellcheck);
 
-    //Open the pipes
-    success = g_spawn_async_with_pipes (
-      NULL, 
-      argv,
-      NULL,
-      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDERR_TO_DEV_NULL, 
-      NULL,
-      NULL,
-      &pid,
-      &stdin_stream,
-      &stdout_stream,
-      NULL,
-      &error
-    );
-
-    //Stream the results
-    if (success)
+    if (should_redraw) 
     {
-      indata = gw_spellcheck_streamwithdata_new (spellcheck, stdin_stream, query, strlen(query) + 1, pid);
-      outdata = gw_spellcheck_streamwithdata_new (spellcheck, stdout_stream, query, strlen(query) + 1, pid);
+      gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
+    }
+}
 
-      if (indata != NULL && outdata != NULL)
-      {
-        gw_spellcheck_infunc ((gpointer) indata);
-        priv->thread = g_thread_try_new (
-          "spellcheck", 
-          gw_spellcheck_outfunc, 
-          (gpointer) outdata, 
-          &error
-        );
-      }
 
-      if (priv->thread == NULL)
+gboolean
+gw_spellcheck_update (GwSpellcheck *spellcheck)
+{
+    GwSpellcheckPrivate *priv;
+
+    priv = spellcheck->priv;
+
+    if (priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0)
+    {
+      return FALSE;
+    }
+    else if (priv->timeout < priv->threshold) 
+    {
+      priv->timeout++;
+      return TRUE;
+    }
+
+    gw_spellcheck_clear (spellcheck); //Make sure the memory is freed
+
+    const gchar *query;
+    gchar **iter;
+
+    query = gtk_entry_get_text (priv->entry);
+    priv->tolkens = g_strsplit (query, " ", -1);
+
+    for (iter = priv->tolkens; *iter != NULL; iter++)
+    {
+      if (**iter != '\0' && enchant_dict_check (priv->dictionary, *iter, strlen(*iter)))
       {
-        gw_spellcheck_set_status (spellcheck, GW_SPELLCHECKSTATUS_IDLE);
+        priv->misspelled = g_list_append (priv->misspelled, *iter);
       }
     }
-    
-    gw_application_handle_error (priv->application, NULL, FALSE, &error);
-  
-    return;
+
+    priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] = 0;
+    priv->timeout = 0;
+
+    gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
+
+    return FALSE;
 }
 
 
 void
-gw_spellcheck_update_cordinates (GwSpellcheck *spellcheck, GdkEvent *event)
+gw_spellcheck_record_mouse_cordinates (GwSpellcheck *spellcheck, GdkEvent *event)
 {
     GwSpellcheckPrivate *priv;
     GtkWidget *toplevel;
@@ -613,67 +522,55 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     //Declarations
     GwSpellcheckPrivate *priv;
     GtkWidget *menuitem;
-    char **split;
-    char **info;
-    char **replacements;
-    GList *iter;
 
     priv = spellcheck->priv;
     int index;
     int xoffset, yoffset, x, y;
-    _SpellingReplacementData *srd;
     int start_offset, end_offset;
     int i;
+    gchar **iter;
+    gchar **suggestions;
+    size_t total_suggestions;
 
-    xoffset = gw_spellcheck_get_x_offset (spellcheck);
-    yoffset = gw_spellcheck_get_y_offset (spellcheck);
+    g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
+
+    xoffset = gw_spellcheck_get_layout_x_offset (spellcheck);
+    yoffset = gw_spellcheck_get_layout_y_offset (spellcheck);
     x = priv->x - xoffset;
     y = priv->y - yoffset; //Since a GtkEntry is single line, we want the y to always be in the area
     index =  _get_string_index (priv->entry, x, y);
 
-    g_mutex_lock (&priv->mutex);
-    for (iter = priv->corrections; index > -1 && iter != NULL; iter = iter->next)
+    start_offset = 0;
+    iter = priv->tolkens;
+    while (*iter != NULL && start_offset + strlen(*iter) < index)
     {
-      //Create the start and end offsets 
-      split = g_strsplit (iter->data, ":", 2);
-      info = g_strsplit (split[0], " ", -1); 
-      start_offset = (int) g_ascii_strtoull (info[3], NULL, 10);
-      end_offset = strlen(info[1]) + start_offset;
-
-      //If the mouse position is between the offsets, create the popup menuitems
-      if (index >= start_offset && index <= end_offset)
-      {
-        replacements = g_strsplit (split[1], ",", -1);
-
-        //Separator
-        if (replacements[0] != NULL)
-        {
-          menuitem = gtk_separator_menu_item_new ();
-          gtk_widget_show (GTK_WIDGET (menuitem));
-          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
-        }
-
-        //Menuitems
-        for (i = 0; replacements[i] != NULL; i++)
-        {
-          g_strstrip(replacements[i]);
-          menuitem = gtk_menu_item_new_with_label (replacements[i]);
-          srd = (_SpellingReplacementData*) malloc (sizeof(_SpellingReplacementData));
-          srd->entry = priv->entry;
-          srd->start_offset = start_offset;
-          srd->end_offset = end_offset;
-          srd->replacement_text = g_strdup (replacements[i]);
-          g_signal_connect (G_OBJECT (menuitem), "destroy", G_CALLBACK (gw_spellcheck_free_menuitem_data_cb), (gpointer) srd);
-          g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), (gpointer) srd);
-          gtk_widget_show (GTK_WIDGET (menuitem));
-          gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
-        }
-        g_strfreev (replacements);
-      }
-      g_strfreev (split);
-      g_strfreev (info);
+      start_offset += strlen(*iter) + 1;
+      iter++;
     }
-    g_mutex_unlock (&priv->mutex);
+    if (*iter == NULL) return;
+    end_offset = start_offset + strlen(*iter);
+
+    suggestions = enchant_dict_suggest (priv->dictionary, *iter, strlen(*iter), &total_suggestions);
+    if (total_suggestions > 0 && suggestions != NULL)
+    {
+      menuitem = gtk_separator_menu_item_new ();
+      gtk_widget_show (GTK_WIDGET (menuitem));
+      gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
+
+      //Menuitems
+      for (i = 0; i < total_suggestions; i++)
+      {
+        menuitem = gtk_menu_item_new_with_label (suggestions[i]);
+        g_object_set_data (G_OBJECT (menuitem), "start-offset", GINT_TO_POINTER (start_offset));
+        g_object_set_data (G_OBJECT (menuitem), "end-offset", GINT_TO_POINTER (end_offset));
+        g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), spellcheck);
+        gtk_widget_show (GTK_WIDGET (menuitem));
+        gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
+      }
+
+      enchant_dict_free_string_list (priv->dictionary, suggestions);
+    }
 }
+
 
 

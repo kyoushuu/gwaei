@@ -597,7 +597,6 @@ lw_dictinst_decompress (LwDictInst *di, LwIoProgressCallback cb, gpointer data, 
     char *source;
     char *target;
     LwDictInstUri group_index;
-
     //Initializations
     group_index = LW_DICTINST_NEEDS_DECOMPRESSION;
 

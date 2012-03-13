@@ -2053,6 +2053,7 @@ gw_searchwindow_sync_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 G_MODULE_EXPORT void 
 gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 {
+#ifdef WITH_ENCHANT
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
@@ -2067,6 +2068,7 @@ gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
     state = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
 
     lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK, !state);
+#endif
 }
 
 
@@ -2077,6 +2079,7 @@ gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 G_MODULE_EXPORT void 
 gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
+#ifdef WITH_ENCHANT
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
@@ -2110,6 +2113,7 @@ gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer da
       if (priv->spellcheck != NULL)
         g_object_unref (G_OBJECT (priv->spellcheck));
     }
+#endif
 }
 
 

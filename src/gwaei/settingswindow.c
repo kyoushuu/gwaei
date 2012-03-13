@@ -153,12 +153,11 @@ gw_settingswindow_constructed (GObject *object)
       gtk_notebook_set_current_page (priv->notebook, 1);
     gw_settingswindow_check_for_dictionaries (window);
 
-    //We are going to lazily update the sensitivity of the spellcheck buttons only when the window is created
-    gboolean enchant_exists;
-
-    enchant_exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
-
-    gtk_widget_set_sensitive (GTK_WIDGET (priv->spellcheck_checkbutton), enchant_exists);
+    #ifdef WITH_ENCHANT
+    gtk_widget_show (GTK_WIDGET (priv->spellcheck_checkbutton));
+    #else
+    gtk_widget_hide (GTK_WIDGET (priv->spellcheck_checkbutton));
+    #endif
 
     gw_settingswindow_attach_signals (window);
 

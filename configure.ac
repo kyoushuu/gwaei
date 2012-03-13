@@ -18,6 +18,7 @@ GMODULE_EXPORT_REQUIRED_VERSION=2.31.0
 #GTK Base Dependencies
 GTK3_REQUIRED_VERSION=3.3.0
 GDU_REQUIRED_VERSION=0.13.0
+ENCHANT_REQUIRED_VERSION=1.6.0
 
 AC_CANONICAL_HOST
 AM_CONDITIONAL([OS_MINGW],false)
@@ -49,6 +50,17 @@ no)  gnome=false ;;
 esac],[gnome=true])
 AM_CONDITIONAL([WITH_GNOME], [test x$gnome = xtrue])
 
+
+AC_ARG_WITH([enchant],
+[  --without-enchant        turn off Enchant spellchecking],
+[case "${withval}" in
+yes) enchant=true ;;
+no)  enchant=false ;;
+*) AC_MSG_ERROR([bad value ${withval} for --with-enchant]) ;;
+esac],[enchant=true])
+AM_CONDITIONAL([WITH_ENCHANT], [test x$enchant = xtrue])
+
+
 AC_ARG_WITH([mecab],
 [  --without-mecab        turn off Mecab morphological analysis],
 [case "${withval}" in
@@ -56,7 +68,7 @@ yes) mecab=true ;;
 no)  mecab=false ;;
 *) AC_MSG_ERROR([bad value ${withval} for --with-mecab]) ;;
 esac],[mecab=true])
-AM_CONDITIONAL([WITH_MECAB], [test x$mecab = xtrue || test x$mecab = xtrue])
+AM_CONDITIONAL([WITH_MECAB], [test x$mecab = xtrue])
 
 AC_CHECK_LIB(m, sqrt)
 
@@ -93,6 +105,12 @@ if test x$gnome = xtrue; then
   GNOME_DOC_INIT
 fi
 
+if test x$enchant = xtrue; then
+  PKG_CHECK_MODULES(ENCHANT, enchant           >= $ENCHANT_REQUIRED_VERSION)
+  AC_SUBST(ENCHANT_CFLAGS)
+  AC_SUBST(ENCHANT_LIBS)
+fi
+
 if test x$mecab = xtrue; then
   AC_CHECK_HEADER([mecab.h],
                   [AC_DEFINE([HAVE_MECAB], [0], [Mecab]) MECAB_LIBS="-lmecab -lstdc++" AC_SUBST(MECAB_LIBS)], 
@@ -106,16 +124,13 @@ fi
 GLIB_GSETTINGS
 
 AC_PATH_PROG(PERL, perl)
-AC_PATH_PROG(ENCHANT, enchant)
-AC_PATH_PROG(GZIP, gzip)
-AC_PATH_PROG(UNZIP, unzip)
 
 AC_PROG_CC
 AC_PROG_CC_STDC
 AM_PROG_CC_C_O
 AC_HEADER_STDC
 
-AC_PROG_INTLTOOL([0.35.0])
+AC_PROG_INTLTOOL([0.40.0])
 GETTEXT_PACKAGE=gwaei
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE], ["$GETTEXT_PACKAGE"], [The domain to use with gettext])
@@ -138,6 +153,14 @@ if test x$gnome = xtrue; then
 else
   echo -e "* Gnome is\tDISABLED"
 fi
+
+if test x$enchant = xtrue; then
+  echo -e "* Enchant is\tENABLED"
+else
+  echo -e "* Enchant is\tDISABLED"
+fi
+
+
 if test x$mecab = xtrue; then
   echo -e "* Mecab is\tENABLED"
 else

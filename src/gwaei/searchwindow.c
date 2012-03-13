@@ -96,7 +96,9 @@ gw_searchwindow_finalize (GObject *object)
     if (gw_application_get_last_focused_searchwindow (application) == window)
       gw_application_set_last_focused_searchwindow (application, NULL);
 
+#ifdef WITH_ENCHANT
     if (priv->spellcheck) g_object_unref (priv->spellcheck); priv->spellcheck = NULL;
+#endif
     if (priv->history) lw_history_free (priv->history); priv->history = NULL;
     if (priv->keep_searching_query) g_free (priv->keep_searching_query); priv->keep_searching_query = NULL;
     if (priv->forward_popup != NULL) g_object_unref (priv->forward_popup);
@@ -115,7 +117,6 @@ gw_searchwindow_constructed (GObject *object)
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
     GwApplication *application;
-    gboolean enchant_exists;
 
     //Chain the parent class
     {
@@ -190,18 +191,19 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_set_dictionary (window, 0);
     gw_searchwindow_guarantee_first_tab (window);
 
-    //We are going to lazily update the sensitivity of the spellcheck buttons only when the window is created
-    enchant_exists = g_file_test (ENCHANT, G_FILE_TEST_IS_REGULAR);
-
     //This code should probalby be moved to when the window is realized
     gw_searchwindow_initialize_dictionary_combobox (window);
     gw_searchwindow_initialize_dictionary_menu (window);
     gw_searchwindow_update_history_popups (window);
     gw_searchwindow_update_vocabulary_menuitems (window);
 
-    gtk_widget_set_sensitive (GTK_WIDGET (priv->entry), enchant_exists);
-    gtk_widget_set_sensitive (GTK_WIDGET (priv->spellcheck_toolbutton), enchant_exists);
-    if (!enchant_exists) g_warning ("Enchant is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
+    #ifdef WITH_ENCHANT
+    gtk_widget_show (GTK_WIDGET (priv->spellcheck_toolbutton));
+    #else
+    gtk_widget_hide (GTK_WIDGET (priv->spellcheck_toolbutton));
+    g_warning ("Enchant is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
+    #endif
+
     gw_searchwindow_init_accelerators (window);
 
     gw_searchwindow_attach_signals (window);
@@ -2195,6 +2197,7 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
         window
     );
 
+#ifdef WITH_ENCHANT
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_SPELLCHECK] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
@@ -2202,6 +2205,7 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
         gw_searchwindow_sync_spellcheck_cb,
         window
     );
+#endif
 
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED] = g_signal_connect (
         G_OBJECT (dictionarystore),
@@ -2312,11 +2316,14 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
         LW_SCHEMA_BASE,
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_KEEP_SEARCHING]
     );
+
+#ifdef WITH_ENCHANT
     lw_preferences_remove_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_SPELLCHECK]
     );
+#endif
 
     g_signal_handler_disconnect (
         G_OBJECT (dictionarystore),

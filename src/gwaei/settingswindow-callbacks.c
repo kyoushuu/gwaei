@@ -655,12 +655,15 @@ gw_settingswindow_open_dictionaryinstallwindow_cb (GtkWidget *widget, gpointer d
 G_MODULE_EXPORT void 
 gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data)
 {
+/*
+printf("BREAK1\n");
     {
       GtkTreeViewColumn *focus_column;
       gtk_tree_view_get_cursor (view, NULL, &focus_column);
       if (focus_column == NULL) return;
     }
 
+printf("BREAK2\n");
     //Declarations
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
@@ -672,9 +675,10 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
     GtkTreeModel *model;
     gboolean has_selection;
 
+printf("BREAK3\n");
     //Initializations
-    window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (view), GW_TYPE_SETTINGSWINDOW));
+    if (window == NULL) return;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
@@ -683,7 +687,9 @@ gw_settingswindow_dictionary_cursor_changed_cb (GtkTreeView *view, gpointer data
     model = GTK_TREE_MODEL (dictionarystore);
     has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
 
+printf("BREAK4\n");
     gtk_widget_set_sensitive (GTK_WIDGET (button), has_selection);
+*/
 }
 
 

@@ -157,7 +157,6 @@ gw_dictionarystore_update (GwDictionaryStore *store)
 
     dictinfolist = gw_dictionarystore_get_dictinfolist (store);
     favoriteicon = "emblem-favorite";
-
     gtk_list_store_clear (GTK_LIST_STORE (store));
 
     for (link = dictinfolist->list; link != NULL; link = link->next)

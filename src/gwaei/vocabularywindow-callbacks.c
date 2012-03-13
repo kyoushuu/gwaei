@@ -443,7 +443,7 @@ gw_vocabularywindow_close_cb (GtkWidget *widget, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_export_cb (GtkAction *action, gpointer data)
 {
     //Declarations
@@ -495,7 +495,7 @@ gw_vocabularywindow_export_cb (GtkAction *action, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_import_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
@@ -536,7 +536,7 @@ gw_vocabularywindow_import_cb (GtkWidget *widget, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_delete_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
@@ -565,7 +565,7 @@ gw_vocabularywindow_delete_cb (GtkWidget *widget, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_cut_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
@@ -599,7 +599,7 @@ gw_vocabularywindow_cut_cb (GtkWidget *widget, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_copy_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
@@ -631,7 +631,7 @@ gw_vocabularywindow_copy_cb (GtkWidget *widget, gpointer data)
 }
 
 
-void
+G_MODULE_EXPORT void
 gw_vocabularywindow_paste_cb (GtkWidget *widget, gpointer data)
 {
     GwVocabularyWindow *window;
