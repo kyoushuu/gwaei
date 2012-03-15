@@ -566,7 +566,7 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearchItem *item)
       gtk_text_buffer_insert                   (buffer, &iter, "\n", -1);
       i++;
     }
-    gtk_text_buffer_insert (buffer, &iter, "\n", -1);
+    gtk_text_buffer_insert (buffer, &iter, " \n", -1);
 
     g_signal_emit (window, 
       klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
@@ -758,7 +758,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearchItem *i
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
     gw_add_match_highlights (line, start_offset, end_offset, item);
 
-    gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
+    gtk_text_buffer_insert (buffer, &iter, "\n \n", -1);
 
     g_signal_emit (window, 
       klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
@@ -848,7 +848,7 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearchItem
     }
 
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-    gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
+    gtk_text_buffer_insert (buffer, &iter, "\n \n", -1);
 
     g_signal_emit (window, 
       klass->signalid[GW_SEARCHWINDOW_CLASS_SIGNALID_WORD_ADDED], 
@@ -903,7 +903,7 @@ gw_searchwindow_append_unknowndict_result (GwSearchWindow *window, LwSearchItem 
     gw_add_match_highlights (line, start_offset, end_offset, item);
 
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-    gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
+    gtk_text_buffer_insert (buffer, &iter, "\n \n", -1);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
 
     g_signal_emit (window, 
@@ -1228,7 +1228,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
 
 
     //Linebreak after the image
-    gw_searchwindow_append_to_buffer (window, item, "\n\n\n", NULL, NULL, NULL, NULL);
+    gw_searchwindow_append_to_buffer (window, item, "\n \n \n", NULL, NULL, NULL, NULL);
 
 
     if (lw_dictinfolist_get_total (dictinfolist) > 1)
@@ -1325,7 +1325,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
 
 
 
-    gw_searchwindow_append_to_buffer (window, item, "\n\n\n", NULL, NULL, NULL, NULL);
+    gw_searchwindow_append_to_buffer (window, item, "\n \n \n", NULL, NULL, NULL, NULL);
 
 
 
@@ -1346,7 +1346,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
       case 0:
         //Tip 1
         body = g_strdup_printf (gettext("Use the Unknown Character from the Insert menu or toolbar in "
-                                "place of unknown Kanji. %s will return results like %s.\n\nKanjipad "
+                                "place of unknown Kanji. %s will return results like %s.\n \nKanjipad "
                                 "is another option for inputting Kanji characters.  Because of how the "
                                 "innards of Kanjipad works, drawing with the correct number of strokes "
                                 "and drawing the strokes in the correct direction is very important."),
@@ -1355,7 +1355,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Inputting Unknown Kanji"),
                                 "header", "important", NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         if (body != NULL)
         {
@@ -1372,7 +1372,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Getting More Exact Matches"),
                                 "important", "header", NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("Use the Word-edge Mark and the Not-word-edge Mark from the "
@@ -1392,7 +1392,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Searching for Multiple Words"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL);
         if (body != NULL)
         {
@@ -1409,7 +1409,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Make a Vocabulary List"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("Specific sections of results can be printed or saved by "
@@ -1425,7 +1425,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Why Use the Mouse?"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("Typing something will move the focus to the window input "
@@ -1441,7 +1441,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Get Ready for the JLPT"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("The Kanji dictionary has some hidden features.  One such "
@@ -1449,7 +1449,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 "criteria.  If you are planning on taking the Japanese Language "
                                 "Proficiency Test, using the phrase J# will filter out Kanji not of "
                                 "that level for easy study.  For example, J4 will only show Kanji "
-                                "that appears on the forth level test.\n\nAlso of interest, the "
+                                "that appears on the forth level test.\n \nAlso of interest, the "
                                 "phrase G# will filter out Kanji for the grade level a Japanese "
                                 "person would study it at in school."),
                                 NULL, NULL, NULL, NULL         );
@@ -1461,7 +1461,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Just drag words in!"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("If you drag and drop a highlighted word into gWaei's "
@@ -1478,13 +1478,13 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("What does (adj-i) mean?"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("It is part of the terminalogy used by the EDICT group of "
                                 "dictionaries to categorize words.  Some are obvious, but there are "
                                 "a number that there is no way to know the meaning other than by looking "
-                                "it up.\n\ngWaei includes some of the EDICT documentation in its help "
+                                "it up.\n \ngWaei includes some of the EDICT documentation in its help "
                                 "manual.  Click the Dictionary Terminology Glossary menuitem in the "
                                 "Help menu to get to it."),
                                 NULL, NULL, NULL, NULL         );
@@ -1496,7 +1496,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
                                 gettext("Books are Heavy"),
                                 "important", "header", NULL, NULL);
         gw_searchwindow_append_to_buffer (window, item,
-                                "\n\n",
+                                "\n \n",
                                 NULL, NULL, NULL, NULL         );
         gw_searchwindow_append_to_buffer (window, item,
                                 gettext("Aways wear a construction helmet when working with books.  "
@@ -1508,6 +1508,6 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearchI
     }
 
     gw_searchwindow_append_to_buffer (window, item,
-                               "\n\n",
+                               "\n \n",
                                NULL, NULL, NULL, NULL         );
 }

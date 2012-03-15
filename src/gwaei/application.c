@@ -60,6 +60,7 @@ gw_application_new ()
     id = "gtk.org.gWaei";
 #ifdef OS_MINGW
     flags = G_APPLICATION_NON_UNIQUE;
+    flags = G_APPLICATION_FLAGS_NONE;
 #else
     flags = G_APPLICATION_FLAGS_NONE;
 #endif

@@ -75,11 +75,11 @@ AC_CHECK_LIB(m, sqrt)
 GNOME_DOC_INIT(,,[:]) 
 
 PKG_CHECK_MODULES(LIBWAEI, glib-2.0        >= $GLIB_REQUIRED_VERSION
-                        gobject-2.0        >= $GLIB_REQUIRED_VERSION
-                        gio-2.0            >= $GIO_REQUIRED_VERSION
-                        gmodule-2.0        >= $GMODULE_EXPORT_REQUIRED_VERSION 
-                        gthread-2.0        >= $GTHREAD_REQUIRED_VERSION       
-                        libcurl            >= $LIBCURL_REQUIRED_VERSION       )
+                           gobject-2.0        >= $GLIB_REQUIRED_VERSION
+                           gio-2.0            >= $GIO_REQUIRED_VERSION
+                           gmodule-2.0        >= $GMODULE_EXPORT_REQUIRED_VERSION 
+                           gthread-2.0        >= $GTHREAD_REQUIRED_VERSION       
+                           libcurl            >= $LIBCURL_REQUIRED_VERSION       )
 AC_SUBST(LIBWAEI_CFLAGS)
 AC_SUBST(LIBWAEI_LIBS)
 
@@ -98,8 +98,7 @@ if test x$gnome = xtrue; then
                            gio-2.0            >= $GIO_REQUIRED_VERSION
                            gmodule-2.0        >= $GMODULE_EXPORT_REQUIRED_VERSION 
                            gthread-2.0        >= $GTHREAD_REQUIRED_VERSION       
-                           libcurl            >= $LIBCURL_REQUIRED_VERSION
-                           gnome-doc-utils    >= $GDU_REQUIRED_VERSION           )
+                           libcurl            >= $LIBCURL_REQUIRED_VERSION )
   AC_SUBST(GWAEI_CFLAGS)
   AC_SUBST(GWAEI_LIBS)
   GNOME_DOC_INIT

@@ -84,6 +84,16 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
     priv = spellcheck->priv;
 
     priv->broker = enchant_broker_init();
+
+#ifdef OS_MINGW
+    gchar *current_dir = g_get_current_dir();
+    gchar *path = g_build_filename (current_dir, "..", "share", "enchant", "myspell", NULL);
+    printf("adding path %s\n", path);
+    enchant_broker_set_param (priv->broker, "enchant.myspell.dictionary.path", path);
+    if (path != NULL) g_free (path); path = NULL;
+    if (current_dir != NULL) g_free (current_dir); current_dir = NULL;
+#endif
+
     priv->dictionary = enchant_broker_request_dict (priv->broker, "en");
 
     gw_spellcheck_set_timeout_threshold (spellcheck, 3);
@@ -532,6 +542,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     gchar **suggestions;
     size_t total_suggestions;
 
+    if (priv->tolkens == NULL) return;
     g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
 
     xoffset = gw_spellcheck_get_layout_x_offset (spellcheck);
