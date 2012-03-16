@@ -58,12 +58,7 @@ gw_application_new ()
 
     //Initializations
     id = "gtk.org.gWaei";
-#ifdef OS_MINGW
-    flags = G_APPLICATION_NON_UNIQUE;
     flags = G_APPLICATION_FLAGS_NONE;
-#else
-    flags = G_APPLICATION_FLAGS_NONE;
-#endif
     application = g_object_new (GW_TYPE_APPLICATION, 
                                 "application-id", id, 
                                 "flags", flags, NULL);
@@ -163,7 +158,9 @@ gw_application_class_init (GwApplicationClass *klass)
 
   object_class->constructed = gw_application_constructed;
   object_class->finalize = gw_application_finalize;
+#ifndef OS_MINGW
   application_class->local_command_line = gw_application_local_command_line;
+#endif
   application_class->command_line = gw_application_command_line;
   application_class->activate = gw_application_activate;
 
@@ -225,7 +222,7 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
     if (error != NULL)
     {
       gw_application_handle_error (application, NULL, FALSE, &error);
-      exit(1);
+      exit(EXIT_SUCCESS);
     }
 
     //Get the query after the flags have been parsed out
@@ -662,6 +659,7 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     priv = GW_APPLICATION (application)->priv;
     dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
     dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
+    argv = NULL;
 
     if (command_line != NULL)
     {

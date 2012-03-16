@@ -50,12 +50,8 @@ int main (int argc, char *argv[])
 
     g_type_init ();
 
-    gdk_threads_init ();
-
     application = gw_application_new ();
-
     resolution = g_application_run (application, argc, argv);
-
     g_object_unref (G_OBJECT (application));
 
     return resolution;

@@ -55,6 +55,9 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
     char *path;
     
     base = g_build_filename (g_get_user_config_dir (), PACKAGE, NULL);
+    folder = NULL;
+    path = NULL;
+
     switch (PATH)
     {
       case LW_PATH_BASE:

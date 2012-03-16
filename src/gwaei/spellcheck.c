@@ -88,7 +88,6 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
 #ifdef OS_MINGW
     gchar *current_dir = g_get_current_dir();
     gchar *path = g_build_filename (current_dir, "..", "share", "enchant", "myspell", NULL);
-    printf("adding path %s\n", path);
     enchant_broker_set_param (priv->broker, "enchant.myspell.dictionary.path", path);
     if (path != NULL) g_free (path); path = NULL;
     if (current_dir != NULL) g_free (current_dir); current_dir = NULL;

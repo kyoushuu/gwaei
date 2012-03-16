@@ -39,7 +39,6 @@ lw_vocabularylist_get_lists ()
 
     //Initializations
     chars = 0;
-    buffer = NULL;
     atoms = NULL;
 
     if ((uri = lw_util_build_filename (LW_PATH_VOCABULARY, NULL)) != NULL)
@@ -62,7 +61,6 @@ lw_vocabularylist_get_lists ()
             strcat(buffer, name);
             strcat(buffer, ";");
           }
-          buffer[strlen(buffer) - 1] = '\0';
 
           //Split it
           atoms = g_strsplit (buffer, ";", -1);
