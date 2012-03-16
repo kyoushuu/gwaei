@@ -604,6 +604,8 @@ gw_settingswindow_dictionary_drag_reorder (
 {
     //Declarations
     GwSettingsWindow *window;
+    GwApplication *application;
+    LwPreferences *preferences;
     GtkTreeViewDropPosition drop_position;
     GtkTreePath *path;
     GtkTreeView *view;
@@ -613,6 +615,8 @@ gw_settingswindow_dictionary_drag_reorder (
 
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (widget), GW_TYPE_SETTINGSWINDOW));
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
     g_return_val_if_fail (window != NULL, FALSE);
     view = GTK_TREE_VIEW (widget);
     selection = gtk_tree_view_get_selection (view);
@@ -634,6 +638,8 @@ gw_settingswindow_dictionary_drag_reorder (
       gtk_list_store_move_before (GTK_LIST_STORE (model), &iter, &position);
     else if (drop_position == GTK_TREE_VIEW_DROP_AFTER) 
       gtk_list_store_move_after (GTK_LIST_STORE (model), &iter, &position);
+
+    gw_dictionarystore_save_order (GW_DICTIONARYSTORE (model), preferences);
 
     return TRUE;
 }
