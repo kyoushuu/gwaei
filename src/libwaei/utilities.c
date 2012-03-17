@@ -1500,3 +1500,38 @@ lw_strjoinv (gchar delimitor, gchar** array, gint array_length)
     return text;
 }
 
+
+gchar*
+lw_util_collapse_string (const gchar *text)
+{
+    gchar *buffer;
+    gchar *target_ptr;
+    const gchar *source_ptr;
+    gunichar c;
+    gint bytes;
+
+    buffer = g_new (gchar, strlen(text) + 1);
+
+    if (buffer != NULL)
+    {
+      source_ptr = text;
+      target_ptr = buffer;
+
+      while (*source_ptr != '\0')
+      {
+        c = g_unichar_tolower (g_utf8_get_char (source_ptr));
+
+        if (!g_unichar_ispunct (c) && !g_unichar_isspace (c))
+        {
+          bytes = g_unichar_to_utf8 (c, target_ptr);
+          target_ptr += bytes;
+        }
+
+        source_ptr = g_utf8_next_char (source_ptr);
+      }
+      *target_ptr = '\0';
+    }
+
+    return buffer;
+}
+

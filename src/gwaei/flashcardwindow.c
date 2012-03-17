@@ -267,12 +267,20 @@ gboolean
 gw_flashcardwindow_user_answer_is_correct (GwFlashCardWindow *window)
 {
     GwFlashCardWindowPrivate *priv;
-    const gchar *user_answer;
+    gchar *user;
+    gchar *card;
+    gboolean is_correct;
 
     priv = window->priv;
-    user_answer = gtk_entry_get_text (priv->answer_entry);
+    user = lw_util_collapse_string (gtk_entry_get_text (priv->answer_entry));
+    card = lw_util_collapse_string (priv->answer);
 
-    return (strlen (user_answer) > 0 && strstr (priv->answer, user_answer) != NULL);
+    is_correct = (user != NULL && card != NULL && *user != '\0'  && strstr(card, user) != NULL);
+
+    if (user != NULL) g_free (card);
+    if (card != NULL) g_free (user);
+
+    return is_correct;
 }
 
 

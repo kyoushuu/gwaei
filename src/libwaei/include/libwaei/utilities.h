@@ -74,6 +74,7 @@ char** lw_util_get_furigana_atoms_from_string (const char*);
 gchar* lw_util_get_query_from_args (int, char**);
 
 gchar* lw_strjoinv (gchar, gchar**, gint);
+gchar* lw_util_collapse_string (const gchar*);
 
 G_END_DECLS
 
