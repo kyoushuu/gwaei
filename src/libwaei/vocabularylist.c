@@ -51,7 +51,7 @@ lw_vocabularylist_get_lists ()
           chars += strlen(name) + 1;
         }
 
-        if ((buffer = g_new0 (gchar, chars + 1)) != NULL)
+        if (chars > 1 && (buffer = g_new0 (gchar, chars + 1)) != NULL)
         {
           g_dir_rewind (dir);
 
@@ -61,6 +61,7 @@ lw_vocabularylist_get_lists ()
             strcat(buffer, name);
             strcat(buffer, ";");
           }
+          buffer[chars - 1] = '\0';
 
           //Split it
           atoms = g_strsplit (buffer, ";", -1);

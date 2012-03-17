@@ -41,38 +41,11 @@ G_MODULE_EXPORT void gw_dictionarystore_row_changed_cb (GtkTreeModel *model,
 {
     //Declarations
     GwDictionaryStore *store;
-    GwDictionaryStorePrivate *priv;
-    gint position;
-    gpointer ptr;
-    GtkTreeIter iter;
-    LwDictInfo *di;
-    LwDictInfoList *dictinfolist;
-    gboolean valid;
 
     //Initializations
     store = GW_DICTIONARYSTORE (model);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (store);
-    priv = store->priv;
-    position = 0;
 
-    g_signal_handler_block (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
-
-    valid = gtk_tree_model_get_iter_first (model, &iter);
-    while (valid)
-    {
-      gtk_tree_model_get (model, &iter, GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, &ptr, -1);
-      if (ptr != NULL)
-      {
-        di = LW_DICTINFO (ptr);
-        di->load_position = position;
-        position++;
-      }
-      valid = gtk_tree_model_iter_next (model, &iter);
-    }
-
-    g_signal_handler_unblock (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
-
-    lw_dictinfolist_sort_and_normalize_order (dictinfolist);
+    gw_dictionarystore_normalize (store);
     gw_dictionarystore_update (store);
 }
 

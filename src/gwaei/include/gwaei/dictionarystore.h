@@ -53,6 +53,7 @@ LwDictInfoList* gw_dictionarystore_get_dictinfolist (GwDictionaryStore*);
 void gw_dictionarystore_save_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_load_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_update (GwDictionaryStore*);
+void gw_dictionarystore_normalize (GwDictionaryStore*);
 
 #include <gwaei/dictionarystore-callbacks.h>
 

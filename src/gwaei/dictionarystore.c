@@ -217,7 +217,7 @@ gw_dictionarystore_load_order (GwDictionaryStore *store, LwPreferences *preferen
 
 
 void
-gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferences)
+gw_dictionarystore_normalize (GwDictionaryStore *store)
 {
     //Declarations
     GwDictionaryStorePrivate *priv;
@@ -253,6 +253,46 @@ gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferen
     g_signal_handler_unblock (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
 
     lw_dictinfolist_sort_and_normalize_order (dictinfolist);
+}
+
+
+void
+gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferences)
+{
+    //Declarations
+    GwDictionaryStorePrivate *priv;
+    GtkTreeModel *model;
+    gint position;
+    gpointer ptr;
+    GtkTreeIter iter;
+    LwDictInfo *di;
+    LwDictInfoList *dictinfolist;
+    gboolean valid;
+
+    //Initializations
+    dictinfolist = gw_dictionarystore_get_dictinfolist (store);
+    priv = store->priv;
+    position = 0;
+    model = GTK_TREE_MODEL (store);
+
+    g_signal_handler_block (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
+
+    valid = gtk_tree_model_get_iter_first (model, &iter);
+    while (valid)
+    {
+      gtk_tree_model_get (model, &iter, GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, &ptr, -1);
+      if (ptr != NULL)
+      {
+        di = LW_DICTINFO (ptr);
+        di->load_position = position;
+        position++;
+      }
+      valid = gtk_tree_model_iter_next (model, &iter);
+    }
+
+    g_signal_handler_unblock (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
+
+    gw_dictionarystore_normalize (store);
     lw_dictinfolist_save_order (dictinfolist, preferences);
     gw_dictionarystore_update (store);
 }
