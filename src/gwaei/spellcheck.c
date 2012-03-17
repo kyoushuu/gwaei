@@ -323,13 +323,16 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
 }
 
 
-void
+gboolean
 gw_spellcheck_clear (GwSpellcheck *spellcheck)
 {
-    g_return_if_fail (spellcheck != NULL);
+    g_return_val_if_fail (spellcheck != NULL, FALSE);
 
     GwSpellcheckPrivate *priv;
+    gboolean changed;
+
     priv = spellcheck->priv;
+    changed = (priv->misspelled != NULL);
 
     priv->timeout = 0;
     
@@ -337,6 +340,8 @@ gw_spellcheck_clear (GwSpellcheck *spellcheck)
       g_strfreev (priv->tolkens); priv->tolkens = NULL;
     if (priv->misspelled != NULL)
       g_list_free (priv->misspelled); priv->misspelled = NULL;
+
+    return changed;
 }
 
 
@@ -382,6 +387,53 @@ gw_spellcheck_get_layout_x_offset (GwSpellcheck *spellcheck)
 }
 
 
+gboolean
+gw_spellcheck_has_hiragana_conversion (GwSpellcheck *spellcheck)
+{
+    //Declarations
+    GwSpellcheckPrivate *priv;
+    LwPreferences *preferences;
+    const gint MAX = 300;
+    gchar kana[MAX];
+    const gchar *query;
+    gboolean has_hiragana_conversion;
+    gint rk_conv_pref;
+    gboolean want_conv;
+
+    priv = spellcheck->priv;
+    preferences = gw_application_get_preferences (priv->application);
+    rk_conv_pref = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
+    want_conv = (rk_conv_pref == 0 || (rk_conv_pref == 2 && !lw_util_is_japanese_locale()));
+    query = gtk_entry_get_text (priv->entry);
+    has_hiragana_conversion = (want_conv && lw_util_str_roma_to_hira (query, kana, MAX));
+  
+    return has_hiragana_conversion;
+}
+
+
+gboolean
+gw_spellcheck_should_check (GwSpellcheck *spellcheck)
+{
+    //Declarations
+    GwSpellcheckPrivate *priv;
+    LwPreferences *preferences;
+    gboolean spellcheck_on;
+    gboolean has_hiragana_conversion;
+    gboolean should_check;
+    const gchar *query;
+
+    //Initializations
+    priv = spellcheck->priv;
+    preferences = gw_application_get_preferences (priv->application);
+    spellcheck_on = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
+    has_hiragana_conversion = gw_spellcheck_has_hiragana_conversion (spellcheck);
+    query = gtk_entry_get_text (priv->entry);
+    should_check = (query != NULL && *query != '\0' && spellcheck_on && !has_hiragana_conversion);
+
+    return should_check;
+}
+
+
 void
 gw_spellcheck_queue (GwSpellcheck *spellcheck)
 {
@@ -389,30 +441,16 @@ gw_spellcheck_queue (GwSpellcheck *spellcheck)
 
     //Declarations
     GwSpellcheckPrivate *priv;
-    LwPreferences *preferences;
-    gboolean spellcheck_pref;
-    int rk_conv_pref;
-    gboolean want_conv;
-    const char *query;
-    gboolean is_convertable_to_hiragana;
-    const int MAX = 300;
-    char kana[MAX];
-    gboolean needs_spellcheck;
+    gboolean should_check;
     gboolean should_redraw;
 
     //Initializations
     priv = spellcheck->priv;
-    preferences = gw_application_get_preferences (priv->application);
-    rk_conv_pref = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
-    want_conv = (rk_conv_pref == 0 || (rk_conv_pref == 2 && !lw_util_is_japanese_locale()));
-    query = gtk_entry_get_text (priv->entry);
-    is_convertable_to_hiragana = (want_conv && lw_util_str_roma_to_hira (query, kana, MAX));
-    spellcheck_pref = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
-    needs_spellcheck = (query != NULL && *query != '\0' && spellcheck_pref && !is_convertable_to_hiragana);
-    should_redraw = (priv->misspelled != NULL);
+    should_check = gw_spellcheck_should_check (spellcheck);
+
     g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
 
-    if (needs_spellcheck)
+    if (should_check)
     {
       priv->timeout = 0;
       if (priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] == 0)
@@ -425,7 +463,7 @@ gw_spellcheck_queue (GwSpellcheck *spellcheck)
       );
     }
 
-    gw_spellcheck_clear (spellcheck);
+    should_redraw = gw_spellcheck_clear (spellcheck);
 
     if (should_redraw) 
     {
@@ -438,6 +476,10 @@ gboolean
 gw_spellcheck_update (GwSpellcheck *spellcheck)
 {
     GwSpellcheckPrivate *priv;
+    gboolean should_check;
+    gboolean should_redraw;
+    const gchar *query;
+    gchar **iter;
 
     priv = spellcheck->priv;
 
@@ -451,26 +493,27 @@ gw_spellcheck_update (GwSpellcheck *spellcheck)
       return TRUE;
     }
 
-    gw_spellcheck_clear (spellcheck); //Make sure the memory is freed
+    should_check = gw_spellcheck_should_check (spellcheck);
+    should_redraw = gw_spellcheck_clear (spellcheck); //Make sure the memory is freed
 
-    const gchar *query;
-    gchar **iter;
-
-    query = gtk_entry_get_text (priv->entry);
-    priv->tolkens = g_strsplit (query, " ", -1);
-
-    for (iter = priv->tolkens; *iter != NULL; iter++)
+    if (should_check)
     {
-      if (**iter != '\0' && enchant_dict_check (priv->dictionary, *iter, strlen(*iter)))
+      query = gtk_entry_get_text (priv->entry);
+      priv->tolkens = g_strsplit (query, " ", -1);
+
+      for (iter = priv->tolkens; *iter != NULL; iter++)
       {
-        priv->misspelled = g_list_append (priv->misspelled, *iter);
+        if (**iter != '\0' && enchant_dict_check (priv->dictionary, *iter, strlen(*iter)))
+        {
+          priv->misspelled = g_list_append (priv->misspelled, *iter);
+        }
       }
     }
 
+    if (should_redraw) gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
+
     priv->timeoutid[GW_SPELLCHECK_TIMEOUTID_UPDATE] = 0;
     priv->timeout = 0;
-
-    gtk_widget_queue_draw (GTK_WIDGET (priv->entry));
 
     return FALSE;
 }

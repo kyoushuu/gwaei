@@ -59,7 +59,7 @@ gint gw_spellcheck_get_layout_x_offset (GwSpellcheck *spellcheck);
 gint gw_spellcheck_get_layout_y_offset (GwSpellcheck *spellcheck);
 
 void gw_spellcheck_set_timeout_threshold (GwSpellcheck*, guint);
-void gw_spellcheck_clear (GwSpellcheck*);
+gboolean gw_spellcheck_clear (GwSpellcheck*);
 
 void gw_spellcheck_record_mouse_cordinates (GwSpellcheck*, GdkEvent*);
 void gw_spellcheck_populate_popup (GwSpellcheck*, GtkMenu*);
