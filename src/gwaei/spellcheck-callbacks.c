@@ -244,3 +244,19 @@ gw_spellcheck_update_timeout (gpointer data)
 
 
 
+G_MODULE_EXPORT void 
+gw_spellcheck_sync_rk_conv_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    //Declarations
+    GwSpellcheck *spellcheck;
+    GwSpellcheckPrivate *priv;
+    gint request;
+
+    spellcheck = GW_SPELLCHECK (data);
+    priv = spellcheck->priv;
+
+    request = lw_preferences_get_int (settings, key);
+
+    priv->rk_conv_setting = request;
+}
+

@@ -206,12 +206,24 @@ gw_spellcheck_remove_signals (GwSpellcheck *spellcheck)
 {
     //Declarations
     GwSpellcheckPrivate *priv;
+    LwPreferences *preferences;
     GtkEntry *entry;
     GSource *source;
     int i;
 
     priv = spellcheck->priv;
+    preferences = gw_application_get_preferences (priv->application);
     entry = priv->entry;
+
+    if (priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV] != 0)
+    {
+      lw_preferences_remove_change_listener_by_schema (
+          preferences, 
+          LW_SCHEMA_BASE, 
+          priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV]
+      );
+      priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV] = 0;
+    }
 
     for (i = 0; i < TOTAL_GW_SPELLCHECK_SIGNALIDS && entry != NULL; i++)
     {
@@ -256,8 +268,10 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
 {
 
     GwSpellcheckPrivate *priv;
+    LwPreferences *preferences;
 
     priv = spellcheck->priv;
+    preferences = gw_application_get_preferences (priv->application);
 
     //Remove the old signals
     if (priv->entry != NULL)
@@ -285,6 +299,13 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
     g_object_add_weak_pointer (G_OBJECT (priv->entry), (gpointer*) (&(priv->entry)));
 
     //set the new signals
+    priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        LW_KEY_ROMAN_KANA,
+        gw_spellcheck_sync_rk_conv_cb,
+        spellcheck
+    );
     priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW] = g_signal_connect_after (
         G_OBJECT (entry), 
         "draw", 
@@ -392,18 +413,16 @@ gw_spellcheck_has_hiragana_conversion (GwSpellcheck *spellcheck)
 {
     //Declarations
     GwSpellcheckPrivate *priv;
-    LwPreferences *preferences;
     const gint MAX = 300;
     gchar kana[MAX];
     const gchar *query;
     gboolean has_hiragana_conversion;
-    gint rk_conv_pref;
+    gint rk_conv_setting;
     gboolean want_conv;
 
     priv = spellcheck->priv;
-    preferences = gw_application_get_preferences (priv->application);
-    rk_conv_pref = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
-    want_conv = (rk_conv_pref == 0 || (rk_conv_pref == 2 && !lw_util_is_japanese_locale()));
+    rk_conv_setting = priv->rk_conv_setting;
+    want_conv = (rk_conv_setting == 0 || (rk_conv_setting == 2 && !lw_util_is_japanese_locale()));
     query = gtk_entry_get_text (priv->entry);
     has_hiragana_conversion = (want_conv && lw_util_str_roma_to_hira (query, kana, MAX));
   
@@ -416,19 +435,15 @@ gw_spellcheck_should_check (GwSpellcheck *spellcheck)
 {
     //Declarations
     GwSpellcheckPrivate *priv;
-    LwPreferences *preferences;
-    gboolean spellcheck_on;
     gboolean has_hiragana_conversion;
     gboolean should_check;
     const gchar *query;
 
     //Initializations
     priv = spellcheck->priv;
-    preferences = gw_application_get_preferences (priv->application);
-    spellcheck_on = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
     has_hiragana_conversion = gw_spellcheck_has_hiragana_conversion (spellcheck);
     query = gtk_entry_get_text (priv->entry);
-    should_check = (query != NULL && *query != '\0' && spellcheck_on && !has_hiragana_conversion);
+    should_check = (query != NULL && *query != '\0' && !has_hiragana_conversion);
 
     return should_check;
 }
