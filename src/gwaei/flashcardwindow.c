@@ -266,16 +266,36 @@ gw_flashcardwindow_set_model (GwFlashCardWindow *window,
 gboolean
 gw_flashcardwindow_user_answer_is_correct (GwFlashCardWindow *window)
 {
+    //Declarations
     GwFlashCardWindowPrivate *priv;
     gchar *user;
     gchar *card;
     gboolean is_correct;
+    gboolean convertable;
+    const gint MAX = 100;
+    gchar hiragana[MAX];
+    gchar katakana[MAX];
 
+    //Initializations
     priv = window->priv;
     user = lw_util_collapse_string (gtk_entry_get_text (priv->answer_entry));
     card = lw_util_collapse_string (priv->answer);
+    convertable = lw_util_str_roma_to_hira (user, hiragana, MAX);
 
-    is_correct = (user != NULL && card != NULL && *user != '\0'  && strstr(card, user) != NULL);
+    if (user == NULL || card == NULL || *user == '\0')
+    {
+      is_correct = FALSE;
+    }
+    else if (convertable)
+    {
+      strcpy(katakana, hiragana);
+      lw_util_str_shift_hira_to_kata (katakana);
+      is_correct = (strstr(card, user) != NULL || strstr(card, hiragana) != NULL || strstr(card, katakana) != NULL);
+    }
+    else
+    {
+      is_correct = (strstr(card, user) != NULL);
+    }
 
     if (user != NULL) g_free (card);
     if (card != NULL) g_free (user);
