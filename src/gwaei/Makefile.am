@@ -14,9 +14,9 @@ gwaei_SOURCES = gwaei.c application.c application-callbacks.c window.c window-ca
 gwaei_LDADD =  $(GWAEI_LIBS) ../libwaei/libwaei.la
 gwaei_CPPFLAGS = $(DEFINITIONS) $(GWAEI_CFLAGS) $(GWAEI_DEFS) -I$(top_srcdir)/src/libwaei/include -I$(top_srcdir)/src/gwaei/include
 
-if WITH_ENCHANT
-gwaei_LDADD +=$(ENCHANT_LIBS)
-gwaei_CPPFLAGS +=$(ENCHANT_CFLAGS) -DWITH_ENCHANT
+if WITH_HUNSPELL
+gwaei_LDADD +=$(HUNSPELL_LIBS)
+gwaei_CPPFLAGS +=$(HUNSPELL_CFLAGS) -DHUNSPELL_MYSPELL_DICTIONARY_PATH=\"$(HUNSPELL_MYSPELL_DICTIONARY_PATH)\" -DWITH_HUNSPELL
 gwaei_SOURCES += spellcheck.c spellcheck-callbacks.c
 endif
 

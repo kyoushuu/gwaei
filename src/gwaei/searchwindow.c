@@ -96,7 +96,7 @@ gw_searchwindow_finalize (GObject *object)
     if (gw_application_get_last_focused_searchwindow (application) == window)
       gw_application_set_last_focused_searchwindow (application, NULL);
 
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
     if (priv->spellcheck) g_object_unref (priv->spellcheck); priv->spellcheck = NULL;
 #endif
     if (priv->history) lw_history_free (priv->history); priv->history = NULL;
@@ -197,7 +197,7 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_update_history_popups (window);
     gw_searchwindow_update_vocabulary_menuitems (window);
 
-    #ifdef WITH_ENCHANT
+    #ifdef WITH_HUNSPELL
     gtk_widget_show (GTK_WIDGET (priv->spellcheck_toolbutton));
     #else
     gtk_widget_hide (GTK_WIDGET (priv->spellcheck_toolbutton));
@@ -2197,7 +2197,7 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
         window
     );
 
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_SPELLCHECK] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
@@ -2317,7 +2317,7 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_KEEP_SEARCHING]
     );
 
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
     lw_preferences_remove_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,

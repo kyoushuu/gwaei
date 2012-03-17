@@ -1,7 +1,7 @@
 #ifndef GW_SPELLCHECK_PRIVATE_INCLUDED
 #define GW_SPELLCHECK_PRIVATE_INCLUDED
 
-#include <enchant/enchant.h>
+#include <hunspell/hunspell.h>
 
 G_BEGIN_DECLS
 
@@ -27,8 +27,7 @@ struct _GwSpellcheckPrivate {
 
   GtkEntry *entry;
 
-  EnchantBroker *broker;
-  EnchantDict *dictionary;
+  Hunhandle *handle;
 
   gchar** tolkens;           //A list of tolkens taken from the search entry
   GList *misspelled; //gchar* pointers to individual tolkens above

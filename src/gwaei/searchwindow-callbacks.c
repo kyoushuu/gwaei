@@ -2053,7 +2053,7 @@ gw_searchwindow_sync_font_cb (GSettings *settings, gchar *KEY, gpointer data)
 G_MODULE_EXPORT void 
 gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 {
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
@@ -2079,7 +2079,7 @@ gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
 G_MODULE_EXPORT void 
 gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;

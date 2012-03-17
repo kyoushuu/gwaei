@@ -11,7 +11,7 @@ typedef enum {
 } GwSearchWindowTimeoutId;
 
 typedef enum {
-#ifdef WITH_ENCHANT
+#ifdef WITH_HUNSPELL
   GW_SEARCHWINDOW_SIGNALID_SPELLCHECK,
 #endif
   GW_SEARCHWINDOW_SIGNALID_KEEP_SEARCHING,

@@ -30,7 +30,7 @@
 #include <stdlib.h>
 
 #include <gtk/gtk.h>
-#include <enchant/enchant.h>
+#include <hunspell/hunspell.h>
 
 #include <gwaei/gwaei.h>
 #include <gwaei/spellcheck-private.h>
@@ -72,6 +72,34 @@ gw_spellcheck_new_with_entry (GwApplication *application, GtkEntry *entry)
     return spellcheck;
 }
 
+static void
+gw_spellcheck_load_dictionary (GwSpellcheck *spellcheck, const gchar *dictionary_name)
+{
+    GwSpellcheckPrivate *priv;
+    gchar *path, *affpath, *dpath;
+
+    priv = spellcheck->priv;
+
+    path = g_build_filename (HUNSPELL_MYSPELL_DICTIONARY_PATH, dictionary_name, NULL);
+    if (path != NULL)
+    {
+      affpath = g_strjoin (".", path, "aff", NULL);
+      if (affpath != NULL)
+      {
+        dpath = g_strjoin (".", path, "dic", NULL);
+        if (dpath != NULL)
+        {
+          if (priv->handle != NULL) Hunspell_destroy (priv->handle);
+          priv->handle = Hunspell_create (affpath, dpath);
+
+          g_free (dpath); dpath = NULL;
+        }
+        g_free (affpath); affpath = NULL;
+      }
+      g_free (path); path = NULL;
+    }
+}
+
 
 static void
 gw_spellcheck_init (GwSpellcheck *spellcheck)
@@ -79,23 +107,9 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
     spellcheck->priv = GW_SPELLCHECK_GET_PRIVATE (spellcheck);
     memset(spellcheck->priv, 0, sizeof(GwSpellcheckPrivate));
 
-    GwSpellcheckPrivate *priv;
+    gw_spellcheck_load_dictionary (spellcheck, "en_US");
 
-    priv = spellcheck->priv;
-
-    priv->broker = enchant_broker_init();
-
-#ifdef OS_MINGW
-    gchar *current_dir = g_get_current_dir();
-    gchar *path = g_build_filename (current_dir, "..", "share", "enchant", "myspell", NULL);
-    enchant_broker_set_param (priv->broker, "enchant.myspell.dictionary.path", path);
-    if (path != NULL) g_free (path); path = NULL;
-    if (current_dir != NULL) g_free (current_dir); current_dir = NULL;
-#endif
-
-    priv->dictionary = enchant_broker_request_dict (priv->broker, "en");
-
-    gw_spellcheck_set_timeout_threshold (spellcheck, 3);
+    gw_spellcheck_set_timeout_threshold (spellcheck, 2);
 
     gw_spellcheck_attach_signals (spellcheck);
 }
@@ -110,8 +124,7 @@ gw_spellcheck_finalize (GObject *object)
     spellcheck = GW_SPELLCHECK (object);
     priv = spellcheck->priv;
 
-    if (priv->dictionary != NULL) enchant_broker_free_dict (priv->broker, priv->dictionary); priv->dictionary = NULL;
-    if (priv->broker != NULL) enchant_broker_free (priv->broker); priv->broker = NULL;
+    if (priv->handle != NULL) Hunspell_destroy (priv->handle); priv->handle = NULL;
 
     gw_spellcheck_remove_signals (spellcheck);
     gw_spellcheck_clear (spellcheck);
@@ -463,7 +476,7 @@ gw_spellcheck_queue (GwSpellcheck *spellcheck)
     priv = spellcheck->priv;
     should_check = gw_spellcheck_should_check (spellcheck);
 
-    g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
+    g_return_if_fail (priv->handle != NULL);
 
     if (should_check)
     {
@@ -518,7 +531,7 @@ gw_spellcheck_update (GwSpellcheck *spellcheck)
 
       for (iter = priv->tolkens; *iter != NULL; iter++)
       {
-        if (**iter != '\0' && enchant_dict_check (priv->dictionary, *iter, strlen(*iter)))
+        if (**iter != '\0' && Hunspell_spell (priv->handle, *iter) == 0)
         {
           priv->misspelled = g_list_append (priv->misspelled, *iter);
         }
@@ -600,7 +613,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     size_t total_suggestions;
 
     if (priv->tolkens == NULL) return;
-    g_return_if_fail (enchant_broker_dict_exists (priv->broker, "en") != FALSE);
+    g_return_if_fail (priv->handle != NULL);
 
     xoffset = gw_spellcheck_get_layout_x_offset (spellcheck);
     yoffset = gw_spellcheck_get_layout_y_offset (spellcheck);
@@ -618,7 +631,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     if (*iter == NULL) return;
     end_offset = start_offset + strlen(*iter);
 
-    suggestions = enchant_dict_suggest (priv->dictionary, *iter, strlen(*iter), &total_suggestions);
+    total_suggestions = Hunspell_suggest (priv->handle, &suggestions, *iter);
     if (total_suggestions > 0 && suggestions != NULL)
     {
       menuitem = gtk_separator_menu_item_new ();
@@ -636,7 +649,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
         gtk_menu_shell_append (GTK_MENU_SHELL (menu), menuitem);
       }
 
-      enchant_dict_free_string_list (priv->dictionary, suggestions);
+      Hunspell_free_list (priv->handle, &suggestions, total_suggestions);
     }
 }
 

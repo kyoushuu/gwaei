@@ -18,7 +18,7 @@ GMODULE_EXPORT_REQUIRED_VERSION=2.31.0
 #GTK Base Dependencies
 GTK3_REQUIRED_VERSION=3.3.0
 GDU_REQUIRED_VERSION=0.13.0
-ENCHANT_REQUIRED_VERSION=1.6.0
+HUNSPELL_REQUIRED_VERSION=1.3.0
 
 AC_CANONICAL_HOST
 AM_CONDITIONAL([OS_MINGW],false)
@@ -51,14 +51,14 @@ esac],[gnome=true])
 AM_CONDITIONAL([WITH_GNOME], [test x$gnome = xtrue])
 
 
-AC_ARG_WITH([enchant],
-[  --without-enchant        turn off Enchant spellchecking],
+AC_ARG_WITH([hunspell],
+[  --without-hunspell        turn off Hunspell spellchecking and morphological analysis],
 [case "${withval}" in
-yes) enchant=true ;;
-no)  enchant=false ;;
-*) AC_MSG_ERROR([bad value ${withval} for --with-enchant]) ;;
-esac],[enchant=true])
-AM_CONDITIONAL([WITH_ENCHANT], [test x$enchant = xtrue])
+yes) hunspell=true ;;
+no)  hunspell=false ;;
+*) AC_MSG_ERROR([bad value ${withval} for --with-hunspell]) ;;
+esac],[hunspell=true])
+AM_CONDITIONAL([WITH_HUNSPELL], [test x$hunspell = xtrue])
 
 
 AC_ARG_WITH([mecab],
@@ -104,10 +104,10 @@ if test x$gnome = xtrue; then
   GNOME_DOC_INIT
 fi
 
-if test x$enchant = xtrue; then
-  PKG_CHECK_MODULES(ENCHANT, enchant           >= $ENCHANT_REQUIRED_VERSION)
-  AC_SUBST(ENCHANT_CFLAGS)
-  AC_SUBST(ENCHANT_LIBS)
+if test x$hunspell = xtrue; then
+  PKG_CHECK_MODULES(HUNSPELL, hunspell           >= $HUNSPELL_REQUIRED_VERSION)
+  AC_SUBST(HUNSPELL_CFLAGS)
+  AC_SUBST(HUNSPELL_LIBS)
 fi
 
 if test x$mecab = xtrue; then
@@ -118,6 +118,17 @@ AM_CONDITIONAL([HAVE_MECAB],true)
 else
 AM_CONDITIONAL([HAVE_MECAB],false)
 fi
+
+
+myspelldictpath=${datadir}/myspell/dicts
+AC_ARG_WITH(myspell_dict_path, AS_HELP_STRING([--with-myspell-dict-path=PATH],[path to myspell dictionaries]))
+
+if test "x$with_myspell_dict_path" != "x" ; then
+   myspelldictpath=$with_myspell_dict_path
+fi
+HUNSPELL_MYSPELL_DICTIONARY_PATH="$myspelldictpath"
+AC_SUBST(HUNSPELL_MYSPELL_DICTIONARY_PATH)
+
 
 
 GLIB_GSETTINGS
@@ -153,10 +164,10 @@ else
   echo -e "* Gnome is\tDISABLED"
 fi
 
-if test x$enchant = xtrue; then
-  echo -e "* Enchant is\tENABLED"
+if test x$hunspell = xtrue; then
+  echo -e "* Hunspell is\tENABLED (Dictionary search path: $myspelldictpath)"
 else
-  echo -e "* Enchant is\tDISABLED"
+  echo -e "* Hunspell is\tDISABLED"
 fi
 
 

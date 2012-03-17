@@ -169,7 +169,7 @@ gw_settingswindow_constructed (GObject *object)
       gtk_notebook_set_current_page (priv->notebook, 1);
     gw_settingswindow_check_for_dictionaries (window);
 
-    #ifdef WITH_ENCHANT
+    #ifdef WITH_HUNSPELL
     gtk_widget_show (GTK_WIDGET (priv->spellcheck_checkbutton));
     #else
     gtk_widget_hide (GTK_WIDGET (priv->spellcheck_checkbutton));
