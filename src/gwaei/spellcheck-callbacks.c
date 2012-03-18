@@ -34,6 +34,25 @@
 #include <gwaei/gwaei.h>
 #include <gwaei/spellcheck-private.h>
 
+
+void
+gw_spellcheck_add_menuitem_activated_cb (GtkWidget *widget, gpointer data)
+{
+    GwSpellcheck *spellcheck;
+    GwSpellcheckPrivate *priv;
+    gchar *word;
+
+    spellcheck = GW_SPELLCHECK (data);
+    priv = spellcheck->priv;
+    word = (gchar*) g_object_get_data (G_OBJECT (widget), "word");
+
+    if (priv->handle == NULL) return;
+
+    Hunspell_add (priv->handle, word);
+    gw_spellcheck_queue (spellcheck);
+}
+
+
 void 
 gw_spellcheck_menuitem_activated_cb (GtkWidget *widget, gpointer data)
 {
