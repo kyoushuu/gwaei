@@ -72,32 +72,171 @@ gw_spellcheck_new_with_entry (GwApplication *application, GtkEntry *entry)
     return spellcheck;
 }
 
+static gchar**
+gw_spellcheck_get_dictionary_paths ()
+{
+    //Decalrations
+    gchar **relative_path;
+    gchar **path;
+    gchar *text;
+    gchar *temp;
+    const gchar * const * system_path = g_get_system_data_dirs ();
+    gint i;
+
+    //Initializations
+    path = NULL;
+
+    relative_path = g_new (gchar*, 4);
+    if (relative_path != NULL)
+    {
+      relative_path[0] = g_build_filename ("..", "share", "myspell", "dicts", NULL);
+      relative_path[1] = g_build_filename ("..", "share", "hunspell", NULL);
+      relative_path[2] = g_build_filename ("..", "..", "share", "myspell", "dicts", NULL);
+      relative_path[3] = g_build_filename ("..", "..", "share", "hunspell", NULL);
+
+      text = g_strjoin (":", HUNSPELL_MYSPELL_DICTIONARY_PATH,
+                             relative_path[0],
+                             relative_path[1],
+                             relative_path[2],
+                             relative_path[3],
+                             NULL
+      );
+
+      for (i = 0; system_path[i] != NULL; i++)
+      {
+        gchar *temp_path1 = g_build_filename (system_path[i], "myspell", "dicts", NULL);
+        gchar *temp_path2 = g_build_filename (system_path[i], "hunspell", NULL);
+
+        temp = g_strjoin (":", text, temp_path1, temp_path2, NULL);
+        g_free (text);
+        text = temp;
+        temp = NULL;
+
+        if (temp_path1 != NULL) g_free (temp_path1);
+        if (temp_path2 != NULL) g_free (temp_path2);
+        if (temp != NULL) g_free (temp);
+      }
+      
+      path = g_strsplit (text, ":", -1);
+
+      if (text != NULL) g_free (text); text = NULL;
+      if (relative_path[0] != NULL) g_free (relative_path[0]);
+      if (relative_path[1] != NULL) g_free (relative_path[1]);
+      if (relative_path[2] != NULL) g_free (relative_path[2]);
+      if (relative_path[3] != NULL) g_free (relative_path[3]);
+      g_free (relative_path); relative_path = NULL;
+    }
+
+    return path;
+}
+
+
+static gchar* 
+gw_spellcheck_build_noramalized_locale (const gchar *NAME)
+{
+    GDir *dir;
+    gchar *locale;
+    gchar *ptr;
+    gchar **pathlist;
+    const gchar *FILENAME;
+    gint i;
+    gint length;
+
+    locale = g_strdup (NAME);
+    ptr = strchr(locale, '.');  
+    if (ptr != NULL) *ptr = '\0'; //Truncate the UTF8 part of en_US.UTF8
+
+    pathlist = gw_spellcheck_get_dictionary_paths ();
+    if (pathlist != NULL)
+    {
+      //If the local lacks a country name, try to bulid one
+      ptr = strchr(locale, '_'); 
+      if (ptr == NULL)
+      {
+        for (i = 0; ptr == NULL && pathlist[i] != NULL; i++)
+        {
+          dir = g_dir_open (pathlist[i], 0, NULL);
+          if (dir != NULL)
+          {
+            length = strlen (locale);
+            while (ptr == NULL && (FILENAME = g_dir_read_name (dir)) != NULL)
+            {
+              if (strncmp(FILENAME, locale, length) == 0)
+              {
+                if (locale != NULL) g_free (locale);
+                locale = g_strdup (FILENAME);
+                ptr = strchr(locale, '.');  
+                if (ptr != NULL) *ptr = '\0';
+                ptr = strchr(locale, '_');
+              }
+            }
+            g_dir_close (dir); dir = NULL;
+          }
+        }
+      }
+      g_strfreev (pathlist); pathlist = NULL;
+    }
+
+    //Wasn't a valid locale for a dictionary
+    if (ptr == NULL && locale != NULL)
+    {
+      g_free (locale); locale = NULL;
+    }
+   
+    return locale; 
+}
+
+
+static Hunhandle*
+gw_spellcheck_get_hunhandle (const gchar *NAME)
+{
+    gchar **pathlist;
+    gchar *path, *dpath, *affpath;
+    gchar *locale;
+    gint i;
+    Hunhandle *handle;
+
+    handle = NULL;
+
+    locale = gw_spellcheck_build_noramalized_locale (NAME);
+    if (locale != NULL)
+    {
+      pathlist = gw_spellcheck_get_dictionary_paths ();
+      if (pathlist != NULL)
+      {
+        for (i = 0; handle == NULL && pathlist[i] != NULL; i++)
+        {
+          path = g_build_filename (pathlist[i], locale, NULL);
+          dpath = g_strjoin (".", path, "dic", NULL);
+          affpath = g_strjoin (".", path, "aff", NULL);
+          if (g_file_test (affpath, G_FILE_TEST_IS_REGULAR) && 
+              g_file_test (dpath, G_FILE_TEST_IS_REGULAR))
+            handle = Hunspell_create (affpath, dpath);
+          if (path != NULL) g_free (path); path = NULL;
+          if (dpath != NULL) g_free (dpath); dpath = NULL;
+          if (affpath != NULL) g_free (affpath); affpath = NULL;
+        }
+        g_strfreev (pathlist); pathlist = NULL;
+      }
+      g_free (locale); locale = NULL;
+    }
+    
+    return handle;
+}
+
+
 static void
-gw_spellcheck_load_dictionary (GwSpellcheck *spellcheck, const gchar *dictionary_name)
+gw_spellcheck_load_dictionary (GwSpellcheck *spellcheck, const gchar *name)
 {
     GwSpellcheckPrivate *priv;
-    gchar *path, *affpath, *dpath;
 
+/*
+    gchar *locale;
+    locale = g_strdup (setlocale (LC_ALL, NULL));
+*/
     priv = spellcheck->priv;
 
-    path = g_build_filename (HUNSPELL_MYSPELL_DICTIONARY_PATH, dictionary_name, NULL);
-    if (path != NULL)
-    {
-      affpath = g_strjoin (".", path, "aff", NULL);
-      if (affpath != NULL)
-      {
-        dpath = g_strjoin (".", path, "dic", NULL);
-        if (dpath != NULL)
-        {
-          if (priv->handle != NULL) Hunspell_destroy (priv->handle);
-          priv->handle = Hunspell_create (affpath, dpath);
-
-          g_free (dpath); dpath = NULL;
-        }
-        g_free (affpath); affpath = NULL;
-      }
-      g_free (path); path = NULL;
-    }
+    priv->handle = gw_spellcheck_get_hunhandle (name);
 }
 
 
@@ -456,7 +595,7 @@ gw_spellcheck_should_check (GwSpellcheck *spellcheck)
     priv = spellcheck->priv;
     has_hiragana_conversion = gw_spellcheck_has_hiragana_conversion (spellcheck);
     query = gtk_entry_get_text (priv->entry);
-    should_check = (query != NULL && *query != '\0' && !has_hiragana_conversion);
+    should_check = (priv->handle != NULL && query != NULL && *query != '\0' && !has_hiragana_conversion);
 
     return should_check;
 }
@@ -603,7 +742,6 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     GwSpellcheckPrivate *priv;
     GtkWidget *menuitem;
 
-    priv = spellcheck->priv;
     int index;
     int xoffset, yoffset, x, y;
     int start_offset, end_offset;
@@ -612,6 +750,7 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     gchar **suggestions;
     size_t total_suggestions;
 
+    priv = spellcheck->priv;
     if (priv->tolkens == NULL) return;
     g_return_if_fail (priv->handle != NULL);
 
