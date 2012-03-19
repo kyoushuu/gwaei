@@ -14,16 +14,17 @@ G_BEGIN_DECLS
 #define LW_KEY_PROGRAM_VERSION      "version"
 
 /////////////////////////
-#define LW_SCHEMA_BASE             "org.gnome.gwaei"
-#define LW_KEY_WINDOW_SIZE         "window-size"
-#define LW_KEY_TOOLBAR_SHOW        "toolbar-show"
-#define LW_KEY_STATUSBAR_SHOW      "statusbar-show"
-#define LW_KEY_LESS_RELEVANT_SHOW  "less-relevant-results-show"
-#define LW_KEY_HIRA_KATA           "query-hiragana-to-katakana"
-#define LW_KEY_KATA_HIRA           "query-katakana-to-hiragana"
-#define LW_KEY_ROMAN_KANA          "query-romanji-to-kana"
-#define LW_KEY_SPELLCHECK          "query-spellcheck"
-#define LW_KEY_SEARCH_AS_YOU_TYPE  "search-as-you-type"
+#define LW_SCHEMA_BASE               "org.gnome.gwaei"
+#define LW_KEY_WINDOW_SIZE           "window-size"
+#define LW_KEY_TOOLBAR_SHOW          "toolbar-show"
+#define LW_KEY_STATUSBAR_SHOW        "statusbar-show"
+#define LW_KEY_LESS_RELEVANT_SHOW    "less-relevant-results-show"
+#define LW_KEY_HIRA_KATA             "query-hiragana-to-katakana"
+#define LW_KEY_KATA_HIRA             "query-katakana-to-hiragana"
+#define LW_KEY_ROMAN_KANA            "query-romanji-to-kana"
+#define LW_KEY_SPELLCHECK            "query-spellcheck"
+#define LW_KEY_SPELLCHECK_DICTIONARY "spellcheck-dictionary"
+#define LW_KEY_SEARCH_AS_YOU_TYPE    "search-as-you-type"
 
 //////////////////////////
 #define LW_SCHEMA_VOCABULARY         "org.gnome.gwaei.vocabulary"

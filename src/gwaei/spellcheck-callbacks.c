@@ -279,3 +279,14 @@ gw_spellcheck_sync_rk_conv_cb (GSettings *settings, gchar *key, gpointer data)
     priv->rk_conv_setting = request;
 }
 
+
+G_MODULE_EXPORT void
+gw_spellcheck_sync_dictionary_cb (GSettings *settings, gchar *key, gpointer data)
+{
+    GwSpellcheck *spellcheck;
+
+    spellcheck = GW_SPELLCHECK (data);
+
+    gw_spellcheck_load_dictionary (spellcheck);
+    gw_spellcheck_queue (spellcheck);
+}

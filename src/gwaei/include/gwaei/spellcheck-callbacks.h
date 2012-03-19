@@ -10,5 +10,6 @@ void gw_spellcheck_free_menuitem_data_cb (GtkWidget*, gpointer);
 gboolean gw_spellcheck_button_press_event_cb (GtkWidget*, GdkEvent*, gpointer);
 void gw_spellcheck_populate_popup_cb (GtkEntry*, GtkMenu*, gpointer);
 void gw_spellcheck_sync_rk_conv_cb (GSettings*, gchar*, gpointer);
+void gw_spellcheck_sync_dictionary_cb (GSettings*, gchar*, gpointer);
 
 #endif

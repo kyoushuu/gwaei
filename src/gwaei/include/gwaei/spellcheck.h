@@ -43,6 +43,7 @@ gboolean gw_spellcheck_clear (GwSpellcheck*);
 void gw_spellcheck_record_mouse_cordinates (GwSpellcheck*, GdkEvent*);
 void gw_spellcheck_populate_popup (GwSpellcheck*, GtkMenu*);
 
+void gw_spellcheck_load_dictionary (GwSpellcheck*);
 
 #include <gwaei/spellcheck-callbacks.h>
 

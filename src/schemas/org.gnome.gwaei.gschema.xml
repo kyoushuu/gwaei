@@ -48,6 +48,12 @@
       <description>Checks the spelling of search queries as the user types them in.</description>
     </key>
 
+    <key name="spellcheck-dictionary" type="s">
+      <default>'auto'</default>
+      <summary>The dictionary to use for spellcheck or 'auto'</summary>
+      <description>Sets the default language for spellchecking.  It is usually en_US or some varient by default.</description>
+    </key>
+
     <key name="search-as-you-type" type="b">
       <default>false</default>
       <summary>The search updates as you type</summary>

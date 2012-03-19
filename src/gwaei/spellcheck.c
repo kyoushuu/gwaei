@@ -143,8 +143,10 @@ gw_spellcheck_build_noramalized_locale (const gchar *NAME)
     gint length;
 
     locale = g_strdup (NAME);
+
+    //Truncate the UTF8 part of en_US.UTF8
     ptr = strchr(locale, '.');  
-    if (ptr != NULL) *ptr = '\0'; //Truncate the UTF8 part of en_US.UTF8
+    if (ptr != NULL) *ptr = '\0'; 
 
     pathlist = gw_spellcheck_get_dictionary_paths ();
     if (pathlist != NULL)
@@ -225,18 +227,44 @@ gw_spellcheck_get_hunhandle (const gchar *NAME)
 }
 
 
-static void
-gw_spellcheck_load_dictionary (GwSpellcheck *spellcheck, const gchar *name)
+void
+gw_spellcheck_load_dictionary (GwSpellcheck *spellcheck)
 {
+    //Declarations
     GwSpellcheckPrivate *priv;
+    LwPreferences *preferences;
+    const gint MAX = 100;
+    const gchar *locale;
+    gchar preferred[MAX];
 
-/*
-    gchar *locale;
-    locale = g_strdup (setlocale (LC_ALL, NULL));
-*/
     priv = spellcheck->priv;
+    preferences = gw_application_get_preferences (priv->application);
+    lw_preferences_get_string_by_schema (
+      preferences, 
+      preferred, 
+      LW_SCHEMA_BASE, 
+      LW_KEY_SPELLCHECK_DICTIONARY, 
+      100);
+    locale = setlocale (LC_ALL, NULL);
 
-    priv->handle = gw_spellcheck_get_hunhandle (name);
+    //Clear the previous handle
+    if (priv->handle != NULL) Hunspell_destroy (priv->handle); priv->handle = NULL;
+
+    //See if we should try setting the prefered handle
+    if (priv->handle == NULL && strncmp("auto", preferred, strlen("auto")) != 0)
+      priv->handle = gw_spellcheck_get_hunhandle (preferred);
+
+    //Load from locale if it starts with en
+    if (priv->handle == NULL && strncmp("en", locale, strlen("en")) == 0)
+      priv->handle = gw_spellcheck_get_hunhandle (locale);
+
+    //Load from en_US
+    if (priv->handle == NULL)
+      priv->handle = gw_spellcheck_get_hunhandle ("en_US");
+
+    //Load from en
+    if (priv->handle == NULL)
+      priv->handle = gw_spellcheck_get_hunhandle ("en");
 }
 
 
@@ -245,8 +273,6 @@ gw_spellcheck_init (GwSpellcheck *spellcheck)
 {
     spellcheck->priv = GW_SPELLCHECK_GET_PRIVATE (spellcheck);
     memset(spellcheck->priv, 0, sizeof(GwSpellcheckPrivate));
-
-    gw_spellcheck_load_dictionary (spellcheck, "en_US");
 
     gw_spellcheck_set_timeout_threshold (spellcheck, 2);
 
@@ -367,6 +393,16 @@ gw_spellcheck_remove_signals (GwSpellcheck *spellcheck)
     preferences = gw_application_get_preferences (priv->application);
     entry = priv->entry;
 
+    if (priv->signalid[GW_SPELLCHECK_SIGNALID_DICTIONARY] != 0)
+    {
+      lw_preferences_remove_change_listener_by_schema (
+          preferences, 
+          LW_SCHEMA_BASE, 
+          priv->signalid[GW_SPELLCHECK_SIGNALID_DICTIONARY]
+      );
+      priv->signalid[GW_SPELLCHECK_SIGNALID_DICTIONARY] = 0;
+    }
+
     if (priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV] != 0)
     {
       lw_preferences_remove_change_listener_by_schema (
@@ -428,6 +464,7 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
     //Remove the old signals
     if (priv->entry != NULL)
     {
+
       if (priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW] != 0)
         g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
 
@@ -451,6 +488,13 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
     g_object_add_weak_pointer (G_OBJECT (priv->entry), (gpointer*) (&(priv->entry)));
 
     //set the new signals
+    priv->signalid[GW_SPELLCHECK_SIGNALID_DICTIONARY] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        LW_KEY_SPELLCHECK_DICTIONARY,
+        gw_spellcheck_sync_dictionary_cb,
+        spellcheck
+    );
     priv->signalid[GW_SPELLCHECK_SIGNALID_RK_CONV] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
