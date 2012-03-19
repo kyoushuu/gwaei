@@ -815,48 +815,51 @@ gw_spellcheck_populate_popup (GwSpellcheck *spellcheck, GtkMenu *menu)
     if (*iter == NULL) return;
     end_offset = start_offset + strlen(*iter);
 
-    total_suggestions = Hunspell_suggest (priv->handle, &suggestions, *iter);
-    if (total_suggestions > 0 && suggestions != NULL)
+    if (Hunspell_spell (priv->handle, *iter) == 0)
     {
-      menuitem = gtk_separator_menu_item_new ();
-      gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menuitem);
-      gtk_widget_show (menuitem);
-
-      spellmenu = gtk_menu_new ();
-      spellmenuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_SPELL_CHECK, NULL);
-      gtk_menu_item_set_submenu (GTK_MENU_ITEM (spellmenuitem), spellmenu);
-      gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), spellmenuitem);
-      gtk_widget_show (spellmenuitem);
-
-      gchar *text = g_strdup_printf (gettext("Add \"%s\" to the dictionary"), *iter);
-      if (text != NULL)
+      total_suggestions = Hunspell_suggest (priv->handle, &suggestions, *iter);
+      if (total_suggestions > 0 && suggestions != NULL)
       {
-        GtkWidget *image = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
-        menuitem = gtk_image_menu_item_new_with_label (text);
-        g_object_set_data_full (G_OBJECT (menuitem), "word", g_strdup (*iter), g_free);
-        g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_add_menuitem_activated_cb), spellcheck);
-        gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menuitem), image);
-        gtk_menu_shell_append (GTK_MENU_SHELL (spellmenu), menuitem);
-        g_free (text); text = NULL;
+        menuitem = gtk_separator_menu_item_new ();
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), menuitem);
         gtk_widget_show (menuitem);
-      }
 
-      menuitem = gtk_separator_menu_item_new ();
-      gtk_menu_shell_append (GTK_MENU_SHELL (spellmenu), menuitem);
-      gtk_widget_show (menuitem);
+        spellmenu = gtk_menu_new ();
+        spellmenuitem = gtk_image_menu_item_new_from_stock (GTK_STOCK_SPELL_CHECK, NULL);
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (spellmenuitem), spellmenu);
+        gtk_menu_shell_prepend (GTK_MENU_SHELL (menu), spellmenuitem);
+        gtk_widget_show (spellmenuitem);
 
-      //Menuitems
-      for (i = 0; i < total_suggestions; i++)
-      {
-        menuitem = gtk_menu_item_new_with_label (suggestions[i]);
-        g_object_set_data (G_OBJECT (menuitem), "start-offset", GINT_TO_POINTER (start_offset));
-        g_object_set_data (G_OBJECT (menuitem), "end-offset", GINT_TO_POINTER (end_offset));
-        g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), spellcheck);
-        gtk_widget_show (GTK_WIDGET (menuitem));
+        gchar *text = g_strdup_printf (gettext("Add \"%s\" to the dictionary"), *iter);
+        if (text != NULL)
+        {
+          GtkWidget *image = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
+          menuitem = gtk_image_menu_item_new_with_label (text);
+          g_object_set_data_full (G_OBJECT (menuitem), "word", g_strdup (*iter), g_free);
+          g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_add_menuitem_activated_cb), spellcheck);
+          gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menuitem), image);
+          gtk_menu_shell_append (GTK_MENU_SHELL (spellmenu), menuitem);
+          g_free (text); text = NULL;
+          gtk_widget_show (menuitem);
+        }
+
+        menuitem = gtk_separator_menu_item_new ();
         gtk_menu_shell_append (GTK_MENU_SHELL (spellmenu), menuitem);
-      }
+        gtk_widget_show (menuitem);
 
-      Hunspell_free_list (priv->handle, &suggestions, total_suggestions);
+        //Menuitems
+        for (i = 0; i < total_suggestions; i++)
+        {
+          menuitem = gtk_menu_item_new_with_label (suggestions[i]);
+          g_object_set_data (G_OBJECT (menuitem), "start-offset", GINT_TO_POINTER (start_offset));
+          g_object_set_data (G_OBJECT (menuitem), "end-offset", GINT_TO_POINTER (end_offset));
+          g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (gw_spellcheck_menuitem_activated_cb), spellcheck);
+          gtk_widget_show (GTK_WIDGET (menuitem));
+          gtk_menu_shell_append (GTK_MENU_SHELL (spellmenu), menuitem);
+        }
+
+        Hunspell_free_list (priv->handle, &suggestions, total_suggestions);
+      }
     }
 }
 
