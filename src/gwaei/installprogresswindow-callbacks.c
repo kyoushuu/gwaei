@@ -116,7 +116,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
 
       gtk_widget_destroy (GTK_WIDGET (window));
 
-      //gw_application_handle_error (application, GTK_WINDOW (settingswindow), TRUE, NULL);
+      gw_application_handle_error (application, GTK_WINDOW (settingswindow), TRUE, NULL);
 
       lw_dictinstlist_set_cancel_operations (dictinstlist, FALSE);
       gw_settingswindow_check_for_dictionaries (GW_SETTINGSWINDOW (settingswindow));
