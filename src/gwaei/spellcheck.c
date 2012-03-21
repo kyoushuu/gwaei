@@ -683,6 +683,34 @@ gw_spellcheck_queue (GwSpellcheck *spellcheck)
 }
 
 
+static gboolean
+gw_spellcheck_is_common_script (const gchar *TEXT)
+{
+    if (TEXT == NULL) return FALSE;
+
+    GUnicodeScript script;
+    gunichar c;
+    const gchar *ptr;
+    gboolean is_script;
+
+    ptr = TEXT;
+    is_script = TRUE;
+
+    while (*ptr != '\0' && is_script == TRUE)
+    {
+      c = g_utf8_get_char (ptr);
+      script = g_unichar_get_script (c);
+      if (script != G_UNICODE_SCRIPT_COMMON && script != G_UNICODE_SCRIPT_LATIN)
+      {
+        is_script = FALSE;
+      }
+      ptr = g_utf8_next_char (ptr);
+    }
+
+    return is_script;
+}
+
+
 gboolean
 gw_spellcheck_update (GwSpellcheck *spellcheck)
 {
@@ -714,7 +742,7 @@ gw_spellcheck_update (GwSpellcheck *spellcheck)
 
       for (iter = priv->tolkens; *iter != NULL; iter++)
       {
-        if (**iter != '\0' && Hunspell_spell (priv->handle, *iter) == 0)
+        if (**iter != '\0' && gw_spellcheck_is_common_script (*iter) && Hunspell_spell (priv->handle, *iter) == 0)
         {
           priv->misspelled = g_list_append (priv->misspelled, *iter);
         }
