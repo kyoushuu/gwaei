@@ -269,12 +269,6 @@ gw_dictionaryinstallwindow_merge_checkbox_toggled_cb (GtkWidget *widget, gpointe
 G_MODULE_EXPORT void 
 gw_dictionaryinstallwindow_cursor_changed_cb (GtkTreeView *view, gpointer data)
 {
-    {
-      GtkTreeViewColumn *focus_column;
-      gtk_tree_view_get_cursor (view, NULL, &focus_column);
-      if (focus_column == NULL) return;
-    }
-
     //Sanity check
     g_return_if_fail (data != NULL);
 
@@ -294,7 +288,7 @@ gw_dictionaryinstallwindow_cursor_changed_cb (GtkTreeView *view, gpointer data)
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
-    g_return_if_fail (window != NULL);
+    if (window == NULL) return;
     priv = window->priv;
     hbox = GTK_WIDGET (priv->details_hbox);
 

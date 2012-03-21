@@ -206,12 +206,6 @@ gw_vocabularywindow_remove_word_cb (GtkWidget *widget, gpointer data)
 G_MODULE_EXPORT void
 gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
 {
-    {
-      GtkTreeViewColumn *focus_column;
-      gtk_tree_view_get_cursor (view, NULL, &focus_column);
-      if (focus_column == NULL) return;
-    }
-
     //Declarations
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
@@ -227,6 +221,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
+    if (window == NULL) return;
     g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
