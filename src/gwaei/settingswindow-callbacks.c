@@ -588,8 +588,8 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     GwApplication *application;
     GtkListStore *dictionarystore;
     LwDictInfoList *dictinfolist;
+    LwPreferences *preferences;
 
-    GtkWidget *button;
     GtkTreePath *path;
     GtkTreeIter iter;
     LwDictInfo *di;
@@ -607,11 +607,11 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
     dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
-    button = GTK_WIDGET (priv->remove_dictionary_toolbutton);
     view = priv->manage_dictionaries_treeview;
     selection = gtk_tree_view_get_selection (view);
     model = GTK_TREE_MODEL (dictionarystore);
     has_selection = gtk_tree_selection_get_selected (selection, &model, &iter);
+    preferences = gw_application_get_preferences (application);
     error = NULL;
 
     //Sanity check
@@ -624,13 +624,12 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     if (di != NULL)
     {
       lw_dictinfo_uninstall (di, NULL, &error);
-      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore));
+      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore), preferences);
     }
 
     //Cleanup
-    gtk_tree_path_free (path);
+    gtk_tree_path_free (path); path = NULL;
 
-    gtk_widget_set_sensitive (GTK_WIDGET (button), FALSE);
     gw_settingswindow_check_for_dictionaries (window);
 }
 

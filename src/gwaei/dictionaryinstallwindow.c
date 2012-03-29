@@ -189,8 +189,6 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     }
 
     //Setup the dictionary list view
-    gtk_tree_view_set_model (priv->view, GTK_TREE_MODEL (priv->dictionary_store));
-
     renderer = gtk_cell_renderer_toggle_new ();
     gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 5);
     column = gtk_tree_view_column_new_with_attributes (" ", renderer, "active", GW_DICTINSTWINDOW_DICTSTOREFIELD_CHECKBOX_STATE, NULL);
@@ -201,6 +199,8 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 0);
     column = gtk_tree_view_column_new_with_attributes ("Name", renderer, "text", GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME, NULL);
     gtk_tree_view_append_column (priv->view, column);
+
+    gtk_tree_view_set_model (priv->view, GTK_TREE_MODEL (priv->dictionary_store));
 
     gtk_widget_add_accelerator (GTK_WIDGET (priv->cancel_button), "activate", 
       accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);

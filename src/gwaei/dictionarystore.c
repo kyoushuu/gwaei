@@ -144,10 +144,10 @@ gw_dictionarystore_update (GwDictionaryStore *store)
     LwDictInfoList *dictinfolist;
     LwDictInfo *di;
     GtkTreeIter iter;
-    char shortcutname[10];
-    char ordernumber[10];
-    const char *iconname;
-    const char *favoriteicon;
+    gchar shortcutname[10];
+    gchar ordernumber[10];
+    const gchar *iconname;
+    const gchar *favoriteicon;
     GList *link;
 
     priv = store->priv;
@@ -302,7 +302,7 @@ gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferen
 //! Sets updates the list of dictionaries against the list in the global dictlist
 //!
 void 
-gw_dictionarystore_reload (GwDictionaryStore *store)
+gw_dictionarystore_reload (GwDictionaryStore *store, LwPreferences *preferences)
 {
     //Declarations
     GwDictionaryStorePrivate *priv;
@@ -317,7 +317,7 @@ gw_dictionarystore_reload (GwDictionaryStore *store)
     if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
       g_signal_handler_block (store, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
 
-    gw_dictionarystore_update (store);
+    gw_dictionarystore_load_order (store, preferences);
 
     if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
       g_signal_handler_unblock (store, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);

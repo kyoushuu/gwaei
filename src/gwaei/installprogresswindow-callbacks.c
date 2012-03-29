@@ -88,14 +88,15 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     GtkListStore *dictionarystore;
     LwDictInstList *dictinstlist;
     LwDictInst *di;
+    LwPreferences *preferences;
     GList *link;
-    int current_to_install;
-    int total_to_install;
-    char *text_installing;
-    char *text_installing_markup;
-    char *text_left;
-    char *text_left_markup;
-    char *text_progressbar;
+    gint current_to_install;
+    gint total_to_install;
+    gchar *text_installing;
+    gchar *text_installing_markup;
+    gchar *text_left;
+    gchar *text_left_markup;
+    gchar *text_progressbar;
 
     //Initializations
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
@@ -103,6 +104,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
     dictinstlist = gw_application_get_dictinstlist (application);
+    preferences = gw_application_get_preferences (application);
     priv = window->priv;
     current_to_install = 0;
     total_to_install = 0;
@@ -112,7 +114,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     {
       settingswindow = gtk_window_get_transient_for (GTK_WINDOW (window));
 
-      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore));
+      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore), preferences);
 
       gtk_widget_destroy (GTK_WIDGET (window));
 
