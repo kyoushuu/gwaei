@@ -34,6 +34,7 @@
 #include <curl/curl.h>
 #include <zlib.h>
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 
@@ -283,7 +284,7 @@ lw_io_download (char *source_path, char *target_path, LwIoProgressCallback cb,
     CURL *curl;
     CURLcode res;
     FILE *outfile;
-    char *message;
+    const gchar *message;
     LwIoProgressCallbackWithData cbwdata;
 
     //Initializations

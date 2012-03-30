@@ -34,6 +34,7 @@
 #include <hunspell/hunspell.h>
 
 #include <gwaei/gwaei.h>
+#include <gwaei/gettext.h>
 #include <gwaei/spellcheck-private.h>
 
 static void gw_spellcheck_attach_signals (GwSpellcheck*);

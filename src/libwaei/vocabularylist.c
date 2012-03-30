@@ -23,6 +23,7 @@
 //!  @file vocabularylist.c
 //!
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 

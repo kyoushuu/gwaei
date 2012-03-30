@@ -31,6 +31,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include <gwaei/gettext.h>
 #include <gwaei/gwaei.h>
 #include <gwaei/vocabularyliststore.h>
 #include <gwaei/vocabularywindow-private.h>

@@ -1,8 +1,6 @@
 #ifndef LW_LIBWAEI_INCLUDED
 #define LW_LIBWAEI_INCLUDED
 
-#include "gettext.h"
-
 #include <libwaei/regex.h>
 #include <libwaei/utilities.h>
 #include <libwaei/io.h>

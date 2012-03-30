@@ -42,6 +42,7 @@
 #endif
 
 #include <libwaei/libwaei.h>
+#include <gwaei/gettext.h>
 #include <gwaei/kanjipadwindow.h>
 #include <gwaei/kanjipadwindow-private.h>
 

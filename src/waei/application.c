@@ -36,6 +36,7 @@
 #include "../../config.h"
 #endif
 
+#include <waei/gettext.h>
 #include <waei/waei.h>
 #include <waei/application-private.h>
 

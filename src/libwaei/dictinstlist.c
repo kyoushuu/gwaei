@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <curl/curl.h>
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 

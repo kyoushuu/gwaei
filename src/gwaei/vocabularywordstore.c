@@ -32,6 +32,7 @@
 
 #include <gtk/gtk.h>
 
+#include <gwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 #include <gwaei/vocabularywordstore-private.h>

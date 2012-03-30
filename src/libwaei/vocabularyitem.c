@@ -24,6 +24,8 @@
 //!
 
 #include <locale.h>
+
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 const gchar* lw_vocabularyitem_get_kanji (LwVocabularyItem *item)

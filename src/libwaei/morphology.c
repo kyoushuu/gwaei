@@ -25,6 +25,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <glib.h>
 
@@ -126,11 +127,14 @@ lw_morphologyengine_new ()
 
     //Error checking
     if (engine->mecab == NULL) {
+/*
+mecab_strerr CAUSES A SEGFAULT
       if (engine->mecab == NULL) 
         g_warning ("Failed to initialize Mecab engine: %s", mecab_strerror (NULL));
-      lw_morphologyengine_free (engine);
-      engine = NULL;
+*/
+      lw_morphologyengine_free (engine); engine = NULL;
     }
+    g_return_val_if_fail (engine != NULL, NULL);
 
     return engine;
 }
@@ -156,7 +160,7 @@ lw_morphologyengine_has_default ()
 void
 lw_morphologyengine_free (LwMorphologyEngine *engine)
 {
-    g_assert (engine != NULL);
+    g_return_if_fail (engine != NULL);
 
     if (engine != NULL)
     {
@@ -199,7 +203,7 @@ lw_morphology_analize (LwMorphologyEngine *engine, LwMorphology *result, const g
 {
     if (engine == NULL) return;
 
-    g_assert (result != NULL && result->items == NULL);
+    g_return_if_fail (result != NULL && result->items == NULL);
 
     const mecab_node_t *node;
     gchar **fields = NULL, *surface = NULL;

@@ -1,8 +1,6 @@
 #ifndef GW_GWAEI_INCLUDED
 #define GW_GWAEI_INCLUDED
  
-#include "gettext.h"
-
 #include <libwaei/libwaei.h>
 
 #include <gtk/gtk.h>

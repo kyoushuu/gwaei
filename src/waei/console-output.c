@@ -34,6 +34,7 @@
 
 #include <glib.h>
 
+#include <waei/gettext.h>
 #include <waei/waei.h>
 
 static gboolean _group_index_changed = FALSE;

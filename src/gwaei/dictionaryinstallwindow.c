@@ -30,6 +30,7 @@
 
 #include <gtk/gtk.h>
 
+#include <gwaei/gettext.h>
 #include <gwaei/gwaei.h>
 #include <gwaei/dictionaryinstallwindow-private.h>
 

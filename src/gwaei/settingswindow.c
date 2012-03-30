@@ -32,6 +32,7 @@
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
+#include <gwaei/gettext.h>
 #include <gwaei/settingswindow-private.h>
 
 

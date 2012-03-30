@@ -38,6 +38,7 @@
 #endif
 
 #include <gwaei/gwaei.h>
+#include <gwaei/gettext.h>
 #include <gwaei/searchwindow-private.h>
 
 static void gw_searchwindow_add_vocabulary_destroy_cb (GwAddVocabularyWindow*, gpointer);

@@ -35,6 +35,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 static gboolean _cancel = FALSE;

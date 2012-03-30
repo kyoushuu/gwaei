@@ -32,6 +32,7 @@
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
+#include <gwaei/gettext.h>
 #include <gwaei/vocabularyliststore.h>
 #include <gwaei/vocabularywindow-private.h>
 
@@ -897,7 +898,8 @@ gw_vocabularywindow_show_save_dialog (GwVocabularyWindow *window)
     GtkWidget *image;
     GtkWidget *label;
     GtkWidget *content_area;
-    gchar *markup, *header, *description;
+    gchar *markup;
+    const gchar *header, *description;
     LwPreferences *preferences;
     GtkListStore *store;
 
