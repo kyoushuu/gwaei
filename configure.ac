@@ -19,6 +19,7 @@ GMODULE_EXPORT_REQUIRED_VERSION=2.31.0
 GTK3_REQUIRED_VERSION=3.3.0
 GDU_REQUIRED_VERSION=0.13.0
 HUNSPELL_REQUIRED_VERSION=1.3.0
+ZLIB_REQUIRED_VERSION=1.2.5
 
 AC_CANONICAL_HOST
 AM_CONDITIONAL([OS_MINGW],false)
@@ -74,12 +75,13 @@ AC_CHECK_LIB(m, sqrt)
 
 GNOME_DOC_INIT(,,[:]) 
 
-PKG_CHECK_MODULES(LIBWAEI, glib-2.0        >= $GLIB_REQUIRED_VERSION
+PKG_CHECK_MODULES(LIBWAEI, glib-2.0           >= $GLIB_REQUIRED_VERSION
                            gobject-2.0        >= $GLIB_REQUIRED_VERSION
                            gio-2.0            >= $GIO_REQUIRED_VERSION
                            gmodule-2.0        >= $GMODULE_EXPORT_REQUIRED_VERSION 
                            gthread-2.0        >= $GTHREAD_REQUIRED_VERSION       
-                           libcurl            >= $LIBCURL_REQUIRED_VERSION       )
+                           libcurl            >= $LIBCURL_REQUIRED_VERSION      
+                           zlib               >= $ZLIB_REQUIRED_VERSION       )
 AC_SUBST(LIBWAEI_CFLAGS)
 AC_SUBST(LIBWAEI_LIBS)
 
