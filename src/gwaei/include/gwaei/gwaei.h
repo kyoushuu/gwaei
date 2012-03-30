@@ -1,9 +1,6 @@
 #ifndef GW_GWAEI_INCLUDED
 #define GW_GWAEI_INCLUDED
  
-#ifdef HAVE_CONFIG_H
-#include "../../../../config.h"
-#endif
 #include "gettext.h"
 
 #include <libwaei/libwaei.h>

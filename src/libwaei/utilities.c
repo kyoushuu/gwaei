@@ -32,6 +32,10 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/dict.h>
 #include <libwaei/libwaei.h>
 

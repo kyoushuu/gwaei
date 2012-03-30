@@ -37,6 +37,10 @@
 
 #include <gtk/gtk.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/libwaei.h>
 #include <gwaei/kanjipadwindow.h>
 #include <gwaei/kanjipadwindow-private.h>
