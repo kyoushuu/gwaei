@@ -105,7 +105,6 @@ src/schemas/Makefile.in
 src/schemas/org.gnome.*.valid
 src/schemas/gschemas.compiled
 
-
-
 configure
+gnome-doc-utils.make
 

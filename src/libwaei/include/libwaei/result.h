@@ -5,7 +5,7 @@
 
 G_BEGIN_DECLS
 
-#define LW_RESULTLINE(object) (LwResultLine*) object
+#define LW_RESULTLINE(object) (LwResult*) object
 
 typedef enum {
   LW_RESULTLINE_RELEVANCE_UNSET,
@@ -13,17 +13,17 @@ typedef enum {
   LW_RESULTLINE_RELEVANCE_MEDIUM,
   LW_RESULTLINE_RELEVANCE_HIGH,
   TOTAL_RESULTLINE_RELEVANCE
-} LwResultLineRelevance;
+} LwResultRelevance;
 
 //!
 //! @brief Primitive for storing lists of dictionaries
 //!
 
-struct _LwResultLine {
-    char string[LW_IO_MAX_FGETS_LINE];     //!< Character array holding the result line for the pointers to reference
+struct _LwResult {
+    char text[LW_IO_MAX_FGETS_LINE];     //!< Character array holding the result line for the pointers to reference
 
     //General result things
-    LwResultLineRelevance relevance;
+    LwResultRelevance relevance;
     char *def_start[50];        //!< Pointer to the definitions
     int def_total;              //!< Total definitions found for a result
     char *number[50];           //!< Pointer to the numbers of the definitions
@@ -44,21 +44,16 @@ struct _LwResultLine {
     gboolean important; //!< Weather a word/phrase has a high frequency of usage.
 
 };
-typedef struct _LwResultLine LwResultLine;
+typedef struct _LwResult LwResult;
 
 
-LwResultLine* lw_resultline_new (void);
-void lw_resultline_free (LwResultLine*);
-void lw_resultline_init (LwResultLine*);
-void lw_resultline_deinit (LwResultLine*);
+LwResult* lw_result_new (void);
+void lw_result_free (LwResult*);
+void lw_result_init (LwResult*);
+void lw_result_deinit (LwResult*);
 
-void lw_resultline_parse_edict_result_string (LwResultLine*);
-void lw_resultline_parse_kanjidict_result_string (LwResultLine*);
-void lw_resultline_parse_radicaldict_result_string (LwResultLine*);
-void lw_resultline_parse_examplesdict_result_string (LwResultLine*);
-void lw_resultline_parse_unknowndict_result_string (LwResultLine*);
-
-gboolean lw_resultline_is_similar (LwResultLine *rl1, LwResultLine *rl2);
+gboolean lw_result_is_similar (LwResult*, LwResult*);
+void lw_result_clear (LwResult*);
 
 G_END_DECLS
 
