@@ -6,12 +6,12 @@ G_BEGIN_DECLS
 #define LW_ENGINEDATA(object) (LwEngineData*) object
 
 struct _LwEngineData {
-    LwSearchItem *item;
+    LwSearch *search;
     gboolean exact;
 };
 typedef struct _LwEngineData LwEngineData;
 
-LwEngineData* lw_enginedata_new (LwSearchItem*, gboolean);
+LwEngineData* lw_enginedata_new (LwSearch*, gboolean);
 void lw_enginedata_free (LwEngineData*);
 
 G_END_DECLS

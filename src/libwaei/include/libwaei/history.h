@@ -1,7 +1,7 @@
 #ifndef LW_HISTORY_INCLUDED
 #define LW_HISTORY_INCLUDED 
 
-#include <libwaei/searchitem.h>
+#include <libwaei/search.h>
 
 G_BEGIN_DECLS
 
@@ -29,12 +29,12 @@ GList* lw_history_get_combined_list (LwHistory*);
 void lw_history_clear_forward_list (LwHistory*);
 void lw_history_clear_back_list (LwHistory*);
 
-void lw_history_add_searchitem (LwHistory*, LwSearchItem*);
+void lw_history_add_search (LwHistory*, LwSearch*);
 
 gboolean lw_history_has_back (LwHistory*);
 gboolean lw_history_has_forward (LwHistory*);
-LwSearchItem* lw_history_go_back (LwHistory*, LwSearchItem*);
-LwSearchItem* lw_history_go_forward (LwHistory*, LwSearchItem*);
+LwSearch* lw_history_go_back (LwHistory*, LwSearch*);
+LwSearch* lw_history_go_forward (LwHistory*, LwSearch*);
 
 G_END_DECLS
 

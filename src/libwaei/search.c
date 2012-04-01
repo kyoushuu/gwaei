@@ -58,30 +58,30 @@ static gboolean _query_is_sane (const char* query)
 
 
 //!
-//! @brief Creates a new LwSearchItem object. 
+//! @brief Creates a new LwSearch object. 
 //! @param query The text to be search for
 //! @param dictionary The LwDictInfo object to use
 //! @param TARGET The widget to output the results to
 //! @param pm The Application preference manager to get information from
 //! @param error A GError to place errors into or NULL
-//! @return Returns an allocated LwSearchItem object that should be freed with lw_searchitem_free or NULL on error
+//! @return Returns an allocated LwSearch object that should be freed with lw_search_free or NULL on error
 //!
-LwSearchItem* 
-lw_searchitem_new (const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
+LwSearch* 
+lw_search_new (const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
 {
     if (!_query_is_sane (query)) return NULL;
 
-    LwSearchItem *temp;
+    LwSearch *temp;
 
-    temp = (LwSearchItem*) malloc(sizeof(LwSearchItem));
+    temp = (LwSearch*) malloc(sizeof(LwSearch));
 
     if (temp != NULL)
     {
-      lw_searchitem_init (temp, query, dictionary, pm, error);
+      lw_search_init (temp, query, dictionary, pm, error);
 
       if (error != NULL && *error != NULL)
       {
-        lw_searchitem_free (temp);
+        lw_search_free (temp);
         temp = NULL;
       }
     }
@@ -91,30 +91,30 @@ lw_searchitem_new (const char* query, LwDictInfo* dictionary, LwPreferences *pm,
 
 
 //!
-//! @brief Releases a LwSearchItem object from memory. 
+//! @brief Releases a LwSearch object from memory. 
 //!
-//! All of the various interally allocated memory in the LwSearchItem is freed.
+//! All of the various interally allocated memory in the LwSearch is freed.
 //! The file descriptiors and such are made sure to also be closed.
 //!
-//! @param item The LwSearchItem to have it's memory freed.
+//! @param item The LwSearch to have it's memory freed.
 //!
 void 
-lw_searchitem_free (LwSearchItem* item)
+lw_search_free (LwSearch* item)
 {
     //Sanity check
     g_assert (item != NULL);
 
-    lw_searchitem_deinit (item);
+    lw_search_deinit (item);
 
     free (item);
 }
 
 
 //!
-//! @brief Used to initialize the memory inside of a new LwSearchItem
-//!        object.  Usually lw_searchitem_new calls this for you.  It is also 
-//!        used in class implimentations that extends LwSearchItem.
-//! @param item A LwSearchItem to initialize the inner variables of
+//! @brief Used to initialize the memory inside of a new LwSearch
+//!        object.  Usually lw_search_new calls this for you.  It is also 
+//!        used in class implimentations that extends LwSearch.
+//! @param item A LwSearch to initialize the inner variables of
 //! @param query The text to be search for
 //! @param dictionary The LwDictInfo object to use
 //! @param TARGET The widget to output the results to
@@ -122,7 +122,7 @@ lw_searchitem_free (LwSearchItem* item)
 //! @param error A GError to place errors into or NULL
 //!
 void 
-lw_searchitem_init (LwSearchItem *item, const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
+lw_search_init (LwSearch *item, const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
 {
     item->results_high = NULL;
     item->results_medium = NULL;
@@ -165,27 +165,27 @@ lw_searchitem_init (LwSearchItem *item, const char* query, LwDictInfo* dictionar
 
 
 //!
-//! @brief Used to free the memory inside of a LwSearchItem object.
-//!         Usually lw_searchitem_free calls this for you.  It is also used
-//!         in class implimentations that extends LwSearchItem.
-//! @param item The LwSearchItem object to have it's inner memory freed.
+//! @brief Used to free the memory inside of a LwSearch object.
+//!         Usually lw_search_free calls this for you.  It is also used
+//!         in class implimentations that extends LwSearch.
+//! @param item The LwSearch object to have it's inner memory freed.
 //!
 void 
-lw_searchitem_deinit (LwSearchItem *item)
+lw_search_deinit (LwSearch *item)
 {
-    lw_searchitem_cancel_search (item);
-    lw_searchitem_clear_results (item);
-    lw_searchitem_cleanup_search (item);
+    lw_search_cancel_search (item);
+    lw_search_clear_results (item);
+    lw_search_cleanup_search (item);
     lw_queryline_free (item->queryline);
-    if (lw_searchitem_has_data (item))
-      lw_searchitem_free_data (item);
+    if (lw_search_has_data (item))
+      lw_search_free_data (item);
 
     g_mutex_clear (&item->mutex);
 }
 
 
 void 
-lw_searchitem_clear_results (LwSearchItem *item)
+lw_search_clear_results (LwSearch *item)
 {
     item->total_relevant_results = 0;
     item->total_irrelevant_results = 0;
@@ -217,14 +217,14 @@ lw_searchitem_clear_results (LwSearchItem *item)
 //! reset to it's initial state, the search status set to
 //! SEARCHING, and the file descriptior is opened.
 //!
-//! @param item The LwSearchItem to its variables prepared
+//! @param item The LwSearch to its variables prepared
 //! @return Returns false on seachitem prep failure.
 //!
 void  
-lw_searchitem_prepare_search (LwSearchItem* item)
+lw_search_prepare_search (LwSearch* item)
 {
-    lw_searchitem_clear_results (item);
-    lw_searchitem_cleanup_search (item);
+    lw_search_clear_results (item);
+    lw_search_cleanup_search (item);
 
     //Declarations
     char *path;
@@ -255,10 +255,10 @@ lw_searchitem_prepare_search (LwSearchItem* item)
 //! The file descriptior is closed, various variables are
 //! reset, and the search status is set to IDLE.
 //!
-//! @param item The LwSearchItem to its state reset.
+//! @param item The LwSearch to its state reset.
 //!
 void 
-lw_searchitem_cleanup_search (LwSearchItem* item)
+lw_search_cleanup_search (LwSearch* item)
 {
     if (item->fd != NULL)
     {
@@ -524,14 +524,15 @@ static gboolean _kanji_existance_comparison (LwQueryLine *ql, LwResultLine *rl, 
 
 
 //!
-//! @brief Comparison function that should be moved to the LwSearchItem file when it matures
-//! @param item A LwSearchItem to get search information from
+//! @brief Comparison function that should be moved to the LwSearch file when it matures
+//! @param item A LwSearch to get search information from
 //! @param RELEVANCE A LwRelevance
 //! @returns Returns true according to the relevance level
 //!
 gboolean 
-lw_searchitem_run_comparison (LwSearchItem *item, const LwRelevance RELEVANCE)
+lw_search_run_comparison (LwSearch *item, const LwRelevance RELEVANCE)
 {
+MOVE TO LWDICTIONARY
     //Declarations
     LwResultLine *rl;
     LwQueryLine *ql;
@@ -556,13 +557,13 @@ lw_searchitem_run_comparison (LwSearchItem *item, const LwRelevance RELEVANCE)
 
 
 //!
-//! @brief comparison function for determining if two LwSearchItems are equal
+//! @brief comparison function for determining if two LwSearchs are equal
 //! @param item1 The first item
 //! @param item2 The second item
 //! @returns Returns true when both items are either the same item or have similar innards
 //!
 gboolean 
-lw_searchitem_is_equal (LwSearchItem *item1, LwSearchItem *item2)
+lw_search_is_equal (LwSearch *item1, LwSearch *item2)
 {
   //Declarations
   gboolean queries_are_equal;
@@ -592,10 +593,10 @@ lw_searchitem_is_equal (LwSearchItem *item1, LwSearchItem *item2)
 
 //!
 //! @brief a method for incrementing an internal integer for determining if a result set has worth
-//! @param item The LwSearchItem to increment the timer on
+//! @param item The LwSearch to increment the timer on
 //!
 void 
-lw_searchitem_increment_history_relevance_timer (LwSearchItem *item)
+lw_search_increment_history_relevance_timer (LwSearch *item)
 {
   if (item != NULL && item->history_relevance_idle_timer < LW_HISTORY_TIME_TO_RELEVANCE)
     item->history_relevance_idle_timer++;
@@ -604,11 +605,11 @@ lw_searchitem_increment_history_relevance_timer (LwSearchItem *item)
 
 //!
 //! @brief Checks if the relevant timer has passed a threshold
-//! @param item The LwSearchItem to check for history relevance
+//! @param item The LwSearch to check for history relevance
 //! @param use_idle_timer This variable shoud be set to true if the program does automatic searches so it checks the timer
 //!
 gboolean 
-lw_searchitem_has_history_relevance (LwSearchItem *item, gboolean use_idle_timer)
+lw_search_has_history_relevance (LwSearch *item, gboolean use_idle_timer)
 {
   return (item != NULL && 
           item->total_results > 0 && 
@@ -618,18 +619,18 @@ lw_searchitem_has_history_relevance (LwSearchItem *item, gboolean use_idle_timer
 
 //!
 //! @brief Used to set custom search data (Such as Window or TextView pointers)
-//! @param item The LwSearchItem to set the data on.  It will free any previous data if it is already set.
+//! @param item The LwSearch to set the data on.  It will free any previous data if it is already set.
 //! @param data The data to set.
 //! @param free_data_func A callback to use to free the data automatically as needed
 //!
 void 
-lw_searchitem_set_data (LwSearchItem *item, gpointer data, LwSearchItemDataFreeFunc free_data_func)
+lw_search_set_data (LwSearch *item, gpointer data, LwSearchDataFreeFunc free_data_func)
 {
     //Sanity check
     g_assert (item != NULL);
 
-    if (lw_searchitem_has_data (item))
-      lw_searchitem_free_data (item);
+    if (lw_search_has_data (item))
+      lw_search_free_data (item);
 
     item->data = data;
     item->free_data_func = free_data_func;
@@ -638,11 +639,11 @@ lw_searchitem_set_data (LwSearchItem *item, gpointer data, LwSearchItemDataFreeF
 
 //!
 //! @brief to retieve custom search data (Such as Window or TextView pointers)
-//! @param item The LwSearchItem object to retrieve the data on.
+//! @param item The LwSearch object to retrieve the data on.
 //! @returns A generic pointer to the data that should be cast.
 //!
 gpointer 
-lw_searchitem_get_data (LwSearchItem *item)
+lw_search_get_data (LwSearch *item)
 {
     //Sanity check
     g_assert (item != NULL);
@@ -652,11 +653,11 @@ lw_searchitem_get_data (LwSearchItem *item)
 
 
 //!
-//! @brief Frees the data on an LwSearchItem object if it exists
-//! @param item The LwSearchItem to free the data on
+//! @brief Frees the data on an LwSearch object if it exists
+//! @param item The LwSearch to free the data on
 //!
 void 
-lw_searchitem_free_data (LwSearchItem *item)
+lw_search_free_data (LwSearch *item)
 {
     //Sanity check
     g_assert (item != NULL);
@@ -672,12 +673,12 @@ lw_searchitem_free_data (LwSearchItem *item)
 
 
 //!
-//! @brief Returns true if the LwSearchItem had its data set
-//! @param item An LwSearchItem to check for data
+//! @brief Returns true if the LwSearch had its data set
+//! @param item An LwSearch to check for data
 //! @returns Returns true if the data is not NULL
 //!
 gboolean 
-lw_searchitem_has_data (LwSearchItem *item)
+lw_search_has_data (LwSearch *item)
 {
     g_assert (item != NULL);
 
@@ -686,56 +687,28 @@ lw_searchitem_has_data (LwSearchItem *item)
 
 
 //!
-//! @brief Parses a line from the dictionary using edict rules
-//! @param item A LwSearchItem to parse and store the result string into
+//! @brief A wrapper around gmutex made for LwSearch objects
+//! @param item An LwSearch to lock the mutex on
 //!
 void 
-lw_searchitem_parse_result_string (LwSearchItem *item)
-{
-    switch (item->dictionary->type)
-    {
-        case LW_DICTTYPE_EDICT:
-          lw_resultline_parse_edict_result_string (item->resultline);
-          break;
-        case LW_DICTTYPE_KANJI:
-          lw_resultline_parse_kanjidict_result_string (item->resultline);
-          break;
-        case LW_DICTTYPE_EXAMPLES:
-          lw_resultline_parse_examplesdict_result_string (item->resultline);
-          break;
-        case LW_DICTTYPE_UNKNOWN:
-          lw_resultline_parse_unknowndict_result_string (item->resultline);
-          break;
-        default:
-          g_assert_not_reached ();
-          break;
-    }
-}
-
-
-//!
-//! @brief A wrapper around gmutex made for LwSearchItem objects
-//! @param item An LwSearchItem to lock the mutex on
-//!
-void 
-lw_searchitem_lock (LwSearchItem *item)
+lw_search_lock (LwSearch *item)
 {
   g_mutex_lock (&item->mutex);
 }
 
 //!
-//! @brief A wrapper around gmutex made for LwSearchItem objects
-//! @param item An LwSearchItem to unlock the mutex on
+//! @brief A wrapper around gmutex made for LwSearch objects
+//! @param item An LwSearch to unlock the mutex on
 //!
 void 
-lw_searchitem_unlock (LwSearchItem *item)
+lw_search_unlock (LwSearch *item)
 {
   g_mutex_unlock (&item->mutex);
 }
 
 
-double 
-lw_searchitem_get_progress (LwSearchItem *item)
+gdouble 
+lw_search_get_progress (LwSearch *item)
 {
     //Declarations
     long current;
@@ -753,7 +726,7 @@ lw_searchitem_get_progress (LwSearchItem *item)
       length = item->dictionary->length;
 
       if (current > 0L && length > 0L && current != length) 
-        fraction = (double) current / (double) length;
+        fraction = (gdouble) current / (gdouble) length;
     }
 
     return fraction;
@@ -761,21 +734,21 @@ lw_searchitem_get_progress (LwSearchItem *item)
 
 
 void
-lw_searchitem_set_status (LwSearchItem *item, LwSearchStatus status)
+lw_search_set_status (LwSearch *item, LwSearchStatus status)
 {
-    lw_searchitem_lock (item);
+    lw_search_lock (item);
     item->status = status;
-    lw_searchitem_unlock (item);
+    lw_search_unlock (item);
 }
 
 
 LwSearchStatus
-lw_searchitem_get_status (LwSearchItem *item)
+lw_search_get_status (LwSearch *item)
 {
     LwSearchStatus status;
-    lw_searchitem_lock (item);
+    lw_search_lock (item);
     status = item->status;
-    lw_searchitem_unlock (item);
+    lw_search_unlock (item);
 
     return status;
 }

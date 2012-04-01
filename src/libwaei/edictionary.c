@@ -20,14 +20,15 @@
 *******************************************************************************/
 
 //!
-//!  @file edictinfo.c
+//!  @file edictionary.c
 //!
-//!  @brief LwDictInfo objects represent a loaded dictionary that the program
+//!  @brief LwEDictionary objects represent a loaded dictionary that the program
 //!         can use to carry out searches.  You can uninstall dictionaries
 //!         by using the object, but you cannot install them. LwDictInst
 //!         objects exist for that purpose.
 //!
 
+        name = "edict";
 
 #include <string.h>
 #include <stdlib.h>
@@ -35,53 +36,52 @@
 
 #include <glib.h>
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
-#include <libwaei/dictinfo-private.h>
+#include <libwaei/dictionary-private.h>
+
+G_DEFINE_TYPE (LwEDictionary, lw_edictionary, LW_TYPE_DICTIONARY)
 
 static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
-static gchar* lw_edictinfo_get_uri (LwDictInfo*);
-static gboolean lw_edictinfo_parse_query (LwDictInfo*, LwQuery*, const gchar*);
-static gboolean lw_edictinfo_parse_result (LwDictInfo*, LwResult*, FILE*);
+static gchar* lw_edictionary_get_uri (LwDictionary*);
+static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
+static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 
-
-G_DEFINE_TYPE (LwEdictInfo, lw_edictinfo, LW_TYPE_DICTINFO)
-
-
-LwDictInfo* lw_edictinfo_new (const gchar *FILENAME)
+LwDictionary* lw_edictionary_new (const gchar *FILENAME)
 {
     g_return_val_if_fail (FILENAME != NULL, NULL);
 
     //Declarations
-    LwDictInfo *di;
+    LwDictionary *dictionary;
 
     //Initializations
-    di = LW_DICTINFO (g_object_new (LW_TYPE_EDICTINFO,
-                                    "dictionary-filename", FILENAME,
-                                    NULL));
+    dictionary = LW_DICTIONARY (g_object_new (LW_TYPE_EDICTIONARY,
+                                "dictionary-filename", FILENAME,
+                                NULL));
 
-    return di;
+    return dictionary;
 }
 
 
 static void 
-lw_edictinfo_init (LwEdictInfo *di)
+lw_edictionary_init (LwEDictionary *dictionary)
 {
 }
 
 
 static void
-lw_edictinfo_constructed (GObject *object)
+lw_edictionary_constructed (GObject *object)
 {
     //Chain the parent class
     {
-      G_OBJECT_CLASS (lw_edictinfo_parent_class)->constructed (object);
+      G_OBJECT_CLASS (lw_edictionary_parent_class)->constructed (object);
     }
 
-    LwDictInfo *di;
-    LwDictInfoPrivate *priv;
+    LwDictionary *dictionary;
+    LwDictionaryPrivate *priv;
 
-    di = LW_DICTINFO (object);
-    priv = di->priv;
+    dictionary = LW_DICTIONARY (object);
+    priv = dictionary->priv;
 
     if (strncmp(priv->filename, "English", strlen("English")) == 0)
     {
@@ -96,44 +96,44 @@ lw_edictinfo_constructed (GObject *object)
 
 
 static void 
-lw_edictinfo_finalize (GObject *object)
+lw_edictionary_finalize (GObject *object)
 {
-    G_OBJECT_CLASS (lw_edictinfo_parent_class)->finalize (object);
+    G_OBJECT_CLASS (lw_edictionary_parent_class)->finalize (object);
 }
 
 
 static void
-lw_edictinfo_class_init (LwEdictInfoClass *klass)
+lw_edictionary_class_init (LwEDictionaryClass *klass)
 {
     //Declarations
     GObjectClass *object_class;
-    LwDictInfoClass *dictinfo_class;
+    LwDictionaryClass *dictionary_class;
 
     //Initializations
     object_class = G_OBJECT_CLASS (klass);
-    object_class->finalize = lw_edictinfo_finalize;
-    object_class->constructed = lw_edictinfo_constructed;
+    object_class->finalize = lw_edictionary_finalize;
+    object_class->constructed = lw_edictionary_constructed;
 
-    dictinfo_class = LW_DICTINFO_CLASS (klass);
-    dictinfo_class->parse_query = lw_edictinfo_parse_query;
-    dictinfo_class->parse_result = lw_edictinfo_parse_result;
-    dictinfo_class->get_uri = lw_edictinfo_get_uri;
+    dictionary_class = LW_DICTIONARY_CLASS (klass);
+    dictionary_class->parse_query = lw_edictionary_parse_query;
+    dictionary_class->parse_result = lw_edictionary_parse_result;
+    dictionary_class->get_uri = lw_edictionary_get_uri;
 }
 
 
 static gchar*
-lw_edictinfo_get_uri (LwDictInfo *di)
+lw_edictionary_get_uri (LwDictionary *dictionary)
 {
     //Sanity checks
-    g_return_val_if_fail (di != NULL, NULL);
-    g_return_val_if_fail (di->priv->filename != NULL, NULL);
+    g_return_val_if_fail (dictionary != NULL, NULL);
 
     //Declarations
-    LwDictInfoPrivate *priv;
+    LwDictionaryPrivate *priv;
     gchar *path;
 
     //Initializations
-    priv = di->priv;
+    priv = LW_DICTIONARY (dictionary)->priv;
+    g_return_val_if_fail (priv->filename != NULL, NULL);
     path = lw_util_build_filename (LW_PATH_DICTIONARY_EDICT, priv->filename);
   
     return path;
@@ -141,13 +141,14 @@ lw_edictinfo_get_uri (LwDictInfo *di)
 
 
 static gboolean 
-lw_edictinfo_parse_query (LwDictInfo *di, LwQuery *query, const gchar *TEXT)
+lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
 {
    //Sanity check
-   g_return_val_if_fail (di != NULL && query != NULL && TEXt != NULL, FALSE);
+   g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
    //Free previously used memory
    lw_query_clean (query);
+/*
 
    //Declarations
    char **atoms;
@@ -170,24 +171,24 @@ lw_edictinfo_parse_query (LwDictInfo *di, LwQuery *query, const gchar *TEXT)
    GRegex ***re;
    int i;
 
-
-   tokens = lw_edictinfo_get_tokens (di, text);
+   tokens = lw_edictionary_get_tokens (dictionary, text);
 
    if (tokens != NULL)
    {
      for (i = 0; tokens[i] != NULL; i++)
      {
         if (lw_util_is_romaji_str (tokens[i])
-          lw_edictinfo_append_romaji_regex (di, query, tokens[i]);
+          lw_edictionary_append_romaji_regex (dictionary, query, tokens[i]);
         else if (lw_util_is_kanji_ish_str (tokens[i])
-          lw_edictinfo_append_kanji_regex (di, query, tokens[i]);
+          lw_edictionary_append_kanji_regex (dictionary, query, tokens[i]);
         else if (lw_util_is_furigana_str (tokens[i])
-          lw_edictinfo_append_furigana_regex (di, query, tokens[i]);
+          lw_edictionary_append_furigana_regex (dictionary, query, tokens[i]);
         else
-          lw_edictinfo_append_mix_regex (di, query, tokens[i]);
+          lw_edictionary_append_mix_regex (dictionary, query, tokens[i]);
      }
      g_strfreev (tokens); tokens = NULL;
    }
+*/
 
 /*
    //Memory initializations
@@ -418,10 +419,10 @@ lw_edictinfo_parse_query (LwDictInfo *di, LwQuery *query, const gchar *TEXT)
 
 
 //!
-//! @brief, Retrieve a line from FILE, parse it according to the LwDictInfo rules and put the results into the LwResult
+//! @brief, Retrieve a line from FILE, parse it according to the LwEDictionary rules and put the results into the LwResult
 //!
 static gboolean
-lw_edictinfo_parse_result (LwDictInfo *di, LwResult *result, FILE *fd)
+lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
     gchar *ptr = result->text;
     gchar *next = NULL;

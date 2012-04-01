@@ -37,17 +37,17 @@
 //! @brief Find the relevance of a returned result
 //!
 //! THIS IS A PRIVATE FUNCTION. Function uses the stored relevance regrex
-//! expressions in the LwSearchItem to get the relevance of a returned result.  It
+//! expressions in the LwSearch to get the relevance of a returned result.  It
 //! then returns the answer to the caller in the form of an int.
 //!
 //! @param text a string to check the relevance of
-//! @param item a search item to grab the regrexes from
+//! @param search a search search to grab the regrexes from
 //! @return Returns one of the integers: LOW_RELEVANCE, MEDIUM_RELEVANCE, or HIGH_RELEVANCE.
 //!
-static int _get_relevance (LwSearchItem *item) {
-    if (lw_searchitem_run_comparison (item, LW_RELEVANCE_HIGH))
+static int _get_relevance (LwSearch *search) {
+    if (lw_search_run_comparison (search, LW_RELEVANCE_HIGH))
       return LW_RELEVANCE_HIGH;
-    else if (lw_searchitem_run_comparison (item, LW_RELEVANCE_MEDIUM))
+    else if (lw_search_run_comparison (search, LW_RELEVANCE_MEDIUM))
       return LW_RELEVANCE_MEDIUM;
     else
       return LW_RELEVANCE_LOW;
@@ -61,101 +61,101 @@ static int _get_relevance (LwSearchItem *item) {
 //! searching the whole file.  It works in specified chunks before going back to
 //! the thread to help improve speed.  
 //!
-//! @param data A LwSearchItem to search with
+//! @param data A LwSearch to search with
 //! @return Returns true when the search isn't finished yet.
 //!
 static gpointer _stream_results_thread (gpointer data)
 {
     //Declarations
     LwEngineData *enginedata;
-    LwSearchItem *item;
+    LwSearch *search;
     gboolean show_only_exact_matches;
 
     //Initializations
     enginedata = LW_ENGINEDATA (data);
-    item = LW_SEARCHITEM (enginedata->item);
+    search = LW_SEARCHITEM (enginedata->search);
     show_only_exact_matches = enginedata->exact;
 
-    if (item == NULL || item->fd == NULL) return NULL;
+    if (search == NULL || search->fd == NULL) return NULL;
     char *line_pointer = NULL;
 
-    lw_searchitem_lock (item);
-    item->status = LW_SEARCHSTATUS_SEARCHING;
+    lw_search_lock (search);
+    search->status = LW_SEARCHSTATUS_SEARCHING;
 
     //We loop, processing lines of the file until the max chunk size has been
     //reached or we reach the end of the file or a cancel request is recieved.
-    while ((line_pointer = fgets(item->resultline->string, LW_IO_MAX_FGETS_LINE, item->fd)) != NULL &&
-           item->status != LW_SEARCHSTATUS_FINISHING)
+    while ((line_pointer = fgets(search->resultline->string, LW_IO_MAX_FGETS_LINE, search->fd)) != NULL &&
+           search->status != LW_SEARCHSTATUS_FINISHING)
     {
 
       //Give a chance for something else to run
-      lw_searchitem_unlock (item);
+      lw_search_unlock (search);
 /*
       //THIS CODE CAUSES A DEADLOCK ON GTK+3.3.X
-      if (item->status != LW_SEARCHSTATUS_FINISHING && g_main_context_pending (NULL))
+      if (search->status != LW_SEARCHSTATUS_FINISHING && g_main_context_pending (NULL))
       {
         g_main_context_iteration (NULL, FALSE);
       }
 */
-      lw_searchitem_lock (item);
+      lw_search_lock (search);
 
-      item->current += strlen(item->resultline->string);
+      search->current += strlen(search->resultline->string);
 
       //Commented input in the dictionary...we should skip over it
-      if(item->resultline->string[0] == '#' || g_utf8_get_char(item->resultline->string) == L'？') 
+      if(search->resultline->string[0] == '#' || g_utf8_get_char(search->resultline->string) == L'？') 
       {
         continue;
       }
-      else if (item->resultline->string[0] == 'A' && item->resultline->string[1] == ':' &&
-               fgets(item->scratch_buffer, LW_IO_MAX_FGETS_LINE, item->fd) != NULL             )
+      else if (search->resultline->string[0] == 'A' && search->resultline->string[1] == ':' &&
+               fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
       {
-        item->current += strlen(item->scratch_buffer);
+        search->current += strlen(search->scratch_buffer);
         char *eraser = NULL;
-        if ((eraser = g_utf8_strchr (item->resultline->string, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strchr (item->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strrchr (item->resultline->string, -1, L'#')) != NULL) { *eraser = '\0'; }
-        strcat(item->resultline->string, ":");
-        strcat(item->resultline->string, item->scratch_buffer);
+        if ((eraser = g_utf8_strchr (search->resultline->string, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strrchr (search->resultline->string, -1, L'#')) != NULL) { *eraser = '\0'; }
+        strcat(search->resultline->string, ":");
+        strcat(search->resultline->string, search->scratch_buffer);
       }
-      lw_searchitem_parse_result_string (item);
+      lw_search_parse_result_string (search);
 
 
       //Results match, add to the text buffer
-      if (lw_searchitem_run_comparison (item, LW_RELEVANCE_LOW))
+      if (lw_search_run_comparison (search, LW_RELEVANCE_LOW))
       {
-        int relevance = _get_relevance (item);
+        int relevance = _get_relevance (search);
         switch(relevance)
         {
           case LW_RELEVANCE_HIGH:
-              if (item->total_relevant_results < LW_MAX_HIGH_RELEVENT_RESULTS)
+              if (search->total_relevant_results < LW_MAX_HIGH_RELEVENT_RESULTS)
               {
-                item->total_results++;
-                item->total_relevant_results++;
-                item->resultline->relevance = LW_RESULTLINE_RELEVANCE_HIGH;
-                item->results_high =  g_list_append (item->results_high, item->resultline);
-                item->resultline = lw_resultline_new ();
+                search->total_results++;
+                search->total_relevant_results++;
+                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_HIGH;
+                search->results_high =  g_list_append (search->results_high, search->resultline);
+                search->resultline = lw_resultline_new ();
               }
               break;
           if (!show_only_exact_matches)
           {
           case LW_RELEVANCE_MEDIUM:
-              if (item->total_irrelevant_results < LW_MAX_MEDIUM_IRRELEVENT_RESULTS)
+              if (search->total_irrelevant_results < LW_MAX_MEDIUM_IRRELEVENT_RESULTS)
               {
-                item->total_results++;
-                item->total_irrelevant_results++;
-                item->resultline->relevance = LW_RESULTLINE_RELEVANCE_MEDIUM;
-                item->results_medium =  g_list_append (item->results_medium, item->resultline);
-                item->resultline = lw_resultline_new ();
+                search->total_results++;
+                search->total_irrelevant_results++;
+                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_MEDIUM;
+                search->results_medium =  g_list_append (search->results_medium, search->resultline);
+                search->resultline = lw_resultline_new ();
               }
               break;
           default:
-              if (item->total_irrelevant_results < LW_MAX_LOW_IRRELEVENT_RESULTS)
+              if (search->total_irrelevant_results < LW_MAX_LOW_IRRELEVENT_RESULTS)
               {
-                item->total_results++;
-                item->total_irrelevant_results++;
-                item->resultline->relevance = LW_RESULTLINE_RELEVANCE_LOW;
-                item->results_low = g_list_append (item->results_low, item->resultline);
-                item->resultline = lw_resultline_new ();
+                search->total_results++;
+                search->total_irrelevant_results++;
+                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_LOW;
+                search->results_low = g_list_append (search->results_low, search->resultline);
+                search->resultline = lw_resultline_new ();
               }
               break;
           }
@@ -163,10 +163,10 @@ static gpointer _stream_results_thread (gpointer data)
       }
     }
 
-    lw_searchitem_cleanup_search (item);
+    lw_search_cleanup_search (search);
     lw_enginedata_free (enginedata);
 
-    lw_searchitem_unlock (item);
+    lw_search_unlock (search);
 
     return NULL;
 }
@@ -174,30 +174,30 @@ static gpointer _stream_results_thread (gpointer data)
 
 //!
 //! @brief Start a dictionary search
-//! @param item a LwSearchItem argument to calculate results
+//! @param search a LwSearch argument to calculate results
 //! @param create_thread Whether the search should run in a new thread.
 //! @param exact Whether to show only exact matches for this search
 //!
-void lw_searchitem_start_search (LwSearchItem *item, gboolean create_thread, gboolean exact)
+void lw_search_start_search (LwSearch *search, gboolean create_thread, gboolean exact)
 {
     GError *error;
     gpointer data;
 
     error = NULL;
-    data = lw_enginedata_new (item, exact);
+    data = lw_enginedata_new (search, exact);
 
     if (data != NULL)
     {
-      lw_searchitem_prepare_search (item);
+      lw_search_prepare_search (search);
       if (create_thread)
       {
-        item->thread = g_thread_try_new (
+        search->thread = g_thread_try_new (
           "libwaei-search",
           (GThreadFunc) _stream_results_thread, 
           (gpointer) data, 
           &error
         );
-        if (item->thread == NULL)
+        if (search->thread == NULL)
         {
           g_warning ("Thread Creation Error: %s\n", error->message);
           g_error_free (error);
@@ -206,7 +206,7 @@ void lw_searchitem_start_search (LwSearchItem *item, gboolean create_thread, gbo
       }
       else
       {
-        item->thread = NULL;
+        search->thread = NULL;
         _stream_results_thread ((gpointer) data);
       }
     }
@@ -216,21 +216,21 @@ void lw_searchitem_start_search (LwSearchItem *item, gboolean create_thread, gbo
 //!
 //! @brief Uses a searchitem to cancel a window
 //!
-//! @param item A LwSearchItem to gleam information from
+//! @param search A LwSearch to gleam information from
 //!
-void lw_searchitem_cancel_search (LwSearchItem *item)
+void lw_search_cancel_search (LwSearch *search)
 {
-    if (item == NULL) return;
+    if (search == NULL) return;
 
-    lw_searchitem_set_status (item, LW_SEARCHSTATUS_FINISHING);
+    lw_search_set_status (search, LW_SEARCHSTATUS_FINISHING);
 
-    if (item->thread != NULL)
+    if (search->thread != NULL)
     {
-      g_thread_join (item->thread);
-      item->thread = NULL;
+      g_thread_join (search->thread);
+      search->thread = NULL;
     }
 
-    lw_searchitem_set_status (item, LW_SEARCHSTATUS_IDLE);
+    lw_search_set_status (search, LW_SEARCHSTATUS_IDLE);
 }
 
 
@@ -238,35 +238,35 @@ void lw_searchitem_cancel_search (LwSearchItem *item)
 //! @brief Gets a result and removes a LwResultLine from the beginnig of a list of results
 //! @returns a LwResultLine that should be freed with lw_resultline_free
 //!
-LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
+LwResultLine* lw_search_get_result (LwSearch *search)
 {
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
     LwResultLine *line;
 
-    lw_searchitem_lock (item);
+    lw_search_lock (search);
 
-    if (item->results_high != NULL)
+    if (search->results_high != NULL)
     {
-      line = LW_RESULTLINE (item->results_high->data);
-      item->results_high = g_list_delete_link (item->results_high, item->results_high);
+      line = LW_RESULTLINE (search->results_high->data);
+      search->results_high = g_list_delete_link (search->results_high, search->results_high);
     }
-    else if (item->results_medium != NULL && item->status == LW_SEARCHSTATUS_IDLE)
+    else if (search->results_medium != NULL && search->status == LW_SEARCHSTATUS_IDLE)
     {
-      line = LW_RESULTLINE (item->results_medium->data);
-      item->results_medium = g_list_delete_link (item->results_medium, item->results_medium);
+      line = LW_RESULTLINE (search->results_medium->data);
+      search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
     }
-    else if (item->results_low != NULL && item->status == LW_SEARCHSTATUS_IDLE)
+    else if (search->results_low != NULL && search->status == LW_SEARCHSTATUS_IDLE)
     {
-      line = LW_RESULTLINE (item->results_low->data);
-      item->results_low = g_list_delete_link (item->results_low, item->results_low);
+      line = LW_RESULTLINE (search->results_low->data);
+      search->results_low = g_list_delete_link (search->results_low, search->results_low);
     }
     else
     {
       line = NULL;
     }
 
-    lw_searchitem_unlock (item);
+    lw_search_unlock (search);
 
     return line;
 }
@@ -276,28 +276,28 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
 //!
 //! @brief Tells if you should keep checking for results
 //!
-gboolean lw_searchitem_should_check_results (LwSearchItem *item)
+gboolean lw_search_should_check_results (LwSearch *search)
 {
-    if (item == NULL) return FALSE;
+    if (search == NULL) return FALSE;
 
     gboolean should_check_results;
     LwSearchStatus status;
 
-    status = lw_searchitem_get_status (item);
+    status = lw_search_get_status (search);
 
     if (status == LW_SEARCHSTATUS_FINISHING)
     {
-      lw_searchitem_cancel_search (item);
+      lw_search_cancel_search (search);
       should_check_results = FALSE;
     }
     else
     {
-      lw_searchitem_lock (item);
+      lw_search_lock (search);
       should_check_results = (status != LW_SEARCHSTATUS_IDLE ||
-                              item->results_high != NULL ||
-                              item->results_medium != NULL ||
-                              item->results_low != NULL);
-      lw_searchitem_unlock (item);
+                              search->results_high != NULL ||
+                              search->results_medium != NULL ||
+                              search->results_low != NULL);
+      lw_search_unlock (search);
     }
 
     return should_check_results;

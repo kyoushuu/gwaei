@@ -72,22 +72,6 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
         folder = g_build_filename (base, "dictionaries", NULL);
         path = g_build_filename (base, "dictionaries", FILENAME, NULL);
         break;
-      case LW_PATH_DICTIONARY_EDICT:
-        folder = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_EDICT), NULL);
-        path = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_EDICT), FILENAME, NULL);
-        break;
-      case LW_PATH_DICTIONARY_KANJI:
-        folder = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_KANJI), NULL);
-        path = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_KANJI), FILENAME, NULL);
-        break;
-      case LW_PATH_DICTIONARY_EXAMPLES:
-        folder = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_EXAMPLES), NULL);
-        path = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_EXAMPLES), FILENAME, NULL);
-        break;
-      case LW_PATH_DICTIONARY_UNKNOWN:
-        folder = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_UNKNOWN), NULL);
-        path = g_build_filename (base, "dictionaries", lw_util_dicttype_to_string (LW_DICTTYPE_UNKNOWN), FILENAME, NULL);
-        break;
       case LW_PATH_VOCABULARY:
         folder = g_build_filename (base, "vocabulary", NULL);
         path = g_build_filename (base, "vocabulary", FILENAME, NULL);
@@ -99,6 +83,10 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
       case LW_PATH_CACHE:
         folder = g_build_filename (base, "cache", NULL);
         path = g_build_filename (base, "cache", FILENAME, NULL);
+        break;
+      case LW_PATH_CACHE:
+        folder = g_build_filename (base, "index", NULL);
+        path = g_build_filename (base, "index", FILENAME, NULL);
         break;
       default:
         g_assert_not_reached ();
@@ -113,85 +101,6 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
     g_free (folder);
 
     return path;
-}
-
-
-//!
-//! @brief Converts a LwDictType to its string equivalent
-//! @param DICTTYPE The LwDictType that you want the string version of
-//! @returns A constant string that shouldn't be freed
-//!
-const char* 
-lw_util_dicttype_to_string (const LwDictType DICTTYPE)
-{
-    char *name;
-
-    switch (DICTTYPE)
-    {
-      case LW_DICTTYPE_EDICT:
-        name = "edict";
-        break;
-      case LW_DICTTYPE_KANJI:
-        name = "kanji";
-        break;
-      case LW_DICTTYPE_EXAMPLES:
-        name = "examples";
-        break;
-      case LW_DICTTYPE_UNKNOWN:
-        name = "unknown";
-        break;
-      default:
-        g_assert_not_reached ();
-        name = NULL;
-        break;
-    }
-
-    return name;
-}
-
-
-//!
-//! @brief Parses the dicttype from a string
-//! @param ENGINENAME The LwDictType in string form
-//! @returns A LwDictType value or -1 if it is invalid
-//!
-LwDictType 
-lw_util_get_dicttype_from_string (const char *ENGINENAME)
-{
-  //Declarations
-  char *lower;
-  LwDictType engine;
-
-  //Initializations
-  lower = g_utf8_strdown (ENGINENAME, -1);
-  engine = -1;
-
-  if (strcmp(lower, "edict") == 0)
-  {
-    engine = LW_DICTTYPE_EDICT;
-  }
-  else if (strcmp(lower, "kanji") == 0)
-  {
-    engine = LW_DICTTYPE_KANJI;
-  }
-  else if (strcmp(lower, "examples") == 0)
-  {
-    engine = LW_DICTTYPE_EXAMPLES;
-  }
-  else if (strcmp(lower, "unknown") == 0)
-  {
-    engine = LW_DICTTYPE_UNKNOWN;
-  }
-  else
-  {
-    g_assert_not_reached ();
-    engine = -1;
-  }
-
-  g_free (lower);
-  lower = NULL;
-
-  return engine;
 }
 
 

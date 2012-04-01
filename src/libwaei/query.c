@@ -38,18 +38,13 @@ void lw_regex_group_set_regex (LwRegexGroup *group, LwRelevance relevance, GRege
 void lw_regex_group_free (LwRegexGroup *group);
 
 
-LwQuery* lw_query_new (const gchar *TEXT)
+LwQuery* lw_query_new ()
 {
     g_return_val_if_fail (TEXT != NULL, NULL);
 
     LwQuery *temp;
 
     temp = g_new0 (LwQuery, 1);
-
-    if (temp != NULL)
-    {
-      temp->text = g_strdup (TEXT);
-    }
 
     return temp;
 }

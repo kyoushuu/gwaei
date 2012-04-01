@@ -27,7 +27,9 @@ typedef enum {
 
 
 struct _LwDictInst {
-  EXTENDS_LW_DICT
+  char *filename; 
+  char *longname; 
+  char *shortname;
 
   char *description;
   char *uri[LW_DICTINST_TOTAL_URIS];

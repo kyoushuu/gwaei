@@ -37,12 +37,12 @@
 //!
 //! @brief Creates a new LwEngineData object
 //! @param engine The LwEngine to include with the LwEngineData 
-//! @param item The LwSearchItem to include with the LwEngineData
+//! @param search The LwSearch to include with the LwEngineData
 //! @param exact Whether only exact matching results should be shown for the search
 //! @return An allocated LwEngineData that will be needed to be freed by lw_engindata_free.
 //!
 LwEngineData* 
-lw_enginedata_new (LwSearchItem *item, gboolean exact)
+lw_enginedata_new (LwSearch *search, gboolean exact)
 {
     LwEngineData *temp;
 
@@ -50,7 +50,7 @@ lw_enginedata_new (LwSearchItem *item, gboolean exact)
 
     if (temp != NULL)
     {
-      temp->item = item;
+      temp->search = search;
       temp->exact = exact;
     }
 

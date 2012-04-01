@@ -20,7 +20,7 @@
 *******************************************************************************/
 
 //!
-//! @file dictinfolist.c
+//! @file dictionarylist.c
 //!
 
 
@@ -35,22 +35,22 @@
 
 
 //Private methods
-static gint     _dictinfolist_load_order_compare_function (gconstpointer, gconstpointer);
+static gint     _dictionarylist_load_order_compare_function (gconstpointer, gconstpointer);
 
 
 //!
 //! @brief Constructor for a dictionary list object.
-//! @return An allocated LwDictInfoList that will be needed to be freed by lw_dictinfolist_free ()
+//! @return An allocated LwDictionaryList that will be needed to be freed by lw_dictionarylist_free ()
 //!
-LwDictInfoList* 
-lw_dictinfolist_new (const int MAX)
+LwDictionaryList* 
+lw_dictionarylist_new (const int MAX)
 {
-    LwDictInfoList *temp;
-    temp = (LwDictInfoList*) malloc(sizeof(LwDictInfoList));
+    LwDictionaryList *temp;
+    temp = (LwDictionaryList*) malloc(sizeof(LwDictionaryList));
 
     if (temp != NULL)
     {
-      lw_dictinfolist_init (temp, MAX);
+      lw_dictionarylist_init (temp, MAX);
     }
 
     return temp;
@@ -58,52 +58,52 @@ lw_dictinfolist_new (const int MAX)
 
 
 //!
-//! @brief Frees up the LwDictInfoList dictionary list
+//! @brief Frees up the LwDictionaryList dictionary list
 //! The work of freeing each individual dictionary is automatically handled,
 //! removing the chance for mistakes.
 //!
 void 
-lw_dictinfolist_free (LwDictInfoList *dil)
+lw_dictionarylist_free (LwDictionaryList *dil)
 {
-    lw_dictinfolist_deinit (dil);
+    lw_dictionarylist_deinit (dil);
     free(dil);
 }
 
 
 
 void 
-lw_dictinfolist_init (LwDictInfoList *dil, const int MAX)
+lw_dictionarylist_init (LwDictionaryList *dil, const int MAX)
 {
     dil->list = NULL;
     g_mutex_init (&dil->mutex);
     dil->max = MAX;
 
-    lw_dictinfolist_reload (dil);
+    lw_dictionarylist_reload (dil);
 }
 
 
 void 
-lw_dictinfolist_deinit (LwDictInfoList *dil)
+lw_dictionarylist_deinit (LwDictionaryList *dil)
 {
-    lw_dictinfolist_clear (dil);
+    lw_dictionarylist_clear (dil);
     g_mutex_clear (&dil->mutex);
 }
 
 
 void 
-lw_dictinfolist_clear (LwDictInfoList *dil)
+lw_dictionarylist_clear (LwDictionaryList *dil)
 {
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     GList *iter;
 
     if (dil->list != NULL)
     {
       for (iter = dil->list; iter != NULL; iter = iter->next)
       {
-        di = LW_DICTINFO (iter->data);
-        if (di != NULL)
+        dictionary = LW_DICTIONARY (iter->data);
+        if (dictionary != NULL)
         {
-          lw_dictinfo_free (di);
+          g_object_unref (dictionary); 
         }
       }
       g_list_free (dil->list);
@@ -113,7 +113,7 @@ lw_dictinfolist_clear (LwDictInfoList *dil)
 
 
 void 
-lw_dictinfolist_reload (LwDictInfoList *dil)
+lw_dictionarylist_reload (LwDictionaryList *dil)
 {
     //Declarations
     gchar** dictionarylist;
@@ -122,7 +122,7 @@ lw_dictinfolist_reload (LwDictInfoList *dil)
     char *dictionary;
     int i;
 
-    lw_dictinfolist_clear (dil);
+    lw_dictionarylist_clear (dil);
 
     //Create a new list
     dictionarylist = lw_io_get_dictionary_file_list (dil->max);
@@ -133,7 +133,7 @@ lw_dictinfolist_reload (LwDictInfoList *dil)
       {
         engine = lw_util_get_dicttype_from_string (pair[0]);
         dictionary = pair[1];
-        lw_dictinfolist_add_dictionary (dil, engine, dictionary);
+        lw_dictionarylist_add_dictionary (dil, engine, dictionary);
       }
       g_strfreev (pair);
     }
@@ -145,52 +145,54 @@ lw_dictinfolist_reload (LwDictInfoList *dil)
 //!
 //! @brief Gets the dictionary by load position in the GUI
 //! @param request The GUI load position of the desired dictionary
-//! @return The position in the LwDictInfoList of the LwDictInfo
+//! @return The position in the LwDictionaryList of the LwDictionary
 //!
-LwDictInfo* 
-lw_dictinfolist_get_dictinfo_by_load_position (LwDictInfoList* dil, int request)
+LwDictionary* 
+lw_dictionarylist_get_dictionary_by_load_position (LwDictionaryList* dil, int request)
 {
     GList *iter;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
 
-    di = NULL;
+    dictionary = NULL;
 
     for (iter = dil->list; iter != NULL; iter = iter->next)
     {
-       di = (LwDictInfo*) iter->data;
-       if (di != NULL && di->load_position == request)
+       dictionary = LW_DICTIONARY (iter->data);
+       if (dictionary != NULL && lw_dictionary_get_load_position (dictionary) == request)
        {
          break;
        }
-       di = NULL;
+       dictionary = NULL;
     }
 
-    return di;
+    return dictionary;
 }
 
 
 //!
-//! @brief Adds a dictionary to the LwDictInfoList with sanity checks
-//! @param DICTTYPE Engine of the dictionary to add
+//! @brief Adds a dictionary to the LwDictionaryList with sanity checks
+//! @param TYPE Engine of the dictionary to add
 //! @param FILENAME Name of the dictionary to add
 //!
 void 
-lw_dictinfolist_add_dictionary (LwDictInfoList *dil, const LwDictType DICTTYPE, const char *FILENAME)
+lw_dictionarylist_add_dictionary (LwDictionaryList *dil, const GType TYPE, const char *FILENAME)
 {
+/*
     //Sanity check
-    if (lw_dictinfolist_check_if_loaded (dil, DICTTYPE, FILENAME) == TRUE) return;
+    if (lw_dictionarylist_check_if_loaded (dil, TYPE, FILENAME) == TRUE) return;
 
     //Declarations
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     gint size;
 
     //Initializations
-    di = lw_dictinfo_new (DICTTYPE, FILENAME);
+    dictionary = lw_dictionary_new (TYPE, FILENAME);
     size = g_list_length (dil->list);
-    di->load_position = size;
+    dictionary->load_position = size;
 
     //Append to the dictionary list if was loadable
-    if (di != NULL) dil->list = g_list_append (dil->list, di);
+    if (dictionary != NULL) dil->list = g_list_append (dil->list, dictionary);
+*/
 }
 
 
@@ -202,69 +204,73 @@ lw_dictinfolist_add_dictionary (LwDictInfoList *dil, const LwDictType DICTTYPE, 
 //! @param DICTTYPE The parsing engine of the dictionary wanted.  There can be
 //!               dictionaries with the same name, but different engines.
 //! @param NAME A constant string to search for in the dictionary names.
-//! @returns The requested LwDictInfo object if found or null.
+//! @returns The requested LwDictionary object if found or null.
 //!
-LwDictInfo* 
-lw_dictinfolist_get_dictinfo (LwDictInfoList *dil, const LwDictType DICTTYPE, const char* FILENAME)
+LwDictionary* 
+lw_dictionarylist_get_dictionary (LwDictionaryList *dil, const GType TYPE, const gchar* FILENAME)
 {
     //Sanity checks
-    g_assert (DICTTYPE >= 0 && FILENAME != NULL);
+    g_return_val_if_fail (dil != NULL && FILENAME != NULL, NULL);
 
     //Declarations
     GList *iter;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
+    GType type;
+    const gchar *FILENAME2;
 
     //Initializations
-    di = NULL;
+    dictionary = NULL;
 
     for (iter = dil->list; iter != NULL; iter = iter->next)
     {
-      di = LW_DICTINFO (iter->data);
-      if (di != NULL && di->type == DICTTYPE && strcmp (di->filename, FILENAME) == 0)
+      dictionary = LW_DICTIONARY (iter->data);
+      type = G_OBJECT_TYPE (dictionary);
+      FILENAME2 = lw_dictionary_get_filename (dictionary);
+      if (dictionary != NULL && g_type_is_a (type, TYPE) && strcmp (FILENAME2, FILENAME) == 0)
       {
         break;
       }
-      di = NULL;
+      dictionary = NULL;
     }
 
-    return di;
+    return dictionary;
 }
 
 //!
-//!  @brief  Gets a LwDictInfo object by a fuzzy string description.
+//!  @brief  Gets a LwDictionary object by a fuzzy string description.
 //!          It can be either of the form "parser/dictionary" or 
 //!          just be the dictionary name.  Case is ignored.
 //!  @param FUZZY_DESCRIPTION A fuzzy description of the wanted dictionary.
-//!  @returns A matching LwDictInfo object or NULL
+//!  @returns A matching LwDictionary object or NULL
 //!
-LwDictInfo* 
-lw_dictinfolist_get_dictinfo_fuzzy (LwDictInfoList *dil, const char* FUZZY_DESCRIPTION)
+LwDictionary* 
+lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList *dil, const char* FUZZY_DESCRIPTION)
 {
     //Declarations
-    LwDictInfo *di;
+    LwDictionary *dictionary;
 
     //Initializations
-    di = NULL;
+    dictionary = NULL;
 
     //Try getting the first dictionary if none is specified
     if (FUZZY_DESCRIPTION == NULL )
     {
       if (dil->list != NULL)
-        di = (LwDictInfo*) dil->list->data;
+        dictionary = (LwDictionary*) dil->list->data;
       else
-        di = NULL;
+        dictionary = NULL;
     }
 
     //Otherwise try getting a dictionary using a few different string parsers
     else
     {
-      if (di == NULL)
-        di = lw_dictinfolist_get_dictinfo_by_idstring (dil, FUZZY_DESCRIPTION);
-      if (di == NULL)
-        di = lw_dictinfolist_get_dictinfo_by_filename (dil, FUZZY_DESCRIPTION);
+      if (dictionary == NULL)
+        dictionary = lw_dictionarylist_get_dictionary_by_idstring (dil, FUZZY_DESCRIPTION);
+      if (dictionary == NULL)
+        dictionary = lw_dictionarylist_get_dictionary_by_filename (dil, FUZZY_DESCRIPTION);
     }
 
-    return di;
+    return dictionary;
 }
 
 //!
@@ -274,30 +280,32 @@ lw_dictinfolist_get_dictinfo_fuzzy (LwDictInfoList *dil, const char* FUZZY_DESCR
 //!        be accessible with this function.
 //! @param NAME A constant string to search for in the dictionary names.  
 //!             This is a fuzzy search, ignoring DICTTYPE and case
-//! @returns The requested LwDictInfo object if found or null.
+//! @returns The requested LwDictionary object if found or null.
 //!
-LwDictInfo* 
-lw_dictinfolist_get_dictinfo_by_filename (LwDictInfoList *dil, const char* FILENAME)
+LwDictionary* 
+lw_dictionarylist_get_dictionary_by_filename (LwDictionaryList *dil, const gchar* FILENAME)
 {
     //Sanity checks
     g_assert (FILENAME != NULL);
 
     //Declarations
     GList *iter;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
+    const gchar *FILENAME2;
 
     //Initializations
-    di = NULL;
+    dictionary = NULL;
 
     for (iter = dil->list; iter != NULL; iter = iter->next)
     {
-      di = (LwDictInfo*) iter->data;
-      if (g_ascii_strcasecmp (di->filename, FILENAME) == 0)
+      dictionary = LW_DICTIONARY (iter->data);
+      FILENAME2 = lw_dictionary_get_filename (dictionary);
+      if (g_ascii_strcasecmp (FILENAME2, FILENAME) == 0)
         break;
-      di = NULL;
+      dictionary = NULL;
     }
 
-    return di;
+    return dictionary;
 }
 
 
@@ -306,43 +314,48 @@ lw_dictinfolist_get_dictinfo_by_filename (LwDictInfoList *dil, const char* FILEN
 //!        "engine/dictionary". Case is ignored.
 //! @param ENGINE_AND_FILENAME A string in the form "engine/dictionary"
 //!                            used to search for a dictionary
-//! @returns The requested LwDictInfo object if found or NULL.
+//! @returns The requested LwDictionary object if found or NULL.
 //!
-LwDictInfo* 
-lw_dictinfolist_get_dictinfo_by_idstring (LwDictInfoList *dil, const char* ENGINE_AND_FILENAME)
+LwDictionary* 
+lw_dictionarylist_get_dictionary_by_idstring (LwDictionaryList *dil, const char* ENGINE_AND_FILENAME)
 {
     //Sanity checks
     g_assert (ENGINE_AND_FILENAME != NULL);
 
     //Declarations
     GList *iter;
-    LwDictInfo *di;
-    char **tokens;
-    char *filename;
-    LwDictType engine;
+    LwDictionary *dictionary;
+    gchar **tokens;
+    gchar *filename;
+    const gchar *FILENAME2;
+    GType type, requested_type;
 
     //Initializations
     iter = NULL;
-    di = NULL;
+    dictionary = NULL;
     tokens = g_strsplit (ENGINE_AND_FILENAME, "/", 2);
 
-    if (g_strv_length (tokens) == 2)
+    if (tokens != NULL)
     {
-      engine = lw_util_get_dicttype_from_string (tokens[0]);
-      filename = tokens[1];
-
-      for (iter = dil->list; iter != NULL; iter = iter->next)
+      if (g_strv_length (tokens) == 2)
       {
-        di = (LwDictInfo*) iter->data;
-        if (di->type == engine && g_ascii_strcasecmp (di->filename, filename) == 0)
-          break;
-        di = NULL;
+        requested_type = g_type_from_name (tokens[0]);
+        filename = tokens[1];
+
+        for (iter = dil->list; iter != NULL; iter = iter->next)
+        {
+          dictionary = LW_DICTIONARY (iter->data);
+          FILENAME2= lw_dictionary_get_filename (dictionary);
+          if (g_type_is_a (type, requested_type) && g_ascii_strcasecmp (FILENAME2, filename) == 0)
+            break;
+          dictionary = NULL;
+        }
       }
+
+      g_strfreev (tokens);
     }
 
-    g_strfreev (tokens);
-
-    return di;
+    return dictionary;
 }
 
 
@@ -353,20 +366,22 @@ lw_dictinfolist_get_dictinfo_by_idstring (LwDictInfoList *dil, const char* ENGIN
 //! @return returns true if the dictionary is installed
 //!
 gboolean 
-lw_dictinfolist_check_if_loaded (LwDictInfoList *dil, const LwDictType DICTTYPE, const char* FILENAME)
+lw_dictionarylist_check_if_loaded (LwDictionaryList *dil, const GType TYPE, const char* FILENAME)
 {
     //Sanity checks
-    g_assert (DICTTYPE >= 0 && FILENAME != NULL);
+    g_return_val_if_fail (dil != NULL && FILENAME != NULL, FALSE);
 
     //Declarations
     GList *iter;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
+    const gchar* FILENAME2;
 
     //Return true if the dictionary exists
     for (iter = dil->list; iter != NULL; iter = iter->next)
     {
-      di = (LwDictInfo*) iter->data;
-      if (di->type == DICTTYPE && strcmp (di->filename, FILENAME) == 0) 
+      dictionary = LW_DICTIONARY (iter->data);
+      FILENAME2 = lw_dictionary_get_filename (dictionary);
+      if (g_type_is_a (G_OBJECT_TYPE (dictionary), TYPE) && strcmp (FILENAME2, FILENAME) == 0) 
         return TRUE;
     }
 
@@ -388,7 +403,7 @@ lw_dictinfolist_check_if_loaded (LwDictInfoList *dil, const LwDictType DICTTYPE,
 //! @return Integer representing the number of installed dictionaries
 //!
 int 
-lw_dictinfolist_get_total (LwDictInfoList *dil)
+lw_dictionarylist_get_total (LwDictionaryList *dil)
 {
     if (dil == NULL) return 0;
 
@@ -400,17 +415,17 @@ lw_dictinfolist_get_total (LwDictInfoList *dil)
 //! @brief Saves the current load order to the preferences
 //
 void 
-lw_dictinfolist_save_order (LwDictInfoList *dil, LwPreferences *pm)
+lw_dictionarylist_save_order (LwDictionaryList *dil, LwPreferences *pm)
 {
     //Make sure things are sorted and normal
-    lw_dictinfolist_sort_and_normalize_order (dil);
+    lw_dictionarylist_sort_and_normalize_order (dil);
 
     //Declarations
-    char *load_order;
-    LwDictInfo *di;
+    gchar *load_order;
+    LwDictionary *dictionary;
     GList *iter;
-    char **atom;
-    int i;
+    gchar **atom;
+    gint i;
 
     //Initializations;
     atom = (char**) malloc((dil->max + 1) * sizeof(char*));
@@ -419,8 +434,8 @@ lw_dictinfolist_save_order (LwDictInfoList *dil, LwPreferences *pm)
     //Create the string to write to the prefs with the last one NULL terminated
     for (iter = dil->list; iter != NULL && i < dil->max; iter = iter->next)
     {
-      di = (LwDictInfo*) iter->data;
-      atom[i] = g_strdup_printf ("%s/%s", lw_util_dicttype_to_string (di->type), di->filename);
+      dictionary = LW_DICTIONARY (iter->data);
+      atom[i] = g_strdup_printf ("%s/%s", lw_dictionary_get_typename (dictionary), lw_dictionary_get_filename (dictionary));
       if (atom == NULL) { fprintf(stderr, "Out of memory\n"); exit(1); }
       i++;
     }
@@ -430,10 +445,8 @@ lw_dictinfolist_save_order (LwDictInfoList *dil, LwPreferences *pm)
     lw_preferences_set_string_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, load_order);
 
     //Free the used memory
-    g_strfreev (atom);
-    atom = NULL;
-    g_free (load_order);
-    load_order = NULL;
+    g_strfreev (atom); atom = NULL;
+    g_free (load_order); load_order = NULL;
 }
 
 
@@ -441,7 +454,7 @@ lw_dictinfolist_save_order (LwDictInfoList *dil, LwPreferences *pm)
 //! @brief Loads the load order from the preferences
 //
 void 
-lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
+lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
 {
     if (pm == NULL) return; 
 
@@ -451,7 +464,7 @@ lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
     char **iter = NULL;
     LwDictType engine;
     char *name;
-    LwDictInfo *di = NULL;
+    LwDictionary *dictionary = NULL;
     int load_position = 0;
   
     lw_preferences_get_string_by_schema (pm, load_order, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, 1000);
@@ -463,7 +476,7 @@ lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
       if (*iter == NULL || **iter == '\0') { 
         fprintf(stderr, "WARNING: failed sanity check 1. Resetting dictionary order prefs.\n");
         lw_preferences_reset_value_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
-        lw_dictinfolist_load_order (dil, pm);
+        lw_dictionarylist_load_order (dil, pm);
         return;
       }
 
@@ -474,7 +487,7 @@ lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
       {
         fprintf(stderr, "WARNING: failed sanity check 2. Resetting dictionary order prefs.\n");
         lw_preferences_reset_value_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
-        lw_dictinfolist_load_order (dil, pm);
+        lw_dictionarylist_load_order (dil, pm);
         return;
       }
 
@@ -482,9 +495,9 @@ lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
       name = engine_name_array[1];
 
       //Sanity Checking
-      if ((di = lw_dictinfolist_get_dictinfo (dil, engine, name)) != NULL)
+      if ((dictionary = lw_dictionarylist_get_dictionary (dil, engine, name)) != NULL)
       {
-        di->load_position = load_position;
+        lw_dictionary_set_load_position (dictionary, load_position);
         load_position++;
       }
 
@@ -495,23 +508,23 @@ lw_dictinfolist_load_order (LwDictInfoList *dil, LwPreferences *pm)
     g_strfreev (load_order_array);
     load_order_array = NULL;
 
-    lw_dictinfolist_sort_and_normalize_order (dil);
+    lw_dictionarylist_sort_and_normalize_order (dil);
 }
 
 
 //!
 //! @brief All dictionaries with a specific status get switched to the requested one
-//! @param a Pointer to LwDictInfo object a
-//! @param b Pointer to LwDictInfo object b
+//! @param a Pointer to LwDictionary object a
+//! @param b Pointer to LwDictionary object b
 //! @returns Whether the position of a is less than (-1), equal (0) or greater than b (1)
 //!
-static gint _dictinfolist_load_order_compare_function (gconstpointer a, gconstpointer b)
+static gint _dictionarylist_load_order_compare_function (gconstpointer a, gconstpointer b)
 {
     //Declarations and initializations
-    LwDictInfo *di_a = (LwDictInfo*) a;
-    LwDictInfo *di_b = (LwDictInfo*) b;
-    int lpa = di_a->load_position;
-    int lpb = di_b->load_position;
+    LwDictionary *di_a = (LwDictionary*) a;
+    LwDictionary *di_b = (LwDictionary*) b;
+    int lpa = lw_dictionary_get_load_position (di_a);
+    int lpb = lw_dictionary_get_load_position (di_b);
 
     //Exception cases for positions less than 0.
     //We want negative numbers after everything else
@@ -528,10 +541,10 @@ static gint _dictinfolist_load_order_compare_function (gconstpointer a, gconstpo
 //
 //! @brief Sorts the dictionaries by their load order and makes the numbers clean with no holes
 //
-void lw_dictinfolist_sort_and_normalize_order (LwDictInfoList *dil)
+void lw_dictionarylist_sort_and_normalize_order (LwDictionaryList *dil)
 {
     //Declarations
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     int load_position;
     GList *iter;
 
@@ -539,13 +552,13 @@ void lw_dictinfolist_sort_and_normalize_order (LwDictInfoList *dil)
     load_position = 0;
 
     //Sort the list
-    dil->list = g_list_sort (dil->list, _dictinfolist_load_order_compare_function);
+    dil->list = g_list_sort (dil->list, _dictionarylist_load_order_compare_function);
 
     //Make sure there is no number skipping
     for (iter = dil->list; iter != NULL; iter = iter->next)
     {
-      di = (LwDictInfo*) iter->data;
-      di->load_position = load_position;
+      dictionary = LW_DICTIONARY (iter->data);
+      lw_dictionary_set_load_position (dictionary, load_position);
       load_position++;
     }
 }

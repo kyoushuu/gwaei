@@ -5,6 +5,16 @@ G_BEGIN_DECLS
 
 #define LW_QUERYLINE(object) (LwQuery*) object
 
+
+typedef enum {
+  LW_QUERY_RELEVANCE_UNSET,
+  LW_QUERY_RELEVANCE_LOW,
+  LW_QUERY_RELEVANCE_MEDIUM,
+  LW_QUERY_RELEVANCE_HIGH,
+  TOTAL_QUERY_RELEVANCE
+} LwQueryRelevance;
+
+
 typedef enum {
   LW_QUERY_REGEX_KANJI,
   LW_QUERY_REGEX_FURIGANA,
@@ -34,7 +44,7 @@ gboolean lw_query_is_parsed (LwQuery*);
 
 
 struct _LwRegexGroup {
-    GRegex* regex[TOTAL_LW_RELEVANCE];
+    GRegex* regex[TOTAL_QUERY_RELEVANCE];
 };
 typedef struct _LwRegexGroup LwRegexGroup;
 
