@@ -25,6 +25,10 @@
 //! @brief To be written
 //!
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <gwaei/gwaei.h>
 #include <gwaei/application-private.h>
 

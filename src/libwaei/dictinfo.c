@@ -35,6 +35,10 @@
 
 #include <glib.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
@@ -99,7 +103,7 @@ lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FILENAM
     di->shortname = NULL;
     di->longname = NULL;
     di->type = DICTTYPE;
-    di->filename = g_strdup_printf ("%s", FILENAME);
+    di->filename = g_strdup (FILENAME);
 
     uri = lw_dictinfo_get_uri (di);
     di->length = lw_io_get_size_for_uri (uri);
@@ -108,7 +112,7 @@ lw_dictinfo_init (LwDictInfo *di, const LwDictType DICTTYPE, const char *FILENAM
     if (!_overlay_default_builtin_dictionary_settings (di))
     {
       di->longname = g_strdup_printf (gettext("%s Dictionary"), FILENAME);
-      di->shortname = g_strdup_printf ("%s", FILENAME);
+      di->shortname = g_strdup (FILENAME);
       di->load_position = -1;
     }
 
@@ -159,20 +163,20 @@ static gboolean _overlay_default_builtin_dictionary_settings (LwDictInfo *di)
     {
       if (strcmp(di->filename, "English") == 0)
       {
-        di->longname = g_strdup_printf ("%s", gettext("English Dictionary"));
-        di->shortname = g_strdup_printf ("%s", gettext("English"));
+        di->longname = g_strdup (gettext("English Dictionary"));
+        di->shortname = g_strdup (gettext("English"));
         di->load_position = 1;
       }
       else if (strcmp(di->filename, "Names") == 0)
       {
-        di->longname = g_strdup_printf ("%s", gettext("Names Dictionary"));
-        di->shortname = g_strdup_printf ("%s", gettext("Names"));
+        di->longname = g_strdup (gettext("Names Dictionary"));
+        di->shortname = g_strdup (gettext("Names"));
         di->load_position = 3;
       }
       else if (strcmp(di->filename, "Places") == 0)
       {
-        di->longname = g_strdup_printf ("%s", gettext("Places Dictionary"));
-        di->shortname = g_strdup_printf ("%s", gettext("Places"));
+        di->longname = g_strdup (gettext("Places Dictionary"));
+        di->shortname = g_strdup (gettext("Places"));
         di->load_position = 4;
       }
     }
@@ -180,8 +184,8 @@ static gboolean _overlay_default_builtin_dictionary_settings (LwDictInfo *di)
     {
       if (strcmp(di->filename, "Kanji") == 0)
       {
-        di->longname = g_strdup_printf ("%s", gettext("Kanji Dictionary"));
-        di->shortname = g_strdup_printf ("%s", gettext("Kanji"));
+        di->longname = g_strdup (gettext("Kanji Dictionary"));
+        di->shortname = g_strdup (gettext("Kanji"));
         di->load_position = 2;
       }
     }
@@ -189,8 +193,8 @@ static gboolean _overlay_default_builtin_dictionary_settings (LwDictInfo *di)
     {
       if (strcmp(di->filename, "Examples") == 0)
       {
-        di->longname = g_strdup_printf ("%s", gettext("Examples Dictionary"));
-        di->shortname = g_strdup_printf ("%s", gettext("Examples"));
+        di->longname = g_strdup (gettext("Examples Dictionary"));
+        di->shortname = g_strdup (gettext("Examples"));
         di->load_position = 5;
       }
     }

@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <locale.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <gtk/gtk.h>
 #include <hunspell/hunspell.h>
 

@@ -29,8 +29,11 @@
 
 #include <glib.h>
 
-#include <libwaei/libwaei.h>
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
 
+#include <libwaei/libwaei.h>
 #include <libwaei/engine-data.h>
 
 

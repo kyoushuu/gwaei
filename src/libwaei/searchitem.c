@@ -30,6 +30,10 @@
 
 #include <glib.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/libwaei.h>
 
 static gboolean _query_is_sane (const char* query)

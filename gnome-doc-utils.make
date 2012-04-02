@@ -473,7 +473,29 @@ dist-doc-docs: $(_DOC_C_DOCS) $(_DOC_LC_DOCS) $(_DOC_POFILES)
 	  echo " $(mkinstalldirs) $(distdir)/$$lc"; \
 	  $(mkinstalldirs) "$(distdir)/$$lc"; \
 	done
-	@list='$(_DOC_C_DOCS) $(_DOC_LC_DOCS) $(_DOC_POFILES)'; \
+	@list='$(_DOC_C_DOCS)'; \
+	for doc in $$list; do \
+	  if test -f "$$doc"; then d=; else d="$(srcdir)/"; fi; \
+	    docdir=`echo $$doc | sed -e 's/^\(.*\/\).*/\1/' -e '/\//!s/.*//'`; \
+	    if ! test -d "$(distdir)/$$docdir"; then \
+	      echo "$(mkinstalldirs) $(distdir)/$$docdir"; \
+	      $(mkinstalldirs) "$(distdir)/$$docdir"; \
+	    fi; \
+	  echo "$(INSTALL_DATA) $$d$$doc $(distdir)/$$doc"; \
+	  $(INSTALL_DATA) "$$d$$doc" "$(distdir)/$$doc"; \
+	done
+	@list='$(_DOC_LC_DOCS)'; \
+	for doc in $$list; do \
+	  if test -f "$$doc"; then d=; else d="$(srcdir)/"; fi; \
+	    docdir=`echo $$doc | sed -e 's/^\(.*\/\).*/\1/' -e '/\//!s/.*//'`; \
+	    if ! test -d "$(distdir)/$$docdir"; then \
+	      echo "$(mkinstalldirs) $(distdir)/$$docdir"; \
+	      $(mkinstalldirs) "$(distdir)/$$docdir"; \
+	    fi; \
+	  echo "$(INSTALL_DATA) $$d$$doc $(distdir)/$$doc"; \
+	  $(INSTALL_DATA) "$$d$$doc" "$(distdir)/$$doc"; \
+	done
+	@list='$(_DOC_POFILES)'; \
 	for doc in $$list; do \
 	  if test -f "$$doc"; then d=; else d="$(srcdir)/"; fi; \
 	    docdir=`echo $$doc | sed -e 's/^\(.*\/\).*/\1/' -e '/\//!s/.*//'`; \
@@ -576,7 +598,18 @@ install-doc-docs:
 	  echo "$(mkinstalldirs) $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$lc"; \
 	  $(mkinstalldirs) $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$lc; \
 	done
-	@list='$(_DOC_C_DOCS) $(_DOC_LC_DOCS)'; for doc in $$list; do \
+	@list='$(_DOC_C_DOCS)'; for doc in $$list; do \
+	  if test -f "$$doc"; then d=; else d="$(srcdir)/"; fi; \
+	  docdir="$$lc/"`echo $$doc | sed -e 's/^\(.*\/\).*/\1/' -e '/\//!s/.*//'`; \
+	  docdir="$(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$docdir"; \
+	  if ! test -d "$$docdir"; then \
+	    echo "$(mkinstalldirs) $$docdir"; \
+	    $(mkinstalldirs) "$$docdir"; \
+	  fi; \
+	  echo "$(INSTALL_DATA) $$d$$doc $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc"; \
+	  $(INSTALL_DATA) $$d$$doc $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc; \
+	done
+	@list='$(_DOC_LC_DOCS)'; for doc in $$list; do \
 	  if test -f "$$doc"; then d=; else d="$(srcdir)/"; fi; \
 	  docdir="$$lc/"`echo $$doc | sed -e 's/^\(.*\/\).*/\1/' -e '/\//!s/.*//'`; \
 	  docdir="$(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$docdir"; \
@@ -647,7 +680,11 @@ uninstall-local:					\
 #	$(if $(_DOC_DSK_IN),uninstall-doc-dsk)
 
 uninstall-doc-docs:
-	@list='$(_DOC_C_DOCS) $(_DOC_LC_DOCS)'; for doc in $$list; do \
+	@list='$(_DOC_C_DOCS)'; for doc in $$list; do \
+	  echo " rm -f $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc"; \
+	  rm -f "$(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc"; \
+	done
+	@list='$(_DOC_LC_DOCS)'; for doc in $$list; do \
 	  echo " rm -f $(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc"; \
 	  rm -f "$(DESTDIR)$(HELP_DIR)/$(_doc_install_dir)/$$doc"; \
 	done

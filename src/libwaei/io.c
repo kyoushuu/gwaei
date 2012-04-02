@@ -34,6 +34,10 @@
 #include <curl/curl.h>
 #include <zlib.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 

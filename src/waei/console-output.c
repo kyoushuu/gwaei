@@ -34,6 +34,10 @@
 
 #include <glib.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <waei/gettext.h>
 #include <waei/waei.h>
 

@@ -31,6 +31,10 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <gwaei/gettext.h>
 #include <gwaei/gwaei.h>
 #include <gwaei/vocabularyliststore.h>

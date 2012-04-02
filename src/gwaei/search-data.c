@@ -35,6 +35,10 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <gwaei/gwaei.h>
 
 

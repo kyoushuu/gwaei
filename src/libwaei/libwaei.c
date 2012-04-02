@@ -31,4 +31,8 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#ifdef HAVE_CONFIG_H
+#include "../../config.h"
+#endif
+
 #include <libwaei/libwaei.h>
