@@ -25,6 +25,9 @@
 //! @brief To be written
 //!
 
+
+#include "../private.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,10 +36,6 @@
 #include <gio/gio.h>
 
 #include <gtk/gtk.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <gwaei/gwaei.h>
 #include <gwaei/window-private.h>

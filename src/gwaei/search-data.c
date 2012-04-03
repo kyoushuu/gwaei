@@ -28,16 +28,14 @@
 //!
 
 
+#include "../private.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <gwaei/gwaei.h>
 

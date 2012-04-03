@@ -27,6 +27,7 @@
 //!         Use LwDictInfo for that purpose.
 //!
 
+#include "../private.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -35,11 +36,6 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 static gboolean _cancel = FALSE;

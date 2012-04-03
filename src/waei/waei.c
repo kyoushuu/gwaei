@@ -27,17 +27,15 @@
 //! Main entrance into the program.
 //!
 
+
+#include "../private.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
 
 #include <glib.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-#include <waei/gettext.h>
 #include <waei/waei.h>
 
 

@@ -25,20 +25,18 @@
 //! @brief To be written
 //!
 
+
+#include "../private.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <gtk/gtk.h>
 #include <hunspell/hunspell.h>
 
 #include <gwaei/gwaei.h>
-#include <gwaei/gettext.h>
 #include <gwaei/spellcheck-private.h>
 
 static void gw_spellcheck_attach_signals (GwSpellcheck*);

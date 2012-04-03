@@ -23,15 +23,14 @@
 //!  @file resultline.c
 //!
 
+
+#include "../private.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 #include <glib.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <libwaei/libwaei.h>
 

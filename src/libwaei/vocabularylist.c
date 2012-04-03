@@ -23,11 +23,9 @@
 //!  @file vocabularylist.c
 //!
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
-#include <libwaei/gettext.h>
+#include "../private.h"
+
 #include <libwaei/libwaei.h>
 
 

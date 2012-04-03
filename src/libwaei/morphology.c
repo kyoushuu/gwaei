@@ -23,18 +23,17 @@
 //! @file morphology.c
 //!
 
+
+#include "../private.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <glib.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <libwaei/libwaei.h>
-#include "config.h"
+
 
 static LwMorphologyItem *lw_morphologyitem_new ();
 static void lw_morphologyitem_free (LwMorphologyItem *item);

@@ -25,9 +25,8 @@
 //! @brief To be written
 //!
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
+
+#include "../private.h"
 
 #include <waei/waei.h>
 

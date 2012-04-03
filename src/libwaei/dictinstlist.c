@@ -24,6 +24,8 @@
 //!
 
 
+#include <../private.h>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -31,11 +33,6 @@
 #include <glib.h>
 #include <curl/curl.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 

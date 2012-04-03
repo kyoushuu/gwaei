@@ -23,11 +23,9 @@
 //!  @file addvocabularywindow.c
 //!
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
-#include <gwaei/gettext.h>
+#include "../private.h"
+
 #include <gwaei/gwaei.h>
 #include <gwaei/addvocabularywindow-private.h>
 

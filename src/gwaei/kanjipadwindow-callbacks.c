@@ -28,6 +28,8 @@
 //!
 
 
+#include "../private.h"
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,10 +37,6 @@
 #include <unistd.h>
 
 #include <gtk/gtk.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <libwaei/libwaei.h>
 #include <gwaei/kanjipadwindow.h>

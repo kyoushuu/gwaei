@@ -25,6 +25,9 @@
 //! @brief To be written
 //!
 
+
+#include "../private.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,11 +35,6 @@
 
 #include <glib.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
-#include <waei/gettext.h>
 #include <waei/waei.h>
 #include <waei/application-private.h>
 

@@ -26,14 +26,12 @@
 //!
 
 
+#include "../private.h"
+
 #include <string.h>
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <libwaei/libwaei.h>
 #include <gwaei/radicalswindow.h>

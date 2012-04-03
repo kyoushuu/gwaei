@@ -26,6 +26,8 @@
 //!
 
 
+#include "../private.h"
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -33,12 +35,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
-
 #include <gwaei/gwaei.h>
-#include <gwaei/gettext.h>
 #include <gwaei/searchwindow-private.h>
 
 static void gw_searchwindow_add_vocabulary_destroy_cb (GwAddVocabularyWindow*, gpointer);

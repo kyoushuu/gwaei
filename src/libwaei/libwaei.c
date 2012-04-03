@@ -23,6 +23,9 @@
 //! @file libwaei.c
 //!
 
+
+#include "../private.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,9 +33,5 @@
 
 #include <glib.h>
 #include <glib-object.h>
-
-#ifdef HAVE_CONFIG_H
-#include "../../config.h"
-#endif
 
 #include <libwaei/libwaei.h>
