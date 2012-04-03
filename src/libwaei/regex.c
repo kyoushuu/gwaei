@@ -143,6 +143,7 @@ lw_regex_free ()
 }
 
 
+/*
 //!
 //! @brief Builds a regex for finding kanji by relevance
 //! @param subject The query text to insert into the regex
@@ -404,5 +405,5 @@ lw_regex_new (const char *subject, const LwDictType DICTTYPE, const LwRelevance 
     return re;
 }
 
-
+*/
 

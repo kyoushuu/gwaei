@@ -28,7 +28,7 @@ typedef enum {
 
 struct _LwQuery {
     gchar *text;
-    LwDictType type;
+    GList *tokens;
     GList **regexlist;
     gboolean parsed;
 };

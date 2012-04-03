@@ -2,7 +2,6 @@
 #define LW_REGEX_INCLUDED
 
 #include <glib.h>
-#include <libwaei/dict.h>
 #include <libwaei/utilities.h>
 
 G_BEGIN_DECLS
@@ -24,11 +23,13 @@ typedef enum
 void lw_regex_initialize (void);
 void lw_regex_free (void);
 
+/*
 GRegex* lw_regex_kanji_new (const char*, LwDictType, LwRelevance, GError**);
 GRegex* lw_regex_furi_new (const char*, LwDictType, LwRelevance, GError**);
 GRegex* lw_regex_romaji_new (const char*, LwDictType, LwRelevance, GError**);
 GRegex* lw_regex_mix_new (const char*, LwDictType, LwRelevance, GError**);
 GRegex* lw_regex_new (const char*, LwDictType, LwRelevance, GError**);
+*/
 
 
 typedef enum {
@@ -37,18 +38,6 @@ typedef enum {
   LW_RE_GRADE,
   LW_RE_FREQUENCY,
   LW_RE_JLPT,
-/*
-  LW_RE_WORD_I_ADJ_PASTFORM,
-  LW_RE_WORD_I_ADJ_NEGATIVE,
-  LW_RE_WORD_I_ADJ_TE_FORM,
-  LW_RE_WORD_I_ADJ_CAUSATIVE,
-  LW_RE_WORD_I_ADJ_CONDITIONAL,
-  LW_RE_WORD_NA_ADJ_PASTFORM,
-  LW_RE_WORD_NA_ADJ_NEGATIVE,
-  LW_RE_WORD_NA_ADJ_TE_FORM,
-  LW_RE_WORD_NA_ADJ_CAUSATIVE,
-  LW_RE_WORD_NA_ADJ_CONDITIONAL,
-*/
   LW_RE_TOTAL
 } LwRegexDataIndex;
 

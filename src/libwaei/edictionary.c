@@ -28,8 +28,6 @@
 //!         objects exist for that purpose.
 //!
 
-        name = "edict";
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,6 +44,7 @@ static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
 static gchar* lw_edictionary_get_uri (LwDictionary*);
 static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
 static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+static const gchar* lw_edictionary_get_typename (LwDictionary*);
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
 {
@@ -118,6 +117,7 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->parse_query = lw_edictionary_parse_query;
     dictionary_class->parse_result = lw_edictionary_parse_result;
     dictionary_class->get_uri = lw_edictionary_get_uri;
+    dictionary_class->get_typename = lw_edictionary_get_typename;
 }
 
 
@@ -517,4 +517,67 @@ lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *f
 
     return TRUE;
 }
+
+
+static const gchar*
+lw_edictionary_get_typename (LwDictionary *dictionary)
+{
+    return "edict";
+}
+
+
+gchar**
+lw_edictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
+{
+    const gchar *TEXT;
+    gchar *output;
+    GUnicodeScript script, next_script;
+    const gchar *sourcptr;
+    gchar *targetptr;
+    gboolean is_tolken_break_point;
+    gunichar c;
+
+    TEXT = lw_query_get_text (query);
+    output = g_new(gchar, strlen(TEXT) * sizeof(gchar) * 2 + 1);
+    *output = '\0';
+    sourceptr = TEXT;
+    is_tolken_break_point = FALSE;
+    script = next_script = G_UNICODE_SCRIPT_INVALID_CODE;
+
+    if (does_not_have_regex_characters (query))
+    {
+      lw_dictionary_tolkenize_script_changes (dictionary, text);
+      if (tolkenize_whitespace)
+        lw_dictionary_tolkenize_whitespace (dictionary, text);
+      if (tolkenize_japanese)
+        lw_dictionary_tolkenize_japanese (dictionary, text);
+    }
+
+    japanese_normalization (verb forms etc)
+    furigana_romaji_conversion
+    english_normalization (verb forms etc)
+
+    
+/* 
+    if (output != NULL)
+    {
+      targetptr = output;
+      while (*sourceptr != \'0')
+      {
+        c = g_utf8_get_char (sourceptr);
+        next_script = g_unichar_get_script (c);
+        script_changed = next_script != script;
+        is_space = g_unichar_type (sourceptr) == G_UNICODE_SPACE_SEPARATOR;
+
+        if (script_changed || is_space
+
+        script = next_script;
+        sourceptr = g_utf8_next_char (sourceptr);
+      }
+      
+      g_free (output); output = NULL;
+    }
+*/
+}
+
 

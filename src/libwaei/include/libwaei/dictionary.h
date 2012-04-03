@@ -28,7 +28,7 @@ struct _LwDictionaryClass {
   gchar*   (*get_uri) (LwDictionary *dictionary);
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
-  gchar*   (*get_typename) (LwDictionary *dictionary);
+  const gchar*   (*get_typename) (LwDictionary *dictionary);
 };
 
 //Methods

@@ -1,13 +1,19 @@
 #ifndef LW_DICTINST_INCLUDED
 #define LW_DICTINST_INCLUDED
 
-#include <libwaei/dict.h>
-
 G_BEGIN_DECLS
 
 #define LW_DICTINST(object) (LwDictInst*) object
 
 #define LW_DICTINST_ERROR "gWaei Dictionary Installer Error"
+
+typedef enum {
+  LW_DICTTYPE_EDICT,         //!< Standard edict format dictionary
+  LW_DICTTYPE_KANJI,         //!< Kanjidic format dictionary
+  LW_DICTTYPE_EXAMPLES,      //!< Examples format dictionary
+  LW_DICTTYPE_UNKNOWN,          //!< Unkown format which should use safe parsing
+  TOTAL_LW_DICTTYPES
+} LwDictType;
 
 typedef enum {
   LW_DICTINST_ERROR_SOURCE_PATH,

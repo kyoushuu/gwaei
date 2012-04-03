@@ -1,4 +1,3 @@
-        name = "unknown";
 /******************************************************************************
     AUTHOR:
     File written and Copyrighted by Zachary Dovel. All Rights Reserved.
@@ -43,6 +42,7 @@ static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
 static gchar* lw_unknowndictionary_get_uri (LwDictionary*);
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
 static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+static const gchar* lw_unknowndictionary_get_typename (LwDictionary*);
 
 
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
@@ -111,6 +111,7 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class->parse_query = lw_unknowndictionary_parse_query;
     dictionary_class->parse_result = lw_unknowndictionary_parse_result;
     dictionary_class->get_uri = lw_unknowndictionary_get_uri;
+    dictionary_class->get_typename = lw_unknowndictionary_get_typename;
 }
 
 
@@ -145,7 +146,7 @@ lw_unknowdictionary_parse_result (LwDictionary *dictionary, LwResult *result, FI
 
 
 static gboolean
-lw_unknowndict_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
 {
 /*
     tokens = lw_unknowninfo_get_tokens (dictionary, text);
@@ -168,5 +169,12 @@ lw_unknowndict_parse_query (LwDictionary *dictionary, LwQuery *query, const gcha
 
 */
     return FALSE;
+}
+
+
+const gchar*
+lw_unknowndictionary_get_typename (LwDictionary *dictionary)
+{
+  return "unknown";
 }
 

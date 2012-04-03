@@ -36,9 +36,6 @@ typedef enum {
 
 
 gchar* lw_util_build_filename (const LwFolderPath, const char*);
-gchar* lw_util_build_filename_by_dicttype (const LwDictType, const char*);
-const char* lw_util_dicttype_to_string (const LwDictType ENGINE);
-LwDictType lw_util_get_dicttype_from_string (const char*);
 const char* lw_util_get_compression_name (const LwCompression);
 const char* lw_util_get_encoding_name (const LwEncoding);
 

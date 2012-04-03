@@ -365,3 +365,40 @@ static GRegex*** _compile_and_allocate_number_search_regex (const char* subject,
 
 
 */
+
+
+This is a sentence sakana 日本語が難しい
+1) it should look for the original
+2) it should look for each of the smallest tokens
+
+
+//!
+//! @brief Inserts into the string separators to denote tokens where the script changes (english/japanese)
+//!
+static GList* 
+lw_query_tolkenize_script_changes (LwQuery *query, const gchar *separator)
+{
+    GList *iter;
+    GList *new_list;
+
+    query->tokens = new_list;
+}
+
+
+//!
+//! @brief Inserts into the string separators to denote tokens where whitespace occurs
+//!
+static GList* 
+lw_query_tolkenize_whitespace (LwDictionary *dictionary, gchar *text const gchar *separator)
+{
+}
+
+
+//!
+//! @brief uses morphology to guess where tokens should be delimited
+//!
+static GList*
+lw_query_tolkenize_japanese_morphology (LwDictionary *dictionary, gchar *text, const gchar *separator)
+{
+}
+
