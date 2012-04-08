@@ -254,12 +254,12 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
       line = LW_RESULTLINE (item->results_high->data);
       item->results_high = g_list_delete_link (item->results_high, item->results_high);
     }
-    else if (item->results_medium != NULL && item->status == LW_SEARCHSTATUS_IDLE)
+    else if (item->results_medium != NULL && item->status == LW_SEARCHSTATUS_FINISHING)
     {
       line = LW_RESULTLINE (item->results_medium->data);
       item->results_medium = g_list_delete_link (item->results_medium, item->results_medium);
     }
-    else if (item->results_low != NULL && item->status == LW_SEARCHSTATUS_IDLE)
+    else if (item->results_low != NULL && item->status == LW_SEARCHSTATUS_FINISHING)
     {
       line = LW_RESULTLINE (item->results_low->data);
       item->results_low = g_list_delete_link (item->results_low, item->results_low);
@@ -279,29 +279,39 @@ LwResultLine* lw_searchitem_get_result (LwSearchItem *item)
 //!
 //! @brief Tells if you should keep checking for results
 //!
-gboolean lw_searchitem_should_check_results (LwSearchItem *item)
+gboolean 
+lw_searchitem_should_check_results (LwSearchItem *item)
 {
     if (item == NULL) return FALSE;
 
     gboolean should_check_results;
+    gboolean results_in_queue;
     LwSearchStatus status;
 
     status = lw_searchitem_get_status (item);
 
     if (status == LW_SEARCHSTATUS_FINISHING)
     {
-      lw_searchitem_cancel_search (item);
-      should_check_results = FALSE;
+      if (item->thread != NULL)
+      {
+        g_thread_join (item->thread);
+        item->thread = NULL;
+      }
     }
-    else
-    {
-      lw_searchitem_lock (item);
-      should_check_results = (status != LW_SEARCHSTATUS_IDLE ||
-                              item->results_high != NULL ||
-                              item->results_medium != NULL ||
-                              item->results_low != NULL);
-      lw_searchitem_unlock (item);
-    }
+
+    lw_searchitem_lock (item);
+    results_in_queue = (item->results_high != NULL ||
+                        item->results_medium != NULL ||
+                        item->results_low != NULL);
+    lw_searchitem_unlock (item);
+
+    if (status == LW_SEARCHSTATUS_FINISHING && 
+                       (item->results_high == NULL &&
+                        item->results_medium == NULL &&
+                        item->results_low == NULL))
+      lw_searchitem_set_status (item, LW_SEARCHSTATUS_IDLE);
+
+    should_check_results = (results_in_queue || status != LW_SEARCHSTATUS_IDLE);
 
     return should_check_results;
 }

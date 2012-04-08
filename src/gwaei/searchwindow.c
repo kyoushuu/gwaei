@@ -393,7 +393,6 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
     {
       lw_searchitem_lock (item);
         if (
-            item->status != LW_SEARCHSTATUS_FINISHING &&
             (item != priv->feedback_item ||
              item->current != priv->feedback ||
              item->status != priv->feedback_status       )

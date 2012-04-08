@@ -722,7 +722,7 @@ lw_searchitem_parse_result_string (LwSearchItem *item)
 void 
 lw_searchitem_lock (LwSearchItem *item)
 {
-  g_mutex_lock (&item->mutex);
+  if (item->thread != NULL) g_mutex_lock (&item->mutex);
 }
 
 //!
@@ -732,7 +732,7 @@ lw_searchitem_lock (LwSearchItem *item)
 void 
 lw_searchitem_unlock (LwSearchItem *item)
 {
-  g_mutex_unlock (&item->mutex);
+  if (item->thread != NULL) g_mutex_unlock (&item->mutex);
 }
 
 
