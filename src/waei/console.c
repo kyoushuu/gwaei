@@ -280,8 +280,6 @@ w_console_search (WApplication *application, GError **error)
     exact_switch = w_application_get_exact_switch (application);
 
     di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, dictionary_switch_data);
-    item = lw_searchitem_new (query_text_data, di, preferences, error);
-    resolution = 0;
 
     //Sanity checks
     if (di == NULL)
@@ -290,6 +288,9 @@ w_console_search (WApplication *application, GError **error)
       fprintf (stderr, gettext("Requested dictionary not found!\n"));
       return resolution;
     }
+
+    item = lw_searchitem_new (query_text_data, di, preferences, error);
+    resolution = 0;
 
     if (item == NULL)
     {
