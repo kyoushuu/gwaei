@@ -1,2 +1,2 @@
-2012-03-10: gWaei 3.4.0
-gWaei-3.4.0 final.  Since 3.2.0, there have been numerous interface tweaks to make it a bit more subtle with less color.  A vocabulary study component was added and integrated including flashcard study and scoring.  There were a few fixes for mingw/cygwin support for when spellcheck occurs or when installing a dictionary.  Lots of old depricated stuff were removed from gtk+-3.2.  Various bugs were fixed and the application made generally more fun to use.  Windows users will get a prebuilt binary once official gtk3 binaries for mingw are released.
+2012-04-15: gWaei 3.4.3
+gWaei-3.4.3 final. Fixed display of kanjipad.  (Or at least improved it.)  Fixed some problems with searches from waei.  Some fixes to localizations of some text. Removed disable depricated directives.:
