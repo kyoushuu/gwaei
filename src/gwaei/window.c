@@ -203,6 +203,7 @@ gw_window_load_ui_xml (GwWindow *window, const char *filename)
     //Declarations
     GwWindowPrivate *priv;
     GtkWidget *toplevel;
+    GtkWidget *unused;
     char *paths[4];
     char **iter;
     char *path;
@@ -224,9 +225,16 @@ gw_window_load_ui_xml (GwWindow *window, const char *filename)
       {
         gtk_builder_connect_signals (priv->builder, NULL);
 
+        unused = GTK_WIDGET (gtk_builder_get_object (priv->builder, "unused"));
         toplevel = GTK_WIDGET (gtk_builder_get_object (priv->builder, "toplevel"));
-        g_assert (toplevel != NULL);
-        gtk_widget_reparent (toplevel, GTK_WIDGET (window));
+        g_assert (unused != NULL && toplevel != NULL);
+        //gtk_widget_reparent (toplevel, GTK_WIDGET (window));
+        g_object_ref(toplevel);
+        gtk_container_remove (GTK_CONTAINER (unused), toplevel);
+        gtk_container_add (GTK_CONTAINER (window), toplevel);
+        g_object_unref(toplevel);
+  
+        gtk_widget_destroy (unused); unused = NULL;
 
         loaded = TRUE;
       }
