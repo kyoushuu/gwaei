@@ -39,7 +39,7 @@
 #include <libwaei/dictionary-private.h>
 
 static gchar* lw_unknowndictionary_get_uri (LwDictionary*);
-static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
+static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_unknowndictionary_get_typename (LwDictionary*);
 
@@ -145,8 +145,9 @@ lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, F
 
 
 static gboolean
-lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
+    if (error != NULL && *error != NULL) return;
 /*
     tokens = lw_unknowninfo_get_tokens (dictionary, text);
 
@@ -167,7 +168,7 @@ lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     }
 
 */
-    return FALSE;
+    return (error == NULL || *error == NULL);
 }
 
 

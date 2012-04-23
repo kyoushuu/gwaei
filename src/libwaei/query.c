@@ -38,7 +38,8 @@ void lw_regex_group_set_regex (LwRegexGroup *group, LwRelevance relevance, GRege
 void lw_regex_group_free (LwRegexGroup *group);
 
 
-LwQuery* lw_query_new ()
+LwQuery* 
+lw_query_new ()
 {
     LwQuery *temp;
 
@@ -48,17 +49,22 @@ LwQuery* lw_query_new ()
 }
 
 
-void lw_query_free (LwQuery* query)
+void 
+lw_query_free (LwQuery* query)
 {
     g_return_if_fail (query != NULL);
 
     lw_query_clean (query);
     if (query->text != NULL) g_free (query->text); query->text = NULL;
+
+    foreach free regroups
+
     g_free (query);
 }
 
 
-void lw_query_clean (LwQuery* query)
+void 
+lw_query_clean (LwQuery* query)
 {
     g_return_if_fail (query != NULL);
 
@@ -81,27 +87,15 @@ void lw_query_clean (LwQuery* query)
 }
 
 
-const gchar* lw_query_get_text (LwQuery *query)
+const gchar* 
+lw_query_get_text (LwQuery *query)
 {
     return query->text;
 }
 
 
-GList* lw_query_get_regexlist (LwQuery *query, LwQueryRegexType type)
-{
-/*&
-    gboolean parsable;
-
-    if (lw_query_is_parsed (query) = FALSE) parsable = lw_query_parse (query);
-    if (!parsable) return NULL;
-
-    return query->regexlist[type];
-*/
-    return NULL;
-}
-
-
-gboolean lw_query_is_parsed (LwQuery *query)
+gboolean 
+lw_query_is_parsed (LwQuery *query)
 {
     return (query->parsed);
 }

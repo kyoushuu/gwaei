@@ -142,281 +142,218 @@ lw_edictionary_get_uri (LwDictionary *dictionary)
 }
 
 
-static gboolean 
-lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+static gchar**
+lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 {
-   //Sanity check
-   g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+    if (query->tokenlist != NULL)
+    {
+      g_strfreev (query->tokenlist);
+      query->tokenlist = NULL;
+    }
 
-   //Free previously used memory
-   lw_query_clean (query);
-/*
+    //Declarations
+    gchar *text;
+    gchar *temp, gchar *delimited
+    gchar **tokens;
+    GList *additional_hira, *additional_kata, *additional_furi;
+    
+    //Initializations
+    delimited = lw_util_clean_query (lw_query_get_text (query));
+    additional_hira = NULL;
+    additional_kata = NULL;
+    additional_furi = NULL;
 
-   //Declarations
-   char **atoms;
-   char **iter;
-   char *atom;
-   char *temp;
-   char *expression;
-   char *half;
-#ifdef WITH_MECAB
-   char *morpho_expression;
-#endif
-   char *expression_low;
-   char buffer[300];
-   int rk_conv_pref;
-   gboolean want_rk_conv;
-   gboolean want_hk_conv;
-   gboolean want_kh_conv;
-   gboolean all_regex_built;
-   int length;
-   GRegex ***re;
-   int i;
+    if (split_script_changes)
+    {
+      temp = lw_util_delimit_script_changes (text);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
 
-   tokens = lw_edictionary_get_tokens (dictionary, text);
+    if (split_whitespace)
+    {
+      temp = lw_util_delimit_whitespace (delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
 
-   if (tokens != NULL)
-   {
-     for (i = 0; tokens[i] != NULL; i++)
-     {
-        if (lw_util_is_romaji_str (tokens[i])
-          lw_edictionary_append_romaji_regex (dictionary, query, tokens[i]);
-        else if (lw_util_is_kanji_ish_str (tokens[i])
-          lw_edictionary_append_kanji_regex (dictionary, query, tokens[i]);
-        else if (lw_util_is_furigana_str (tokens[i])
-          lw_edictionary_append_furigana_regex (dictionary, query, tokens[i]);
-        else
-          lw_edictionary_append_mix_regex (dictionary, query, tokens[i]);
-     }
-     g_strfreev (tokens); tokens = NULL;
-   }
-*/
+    tokens = g_str_split (delimitor, delimited, -1);
 
-/*
-   //Memory initializations
-   all_regex_built = TRUE;
-
-   if (pm != NULL)
-   {
-     rk_conv_pref = lw_preferences_get_int_by_schema (pm, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
-     want_rk_conv = (rk_conv_pref == 0 || (rk_conv_pref == 2 && !lw_util_is_japanese_locale()));
-     want_hk_conv = lw_preferences_get_boolean_by_schema (pm, LW_SCHEMA_BASE, LW_KEY_HIRA_KATA);
-     want_kh_conv = lw_preferences_get_boolean_by_schema (pm, LW_SCHEMA_BASE, LW_KEY_KATA_HIRA);
-   }
-   else
-   {
-     rk_conv_pref = 1;
-     want_rk_conv = TRUE;
-     want_hk_conv = TRUE;
-     want_kh_conv = TRUE;
-   }
-
-   //Start analysis
-   atoms = _query_initialize_pointers (ql, STRING);
-
-#ifdef WITH_MECAB
-   morpho_expression = _query_get_morphology_regexp(ql);
-#endif
-
-   length = g_strv_length (atoms);
-
-   //Setup the expression to be used in the base of the regex for kanji-ish strings
-   re = ql->re_kanji;
-   for (iter = atoms; *iter != NULL && re < (ql->re_kanji + length); iter++)
-   {
-     atom = *iter;
-     expression = NULL;
-     expression_low = NULL;
-
-     if (lw_util_is_kanji_ish_str (atom) || lw_util_is_kanji_str (atom)) //Figures out if the string may contain hiragana
-     {
-       expression = g_strdup_printf ("(%s)", atom);
-
-       if (lw_util_is_yojijukugo_str (atom))  //Check for yojijukugo
-       {
-          //First half of the yojijukugo
-          half = g_strndup (atom, g_utf8_next_char(g_utf8_next_char(atom)) - atom);
-          if (strcmp(half, "..") != 0)
-          {
-            temp = g_strdup_printf ("%s|(%s)", expression, half);
-            g_free (expression);
-            expression = temp;
-          }
-          g_free (half);
-
-          //Second half of the yojijukugo
-          half = g_strdup (g_utf8_next_char(g_utf8_next_char(atom)));
-          if (strcmp(half, "..") != 0)
-          {
-            temp = g_strdup_printf ("%s|(%s)", expression, half);
-            g_free (expression);
-            expression = temp;
-          }
-          g_free (half);
-       }
-     }
-
-#ifdef WITH_MECAB
-     if (morpho_expression && iter == atoms) {
-         // Stuff morphology regexp to the first atom
-         if (expression == NULL) {
-             expression_low = g_strdup (morpho_expression);
-         }
-         else {
-             expression_low = g_strdup_printf ("%s|%s", expression, morpho_expression);
-         }
-     }
-#endif
-
-     if (expression_low && expression == NULL) {
-         expression = g_strdup ("----------------");
-     }
-
-     if (expression) {
-       //Compile the regexes
-       temp = expression;
-       for (i = 0; i < LW_RELEVANCE_TOTAL; i++) {
-         if (expression_low && i == LW_RELEVANCE_LOW)
-             temp = expression_low;
-         if (((*re)[i] = lw_regex_kanji_new (temp, LW_DICTTYPE_EDICT, i, error)) == NULL) all_regex_built = FALSE;
-       }
-
-       g_free (expression);
-       if (expression_low)
-           g_free (expression_low);
-       re++;
-     }
-   }
+    foreach (tokens)
+    {
+      if (is_kanji)
+        query->tolken[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append ();
+      if (is_furigana)
+        query->tolken[LW_QUERY_TOKEN_TYPE_FURIGANA] = g_list_append ();
+      if (is_romaji)
+        query->tolken[LW_QUERY_TOKEN_TYPE_ROMAJI] = g_list_append ();
+    }
+}
 
 
-   //Setup the expression to be used in the base of the regex for furigana strings
-   re = ql->re_furi;
-   for (iter = atoms; *iter != NULL && re < (ql->re_furi + length); iter++)
-   {
-     atom = *iter;
-     expression = NULL;
-     expression_low = NULL;
+static void
+lw_edicitonary_build_kanji_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
+{
+    if (error != NULL && *error != NULL) return;
 
-     if (lw_util_is_furigana_str (atom))
-     {
-       expression = g_strdup_printf ("(%s)", atom);
+    if (query->regroup[LW_QUERY_REGEX_TYPE_KANJI] != NULL)
+    {
+      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_KANJI]);
+      query->regroup[LW_QUERY_REGEX_TYPE_KANJI] = NULL;
+    }
 
-       if (want_hk_conv && lw_util_is_hiragana_str (atom))
-       {
-         temp = g_strdup (atom);
-         lw_util_str_shift_hira_to_kata (temp);
-         g_free (expression);
-         expression = g_strdup_printf("(%s)|(%s)", atom, temp);
-         g_free (temp);
-       }
-       else if (want_kh_conv && lw_util_is_katakana_str (atom))
-       {
-         temp = g_strdup (atom);
-         lw_util_str_shift_kata_to_hira (temp);
-         g_free (expression);
-         expression = g_strdup_printf("(%s)|(%s)", atom, temp);
-         g_free (temp);
-       }
-     }
-     else if (lw_util_is_romaji_str (atom) && lw_util_str_roma_to_hira (atom, buffer, 300) && want_rk_conv)
-     {
-       expression = g_strdup_printf("(%s)", buffer);
+    //Declarations
+    GList* tokenlist;
+    GList *link;
+    gchar *text;
+    GRegex *regex;
+    LwReGroup *regroup;
 
-       if (want_hk_conv)
-       {
-         temp = g_strdup (buffer);
-         lw_util_str_shift_hira_to_kata (temp);
-         g_free (expression);
-         expression = g_strdup_printf("(%s)|(%s)", buffer, temp);
-         g_free (temp);
-       }
-     }
+    //Initializations
+    regroup = lw_regroup_new ();
+    tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_KANJI];
 
-#ifdef WITH_MECAB
-     if (morpho_expression && iter == atoms) {
-         // Stuff morphology regexp to the first atom
-         if (expression == NULL) {
-             expression_low = g_strdup(morpho_expression);
-         }
-         else {
-             expression_low = g_strdup_printf("%s|%s", expression, morpho_expression);
-         }
-     }
-#endif
+    for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
+    {
+      text = (gchar*) link->data;
 
-     if (expression_low && expression == NULL) {
-         expression = g_strdup("----------------");
-     }
+      regex = g_regex_new ();
+      regroup->high = g_list_append (regroup->high, regex);
 
-     if (expression) {
-       //Compile the regexes
-       temp = expression;
-       for (i = 0; i < LW_RELEVANCE_TOTAL; i++) {
-         if (expression_low && i == LW_RELEVANCE_LOW)
-             temp = expression_low;
-         if (((*re)[i] = lw_regex_furi_new (temp, LW_DICTTYPE_EDICT, i, error)) == NULL) all_regex_built = FALSE;
-       }
+      regex = g_regex_new ();
+      regroup->medium = g_list_append (regroup->medium, regex);
 
-       g_free (expression);
-       if (expression_low)
-           g_free (expression_low);
-       re++;
-     }
-   }
+      regex = g_regex_new ();
+      regroup->low = g_list_append (regroup->low, regex);
+
+      if (japanese_morphology)
+      {
+        regex = g_regex_new ();
+        regroup->medium = g_list_append (regroup->low, regex);
+      }
+    }
+
+    query->regroup[LW_QUERY_REGEX_TYPE_KANJI] = regroup;
+}
 
 
-   //Setup the expression to be used in the base of the regex
-   re = ql->re_roma;
-   for (iter = atoms; *iter != NULL && re < (ql->re_roma + length); iter++)
-   {
-     atom = *iter;
-     g_strstrip(atom);
-     if (strlen(atom) > 0 && lw_util_is_romaji_str (atom) && g_regex_match (lw_re[LW_RE_NUMBER], atom, 0, NULL) == FALSE)
-     {
-       expression = g_strdup (atom);
+static void
+lw_edicitonary_build_furigana_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
+{
+    if (error != NULL && *error != NULL) return;
 
-       //Compile the regexes
-       for (i = 0; i < LW_RELEVANCE_TOTAL; i++)
-         if (((*re)[i] = lw_regex_romaji_new (expression, LW_DICTTYPE_EDICT, i, error)) == NULL) all_regex_built = FALSE;
+    if (query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] != NULL)
+    {
+      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA]);
+      query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] = NULL;
+    }
 
-       g_free (expression);
-       re++;
-     }
-   }  
+    //Declarations
+    GList* tokenlist;
+    GList *link;
+    gchar *text;
+    GRegex *regex;
+    LwReGroup *regroup;
+
+    //Initializations
+    regroup = lw_regroup_new ();
+    tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA];
+
+    for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
+    {
+      text = (gchar*) link->data;
+
+      regex = g_regex_new ();
+      regroup->high = g_list_append (regroup->high, regex);
+
+      regex = g_regex_new ();
+      regroup->medium = g_list_append (regroup->medium, regex);
+
+      regex = g_regex_new ();
+      regroup->low = g_list_append (regroup->low, regex);
+
+      if (japanese_morphology)
+      if (hira_kata_conv)
+      if (kata_hira_conv)
+      {
+        regex = g_regex_new ();
+        regroup->medium = g_list_append (regroup->low, regex);
+      }
+    }
+
+    query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] = regroup;
+}
 
 
-   //Setup the expression to be used in the base of the regex
-   re = ql->re_mix;
-   for (iter = atoms; *iter != NULL && re < (ql->re_roma + length); iter++)
-   {
-     atom = *iter;
-     if (!lw_util_is_kanji_ish_str (atom) &&
-         !lw_util_is_kanji_str (atom)     && 
-         !lw_util_is_furigana_str (atom)  &&
-         !lw_util_is_romaji_str (atom)      )
-     {
-       expression = g_strdup (atom);
+static void
+lw_edicitonary_build_romaji_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
+{
+    if (error != NULL && *error != NULL) return;
 
-       //Compile the regexes
-       for (i = 0; i < LW_RELEVANCE_TOTAL; i++)
-         if (((*re)[i] = lw_regex_mix_new (expression, LW_DICTTYPE_EDICT, i, error)) == NULL) all_regex_built = FALSE;
+    if (query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] != NULL)
+    {
+      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI]);
+      query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] = NULL;
+    }
 
-       g_free (expression);
-       re++;
-     }
-   }
+    //Declarations
+    GList* tokenlist;
+    GList *link;
+    gchar *text;
+    GRegex *regex;
+    LwReGroup *regroup;
 
-   //Cleanup
-   g_strfreev (atoms);
-   atoms = NULL;
+    //Initializations
+    regroup = lw_regroup_new ();
+    tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI];
 
-#ifdef WITH_MECAB
-   if (morpho_expression)
-       g_free(morpho_expression);
-#endif
-*/
+    for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
+    {
+      text = (gchar*) link->data;
 
-  return TRUE;
+      regex = g_regex_new ();
+      regroup->high = g_list_append (regroup->high, regex);
+
+      regex = g_regex_new ();
+      regroup->medium = g_list_append (regroup->medium, regex);
+
+      regex = g_regex_new ();
+      regroup->low = g_list_append (regroup->low, regex);
+
+      if (english_morphology)
+      if (romaji_furi_conv)
+      {
+        regex = g_regex_new ();
+        regroup->medium = g_list_append (regroup->low, regex);
+      }
+    }
+
+    query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] = regroup;
+}
+
+
+static gboolean 
+lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
+{
+    if (error != NULL && *error != NULL) return;
+
+    //Sanity check
+    g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+
+    //Free previously used memory
+    lw_query_clean (query);
+
+    if (query->text != NULL)
+    {
+      g_free (query->text);
+    }
+    query->text = g_strdup (TEXT);
+  
+    lw_edictionary_tokenize_query (dictionary, query);
+
+    lw_edictionary_build_kanji_regex (dictionary, query, error);
+    lw_edictionary_build_furigana_regex (dictionary, query, error);
+    lw_edictionary_build_romaji_regex (dictionary, query, error);
+
+    return (error == NULL || *error == NULL);
 }
 
 

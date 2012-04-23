@@ -41,7 +41,7 @@
 G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 
 static gchar* lw_exampledictionary_get_uri (LwDictionary*);
-static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
+static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_exampledictionary_get_typename (LwDictionary*);
 
@@ -140,15 +140,17 @@ lw_exampledictionary_get_uri (LwDictionary *dictionary)
 
 
 static gboolean 
-lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
-   //Sanity check
-   g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+    if (error != NULL && *error != NULL) return;
 
-   //Free previously used memory
-   lw_query_clean (query);
+    //Sanity check
+    g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
-    return TRUE;
+    //Free previously used memory
+    lw_query_clean (query);
+
+    return (error == NULL || *error == NULL);
 }
 
 

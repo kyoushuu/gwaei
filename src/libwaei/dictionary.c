@@ -288,7 +288,7 @@ lw_dictionary_get_uri (LwDictionary *dictionary)
 
 
 gboolean 
-lw_dictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+lw_dictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
@@ -298,7 +298,7 @@ lw_dictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar
 
     g_return_val_if_fail (klass->parse_query != NULL, FALSE);
 
-    return klass->parse_query (dictionary, query, TEXT);
+    return klass->parse_query (dictionary, query, TEXT, error);
 }
 
 

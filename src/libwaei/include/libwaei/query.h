@@ -23,13 +23,21 @@ typedef enum {
   LW_QUERY_REGEX_STROKES,
   LW_QUERY_REGEX_GRADE,
   LW_QUERY_REGEX_JLPT,
-  TOTAL_LW_QUERY_REGEX,
+  TOTAL_LW_QUERY_REGEX
 } LwQueryRegexType;
+
+typedef enum {
+  LW_QUERY_TOKEN_TYPE_ROMAJI,
+  LW_QUERY_TOKEN_TYPE_FURIGANA,
+  LW_QUERY_TOKEN_TYPE_KANJI,
+  TOTAL_LW_QUERY_TOKEN_TYPES
+} LwQueryTokenType;
+
 
 struct _LwQuery {
     gchar *text;
-    GList *tokens;
-    GList **regexlist;
+    GList *tokens[TOTAL_LW_QUERY_TOKEN_TYPES];
+    LwReGroup *regroup[TOTAL_LW_QUERY_REGEX_TYPES];
     gboolean parsed;
 };
 typedef struct _LwQuery LwQuery;
@@ -39,19 +47,7 @@ LwQuery* lw_query_new ();
 void lw_query_free (LwQuery*);
 void lw_query_clean (LwQuery*);
 const gchar* lw_query_get_text (LwQuery*);
-GList* lw_query_get_regexlist (LwQuery*, LwQueryRegexType);
 gboolean lw_query_is_parsed (LwQuery*);
-
-
-struct _LwRegexGroup {
-    GRegex* regex[TOTAL_QUERY_RELEVANCE];
-};
-typedef struct _LwRegexGroup LwRegexGroup;
-
-
-LwRegexGroup* lw_regex_group_new (void);
-GRegex* lw_regex_group_get_regex (LwRegexGroup*, LwRelevance);
-void lw_regex_group_free (LwRegexGroup*);
 
 
 G_END_DECLS

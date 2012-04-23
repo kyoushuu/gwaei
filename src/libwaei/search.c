@@ -145,7 +145,7 @@ lw_search_init (LwSearch *item, const gchar* TEXT, LwDictionary* dictionary, LwP
     item->query = lw_query_new ();
     item->history_relevance_idle_timer = 0;
 
-    lw_dictionary_parse_query (item->dictionary, item->query, TEXT);
+    lw_dictionary_parse_query (item->dictionary, item->query, TEXT, error);
 }
 
 

@@ -41,7 +41,7 @@
 G_DEFINE_TYPE (LwKanjiDictionary, lw_kanjidictionary, LW_TYPE_DICTIONARY)
 
 static gchar* lw_kanjidictionary_get_uri (LwDictionary*);
-static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
+static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError **);
 static gboolean lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_kanjidictionary_get_typename (LwDictionary*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
@@ -142,15 +142,17 @@ lw_kanjidictionary_get_uri (LwDictionary *dictionary)
 
 
 static gboolean 
-lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT)
+lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
-   //Sanity check
-   g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+    if (error != NULL && *error != NULL) return;
 
-   //Free previously used memory
-   lw_query_clean (query);
+    //Sanity check
+    g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
-    return TRUE;
+    //Free previously used memory
+    lw_query_clean (query);
+
+    return (error == NULL || *error == NULL);
 }
 
 
