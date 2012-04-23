@@ -60,16 +60,16 @@ static gboolean _query_is_sane (const char* query)
 //!
 //! @brief Creates a new LwSearch object. 
 //! @param query The text to be search for
-//! @param dictionary The LwDictInfo object to use
+//! @param dictionary The LwDictionary object to use
 //! @param TARGET The widget to output the results to
-//! @param pm The Application preference manager to get information from
+//! @param preferences The Application preference manager to get information from
 //! @param error A GError to place errors into or NULL
 //! @return Returns an allocated LwSearch object that should be freed with lw_search_free or NULL on error
 //!
 LwSearch* 
-lw_search_new (const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
+lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
 {
-    if (!_query_is_sane (query)) return NULL;
+    if (!_query_is_sane (QUERY)) return NULL;
 
     LwSearch *temp;
 
@@ -77,7 +77,7 @@ lw_search_new (const char* query, LwDictInfo* dictionary, LwPreferences *pm, GEr
 
     if (temp != NULL)
     {
-      lw_search_init (temp, query, dictionary, pm, error);
+      lw_search_init (temp, QUERY, dictionary, preferences, error);
 
       if (error != NULL && *error != NULL)
       {
@@ -115,14 +115,14 @@ lw_search_free (LwSearch* item)
 //!        object.  Usually lw_search_new calls this for you.  It is also 
 //!        used in class implimentations that extends LwSearch.
 //! @param item A LwSearch to initialize the inner variables of
-//! @param query The text to be search for
-//! @param dictionary The LwDictInfo object to use
+//! @param QUERY The text to be search for
+//! @param dictionary The LwDictionary object to use
 //! @param TARGET The widget to output the results to
-//! @param pm The Application preference manager to get information from
+//! @param preferences The Application preference manager to get information from
 //! @param error A GError to place errors into or NULL
 //!
 void 
-lw_search_init (LwSearch *item, const char* query, LwDictInfo* dictionary, LwPreferences *pm, GError **error)
+lw_search_init (LwSearch *item, const gchar* TEXT, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
 {
     item->results_high = NULL;
     item->results_medium = NULL;
@@ -141,26 +141,11 @@ lw_search_init (LwSearch *item, const char* query, LwDictInfo* dictionary, LwPre
     item->total_irrelevant_results = 0;
     item->total_results = 0;
     item->current = 0L;
-    item->resultline = NULL;
-    item->queryline = lw_queryline_new ();
+    item->result = NULL;
+    item->query = lw_query_new ();
     item->history_relevance_idle_timer = 0;
 
-    //Set function pointers
-    switch (item->dictionary->type)
-    {
-        case LW_DICTTYPE_EDICT:
-          lw_queryline_parse_edict_string (item->queryline, pm, query, error);
-          break;
-        case LW_DICTTYPE_KANJI:
-          lw_queryline_parse_kanjidict_string (item->queryline, pm, query, error);
-          break;
-        case LW_DICTTYPE_EXAMPLES:
-          lw_queryline_parse_exampledict_string (item->queryline, pm, query, error);
-          break;
-        default:
-          lw_queryline_parse_edict_string (item->queryline, pm, query, error);
-          break;
-    }
+    lw_dictionary_parse_query (item->dictionary, item->query, TEXT);
 }
 
 
@@ -176,7 +161,7 @@ lw_search_deinit (LwSearch *item)
     lw_search_cancel_search (item);
     lw_search_clear_results (item);
     lw_search_cleanup_search (item);
-    lw_queryline_free (item->queryline);
+    lw_query_free (item->query);
     if (lw_search_has_data (item))
       lw_search_free_data (item);
 
@@ -193,17 +178,17 @@ lw_search_clear_results (LwSearch *item)
 
     while (item->results_low != NULL)
     {
-      lw_resultline_free (LW_RESULTLINE (item->results_low->data));
+      lw_result_free (LW_RESULT (item->results_low->data));
       item->results_low = g_list_delete_link (item->results_low, item->results_low);
     }
     while (item->results_medium != NULL)
     {
-      lw_resultline_free (LW_RESULTLINE (item->results_medium->data));
+      lw_result_free (LW_RESULT (item->results_medium->data));
       item->results_medium = g_list_delete_link (item->results_medium, item->results_medium);
     }
     while (item->results_high != NULL)
     {
-      lw_resultline_free (LW_RESULTLINE (item->results_high->data));
+      lw_result_free (LW_RESULT (item->results_high->data));
       item->results_high = g_list_delete_link (item->results_high, item->results_high);
     }
 }
@@ -227,24 +212,16 @@ lw_search_prepare_search (LwSearch* item)
     lw_search_cleanup_search (item);
 
     //Declarations
-    char *path;
 
     //Initializations
     item->scratch_buffer = (char*) malloc (sizeof(char*) * LW_IO_MAX_FGETS_LINE);
-    item->resultline = lw_resultline_new ();
+    item->result = lw_result_new ();
     item->current = 0L;
     item->total_relevant_results = 0;
     item->total_irrelevant_results = 0;
     item->total_results = 0;
     item->thread = NULL;
-
-    path = lw_dictinfo_get_uri (item->dictionary);
-    if (path != NULL)
-    {
-      item->fd = fopen (path, "r");
-      g_free (path);
-    }
-
+    item->fd = lw_dictionary_open (LW_DICTIONARY (item->dictionary));
     item->status = LW_SEARCHSTATUS_SEARCHING;
 }
 
@@ -272,287 +249,13 @@ lw_search_cleanup_search (LwSearch* item)
       item->scratch_buffer = NULL;
     }
 
-    if (item->resultline != NULL)
+    if (item->result != NULL)
     {
-      lw_resultline_free (item->resultline);
-      item->resultline = NULL;
+      lw_result_free (item->result);
+      item->result = NULL;
     }
 
     item->status = LW_SEARCHSTATUS_FINISHING;
-}
-
-
-static gboolean _edict_existance_comparison (LwQueryLine *ql, LwResultLine *rl, const LwRelevance RELEVANCE)
-{
-    //Declarations
-    int j;
-    GRegex *re;
-    GRegex ***iter;
-
-    //Compare kanji atoms
-    if (rl->kanji_start != NULL)
-    {
-      for (iter = ql->re_kanji; *iter != NULL && **iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (g_regex_match (re, rl->kanji_start, 0, NULL) == FALSE) break;
-      }
-      if (ql->re_kanji[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
-    }
-
-    //Compare furigana atoms
-    if (rl->furigana_start != NULL)
-    {
-      for (iter = ql->re_furi; *iter != NULL && **iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (g_regex_match (re, rl->furigana_start, 0, NULL) == FALSE) break;
-      }
-      if (ql->re_furi[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
-    }
-
-    if (rl->kanji_start != NULL)
-    {
-      for (iter = ql->re_furi; *iter != NULL && **iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (g_regex_match (re, rl->kanji_start, 0, NULL) == FALSE) break;
-      }
-      if (ql->re_furi[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
-    }
-
-
-    //Compare romaji atoms
-    for (j = 0; rl->def_start[j] != NULL; j++)
-    {
-      for (iter = ql->re_roma; *iter != NULL && **iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (g_regex_match (re, rl->def_start[j], 0, NULL) == FALSE) break;
-      }
-      if (ql->re_roma[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
-    }
-
-    //Compare mix atoms
-    if (rl->string != NULL)
-    {
-      for (iter = ql->re_mix; *iter != NULL && **iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (g_regex_match (re, rl->string, 0, NULL) == FALSE) break;
-      }
-      if (ql->re_roma[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
-    }
-
-    return FALSE;
-}
-
-
-static gboolean _kanji_existance_comparison (LwQueryLine *ql, LwResultLine *rl, const LwRelevance RELEVANCE)
-{
-    //Declarations
-    gboolean strokes_check_passed;
-    gboolean frequency_check_passed;
-    gboolean grade_check_passed;
-    gboolean jlpt_check_passed;
-    gboolean romaji_check_passed;
-    gboolean furigana_check_passed;
-    gboolean kanji_check_passed;
-    gboolean radical_check_passed;
-    int kanji_index;
-    int radical_index;
-
-    GRegex ***iter;
-    GRegex *re;
-
-    int i;
-
-    //Initializations
-    strokes_check_passed = TRUE;
-    frequency_check_passed = TRUE;
-    grade_check_passed = TRUE;
-    jlpt_check_passed = TRUE;
-    romaji_check_passed = TRUE;
-    furigana_check_passed = TRUE;
-    kanji_check_passed = TRUE;
-    radical_check_passed = TRUE;
-    kanji_index = -1;
-    radical_index = -1;
-
-    //Calculate the strokes check
-    if (rl->strokes != NULL)
-    {
-      for (iter = ql->re_strokes; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->strokes, 0, NULL) == FALSE) 
-          strokes_check_passed = FALSE;
-      }
-    }
-    else
-      if (ql->re_strokes != NULL && *(ql->re_strokes) != NULL)
-        strokes_check_passed = FALSE;
-
-    //Calculate the frequency check
-    if (rl->frequency != NULL)
-    {
-      for (iter = ql->re_frequency; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->frequency, 0, NULL) == FALSE) 
-          frequency_check_passed = FALSE;
-      }
-    }
-    else
-      if (ql->re_frequency != NULL && *(ql->re_frequency) != NULL)
-        frequency_check_passed = FALSE;
-
-
-    //Calculate the grade check
-    if (rl->grade != NULL)
-    {
-      for (iter = ql->re_grade; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->grade, 0, NULL) == FALSE) 
-          grade_check_passed = FALSE;
-      }
-    }
-    else
-      if (ql->re_grade != NULL && *(ql->re_grade) != NULL)
-        grade_check_passed = FALSE;
-
-
-    //Calculate the jlpt check
-    if (rl->jlpt != NULL)
-    {
-      for (iter = ql->re_jlpt; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->jlpt, 0, NULL) == FALSE) 
-          jlpt_check_passed = FALSE;
-      }
-    }
-    else
-      if (ql->re_jlpt != NULL && *(ql->re_jlpt) != NULL)
-        jlpt_check_passed = FALSE;
-
-
-
-    //Calculate the romaji check
-    if (rl->meanings != NULL)
-    {
-      for (iter = ql->re_roma; ql->re_roma[0] != NULL && iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL) romaji_check_passed = FALSE;
-      }
-      //if (ql->re_roma[0] != NULL && ql->re_roma[0][0] != NULL) romaji_check_passed = FALSE;
-
-      for (iter = ql->re_roma; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-
-        if (re != NULL && g_regex_match (re, rl->meanings, 0, NULL) == TRUE) 
-        {
-          romaji_check_passed = TRUE;
-        }
-      }
-    }
-
-
-    //Calculate the furigana check
-    if (*(ql->re_furi) != NULL && (rl->readings[0] != NULL || rl->readings[1] != NULL || rl->readings[2] != NULL))
-    {
-       furigana_check_passed = FALSE;
-    }
-    for (i = 0; i < 3; i++)
-    {
-      if (rl->readings[i] == NULL) continue;
-
-      for (iter = ql->re_furi; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->readings[i], 0, NULL) == TRUE) 
-        {
-          furigana_check_passed = TRUE;
-        }
-      }
-    }
-
-    //Calculate the kanji check
-    if (*(ql->re_kanji) != NULL && rl->kanji != NULL)
-    {
-      kanji_index = 0;
-      for (iter = ql->re_kanji; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->kanji, 0, NULL) == FALSE) 
-        {
-          kanji_check_passed = FALSE;
-          kanji_index = -1;
-        }
-        if (kanji_check_passed == TRUE) kanji_index++;
-      }
-    }
-
-    //Calculate the radical check
-    if (rl->radicals != NULL)
-    {
-      radical_index = 0;
-      for (iter = ql->re_kanji; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, rl->radicals, 0, NULL) == FALSE) 
-        {
-          if (radical_index != kanji_index) //Make sure the radical wasn't found as a kanji before setting false
-             radical_check_passed = FALSE;
-        }
-        radical_index++;
-      }
-    }
-
-    //Return our results
-    return (strokes_check_passed &&
-            frequency_check_passed &&
-            grade_check_passed &&
-            jlpt_check_passed &&
-            romaji_check_passed &&
-            furigana_check_passed &&
-            (radical_check_passed || kanji_check_passed));
-}
-
-
-//!
-//! @brief Comparison function that should be moved to the LwSearch file when it matures
-//! @param item A LwSearch to get search information from
-//! @param RELEVANCE A LwRelevance
-//! @returns Returns true according to the relevance level
-//!
-gboolean 
-lw_search_run_comparison (LwSearch *item, const LwRelevance RELEVANCE)
-{
-MOVE TO LWDICTIONARY
-    //Declarations
-    LwResultLine *rl;
-    LwQueryLine *ql;
-
-    //Initializations
-    rl = item->resultline;
-    ql = item->queryline;
-
-    //Kanji radical dictionary search
-    switch (item->dictionary->type)
-    {
-      case LW_DICTTYPE_EDICT:
-        return _edict_existance_comparison (ql, rl, RELEVANCE);
-      case LW_DICTTYPE_KANJI:
-        return _kanji_existance_comparison (ql, rl, RELEVANCE);
-      case LW_DICTTYPE_EXAMPLES:
-        return _edict_existance_comparison (ql, rl, RELEVANCE);
-      default:
-        return _edict_existance_comparison (ql, rl, RELEVANCE);
-    }
 }
 
 
@@ -584,7 +287,7 @@ lw_search_is_equal (LwSearch *item1, LwSearch *item2)
   }
 
   //Initializations
-  queries_are_equal = (strcmp(item1->queryline->string, item2->queryline->string) == 0);
+  queries_are_equal = (strcmp(item1->query->text, item2->query->text) == 0);
   dictionaries_are_equal = (item1->dictionary == item2->dictionary);
 
   return (queries_are_equal && dictionaries_are_equal);
@@ -723,7 +426,7 @@ lw_search_get_progress (LwSearch *item)
     if (item != NULL && item->dictionary != NULL && item->status == LW_SEARCHSTATUS_SEARCHING)
     {
       current = item->current;
-      length = item->dictionary->length;
+      length = lw_dictionary_get_length(LW_DICTIONARY (item->dictionary));
 
       if (current > 0L && length > 0L && current != length) 
         fraction = (gdouble) current / (gdouble) length;

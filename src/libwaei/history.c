@@ -103,15 +103,15 @@ void
 lw_history_clear_forward_list (LwHistory *list)
 {
     //Declarations
-    LwSearchItem *item;
+    LwSearch *search;
     GList *iter;
 
     //Free the data of the list
     for (iter = list->forward; iter != NULL; iter = iter->next)
     {
-      item = (LwSearchItem*) iter->data;
-      if (item != NULL)
-        lw_searchitem_free (item);
+      search = (LwSearch*) iter->data;
+      if (search != NULL)
+        lw_search_free (search);
       iter->data = NULL;
     }
 
@@ -128,15 +128,15 @@ void
 lw_history_clear_back_list (LwHistory *list)
 {
     //Declarations
-    LwSearchItem *item;
+    LwSearch *search;
     GList *iter;
 
     //Free the data of the list
     for (iter = list->back; iter != NULL; iter = iter->next)
     {
-      item = (LwSearchItem*) iter->data;
-      if (item != NULL)
-        lw_searchitem_free (item);
+      search = (LwSearch*) iter->data;
+      if (search != NULL)
+        lw_search_free (search);
       iter->data = NULL;
     }
 
@@ -148,7 +148,7 @@ lw_history_clear_back_list (LwHistory *list)
 
 //!
 //! @brief Gets the back history of the target history list
-//! @return Returns a GList containing the LwSearchItem back history
+//! @return Returns a GList containing the LwSearch back history
 //!
 GList* 
 lw_history_get_back_list (LwHistory *list)
@@ -159,7 +159,7 @@ lw_history_get_back_list (LwHistory *list)
 
 //!
 //! @brief Gets the forward history of the target history list
-//! @return Returns a GList containing the LwSearchItem forward history
+//! @return Returns a GList containing the LwSearch forward history
 //!
 GList* 
 lw_history_get_forward_list (LwHistory *list)
@@ -195,10 +195,10 @@ lw_history_get_combined_list (LwHistory *list)
 
 
 //!
-//! @brief Moves an item to the back history
+//! @brief Moves an search to the back history
 //!
 void 
-lw_history_add_searchitem (LwHistory *list, LwSearchItem *item)
+lw_history_add_search (LwHistory *list, LwSearch *search)
 { 
     //Declarations
     GList *link;
@@ -206,13 +206,13 @@ lw_history_add_searchitem (LwHistory *list, LwSearchItem *item)
     //Clear the forward history
     lw_history_clear_forward_list (list);
 
-    list->back = g_list_prepend (list->back, item);
+    list->back = g_list_prepend (list->back, search);
 
     //Make sure the list hasn't gotten too long
     if (g_list_length (list->back) >= list->max)
     {
       link = g_list_last (list->back); 
-      lw_searchitem_free (LW_SEARCHITEM (link->data));
+      lw_search_free (LW_SEARCHITEM (link->data));
       list->back = g_list_delete_link (list->back, link);
     }
 }
@@ -241,15 +241,15 @@ lw_history_has_back (LwHistory *list)
 //!
 //! @brief Go back 1 in history
 //!
-LwSearchItem* 
-lw_history_go_back (LwHistory *list, LwSearchItem *pushed)
+LwSearch* 
+lw_history_go_back (LwHistory *list, LwSearch *pushed)
 { 
     //Sanity check
     if (!lw_history_has_back (list)) return pushed;
 
     //Declarations
     GList *link;
-    LwSearchItem *popped;
+    LwSearch *popped;
 
     if (pushed != NULL)
     {
@@ -267,15 +267,15 @@ lw_history_go_back (LwHistory *list, LwSearchItem *pushed)
 //!
 //! @brief Go forward 1 in history
 //!
-LwSearchItem* 
-lw_history_go_forward (LwHistory *list, LwSearchItem *pushed)
+LwSearch* 
+lw_history_go_forward (LwHistory *list, LwSearch *pushed)
 { 
     //Sanity check
     if (!lw_history_has_forward (list)) return pushed;
 
     //Declarations
     GList *link;
-    LwSearchItem *popped;
+    LwSearch *popped;
 
     if (pushed != NULL)
     {

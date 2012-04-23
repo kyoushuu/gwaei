@@ -107,4 +107,5 @@ src/schemas/gschemas.compiled
 
 configure
 gnome-doc-utils.make
-
+compile
+depcomp

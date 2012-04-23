@@ -35,7 +35,7 @@ struct _LwQuery {
 typedef struct _LwQuery LwQuery;
 
 
-LwQuery* lw_query_new (const gchar*);
+LwQuery* lw_query_new ();
 void lw_query_free (LwQuery*);
 void lw_query_clean (LwQuery*);
 const gchar* lw_query_get_text (LwQuery*);

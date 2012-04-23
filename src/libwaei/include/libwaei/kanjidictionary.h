@@ -21,7 +21,7 @@ struct _LwKanjiDictionary {
 };
 
 struct _LwKanjiDictionaryClass {
-  LwDictionary parent_class;
+  LwDictionaryClass parent_class;
 };
 
 //Methods

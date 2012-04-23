@@ -1,6 +1,7 @@
 #ifndef LW_DICTIONARY_INCLUDED
 #define LW_DICTIONARY_INCLUDED
 
+#include <stdio.h>
 #include <libwaei/result.h>
 #include <libwaei/query.h>
 
@@ -28,13 +29,16 @@ struct _LwDictionaryClass {
   gchar*   (*get_uri) (LwDictionary *dictionary);
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
-  const gchar*   (*get_typename) (LwDictionary *dictionary);
+  const gchar* (*get_typename) (LwDictionary *dictionary);
+  gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
 };
 
 //Methods
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
 gchar* lw_dictionary_get_uri (LwDictionary*);
+
+FILE* lw_dictionary_open (LwDictionary*);
 
 gint lw_dictionary_get_load_position (LwDictionary*);
 void lw_dictionary_set_load_position (LwDictionary*, gint);
@@ -43,6 +47,7 @@ const gchar* lw_dictionary_get_filename (LwDictionary*);
 const gchar* lw_dictionary_get_typename (LwDictionary*);
 gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
 gboolean lw_dictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+size_t lw_dictionary_get_length (LwDictionary*);
 
 G_END_DECLS
 

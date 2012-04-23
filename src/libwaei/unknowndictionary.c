@@ -38,7 +38,6 @@
 #include <libwaei/libwaei.h>
 #include <libwaei/dictionary-private.h>
 
-static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
 static gchar* lw_unknowndictionary_get_uri (LwDictionary*);
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
 static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
@@ -139,7 +138,7 @@ lw_unknowndictionary_get_uri (LwDictionary *dictionary)
 //! @param rl The Resultline object this method works on
 //!
 static gboolean
-lw_unknowdictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *file)
+lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *file)
 {
     return FALSE;
 }

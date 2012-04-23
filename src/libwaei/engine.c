@@ -84,7 +84,7 @@ static gpointer _stream_results_thread (gpointer data)
 
     //We loop, processing lines of the file until the max chunk size has been
     //reached or we reach the end of the file or a cancel request is recieved.
-    while ((line_pointer = fgets(search->resultline->string, LW_IO_MAX_FGETS_LINE, search->fd)) != NULL &&
+    while ((line_pointer = fgets(search->result->text, LW_IO_MAX_FGETS_LINE, search->fd)) != NULL &&
            search->status != LW_SEARCHSTATUS_FINISHING)
     {
 
@@ -99,23 +99,23 @@ static gpointer _stream_results_thread (gpointer data)
 */
       lw_search_lock (search);
 
-      search->current += strlen(search->resultline->string);
+      search->current += strlen(search->result->text);
 
       //Commented input in the dictionary...we should skip over it
-      if(search->resultline->string[0] == '#' || g_utf8_get_char(search->resultline->string) == L'？') 
+      if(search->result->text[0] == '#' || g_utf8_get_char(search->result->text) == L'？') 
       {
         continue;
       }
-      else if (search->resultline->string[0] == 'A' && search->resultline->string[1] == ':' &&
+      else if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
                fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
       {
         search->current += strlen(search->scratch_buffer);
         char *eraser = NULL;
-        if ((eraser = g_utf8_strchr (search->resultline->string, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
         if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strrchr (search->resultline->string, -1, L'#')) != NULL) { *eraser = '\0'; }
-        strcat(search->resultline->string, ":");
-        strcat(search->resultline->string, search->scratch_buffer);
+        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
+        strcat(search->result->text, ":");
+        strcat(search->result->text, search->scratch_buffer);
       }
       lw_search_parse_result_string (search);
 
@@ -131,9 +131,9 @@ static gpointer _stream_results_thread (gpointer data)
               {
                 search->total_results++;
                 search->total_relevant_results++;
-                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_HIGH;
-                search->results_high =  g_list_append (search->results_high, search->resultline);
-                search->resultline = lw_resultline_new ();
+                search->result->relevance = LW_RESULT_RELEVANCE_HIGH;
+                search->results_high =  g_list_append (search->results_high, search->result);
+                search->result = lw_result_new ();
               }
               break;
           if (!show_only_exact_matches)
@@ -143,9 +143,9 @@ static gpointer _stream_results_thread (gpointer data)
               {
                 search->total_results++;
                 search->total_irrelevant_results++;
-                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_MEDIUM;
-                search->results_medium =  g_list_append (search->results_medium, search->resultline);
-                search->resultline = lw_resultline_new ();
+                search->result->relevance = LW_RESULT_RELEVANCE_MEDIUM;
+                search->results_medium =  g_list_append (search->results_medium, search->result);
+                search->result = lw_result_new ();
               }
               break;
           default:
@@ -153,9 +153,9 @@ static gpointer _stream_results_thread (gpointer data)
               {
                 search->total_results++;
                 search->total_irrelevant_results++;
-                search->resultline->relevance = LW_RESULTLINE_RELEVANCE_LOW;
-                search->results_low = g_list_append (search->results_low, search->resultline);
-                search->resultline = lw_resultline_new ();
+                search->result->relevance = LW_RESULT_RELEVANCE_LOW;
+                search->results_low = g_list_append (search->results_low, search->result);
+                search->result = lw_result_new ();
               }
               break;
           }
@@ -235,30 +235,30 @@ void lw_search_cancel_search (LwSearch *search)
 
 
 //!
-//! @brief Gets a result and removes a LwResultLine from the beginnig of a list of results
-//! @returns a LwResultLine that should be freed with lw_resultline_free
+//! @brief Gets a result and removes a LwResult from the beginnig of a list of results
+//! @returns a LwResult that should be freed with lw_result_free
 //!
-LwResultLine* lw_search_get_result (LwSearch *search)
+LwResult* lw_search_get_result (LwSearch *search)
 {
     g_assert (search != NULL);
 
-    LwResultLine *line;
+    LwResult *line;
 
     lw_search_lock (search);
 
     if (search->results_high != NULL)
     {
-      line = LW_RESULTLINE (search->results_high->data);
+      line = LW_RESULT (search->results_high->data);
       search->results_high = g_list_delete_link (search->results_high, search->results_high);
     }
     else if (search->results_medium != NULL && search->status == LW_SEARCHSTATUS_IDLE)
     {
-      line = LW_RESULTLINE (search->results_medium->data);
+      line = LW_RESULT (search->results_medium->data);
       search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
     }
     else if (search->results_low != NULL && search->status == LW_SEARCHSTATUS_IDLE)
     {
-      line = LW_RESULTLINE (search->results_low->data);
+      line = LW_RESULT (search->results_low->data);
       search->results_low = g_list_delete_link (search->results_low, search->results_low);
     }
     else

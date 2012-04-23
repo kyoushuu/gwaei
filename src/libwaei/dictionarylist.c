@@ -115,6 +115,7 @@ lw_dictionarylist_clear (LwDictionaryList *dil)
 void 
 lw_dictionarylist_reload (LwDictionaryList *dil)
 {
+/*
     //Declarations
     gchar** dictionarylist;
     gchar** pair;
@@ -138,6 +139,7 @@ lw_dictionarylist_reload (LwDictionaryList *dil)
       g_strfreev (pair);
     }
     g_strfreev(dictionarylist);
+*/
 }
 
 
@@ -345,7 +347,8 @@ lw_dictionarylist_get_dictionary_by_idstring (LwDictionaryList *dil, const char*
         for (iter = dil->list; iter != NULL; iter = iter->next)
         {
           dictionary = LW_DICTIONARY (iter->data);
-          FILENAME2= lw_dictionary_get_filename (dictionary);
+          FILENAME2 = lw_dictionary_get_filename (dictionary);
+          type = G_OBJECT_TYPE (dictionary);
           if (g_type_is_a (type, requested_type) && g_ascii_strcasecmp (FILENAME2, filename) == 0)
             break;
           dictionary = NULL;
@@ -415,7 +418,7 @@ lw_dictionarylist_get_total (LwDictionaryList *dil)
 //! @brief Saves the current load order to the preferences
 //
 void 
-lw_dictionarylist_save_order (LwDictionaryList *dil, LwPreferences *pm)
+lw_dictionarylist_save_order (LwDictionaryList *dil, LwPreferences *preferences)
 {
     //Make sure things are sorted and normal
     lw_dictionarylist_sort_and_normalize_order (dil);
@@ -442,7 +445,7 @@ lw_dictionarylist_save_order (LwDictionaryList *dil, LwPreferences *pm)
     atom[i] = NULL;
 
     load_order = g_strjoinv (";", atom);
-    lw_preferences_set_string_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, load_order);
+    lw_preferences_set_string_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, load_order);
 
     //Free the used memory
     g_strfreev (atom); atom = NULL;
@@ -454,9 +457,10 @@ lw_dictionarylist_save_order (LwDictionaryList *dil, LwPreferences *pm)
 //! @brief Loads the load order from the preferences
 //
 void 
-lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
+lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *preferences)
 {
-    if (pm == NULL) return; 
+/*
+    if (preferences == NULL) return; 
 
     char load_order[1000];
     char **load_order_array;
@@ -467,7 +471,7 @@ lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
     LwDictionary *dictionary = NULL;
     int load_position = 0;
   
-    lw_preferences_get_string_by_schema (pm, load_order, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, 1000);
+    lw_preferences_get_string_by_schema (preferences, load_order, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, 1000);
     load_order_array = g_strsplit_set (load_order, ";", dil->max);
 
     for (iter = load_order_array; *iter != NULL; iter++)
@@ -475,8 +479,8 @@ lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
       //Sanity checking
       if (*iter == NULL || **iter == '\0') { 
         fprintf(stderr, "WARNING: failed sanity check 1. Resetting dictionary order prefs.\n");
-        lw_preferences_reset_value_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
-        lw_dictionarylist_load_order (dil, pm);
+        lw_preferences_reset_value_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
+        lw_dictionarylist_load_order (dil, preferences);
         return;
       }
 
@@ -486,8 +490,8 @@ lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
       if (engine_name_array[0] == NULL || engine_name_array[1] == NULL)
       {
         fprintf(stderr, "WARNING: failed sanity check 2. Resetting dictionary order prefs.\n");
-        lw_preferences_reset_value_by_schema (pm, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
-        lw_dictionarylist_load_order (dil, pm);
+        lw_preferences_reset_value_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER);
+        lw_dictionarylist_load_order (dil, preferences);
         return;
       }
 
@@ -509,6 +513,7 @@ lw_dictionarylist_load_order (LwDictionaryList *dil, LwPreferences *pm)
     load_order_array = NULL;
 
     lw_dictionarylist_sort_and_normalize_order (dil);
+*/
 }
 
 

@@ -21,7 +21,7 @@ struct _LwEDictionary {
 };
 
 struct _LwEDictionaryClass {
-  LwDictionary parent_class;
+  LwDictionaryClass parent_class;
 };
 
 //Methods

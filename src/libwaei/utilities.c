@@ -84,7 +84,7 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
         folder = g_build_filename (base, "cache", NULL);
         path = g_build_filename (base, "cache", FILENAME, NULL);
         break;
-      case LW_PATH_CACHE:
+      case LW_PATH_INDEX:
         folder = g_build_filename (base, "index", NULL);
         path = g_build_filename (base, "index", FILENAME, NULL);
         break;
@@ -99,43 +99,6 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
     g_mkdir_with_parents (folder, 0755);
 
     g_free (folder);
-
-    return path;
-}
-
-
-//!
-//! @brief Gets a dictionary folder path for the given engine
-//! @param DICTTYPE A LwDictType to build the base directory structure
-//! @param FILENAME The name to prefix to the directory
-//! @return Returns a constant string that should be freed with g_free
-//!
-gchar* 
-lw_util_build_filename_by_dicttype (const LwDictType DICTTYPE, const char* FILENAME)
-{
-    g_assert (DICTTYPE >= 0 && DICTTYPE < TOTAL_LW_DICTTYPES);
-
-    gchar *path;
-
-    switch (DICTTYPE)
-    {
-      case LW_DICTTYPE_EDICT:
-        path = lw_util_build_filename (LW_PATH_DICTIONARY_EDICT, FILENAME);
-        break;
-      case LW_DICTTYPE_KANJI:
-        path = lw_util_build_filename (LW_PATH_DICTIONARY_KANJI, FILENAME);
-        break;
-      case LW_DICTTYPE_EXAMPLES:
-        path = lw_util_build_filename (LW_PATH_DICTIONARY_EXAMPLES, FILENAME);
-        break;
-      case LW_DICTTYPE_UNKNOWN:
-        path = lw_util_build_filename (LW_PATH_DICTIONARY_UNKNOWN, FILENAME);
-        break;
-      default:
-        g_assert_not_reached ();
-        path = NULL;
-        break;
-    }
 
     return path;
 }
@@ -1232,7 +1195,7 @@ lw_util_get_romaji_atoms_from_string (const char *string)
     *buffer_ptr = '\0';
 
     //Convert the string into an array of strings
-    string_array = g_strsplit (buffer, delimitor, LW_QUERYLINE_MAX_ATOMS);
+    string_array = g_strsplit (buffer, delimitor, -1);
     
     //Cleanup
     free(buffer);
@@ -1296,7 +1259,7 @@ lw_util_get_furigana_atoms_from_string (const char *string)
     *buffer_ptr = '\0';
 
     //Convert the string into an array of strings
-    string_array = g_strsplit (buffer, delimitor, LW_QUERYLINE_MAX_ATOMS);
+    string_array = g_strsplit (buffer, delimitor, -1);
     
     //Cleanup
     free(buffer);

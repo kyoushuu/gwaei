@@ -253,6 +253,25 @@ lw_dictionary_set_load_position (LwDictionary *dictionary, gint load_position)
 }
 
 
+FILE*
+lw_dictionary_open (LwDictionary *dictionary)
+{
+    FILE *file;
+    gchar *uri;
+
+    file = NULL;
+    uri = lw_dictionary_get_uri (dictionary);
+    
+    if (uri != NULL)
+    {
+      file = fopen (uri, "r");
+      g_free (uri); uri = NULL;
+    }
+
+    return file;
+}
+
+
 gchar* 
 lw_dictionary_get_uri (LwDictionary *dictionary)
 {
@@ -298,6 +317,17 @@ lw_dictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd
 }
 
 
+const gchar*
+lw_dictionary_get_filename (LwDictionary *dictionary)
+{
+    LwDictionaryPrivate *priv;
+
+    priv = dictionary->priv;
+
+    return priv->filename;
+}
+
+
 const gchar* 
 lw_dictionary_get_typename (LwDictionary *dictionary)
 {
@@ -313,25 +343,15 @@ lw_dictionary_get_typename (LwDictionary *dictionary)
 }
 
 
-const gchar*
-lw_dictionary_get_filename (LwDictionary *dictionary)
-{
-    LwDictionaryPrivate *priv;
-
-    priv = dictionary->priv;
-
-    return priv->filename;
-}
-
-
 //!
 //! @brief Parses the dicttype from a string
 //! @param ENGINENAME The LwDictType in string form
 //! @returns A LwDictType value or -1 if it is invalid
 //!
-LwDictType 
-lw_util_get_dicttype_from_string (const char *ENGINENAME)
+GType
+lw_dictionary_get_type_from_typename (const char *TYPENAME)
 {
+/*
   //Declarations
   char *lower;
   LwDictType engine;
@@ -343,6 +363,7 @@ lw_util_get_dicttype_from_string (const char *ENGINENAME)
   if (strcmp(lower, "edict") == 0)
   {
     engine = LW_DICTTYPE_EDICT;
+    engine = g_type_from_name ()
   }
   else if (strcmp(lower, "kanji") == 0)
   {
@@ -366,6 +387,27 @@ lw_util_get_dicttype_from_string (const char *ENGINENAME)
   lower = NULL;
 
   return engine;
+*/
+  return 0;
 }
 
 
+//!
+//! @brief Comparison function that should be moved to the LwSearch file when it matures
+//! @param item A LwSearch to get search information from
+//! @param RELEVANCE A LwRelevance
+//! @returns Returns true according to the relevance level
+//!
+gboolean 
+lw_dictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
+{
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+
+    LwDictionaryClass *klass;
+
+    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+
+    g_return_val_if_fail (klass->compare != NULL, FALSE);
+
+    return klass->compare (dictionary, query, result, RELEVANCE);
+}

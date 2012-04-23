@@ -672,6 +672,7 @@ lw_io_unzip_file (char *SOURCE_PATH, LwIoProgressCallback cb, gpointer data, GEr
 char** 
 lw_io_get_dictionary_file_list (const int MAX)
 {
+/*
     //Declarations and initializations
     LwDictType type;
     GDir *dir;
@@ -703,6 +704,8 @@ lw_io_get_dictionary_file_list (const int MAX)
     atoms[i] = NULL;
 
     return atoms;
+*/
+    return NULL;
 }
 
 

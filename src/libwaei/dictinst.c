@@ -182,15 +182,15 @@ lw_dictinst_free (LwDictInst* di)
 //!
 void 
 lw_dictinst_init (LwDictInst *di,
-                       const char* filename,
-                       const char* shortname,
-                       const char* longname,
-                       const char* description,
-                       const char* source_uri,
-                       const LwDictType DICTTYPE,
-                       const LwCompression COMPRESSION,
-                       const LwEncoding ENCODING,
-                       gboolean split, gboolean merge, gboolean builtin)
+                  const char* filename,
+                  const char* shortname,
+                  const char* longname,
+                  const char* description,
+                  const char* source_uri,
+                  const LwDictType DICTTYPE,
+                  const LwCompression COMPRESSION,
+                  const LwEncoding ENCODING,
+                  gboolean split, gboolean merge, gboolean builtin)
 {
     //Declarations
     int i;

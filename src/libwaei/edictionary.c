@@ -45,6 +45,7 @@ static gchar* lw_edictionary_get_uri (LwDictionary*);
 static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
 static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_edictionary_get_typename (LwDictionary*);
+static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
 {
@@ -118,6 +119,7 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->parse_result = lw_edictionary_parse_result;
     dictionary_class->get_uri = lw_edictionary_get_uri;
     dictionary_class->get_typename = lw_edictionary_get_typename;
+    dictionary_class->compare = lw_edictionary_compare;
 }
 
 
@@ -529,6 +531,7 @@ lw_edictionary_get_typename (LwDictionary *dictionary)
 gchar**
 lw_edictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
 {
+/*
     const gchar *TEXT;
     gchar *output;
     GUnicodeScript script, next_script;
@@ -556,6 +559,7 @@ lw_edictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
     japanese_normalization (verb forms etc)
     furigana_romaji_conversion
     english_normalization (verb forms etc)
+*/
 
     
 /* 
@@ -578,6 +582,74 @@ lw_edictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
       g_free (output); output = NULL;
     }
 */
+    return NULL;
 }
 
+
+static gboolean 
+lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
+{
+/*
+    //Declarations
+    int j;
+    GRegex *re;
+    GRegex ***iter;
+
+    //Compare kanji atoms
+    if (result->kanji_start != NULL)
+    {
+      for (iter = query->re_kanji; *iter != NULL && **iter != NULL; iter++)
+      {
+        re = (*iter)[RELEVANCE];
+        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) break;
+      }
+      if (query->re_kanji[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
+    }
+
+    //Compare furigana atoms
+    if (result->furigana_start != NULL)
+    {
+      for (iter = query->re_furi; *iter != NULL && **iter != NULL; iter++)
+      {
+        re = (*iter)[RELEVANCE];
+        if (g_regex_match (re, result->furigana_start, 0, NULL) == FALSE) break;
+      }
+      if (query->re_furi[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
+    }
+
+    if (result->kanji_start != NULL)
+    {
+      for (iter = query->re_furi; *iter != NULL && **iter != NULL; iter++)
+      {
+        re = (*iter)[RELEVANCE];
+        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) break;
+      }
+      if (query->re_furi[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
+    }
+
+
+    //Compare romaji atoms
+    for (j = 0; result->def_start[j] != NULL; j++)
+    {
+      for (iter = query->re_roma; *iter != NULL && **iter != NULL; iter++)
+      {
+        re = (*iter)[RELEVANCE];
+        if (g_regex_match (re, result->def_start[j], 0, NULL) == FALSE) break;
+      }
+      if (query->re_roma[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
+    }
+
+    //Compare mix atoms
+    if (result->string != NULL)
+    {
+      for (iter = query->re_mix; *iter != NULL && **iter != NULL; iter++)
+      {
+        re = (*iter)[RELEVANCE];
+        if (g_regex_match (re, result->string, 0, NULL) == FALSE) break;
+      }
+      if (query->re_roma[0][RELEVANCE] != NULL && *iter == NULL) return TRUE;
+    }
+*/
+    return FALSE;
+}
 
