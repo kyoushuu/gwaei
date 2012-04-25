@@ -1411,3 +1411,68 @@ lw_util_collapse_string (const gchar *text)
     return buffer;
 }
 
+
+gchar*
+lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
+{
+		//Declarations
+		gchar *buffer;
+		gint length;
+		const gchar *source_ptr;
+		gchar *target_ptr;
+		gunichar c;
+		gboolean is_space;
+
+		//Initializations
+		length = 0;
+
+		for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
+		{
+			if (g_unichar_isspace(g_utf8_get_char (source_ptr)))
+			{
+				length++;
+			}
+		}
+
+		buffer = g_new (gchar, strlen(TEXT) + (strlen(DELIMITOR) * length) + 1);
+
+		if (buffer != NULL)
+		{
+			for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
+			{
+				c = g_utf8_get_char (source_ptr);
+				is_space = g_unichar_isspace (c);
+
+				if (is_space)
+				{
+					strcpy(target_ptr, DELIMITOR);
+					target_ptr += strlen(target_ptr);
+				}
+				else
+				{
+					target_ptr += g_unichar_to_utf8 (c, target_ptr);
+					*target_ptr = '\0';
+				}
+			}
+		}
+
+		return buffer;
+}
+
+
+gchar*
+lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
+{
+		gchar *buffer;
+
+		length = (strlen(text) * (strlen(DELIMITOR)) + 1) + 1
+		buffer = g_new (gchar, length);
+
+		//WORK
+
+		length = strlen(buffer) + 1;
+		buffer = g_realloc (buffer, length);
+
+		return buffer;
+}
+
