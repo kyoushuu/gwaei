@@ -7,7 +7,7 @@ datadir = @datadir@
 DEFINITIONS =-DDATADIR2=\"$(datadir)\" -DGWAEI_LOCALEDIR=\"$(GWAEI_LOCALEDIR)\" -DG_SEAL_ENABLE -Wall 
 
 lib_LTLIBRARIES =libwaei.la
-libwaei_la_SOURCES =libwaei.c dictionary.c edictionary.c kanjidictionary.c exampledictionary.c unknowndictionary.c dictionarylist.c query.c engine.c engine-data.c utilities.c io.c regex.c search.c history.c result.c preferences.c vocabularylist.c vocabularyitem.c
+libwaei_la_SOURCES =libwaei.c dictionary.c edictionary.c kanjidictionary.c exampledictionary.c unknowndictionary.c dictionarylist.c query.c engine.c engine-data.c utilities.c io.c regex.c regexgroup.c search.c history.c result.c preferences.c vocabularylist.c vocabularyitem.c
 libwaei_la_LDFLAGS =-version-info $(LIBRARY_VERSION)  $(LIBWAEI_LIBS) $(MECAB_LIBS)
 libwaei_la_CPPFLAGS = $(LIBWAEI_CFLAGS) -I$(top_srcdir)/src/libwaei/include $(DEFINITIONS) 
 

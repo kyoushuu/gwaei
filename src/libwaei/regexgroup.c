@@ -1,4 +1,6 @@
+#include <glib.h>
 
+#include <libwaei/regexgroup.h>
 
 LwReGroup*
 lw_regroup_new ()

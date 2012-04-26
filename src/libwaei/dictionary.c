@@ -298,6 +298,12 @@ lw_dictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar
 
     g_return_val_if_fail (klass->parse_query != NULL, FALSE);
 
+    if (query->text != NULL) g_free (query->text);
+    query->text = g_strdup (TEXT);
+
+    lw_query_init_tokens (query);
+    lw_query_init_regexgroup (query);
+
     return klass->parse_query (dictionary, query, TEXT, error);
 }
 

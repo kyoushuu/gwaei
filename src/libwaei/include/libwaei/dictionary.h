@@ -27,7 +27,7 @@ struct _LwDictionary {
 struct _LwDictionaryClass {
   GObjectClass parent_class;
   gchar*   (*get_uri) (LwDictionary *dictionary);
-  gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT);
+  gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   const gchar* (*get_typename) (LwDictionary *dictionary);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
@@ -45,7 +45,7 @@ void lw_dictionary_set_load_position (LwDictionary*, gint);
 
 const gchar* lw_dictionary_get_filename (LwDictionary*);
 const gchar* lw_dictionary_get_typename (LwDictionary*);
-gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*);
+gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 gboolean lw_dictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 size_t lw_dictionary_get_length (LwDictionary*);
 

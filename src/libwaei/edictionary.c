@@ -47,6 +47,28 @@ static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_edictionary_get_typename (LwDictionary*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
+const static gchar *kanji_high_prefix = "^(無|不|非|お|御|)(";
+const static gchar *kanji_high_suffix = ")";
+const static gchar *kanji_medium_prefix = "^(お|を|に|で|は|と|)(";
+const static gchar *kanji_medium_suffix = ")(で|が|の|を|に|で|は|と|$)";
+const static gchar *kanji_low_prefix = "(";
+const static gchar *kanji_low_suffix = ")";
+
+const static gchar *furigana_high_prefix = "^(お|)(";
+const static gchar *furigana_high_suffix = ")$";
+const static gchar *furigana_medium_prefix = "(^お|を|に|で|は|と)(";
+const static gchar *furigana_medium_suffix = ")(で|が|の|を|に|で|は|と|$)";
+const static gchar *furigana_low_prefix = "(";
+const static gchar *furigana_low_suffix = ")";
+
+const static gchar *romaji_high_prefix = "(^|\\)|/|^to |\\) )(";
+const static gchar *romaji_high_suffix = ")(\\(|/|$|!| \\()";
+const static gchar *romaji_medium_prefix = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(";
+const static gchar *romaji_medium_suffix = ")(( \\([^/]+\\)/)|(/))";
+const static gchar *romaji_low_prefix = "(";
+const static gchar *romaji_low_suffix = ")";
+
+
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
 {
     g_return_val_if_fail (FILENAME != NULL, NULL);
@@ -145,12 +167,6 @@ lw_edictionary_get_uri (LwDictionary *dictionary)
 static gchar**
 lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 {
-    if (query->tokenlist != NULL)
-    {
-      g_strfreev (query->tokenlist);
-      query->tokenlist = NULL;
-    }
-
     //Declarations
     gchar *text;
     gchar *temp, gchar *delimited
@@ -190,71 +206,78 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 
 
 static void
-lw_edicitonary_build_kanji_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
+lw_edictionary_build_kanji_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
 {
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (error != NULL);
     if (error != NULL && *error != NULL) return;
-
-    if (query->regroup[LW_QUERY_REGEX_TYPE_KANJI] != NULL)
-    {
-      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_KANJI]);
-      query->regroup[LW_QUERY_REGEX_TYPE_KANJI] = NULL;
-    }
 
     //Declarations
     GList* tokenlist;
     GList *link;
     gchar *text;
     GRegex *regex;
-    LwReGroup *regroup;
+    LwRegexGroup *regexgroup;
+    gboolean errored;
 
     //Initializations
-    regroup = lw_regroup_new ();
+    regexgroup = lw_regexgroup_new ();
     tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_KANJI];
+    errored = FALSE;
 
-    for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
+    for (link = tokenlist; link != NULL && !errored; link = link->next)
     {
       text = (gchar*) link->data;
 
-      regex = g_regex_new ();
-      regroup->high = g_list_append (regroup->high, regex);
-
-      regex = g_regex_new ();
-      regroup->medium = g_list_append (regroup->medium, regex);
-
-      regex = g_regex_new ();
-      regroup->low = g_list_append (regroup->low, regex);
-
-      if (japanese_morphology)
+      if (text != NULL)
       {
-        regex = g_regex_new ();
-        regroup->medium = g_list_append (regroup->low, regex);
+        regex = lw_regex_new (kanji_high_prefix, text, kanji_high_suffix, error)
+        if (regex != NULL) regexgroup->high = g_list_append (regexgroup->high, regex);
+
+        regex = lw_regex_new (kanji_medium_prefix, text, kanji_medium_suffix, error)
+        if (regex != NULL) regexgroup->medium = g_list_append (regexgroup->medium, regex);
+
+        regex = lw_regex_new (kanji_low_prefix, text, kanji_low_suffix, error)
+        if (regex != NULL) regexgroup->low = g_list_append (regexgroup->low, regex);
+
+        if (get_japanese_morphology)
+        {
+          regex = lw_regex_new (kanji_medium_prefix, text, kanji_medium_suffix, error)
+          regexgroup->medium = g_list_append (regexgroup->low, regex);
+        }
       }
+
+      if (error != NULL && *error != NULL) errored = TRUE;
     }
 
-    query->regroup[LW_QUERY_REGEX_TYPE_KANJI] = regroup;
+    query->regexgroup[LW_QUERY_REGEX_TYPE_KANJI] = regexgroup;
 }
 
 
 static void
 lw_edicitonary_build_furigana_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
 {
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (error != NULL);
     if (error != NULL && *error != NULL) return;
-
-    if (query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] != NULL)
-    {
-      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA]);
-      query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] = NULL;
-    }
 
     //Declarations
     GList* tokenlist;
     GList *link;
     gchar *text;
     GRegex *regex;
-    LwReGroup *regroup;
+    LwRegexGroup *regexgroup;
 
     //Initializations
-    regroup = lw_regroup_new ();
+    regexgroup = lw_regexgroup_new ();
     tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA];
 
     for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
@@ -262,47 +285,47 @@ lw_edicitonary_build_furigana_regex (LwEDictionary *dictionary, LwQuery *query, 
       text = (gchar*) link->data;
 
       regex = g_regex_new ();
-      regroup->high = g_list_append (regroup->high, regex);
+      regexgroup->high = g_list_append (regexgroup->high, regex);
 
       regex = g_regex_new ();
-      regroup->medium = g_list_append (regroup->medium, regex);
+      regexgroup->medium = g_list_append (regexgroup->medium, regex);
 
       regex = g_regex_new ();
-      regroup->low = g_list_append (regroup->low, regex);
+      regexgroup->low = g_list_append (regexgroup->low, regex);
 
       if (japanese_morphology)
       if (hira_kata_conv)
       if (kata_hira_conv)
       {
         regex = g_regex_new ();
-        regroup->medium = g_list_append (regroup->low, regex);
+        regexgroup->medium = g_list_append (regexgroup->low, regex);
       }
     }
 
-    query->regroup[LW_QUERY_REGEX_TYPE_FURIGANA] = regroup;
+    query->regexgroup[LW_QUERY_REGEX_TYPE_FURIGANA] = regexgroup;
 }
 
 
 static void
 lw_edicitonary_build_romaji_regex (LwEDictionary *dictionary, LwQuery *query, GError **error)
 {
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (error != NULL);
     if (error != NULL && *error != NULL) return;
-
-    if (query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] != NULL)
-    {
-      lw_regroup_free (query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI]);
-      query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] = NULL;
-    }
 
     //Declarations
     GList* tokenlist;
     GList *link;
     gchar *text;
     GRegex *regex;
-    LwReGroup *regroup;
+    LwRegexGroup *regexgroup;
 
     //Initializations
-    regroup = lw_regroup_new ();
+    regexgroup = lw_regexgroup_new ();
     tokenlist = tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI];
 
     for (link = tokenlist; link != NULL && (error == NULL || *error == NULL); link = link->next)
@@ -310,43 +333,41 @@ lw_edicitonary_build_romaji_regex (LwEDictionary *dictionary, LwQuery *query, GE
       text = (gchar*) link->data;
 
       regex = g_regex_new ();
-      regroup->high = g_list_append (regroup->high, regex);
+      regexgroup->high = g_list_append (regexgroup->high, regex);
 
       regex = g_regex_new ();
-      regroup->medium = g_list_append (regroup->medium, regex);
+      regexgroup->medium = g_list_append (regexgroup->medium, regex);
 
       regex = g_regex_new ();
-      regroup->low = g_list_append (regroup->low, regex);
+      regexgroup->low = g_list_append (regexgroup->low, regex);
 
       if (english_morphology)
       if (romaji_furi_conv)
       {
         regex = g_regex_new ();
-        regroup->medium = g_list_append (regroup->low, regex);
+        regexgroup->medium = g_list_append (regexgroup->low, regex);
       }
     }
 
-    query->regroup[LW_QUERY_REGEX_TYPE_ROMAJI] = regroup;
+    query->regexgroup[LW_QUERY_REGEX_TYPE_ROMAJI] = regexgroup;
 }
 
 
 static gboolean 
 lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (TEXT != NULL);
+    g_return_if_fail (error != NULL);
     if (error != NULL && *error != NULL) return;
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
-
-    //Free previously used memory
-    lw_query_clean (query);
-
-    if (query->text != NULL)
-    {
-      g_free (query->text);
-    }
-    query->text = g_strdup (TEXT);
-  
+ 
     lw_edictionary_tokenize_query (dictionary, query);
 
     lw_edictionary_build_kanji_regex (dictionary, query, error);

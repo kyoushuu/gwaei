@@ -1415,55 +1415,64 @@ lw_util_collapse_string (const gchar *text)
 gchar*
 lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 {
+    //Sanity check
+    g_return_val_if_fail (NULL, DELIMITOR != NULL && TEXT != NULL);
+
     //Declarations
     gchar *buffer;
-    gint length;
+    gint count;
     const gchar *source_ptr;
     gchar *target_ptr;
     GUnicodeScript this_script, previous_script;
     gunichar c;
+    gboolean script_changed;
+    gint delimitor_length;
 
     //Initializations
-    length = 0;
+    count = 0;
+    delimitor_length = strlen (DELIMITOR);
     this_script = previous_script = G_UNICODE_SCRIPT_INVALID_CODE;
     for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
     {
       c = g_utf8_get_char (source_ptr);
       this_script = unichar_get_script (c);
+      script_changed = (this_script != prev_script &&
+                        prev_script != G_UNICODE_SCRIPT_INVALID_CODE &&
+					              this_script != G_UNICODE_SCRIPT_COMMON &&
+                        prev_script != G_UNICODE_SCRIPT_COMMON);
 
-      if (this_script != prev_script && prev_script != G_UNICODE_SCRIPT_INVALID_CODE && 
-					this_script != G_UNICODE_SCRIPT_COMMON && prev_script != G_UNICODE_SCRIPT_COMMON)
+      if (script_changed)
       {
-      }
-      else
-      {
-				length++;
+				count++;
       }
 
       prev_script = this_script;
     }
-    buffer = g_new (gchar, strlen(TEXT) + (strlen(DELIMITOR) * length) + 1);
-    target_ptr = buffer;
 
+    buffer = g_new (gchar, strlen(TEXT) + (delimitor_length * count) + 1);
 		if (buffer != NULL)
 		{
+      target_ptr = buffer;
 			*buffer = '\0';
 			this_script = previous_script = G_UNICODE_SCRIPT_INVALID_CODE;
 			for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
 			{
 				c = g_utf8_get_char (source_ptr);
 				this_script = unichar_get_script (c);
+        script_changed = (this_script != prev_script &&
+                          prev_script != G_UNICODE_SCRIPT_INVALID_CODE &&
+                          this_script != G_UNICODE_SCRIPT_COMMON &&
+                          prev_script != G_UNICODE_SCRIPT_COMMON);
 
-				if (this_script != prev_script && prev_script != G_UNICODE_SCRIPT_INVALID_CODE && 
-						this_script != G_UNICODE_SCRIPT_COMMON && prev_script != G_UNICODE_SCRIPT_COMMON)
+        if (script_changed)
 				{
-					target_ptr += g_unichar_to_utf8 (c, target_ptr);
-					*target_ptr = '\0';
+					strcpy(target_ptr, DELIMITOR);
+					target_ptr += delimitor_length;
 				}
 				else
 				{
-					strcpy(target_ptr, DELIMITOR);
-					target_ptr += strlen(DELIMITOR);
+					target_ptr += g_unichar_to_utf8 (c, target_ptr);
+					*target_ptr = '\0';
 				}
 
 				prev_script = this_script;
@@ -1477,23 +1486,34 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 gchar*
 lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 {
+    //Sanity check
+    g_return_val_if_fail (NULL, DELIMITOR != NULL && TEXT != NULL);
+
     //Declarations
     gchar *buffer;
-    gint length;
+    gint count;
     const gchar *source_ptr;
     gchar *target_ptr;
     gunichar c;
+    gint delimitor_length;
+    gboolean inserted_delimitor;
+    gboolean is_whitespace;
 
     //Initializations
-    length = 0;
+    count = 0;
+    delimitor_length = strlen(DELIMITOR);
+    inserted_delimitor = FALSE;
     for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
     {
-      if (g_unichar_isspace(g_utf8_get_char (source_ptr)))
+      c = g_utf8_get_char (source_ptr);
+      is_whitespace = g_unichar_isspace(c);
+
+      if (is_whitespace)
       {
-        length++;
+        count++;
       }
     }
-    buffer = g_new (gchar, strlen(TEXT) + (strlen(DELIMITOR) * length) + 1);
+    buffer = g_new (gchar, strlen(TEXT) + (delimitor_length * count) + 1);
     target_ptr = buffer;
 
     //Create the delimited string
@@ -1502,20 +1522,44 @@ lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
       for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
       {
         c = g_utf8_get_char (source_ptr);
+        is_whitespace = g_unichar_isspace(c);
 
-        if (g_unichar_isspace (c))
+        if (is_whitespace && !inserted_delimitor)
         {
           strcpy(target_ptr, DELIMITOR);
-          target_ptr += strlen(target_ptr);
+          target_ptr += delimitor_length;
+          inserted_delimitor = TRUE;
         }
-        else
+        else if (!is_whitespace)
         {
           target_ptr += g_unichar_to_utf8 (c, target_ptr);
           *target_ptr = '\0';
+          inserted_delimitor = FALSE;
         }
       }
     }
 
     return buffer;
+}
+
+
+GRegex*
+lw_regex_new (const gchar *PREFIX, const gchar *EXPRESSION, const gchar *SUFFIX, GError **error)
+{
+    //Declarations
+    GRegex *regex;
+    gchar *expression;
+
+    //Initializations
+    expression = g_strjoin ("", PREFIX, EXPRESSION, SUFFIX, NULL);
+    regex = NULL;
+
+    if (expression != NULL)
+    {
+      regex = g_regex_new (expression,  (G_REGEX_CASELESS | G_REGEX_OPTIMIZE), 0, error);
+      g_free (expression); expression = NULL;
+    }
+
+    return regex;
 }
 

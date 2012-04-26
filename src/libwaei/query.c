@@ -32,12 +32,6 @@
 #include <libwaei/libwaei.h>
 
 
-LwRegexGroup* lw_regex_group_new (void);
-GRegex* lw_regex_group_get_regex (LwRegexGroup *group, LwRelevance relevance);
-void lw_regex_group_set_regex (LwRegexGroup *group, LwRelevance relevance, GRegex *regex);
-void lw_regex_group_free (LwRegexGroup *group);
-
-
 LwQuery* 
 lw_query_new ()
 {
@@ -57,31 +51,92 @@ lw_query_free (LwQuery* query)
     lw_query_clean (query);
     if (query->text != NULL) g_free (query->text); query->text = NULL;
 
-    foreach free regroups
-
     g_free (query);
+}
+
+
+void
+lw_query_init_tokens (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    lw_query_clear_tokens (query);
+
+    query->tokens = g_new0 (LwRegexGroup*, TOTAL_LW_QUERY_TOKEN_TYPES);
+}
+
+
+static void 
+lw_query_clear_tokens (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    //Declarations
+    GList *iter;
+    gint i;
+
+    if (query->tokens != NULL)
+    {
+      for (i = 0; i < TOTAL_LW_QUERY_TOKEN_TYPES; i++)
+      {
+        if (query->tokens[i] != NULL)
+        {
+          g_list_foreach (query->tokens[i], (GFunc) g_free, NULL);
+          query->tokens[i] = NULL; 
+        }
+      }
+      g_free (query->tokens); query->tokens = NULL;
+    }
+}
+
+
+static void 
+lw_query_clear_regexgroup (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    //Declarations
+    GList *iter;
+    gint i;
+
+    if (query->regexgroup != NULL)
+    {
+      for (i = 0; i < TOTAL_LW_QUERY_REGEX_TYPES; i++)
+      {
+        if (query->regexgroup[i] != NULL)
+        {
+          lw_regexgroup_free (query->regexgroup[i]);
+          query->regexgroup[i] = NULL; 
+        }
+      }
+      g_free (query->regexgroup); query->regexgroup = NULL;
+    }
+}
+
+
+void
+lw_query_init_regexgroup (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    lw_query_clear_regexgroup (query);
+
+    query->regexgroup = g_new0 (LwRegexGroup*, TOTAL_LW_QUERY_REGEX_TYPES);
 }
 
 
 void 
 lw_query_clean (LwQuery* query)
 {
+    //Sanity check
     g_return_if_fail (query != NULL);
 
-    GList *iter;
-    gint i;
-
-    if (query->regexlist != NULL)
-    {
-      for (i = 0; i != TOTAL_LW_QUERY_REGEX; i++)
-      {
-        for (iter = query->regexlist[i]; iter != NULL; iter = iter->next)
-        {
-          g_list_free_full (query->regexlist[i], (GDestroyNotify) g_regex_unref); query->regexlist[i] = NULL;
-        }
-      }
-      g_free (query->regexlist); query->regexlist = NULL;
-    }
+    lw_query_clear_tokens (query);
+    lw_query_clear_regexgroup (query);
 
     query->parsed = FALSE;
 }
@@ -102,122 +157,6 @@ lw_query_is_parsed (LwQuery *query)
 
 
 /*
-//This code should spit the code where there is a space,
-//the script type changes (japanese to english, english to japanese)
-//or mecab says to split for a node
-static gchar**
-lw_query_build_atoms (LwQuery *query)
-{
-    gchar** atoms;
-
-    if (query->split_japanese_word_breaks)
-    if (query->split_english_word_breaks)
-
-    atoms = g_strsplit(text, " ", -1);
-
-    return atoms;
-}
-
-
-static GList*
-lw_query_build_kanji_regex_list (LwQuery *query)
-{
-    GString *text;
-
-    gchar **atoms = lw_query_build_atoms (query);
-
-    
-    for (i = 0; atoms != NULL && atoms[i] != NULL; i++)
-    {
-      if (lw_util_is_kanji_ish_str (atoms[i]))
-      {
-        switch (query->type)
-        {
-          case LW_DICTTYPE_EDICT:
-            query->regexlist[LW_QUERY_KANJI_REGEX] = lw_parser_edict_build_kanji_regexlist (atoms[i]);
-            break;
-          case LW_DICTTYPE_KANJI:
-            query->regexlist[LW_QUERY_KANJI_REGEX] = lw_parser_kanjidict_build_kanji_regexlist (atoms[i]);
-            break;
-          case LW_DICTTYPE_NAMES:
-            query->regexlist[LW_QUERY_KANJI_REGEX] = lw_parser_namesdict_build_kanji_regexlist (atoms[i]);
-            break;
-          default;
-            query->regexlist[LW_QUERY_KANJI_REGEX] = lw_parser_unknowndict_build_kanji_regexlist (atoms[i]);
-            break;
-        }
-      }
-      
-      if (query->create_japanese_stem)
-      {
-      }
-    }
-}
-
-
-static GList*
-lw_query_build_furigana_regex_list (LwQuery *query)
-{
-    GString *text;
-
-    gchar **atoms = lw_query_build_atoms (query);
-
-    for (i = 0; atoms != NULL && atoms[i] != NULL; i++)
-    {
-      if (query->romaji_to_furigana && lw_util_is_romaji_str (atoms[i]))
-      {
-      }
-      else if (lw_util_is_furigana_str (atoms[i]))
-      {
-      }
-
-      if (query->create_japanese_stem)
-      {
-      }
-    }
-}
-
-
-static GList*
-lw_query_build_romaji_regex_list (LwQuery *query)
-{
-    GString *text;
-
-    gchar **atoms = lw_query_build_atoms (query);
-
-    for (i = 0; atoms != NULL && atoms[i] != NULL; i++)
-    {
-      if (lw_util_is_romaji_str (atoms[i]))
-      {
-      }
-
-      if (query->create_english_stem)
-      {
-      }
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #ifdef WITH_MECAB
 //!
 //! @brief Construct a regexp for getting the morphologically deduced base forms of words
@@ -357,47 +296,4 @@ static GRegex*** _compile_and_allocate_number_search_regex (const char* subject,
 
 
 */
-
-
-/*
-This is a sentence sakana 日本語が難しい
-1) it should look for the original
-2) it should look for each of the smallest tokens
-*/
-
-
-//!
-//! @brief Inserts into the string separators to denote tokens where the script changes (english/japanese)
-//!
-static GList* 
-lw_query_tolkenize_script_changes (LwQuery *query, const gchar *SEPARATOR)
-{
-/*
-    GList *iter;
-    GList *new_list;
-
-    query->tokens = new_list;
-*/
-    return NULL;
-}
-
-
-//!
-//! @brief Inserts into the string separators to denote tokens where whitespace occurs
-//!
-static GList* 
-lw_query_tolkenize_whitespace (LwDictionary *dictionary, gchar *TEXT, const gchar *SEPARATOR)
-{
-    return NULL;
-}
-
-
-//!
-//! @brief uses morphology to guess where tokens should be delimited
-//!
-static GList*
-lw_query_tolkenize_japanese_morphology (LwDictionary *dictionary, gchar *text, const gchar *separator)
-{
-    return NULL;
-}
 
