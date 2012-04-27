@@ -96,17 +96,17 @@ lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwPreferences *pref
 //! All of the various interally allocated memory in the LwSearch is freed.
 //! The file descriptiors and such are made sure to also be closed.
 //!
-//! @param item The LwSearch to have it's memory freed.
+//! @param search The LwSearch to have it's memory freed.
 //!
 void 
-lw_search_free (LwSearch* item)
+lw_search_free (LwSearch* search)
 {
     //Sanity check
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
-    lw_search_deinit (item);
+    lw_search_deinit (search);
 
-    free (item);
+    free (search);
 }
 
 
@@ -114,7 +114,7 @@ lw_search_free (LwSearch* item)
 //! @brief Used to initialize the memory inside of a new LwSearch
 //!        object.  Usually lw_search_new calls this for you.  It is also 
 //!        used in class implimentations that extends LwSearch.
-//! @param item A LwSearch to initialize the inner variables of
+//! @param search A LwSearch to initialize the inner variables of
 //! @param QUERY The text to be search for
 //! @param dictionary The LwDictionary object to use
 //! @param TARGET The widget to output the results to
@@ -122,30 +122,16 @@ lw_search_free (LwSearch* item)
 //! @param error A GError to place errors into or NULL
 //!
 void 
-lw_search_init (LwSearch *item, const gchar* TEXT, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
+lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
 {
-    item->results_high = NULL;
-    item->results_medium = NULL;
-    item->results_low = NULL;
-    item->thread = NULL;
-    g_mutex_init (&item->mutex);
+    memset(search, 0, sizeof(LwSearch));
 
-    //Set the internal pointers to the correct global variables
-    item->fd = NULL;
-    item->status = LW_SEARCHSTATUS_IDLE;
-    item->scratch_buffer = NULL;
-    item->dictionary = dictionary;
-    item->data = NULL;
-    item->free_data_func = NULL;
-    item->total_relevant_results = 0;
-    item->total_irrelevant_results = 0;
-    item->total_results = 0;
-    item->current = 0L;
-    item->result = NULL;
-    item->query = lw_query_new ();
-    item->history_relevance_idle_timer = 0;
+    g_mutex_init (&search->mutex);
+    search->status = LW_SEARCHSTATUS_IDLE;
+    search->dictionary = dictionary;
+    search->query = lw_query_new ();
 
-    lw_dictionary_parse_query (item->dictionary, item->query, TEXT, error);
+    lw_dictionary_parse_query (search->dictionary, search->query, TEXT, error);
 }
 
 
@@ -153,43 +139,43 @@ lw_search_init (LwSearch *item, const gchar* TEXT, LwDictionary* dictionary, LwP
 //! @brief Used to free the memory inside of a LwSearch object.
 //!         Usually lw_search_free calls this for you.  It is also used
 //!         in class implimentations that extends LwSearch.
-//! @param item The LwSearch object to have it's inner memory freed.
+//! @param search The LwSearch object to have it's inner memory freed.
 //!
 void 
-lw_search_deinit (LwSearch *item)
+lw_search_deinit (LwSearch *search)
 {
-    lw_search_cancel_search (item);
-    lw_search_clear_results (item);
-    lw_search_cleanup_search (item);
-    lw_query_free (item->query);
-    if (lw_search_has_data (item))
-      lw_search_free_data (item);
+    lw_search_cancel_search (search);
+    lw_search_clear_results (search);
+    lw_search_cleanup_search (search);
+    lw_query_free (search->query);
+    if (lw_search_has_data (search))
+      lw_search_free_data (search);
 
-    g_mutex_clear (&item->mutex);
+    g_mutex_clear (&search->mutex);
 }
 
 
 void 
-lw_search_clear_results (LwSearch *item)
+lw_search_clear_results (LwSearch *search)
 {
-    item->total_relevant_results = 0;
-    item->total_irrelevant_results = 0;
-    item->total_results = 0;
+    search->total_relevant_results = 0;
+    search->total_irrelevant_results = 0;
+    search->total_results = 0;
 
-    while (item->results_low != NULL)
+    while (search->results_low != NULL)
     {
-      lw_result_free (LW_RESULT (item->results_low->data));
-      item->results_low = g_list_delete_link (item->results_low, item->results_low);
+      lw_result_free (LW_RESULT (search->results_low->data));
+      search->results_low = g_list_delete_link (search->results_low, search->results_low);
     }
-    while (item->results_medium != NULL)
+    while (search->results_medium != NULL)
     {
-      lw_result_free (LW_RESULT (item->results_medium->data));
-      item->results_medium = g_list_delete_link (item->results_medium, item->results_medium);
+      lw_result_free (LW_RESULT (search->results_medium->data));
+      search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
     }
-    while (item->results_high != NULL)
+    while (search->results_high != NULL)
     {
-      lw_result_free (LW_RESULT (item->results_high->data));
-      item->results_high = g_list_delete_link (item->results_high, item->results_high);
+      lw_result_free (LW_RESULT (search->results_high->data));
+      search->results_high = g_list_delete_link (search->results_high, search->results_high);
     }
 }
 
@@ -202,27 +188,27 @@ lw_search_clear_results (LwSearch *item)
 //! reset to it's initial state, the search status set to
 //! SEARCHING, and the file descriptior is opened.
 //!
-//! @param item The LwSearch to its variables prepared
+//! @param search The LwSearch to its variables prepared
 //! @return Returns false on seachitem prep failure.
 //!
 void  
-lw_search_prepare_search (LwSearch* item)
+lw_search_prepare_search (LwSearch* search)
 {
-    lw_search_clear_results (item);
-    lw_search_cleanup_search (item);
+    lw_search_clear_results (search);
+    lw_search_cleanup_search (search);
 
     //Declarations
 
     //Initializations
-    item->scratch_buffer = (char*) malloc (sizeof(char*) * LW_IO_MAX_FGETS_LINE);
-    item->result = lw_result_new ();
-    item->current = 0L;
-    item->total_relevant_results = 0;
-    item->total_irrelevant_results = 0;
-    item->total_results = 0;
-    item->thread = NULL;
-    item->fd = lw_dictionary_open (LW_DICTIONARY (item->dictionary));
-    item->status = LW_SEARCHSTATUS_SEARCHING;
+    search->scratch_buffer = (char*) malloc (sizeof(char*) * LW_IO_MAX_FGETS_LINE);
+    search->result = lw_result_new ();
+    search->current = 0L;
+    search->total_relevant_results = 0;
+    search->total_irrelevant_results = 0;
+    search->total_results = 0;
+    search->thread = NULL;
+    search->fd = lw_dictionary_open (LW_DICTIONARY (search->dictionary));
+    search->status = LW_SEARCHSTATUS_SEARCHING;
 }
 
 
@@ -232,38 +218,38 @@ lw_search_prepare_search (LwSearch* item)
 //! The file descriptior is closed, various variables are
 //! reset, and the search status is set to IDLE.
 //!
-//! @param item The LwSearch to its state reset.
+//! @param search The LwSearch to its state reset.
 //!
 void 
-lw_search_cleanup_search (LwSearch* item)
+lw_search_cleanup_search (LwSearch* search)
 {
-    if (item->fd != NULL)
+    if (search->fd != NULL)
     {
-      fclose(item->fd);
-      item->fd = NULL;
+      fclose(search->fd);
+      search->fd = NULL;
     }
 
-    if (item->scratch_buffer != NULL)
+    if (search->scratch_buffer != NULL)
     {
-      free(item->scratch_buffer);
-      item->scratch_buffer = NULL;
+      free(search->scratch_buffer);
+      search->scratch_buffer = NULL;
     }
 
-    if (item->result != NULL)
+    if (search->result != NULL)
     {
-      lw_result_free (item->result);
-      item->result = NULL;
+      lw_result_free (search->result);
+      search->result = NULL;
     }
 
-    item->status = LW_SEARCHSTATUS_FINISHING;
+    search->status = LW_SEARCHSTATUS_FINISHING;
 }
 
 
 //!
 //! @brief comparison function for determining if two LwSearchs are equal
-//! @param item1 The first item
-//! @param item2 The second item
-//! @returns Returns true when both items are either the same item or have similar innards
+//! @param item1 The first search
+//! @param item2 The second search
+//! @returns Returns true when both items are either the same search or have similar innards
 //!
 gboolean 
 lw_search_is_equal (LwSearch *item1, LwSearch *item2)
@@ -296,122 +282,122 @@ lw_search_is_equal (LwSearch *item1, LwSearch *item2)
 
 //!
 //! @brief a method for incrementing an internal integer for determining if a result set has worth
-//! @param item The LwSearch to increment the timer on
+//! @param search The LwSearch to increment the timer on
 //!
 void 
-lw_search_increment_history_relevance_timer (LwSearch *item)
+lw_search_increment_history_relevance_timer (LwSearch *search)
 {
-  if (item != NULL && item->history_relevance_idle_timer < LW_HISTORY_TIME_TO_RELEVANCE)
-    item->history_relevance_idle_timer++;
+  if (search != NULL && search->history_relevance_idle_timer < LW_HISTORY_TIME_TO_RELEVANCE)
+    search->history_relevance_idle_timer++;
 }
 
 
 //!
 //! @brief Checks if the relevant timer has passed a threshold
-//! @param item The LwSearch to check for history relevance
+//! @param search The LwSearch to check for history relevance
 //! @param use_idle_timer This variable shoud be set to true if the program does automatic searches so it checks the timer
 //!
 gboolean 
-lw_search_has_history_relevance (LwSearch *item, gboolean use_idle_timer)
+lw_search_has_history_relevance (LwSearch *search, gboolean use_idle_timer)
 {
-  return (item != NULL && 
-          item->total_results > 0 && 
-          (!use_idle_timer || item->history_relevance_idle_timer >= LW_HISTORY_TIME_TO_RELEVANCE));
+  return (search != NULL && 
+          search->total_results > 0 && 
+          (!use_idle_timer || search->history_relevance_idle_timer >= LW_HISTORY_TIME_TO_RELEVANCE));
 }
 
 
 //!
 //! @brief Used to set custom search data (Such as Window or TextView pointers)
-//! @param item The LwSearch to set the data on.  It will free any previous data if it is already set.
+//! @param search The LwSearch to set the data on.  It will free any previous data if it is already set.
 //! @param data The data to set.
 //! @param free_data_func A callback to use to free the data automatically as needed
 //!
 void 
-lw_search_set_data (LwSearch *item, gpointer data, LwSearchDataFreeFunc free_data_func)
+lw_search_set_data (LwSearch *search, gpointer data, LwSearchDataFreeFunc free_data_func)
 {
     //Sanity check
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
-    if (lw_search_has_data (item))
-      lw_search_free_data (item);
+    if (lw_search_has_data (search))
+      lw_search_free_data (search);
 
-    item->data = data;
-    item->free_data_func = free_data_func;
+    search->data = data;
+    search->free_data_func = free_data_func;
 }
 
 
 //!
 //! @brief to retieve custom search data (Such as Window or TextView pointers)
-//! @param item The LwSearch object to retrieve the data on.
+//! @param search The LwSearch object to retrieve the data on.
 //! @returns A generic pointer to the data that should be cast.
 //!
 gpointer 
-lw_search_get_data (LwSearch *item)
+lw_search_get_data (LwSearch *search)
 {
     //Sanity check
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
-    return item->data;
+    return search->data;
 }
 
 
 //!
 //! @brief Frees the data on an LwSearch object if it exists
-//! @param item The LwSearch to free the data on
+//! @param search The LwSearch to free the data on
 //!
 void 
-lw_search_free_data (LwSearch *item)
+lw_search_free_data (LwSearch *search)
 {
     //Sanity check
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
-    if (item->free_data_func != NULL && item->data != NULL)
+    if (search->free_data_func != NULL && search->data != NULL)
     {
-      (item->free_data_func) (item->data);
+      (search->free_data_func) (search->data);
     }
 
-    item->data = NULL;
-    item->free_data_func = NULL;
+    search->data = NULL;
+    search->free_data_func = NULL;
 }
 
 
 //!
 //! @brief Returns true if the LwSearch had its data set
-//! @param item An LwSearch to check for data
+//! @param search An LwSearch to check for data
 //! @returns Returns true if the data is not NULL
 //!
 gboolean 
-lw_search_has_data (LwSearch *item)
+lw_search_has_data (LwSearch *search)
 {
-    g_assert (item != NULL);
+    g_assert (search != NULL);
 
-    return (item->data != NULL && item->free_data_func != NULL);
+    return (search->data != NULL && search->free_data_func != NULL);
 }
 
 
 //!
 //! @brief A wrapper around gmutex made for LwSearch objects
-//! @param item An LwSearch to lock the mutex on
+//! @param search An LwSearch to lock the mutex on
 //!
 void 
-lw_search_lock (LwSearch *item)
+lw_search_lock (LwSearch *search)
 {
-  g_mutex_lock (&item->mutex);
+  g_mutex_lock (&search->mutex);
 }
 
 //!
 //! @brief A wrapper around gmutex made for LwSearch objects
-//! @param item An LwSearch to unlock the mutex on
+//! @param search An LwSearch to unlock the mutex on
 //!
 void 
-lw_search_unlock (LwSearch *item)
+lw_search_unlock (LwSearch *search)
 {
-  g_mutex_unlock (&item->mutex);
+  g_mutex_unlock (&search->mutex);
 }
 
 
 gdouble 
-lw_search_get_progress (LwSearch *item)
+lw_search_get_progress (LwSearch *search)
 {
     //Declarations
     long current;
@@ -423,10 +409,10 @@ lw_search_get_progress (LwSearch *item)
     length = 0L;
     fraction = 0.0;
 
-    if (item != NULL && item->dictionary != NULL && item->status == LW_SEARCHSTATUS_SEARCHING)
+    if (search != NULL && search->dictionary != NULL && search->status == LW_SEARCHSTATUS_SEARCHING)
     {
-      current = item->current;
-      length = lw_dictionary_get_length(LW_DICTIONARY (item->dictionary));
+      current = search->current;
+      length = lw_dictionary_get_length(LW_DICTIONARY (search->dictionary));
 
       if (current > 0L && length > 0L && current != length) 
         fraction = (gdouble) current / (gdouble) length;
@@ -437,22 +423,303 @@ lw_search_get_progress (LwSearch *item)
 
 
 void
-lw_search_set_status (LwSearch *item, LwSearchStatus status)
+lw_search_set_status (LwSearch *search, LwSearchStatus status)
 {
-    lw_search_lock (item);
-    item->status = status;
-    lw_search_unlock (item);
+    lw_search_lock (search);
+    search->status = status;
+    lw_search_unlock (search);
 }
 
 
 LwSearchStatus
-lw_search_get_status (LwSearch *item)
+lw_search_get_status (LwSearch *search)
 {
     LwSearchStatus status;
-    lw_search_lock (item);
-    status = item->status;
-    lw_search_unlock (item);
+    lw_search_lock (search);
+    status = search->status;
+    lw_search_unlock (search);
 
     return status;
 }
+
+
+gboolean
+lw_search_read_line (LwSearch *search)
+{
+    gchar *ptr;
+    ptr = fgets(search->result->text, LW_IO_MAX_FGETS_LINE, search->fd);
+
+    return (ptr != NULL && search->status != LW_SEARCHSTATUS_FINISHING);
+}
+
+
+gboolean 
+lw_search_compare (LwSearch *search, const LwRelevance RELEVANCE)
+{
+    return lw_dictionary_compare (search->dictionary, search->query, search->result, RELEVANCE);
+}
+
+
+//!
+//! @brief Find the relevance of a returned result
+//!
+//! THIS IS A PRIVATE FUNCTION. Function uses the stored relevance regrex
+//! expressions in the LwSearch to get the relevance of a returned result.  It
+//! then returns the answer to the caller in the form of an int.
+//!
+//! @param text a string to check the relevance of
+//! @param search a search search to grab the regrexes from
+//! @return Returns one of the integers: LOW_RELEVANCE, MEDIUM_RELEVANCE, or HIGH_RELEVANCE.
+//!
+static int 
+lw_search_get_relevance (LwSearch *search) {
+    if (lw_search_compare (search, LW_RELEVANCE_HIGH))
+      return LW_RELEVANCE_HIGH;
+    else if (lw_search_compare (search, LW_RELEVANCE_MEDIUM))
+      return LW_RELEVANCE_MEDIUM;
+    else
+      return LW_RELEVANCE_LOW;
+}
+
+
+//!
+//! @brief Preforms the brute work of the search
+//!
+//! THIS IS A PRIVATE FUNCTION. This function returns true until it finishes
+//! searching the whole file.  It works in specified chunks before going back to
+//! the thread to help improve speed.  
+//!
+//! @param data A LwSearch to search with
+//! @return Returns true when the search isn't finished yet.
+//!
+static gpointer 
+lw_search_stream_results_thread (gpointer data)
+{
+    //Declarations
+    LwSearch *search;
+    gboolean show_only_exact_matches;
+
+    //Initializations
+    search = LW_SEARCHITEM (data);
+    show_only_exact_matches = search->exact;
+
+    if (search == NULL || search->fd == NULL) return NULL;
+
+    lw_search_lock (search);
+    search->status = LW_SEARCHSTATUS_SEARCHING;
+
+    //We loop, processing lines of the file until the max chunk size has been
+    //reached or we reach the end of the file or a cancel request is recieved.
+    while (lw_search_read_line (search))
+    {
+      //Give a chance for something else to run
+      lw_search_unlock (search);
+      if (search->status != LW_SEARCHSTATUS_FINISHING && g_main_context_pending (NULL))
+      {
+        g_main_context_iteration (NULL, FALSE);
+      }
+      lw_search_lock (search);
+
+      search->current += strlen(search->result->text);
+
+      //Commented input in the dictionary...we should skip over it
+      if(search->result->text[0] == '#' || g_utf8_get_char(search->result->text) == L'？') 
+      {
+        continue;
+      }
+      else if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
+               fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
+      {
+        search->current += strlen(search->scratch_buffer);
+        char *eraser = NULL;
+        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
+        strcat(search->result->text, ":");
+        strcat(search->result->text, search->scratch_buffer);
+      }
+      lw_search_parse_result_string (search);
+
+
+      //Results match, add to the text buffer
+      if (lw_search_compare (search, LW_RELEVANCE_LOW))
+      {
+        int relevance = lw_search_get_relevance (search);
+        switch(relevance)
+        {
+          case LW_RELEVANCE_HIGH:
+              if (search->total_relevant_results < LW_MAX_HIGH_RELEVENT_RESULTS)
+              {
+                search->total_results++;
+                search->total_relevant_results++;
+                search->result->relevance = LW_RESULT_RELEVANCE_HIGH;
+                search->results_high =  g_list_append (search->results_high, search->result);
+                search->result = lw_result_new ();
+              }
+              break;
+          if (!show_only_exact_matches)
+          {
+            case LW_RELEVANCE_MEDIUM:
+                if (search->total_irrelevant_results < LW_MAX_MEDIUM_IRRELEVENT_RESULTS)
+                {
+                  search->total_results++;
+                  search->total_irrelevant_results++;
+                  search->result->relevance = LW_RESULT_RELEVANCE_MEDIUM;
+                  search->results_medium =  g_list_append (search->results_medium, search->result);
+                  search->result = lw_result_new ();
+                }
+                break;
+            default:
+                if (search->total_irrelevant_results < LW_MAX_LOW_IRRELEVENT_RESULTS)
+                {
+                  search->total_results++;
+                  search->total_irrelevant_results++;
+                  search->result->relevance = LW_RESULT_RELEVANCE_LOW;
+                  search->results_low = g_list_append (search->results_low, search->result);
+                  search->result = lw_result_new ();
+                }
+                break;
+          }
+        }
+      }
+    }
+
+    lw_search_cleanup_search (search);
+
+    lw_search_unlock (search);
+
+    return NULL;
+}
+
+
+//!
+//! @brief Start a dictionary search
+//! @param search a LwSearch argument to calculate results
+//! @param create_thread Whether the search should run in a new thread.
+//! @param exact Whether to show only exact matches for this search
+//!
+void 
+lw_search_start_search (LwSearch *search, gboolean create_thread)
+{
+    GError *error;
+
+    error = NULL;
+
+    lw_search_prepare_search (search);
+    if (create_thread)
+    {
+      search->thread = g_thread_try_new (
+        "libwaei-search",
+        (GThreadFunc) lw_search_stream_results_thread, 
+        (gpointer) search, 
+        &error
+      );
+      if (search->thread == NULL)
+      {
+        g_warning ("Thread Creation Error: %s\n", error->message);
+        g_error_free (error);
+        error = NULL;
+      }
+    }
+    else
+    {
+      search->thread = NULL;
+      lw_search_stream_results_thread ((gpointer) search);
+    }
+}
+
+
+//!
+//! @brief Uses a searchitem to cancel a window
+//!
+//! @param search A LwSearch to gleam information from
+//!
+void 
+lw_search_cancel_search (LwSearch *search)
+{
+    if (search == NULL) return;
+
+    lw_search_set_status (search, LW_SEARCHSTATUS_FINISHING);
+
+    if (search->thread != NULL)
+    {
+      g_thread_join (search->thread);
+      search->thread = NULL;
+    }
+
+    lw_search_set_status (search, LW_SEARCHSTATUS_IDLE);
+}
+
+
+//!
+//! @brief Gets a result and removes a LwResult from the beginnig of a list of results
+//! @returns a LwResult that should be freed with lw_result_free
+//!
+LwResult* 
+lw_search_get_result (LwSearch *search)
+{
+    g_assert (search != NULL);
+
+    LwResult *line;
+
+    lw_search_lock (search);
+
+    if (search->results_high != NULL)
+    {
+      line = LW_RESULT (search->results_high->data);
+      search->results_high = g_list_delete_link (search->results_high, search->results_high);
+    }
+    else if (search->results_medium != NULL && search->status == LW_SEARCHSTATUS_IDLE)
+    {
+      line = LW_RESULT (search->results_medium->data);
+      search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
+    }
+    else if (search->results_low != NULL && search->status == LW_SEARCHSTATUS_IDLE)
+    {
+      line = LW_RESULT (search->results_low->data);
+      search->results_low = g_list_delete_link (search->results_low, search->results_low);
+    }
+    else
+    {
+      line = NULL;
+    }
+
+    lw_search_unlock (search);
+
+    return line;
+}
+
+
+
+//!
+//! @brief Tells if you should keep checking for results
+//!
+gboolean 
+lw_search_should_check_results (LwSearch *search)
+{
+    if (search == NULL) return FALSE;
+
+    gboolean should_check_results;
+    LwSearchStatus status;
+
+    status = lw_search_get_status (search);
+
+    if (status == LW_SEARCHSTATUS_FINISHING)
+    {
+      lw_search_cancel_search (search);
+      should_check_results = FALSE;
+    }
+    else
+    {
+      lw_search_lock (search);
+      should_check_results = (status != LW_SEARCHSTATUS_IDLE ||
+                              search->results_high != NULL ||
+                              search->results_medium != NULL ||
+                              search->results_low != NULL);
+      lw_search_unlock (search);
+    }
+
+    return should_check_results;
+}
+
 

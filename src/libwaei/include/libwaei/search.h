@@ -9,6 +9,10 @@
 
 G_BEGIN_DECLS
 
+#define LW_MAX_HIGH_RELEVENT_RESULTS 1000
+#define LW_MAX_MEDIUM_IRRELEVENT_RESULTS 1000
+#define LW_MAX_LOW_IRRELEVENT_RESULTS    1000
+
 #define LW_SEARCHITEM(object) (LwSearch*) object
 #define LW_SEARCHITEM_DATA_FREE_FUNC(object) (LwSearchDataFreeFunc)object
 #define LW_HISTORY_TIME_TO_RELEVANCE 20
@@ -22,6 +26,14 @@ typedef enum
   LW_SEARCHSTATUS_SEARCHING,
   LW_SEARCHSTATUS_FINISHING
 } LwSearchStatus;
+
+
+typedef enum
+{
+  LW_SEARCH_PREFERENCE_EXACT = 0x1,
+  LW_SEARCH_PREFERENCE_ = 0x2
+
+}
 
 typedef void(*LwSearchDataFreeFunc)(gpointer);
 
@@ -53,6 +65,9 @@ struct _LwSearch {
     LwResult* result;               //!< Result line to store parsed result
 
     gpointer data;                 //!< Pointer to a buffer that stays constant unlike when the target attribute is used
+
+    gint16 preferences;
+
     LwSearchDataFreeFunc free_data_func;
 };
 typedef struct _LwSearch LwSearch;
@@ -67,7 +82,7 @@ void lw_search_cleanup_search (LwSearch*);
 void lw_search_clear_results (LwSearch*);
 void lw_search_prepare_search (LwSearch*);
 
-gboolean lw_search_run_comparison (LwSearch*, const LwRelevance);
+gboolean lw_search_compare (LwSearch *, const LwRelevance);
 gboolean lw_search_is_equal (LwSearch*, LwSearch*);
 gboolean lw_search_has_history_relevance (LwSearch*, gboolean);
 void lw_search_increment_history_relevance_timer (LwSearch*);
@@ -89,6 +104,11 @@ void lw_search_set_status (LwSearch*, LwSearchStatus);
 LwSearchStatus lw_search_get_status (LwSearch*);
 
 double lw_search_get_progress (LwSearch*);
+gboolean lw_search_read_line (LwSearch*);
+
+void lw_search_start (LwSearch*, gboolean, gboolean);
+
+
 
 G_END_DECLS
 

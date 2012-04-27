@@ -47,26 +47,17 @@ static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_edictionary_get_typename (LwDictionary*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
-const static gchar *kanji_high_prefix = "^(無|不|非|お|御|)(";
-const static gchar *kanji_high_suffix = ")";
-const static gchar *kanji_medium_prefix = "^(お|を|に|で|は|と|)(";
-const static gchar *kanji_medium_suffix = ")(で|が|の|を|に|で|は|と|$)";
-const static gchar *kanji_low_prefix = "(";
-const static gchar *kanji_low_suffix = ")";
+const static gchar *kanji_high = "^(無|不|非|お|御|)(%s)";
+const static gchar *kanji_medium = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と|$)";
+const static gchar *kanji_low = "(%s)";
 
-const static gchar *furigana_high_prefix = "^(お|)(";
-const static gchar *furigana_high_suffix = ")$";
-const static gchar *furigana_medium_prefix = "(^お|を|に|で|は|と)(";
-const static gchar *furigana_medium_suffix = ")(で|が|の|を|に|で|は|と|$)";
-const static gchar *furigana_low_prefix = "(";
-const static gchar *furigana_low_suffix = ")";
+const static gchar *furigana_high = "^(お|)(%s)$";
+const static gchar *furigana_medium = "(^お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
+const static gchar *furigana_low = "(%s)";
 
-const static gchar *romaji_high_prefix = "(^|\\)|/|^to |\\) )(";
-const static gchar *romaji_high_suffix = ")(\\(|/|$|!| \\()";
-const static gchar *romaji_medium_prefix = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(";
-const static gchar *romaji_medium_suffix = ")(( \\([^/]+\\)/)|(/))";
-const static gchar *romaji_low_prefix = "(";
-const static gchar *romaji_low_suffix = ")";
+const static gchar *romaji_high = "(^|\\)|/|^to |\\) )(%s)(\\(|/|$|!| \\()";
+const static gchar *romaji_medium = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
+const static gchar *romaji_low = "(%s)";
 
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
@@ -264,13 +255,13 @@ lw_edictionary_build_kanji_regex (LwDictionary *dictionary, LwQuery *query, GErr
 
       if (text != NULL)
       {
-        regex = lw_regex_new (kanji_high_prefix, text, kanji_high_suffix, error);
+        regex = lw_regex_new (kanji_high, text, error);
         if (regex != NULL) regexgroup->high = g_list_append (regexgroup->high, regex);
 
-        regex = lw_regex_new (kanji_medium_prefix, text, kanji_medium_suffix, error);
+        regex = lw_regex_new (kanji_medium, text,error);
         if (regex != NULL) regexgroup->medium = g_list_append (regexgroup->medium, regex);
 
-        regex = lw_regex_new (kanji_low_prefix, text, kanji_low_suffix, error);
+        regex = lw_regex_new (kanji_low, text, error);
         if (regex != NULL) regexgroup->low = g_list_append (regexgroup->low, regex);
       }
 
@@ -310,13 +301,13 @@ lw_edictionary_build_furigana_regex (LwDictionary *dictionary, LwQuery *query, G
 
       if (text != NULL)
       {
-        regex = lw_regex_new (furigana_high_prefix, text, furigana_high_suffix, error);
+        regex = lw_regex_new (furigana_high, text, error);
         if (regex != NULL) regexgroup->high = g_list_append (regexgroup->high, regex);
 
-        regex = lw_regex_new (furigana_medium_prefix, text, furigana_medium_suffix, error);
+        regex = lw_regex_new (furigana_medium, text, error);
         if (regex != NULL) regexgroup->medium = g_list_append (regexgroup->medium, regex);
 
-        regex = lw_regex_new (furigana_low_prefix, text, furigana_low_suffix, error);
+        regex = lw_regex_new (furigana_low, text, error);
         if (regex != NULL) regexgroup->low = g_list_append (regexgroup->low, regex);
 
 /*
@@ -364,17 +355,18 @@ lw_edictionary_build_romaji_regex (LwDictionary *dictionary, LwQuery *query, GEr
 
       if (text != NULL)
       {
-        regex = lw_regex_new (romaji_high_prefix, text, romaji_high_suffix, error);
+        regex = lw_regex_new (romaji_high, text, error);
         if (regex != NULL) regexgroup->high = g_list_append (regexgroup->high, regex);
 
-        regex = lw_regex_new (romaji_medium_prefix, text, romaji_medium_suffix, error);
+        regex = lw_regex_new (romaji_medium, text, error);
         if (regex != NULL) regexgroup->medium = g_list_append (regexgroup->medium, regex);
 
-        regex = lw_regex_new (romaji_low_prefix, text, romaji_low_suffix, error);
+        regex = lw_regex_new (romaji_low, text, error);
         if (regex != NULL) regexgroup->low = g_list_append (regexgroup->low, regex);
 /*
-        if (get_japanese_morphology)
+        if (get_english_stemp)
         {
+          romaji_stem
           regex = lw_regex_new (romaji_medium_prefix, text, romaji_medium_suffix, error);
           regexgroup->medium = g_list_append (regexgroup->low, regex);
         }

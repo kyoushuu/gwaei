@@ -20,7 +20,6 @@
 #include <libwaei/result.h>
 #include <libwaei/query.h>
 #include <libwaei/search.h>
-#include <libwaei/engine.h>
 #include <libwaei/history.h>
 
 #ifdef WITH_MECAB

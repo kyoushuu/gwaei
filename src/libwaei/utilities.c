@@ -36,7 +36,6 @@
 #include "../../config.h"
 #endif
 
-#include <libwaei/dict.h>
 #include <libwaei/libwaei.h>
 
 
@@ -1544,14 +1543,14 @@ lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 
 
 GRegex*
-lw_regex_new (const gchar *PREFIX, const gchar *EXPRESSION, const gchar *SUFFIX, GError **error)
+lw_regex_new (const gchar *REGEX, const gchar *EXPRESSION, GError **error)
 {
     //Declarations
     GRegex *regex;
     gchar *expression;
 
     //Initializations
-    expression = g_strjoin ("", PREFIX, EXPRESSION, SUFFIX, NULL);
+    expression = g_strdup_printf (REGEX, EXPRESSION);
     regex = NULL;
 
     if (expression != NULL)

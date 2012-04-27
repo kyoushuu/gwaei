@@ -77,7 +77,7 @@ gchar* lw_util_collapse_string (const gchar*);
 gchar* lw_util_delimit_script_changes (const gchar*, const gchar*);
 gchar* lw_util_delimit_whitespace (const gchar*, const gchar*);
 
-GRegex* lw_regex_new (const gchar*, const gchar*, const gchar*, GError**);
+GRegex* lw_regex_new (const gchar*, const gchar*, GError**);
 
 G_END_DECLS
 

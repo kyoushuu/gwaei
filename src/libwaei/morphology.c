@@ -339,3 +339,85 @@ fail:
     return;
 }
 
+/*
+#ifdef WITH_MECAB
+//!
+//! @brief Construct a regexp for getting the morphologically deduced base forms of words
+//!
+//! @param ql Queryline whose ql->string has been initialized
+//! @returns Newly allocated string, or NULL if nothing to add
+//!
+//! The regexp is of form ^WORD1$|^WORD2$|...
+//!
+static GRegex*
+lw_query_build_morphology_regexp (gchar* text)
+{
+   LwMorphology *morph;
+   GList *it;
+   gchar *result;
+   const char *ptr;
+
+   if (ql->morphology)
+   {
+     g_free (ql->morphology);
+     ql->morphology = NULL;
+   }
+
+   result = NULL;
+
+   // Do analysis only on alpha-kana-kanji strings
+   for (ptr = ql->string; *ptr != '\0'; ptr = g_utf8_next_char (ptr))
+   {
+       gunichar character;
+       GUnicodeScript script;
+       character = g_utf8_get_char (ptr);
+       script = g_unichar_get_script (character);
+       if (script != G_UNICODE_SCRIPT_HAN &&
+           script != G_UNICODE_SCRIPT_HIRAGANA &&
+           script != G_UNICODE_SCRIPT_KATAKANA &&
+           !g_unichar_isalnum(character) &&
+           !g_unichar_isspace(character))
+           return result;
+   }
+
+   morph = lw_morphology_new ();
+   lw_morphology_analize (lw_morphologyengine_get_default (), morph, ql->string);
+
+   for (it = morph->items; it; it = it->next) {
+       LwMorphologyItem *item = (LwMorphologyItem *)it->data;
+       char *temp;
+
+       if (it == morph->items && it->next == NULL
+               && strcmp(item->base_form, ql->string) == 0) {
+           // Don't add any results for a single word in base form
+           break;
+       }
+
+       if (item->base_form) {
+           if (result == NULL) {
+               result = g_strdup_printf("^%s$", item->base_form);
+           }
+           else {
+               temp = g_strdup_printf ("%s|^%s$", result, item->base_form);
+               g_free (result);
+               result = temp;
+           }
+       }
+       if (item->explanation) {
+           if (ql->morphology == NULL) {
+               ql->morphology = g_strdup (item->explanation);
+           }
+           else {
+               temp = g_strdup_printf ("%s + %s", ql->morphology, item->explanation);
+               g_free (ql->morphology);
+               ql->morphology = temp;
+           }
+       }
+   }
+
+   lw_morphology_free (morph);
+
+   return result;
+}
+#endif
+
