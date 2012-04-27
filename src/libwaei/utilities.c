@@ -1416,7 +1416,7 @@ gchar*
 lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 {
     //Sanity check
-    g_return_val_if_fail (NULL, DELIMITOR != NULL && TEXT != NULL);
+    g_return_val_if_fail (DELIMITOR != NULL && TEXT != NULL, NULL);
 
     //Declarations
     gchar *buffer;
@@ -1435,18 +1435,18 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
     for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
     {
       c = g_utf8_get_char (source_ptr);
-      this_script = unichar_get_script (c);
-      script_changed = (this_script != prev_script &&
-                        prev_script != G_UNICODE_SCRIPT_INVALID_CODE &&
+      this_script = g_unichar_get_script (c);
+      script_changed = (this_script != previous_script &&
+                        previous_script != G_UNICODE_SCRIPT_INVALID_CODE &&
 					              this_script != G_UNICODE_SCRIPT_COMMON &&
-                        prev_script != G_UNICODE_SCRIPT_COMMON);
+                        previous_script != G_UNICODE_SCRIPT_COMMON);
 
       if (script_changed)
       {
 				count++;
       }
 
-      prev_script = this_script;
+      previous_script = this_script;
     }
 
     buffer = g_new (gchar, strlen(TEXT) + (delimitor_length * count) + 1);
@@ -1458,11 +1458,11 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 			for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
 			{
 				c = g_utf8_get_char (source_ptr);
-				this_script = unichar_get_script (c);
-        script_changed = (this_script != prev_script &&
-                          prev_script != G_UNICODE_SCRIPT_INVALID_CODE &&
+				this_script = g_unichar_get_script (c);
+        script_changed = (this_script != previous_script &&
+                          previous_script != G_UNICODE_SCRIPT_INVALID_CODE &&
                           this_script != G_UNICODE_SCRIPT_COMMON &&
-                          prev_script != G_UNICODE_SCRIPT_COMMON);
+                          previous_script != G_UNICODE_SCRIPT_COMMON);
 
         if (script_changed)
 				{
@@ -1475,7 +1475,7 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 					*target_ptr = '\0';
 				}
 
-				prev_script = this_script;
+				previous_script = this_script;
 			}
 		}
 
@@ -1487,7 +1487,7 @@ gchar*
 lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 {
     //Sanity check
-    g_return_val_if_fail (NULL, DELIMITOR != NULL && TEXT != NULL);
+    g_return_val_if_fail (DELIMITOR != NULL && TEXT != NULL, NULL);
 
     //Declarations
     gchar *buffer;

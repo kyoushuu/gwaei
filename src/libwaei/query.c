@@ -31,6 +31,7 @@
 
 #include <libwaei/libwaei.h>
 
+static void lw_query_clear_tokens (LwQuery *);
 
 LwQuery* 
 lw_query_new ()
@@ -63,7 +64,7 @@ lw_query_init_tokens (LwQuery *query)
 
     lw_query_clear_tokens (query);
 
-    query->tokens = g_new0 (LwRegexGroup*, TOTAL_LW_QUERY_TOKEN_TYPES);
+    query->tokenlist = g_new0 (GList*, TOTAL_LW_QUERY_TOKEN_TYPES);
 }
 
 
@@ -74,20 +75,19 @@ lw_query_clear_tokens (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     //Declarations
-    GList *iter;
     gint i;
 
-    if (query->tokens != NULL)
+    if (query->tokenlist != NULL)
     {
       for (i = 0; i < TOTAL_LW_QUERY_TOKEN_TYPES; i++)
       {
-        if (query->tokens[i] != NULL)
+        if (query->tokenlist[i] != NULL)
         {
-          g_list_foreach (query->tokens[i], (GFunc) g_free, NULL);
-          query->tokens[i] = NULL; 
+          g_list_foreach (query->tokenlist[i], (GFunc) g_free, NULL);
+          query->tokenlist[i] = NULL; 
         }
       }
-      g_free (query->tokens); query->tokens = NULL;
+      g_free (query->tokenlist); query->tokenlist = NULL;
     }
 }
 
@@ -99,7 +99,6 @@ lw_query_clear_regexgroup (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     //Declarations
-    GList *iter;
     gint i;
 
     if (query->regexgroup != NULL)
