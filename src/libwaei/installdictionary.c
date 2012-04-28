@@ -274,9 +274,10 @@ void
 lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionary)
 {
     //Sanity check
-    g_assert (dictionary != NULL && priv->filename != NULL);
+    g_assert (dictionary != NULL);
 
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *cache_filename;
     gchar *engine_filename;
     const gchar *compression_ext;
@@ -284,6 +285,8 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
     gchar *temp[2][LW_INSTALLDICTIONARY_TOTAL_URIS];
     gchar *radicals_cache_filename;
     gint i, j;
+	
+		priv = dictionary->priv;
 
     //Remove the previous contents
     g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION]);
@@ -363,10 +366,12 @@ gboolean
 lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
 {
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *ptr;
     gchar **temp_string_array;
     gint total_download_arguments;
 
+		priv = dictionary->priv;
     ptr = priv->filename;
     if (ptr == NULL || strlen (ptr) == 0) return FALSE;
 
@@ -396,7 +401,7 @@ lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
     ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_NOTHING];
     if (ptr == NULL || strlen (ptr) == 0) return FALSE;
 
-    if (priv->type < 0 || priv->type >= TOTAL_LW_DICTTYPES) return FALSE;
+    //if (priv->type < 0 || priv->type >= TOTAL_LW_DICTTYPES) return FALSE;
     if (priv->compression < 0 || priv->compression >= LW_COMPRESSION_TOTAL) return FALSE;
     if (priv->encoding < 0 || priv->encoding >= LW_ENCODING_TOTAL) return FALSE;
 
@@ -538,12 +543,14 @@ lw_installdictionary_convert_encoding (LwInstallDictionary *dictionary, LwIoProg
     g_assert (dictionary != NULL);
 
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
     const gchar *encoding_name;
     LwInstallDictionaryUri group_index;
 
     //Initializations
+		priv = dictionary->priv;
     group_index = LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING;
     encoding_name = lw_util_get_encoding_name (priv->encoding);
 
@@ -648,7 +655,7 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_installdictionary_finalize (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_installdictionary_finish (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -688,11 +695,13 @@ void
 lw_installdictionary_clean (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
 {
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     LwInstallDictionaryUri group_index;
     gint i;
     gchar *source;
 
     //Initializations
+		priv = dictionary->priv;
     group_index = 0;
 
     //Loop through all of the uris except the final destination
@@ -737,7 +746,7 @@ lw_installdictionary_install (LwInstallDictionary *dictionary, LwIoProgressCallb
     lw_installdictionary_decompress (dictionary, cb, data, error);
     lw_installdictionary_convert_encoding (dictionary, cb, data, error);
     lw_installdictionary_postprocess (dictionary, cb, data, error);
-    lw_installdictionary_finalize (dictionary, cb, data, error);
+    lw_installdictionary_finish (dictionary, cb, data, error);
     lw_installdictionary_clean (dictionary, cb, data);
 
     return (*error == NULL);
@@ -755,7 +764,10 @@ gchar*
 lw_installdictionary_get_status_string (LwInstallDictionary *dictionary, gboolean long_form)
 {
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *string;
+
+		priv = dictionary->priv;
 
     switch (priv->uri_group_index) {
       case LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING:
@@ -846,16 +858,18 @@ double
 lw_installdictionary_get_total_progress (LwInstallDictionary *dictionary, double fraction)
 {
     //Declarations
-    double output_fraction, current, final;
+		LwInstallDictionaryPrivate *priv;
+    gdouble output_fraction, current, final;
     gint i;
     gchar *ptr;
 
     //Definitions
+		priv = dictionary->priv;
     output_fraction = 0.0;
     current = 0.0;
     final = 0.0;
     priv->progress = fraction;
-    const double DOWNLOAD_WEIGHT = 3.0;
+    const gdouble DOWNLOAD_WEIGHT = 3.0;
 
     //Calculate the already completed activities
     for (i = 0; i < priv->uri_group_index && i < LW_INSTALLDICTIONARY_NEEDS_NOTHING; i++)
@@ -909,7 +923,10 @@ lw_installdictionary_get_source_uri (LwInstallDictionary *dictionary, const LwIn
     g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
 
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *uri;
+
+		priv = dictionary->priv;
 
     //Set up the backbone if it isn't already
     if (GROUP_INDEX != priv->uri_group_index)
@@ -951,7 +968,10 @@ lw_installdictionary_get_target_uri (LwInstallDictionary *dictionary, const LwIn
     g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
 
     //Declarations
+		LwInstallDictionaryPrivate *priv;
     gchar *uri;
+
+		priv = dictionary->priv;
 
     //Set up the backbone if it isn't already
     if (GROUP_INDEX != priv->uri_group_index)

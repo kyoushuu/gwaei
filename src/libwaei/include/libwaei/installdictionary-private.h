@@ -25,6 +25,7 @@ struct _LwInstallDictionaryPrivate {
   gboolean split;
   gboolean merge;
   GMutex mutex;
+	GType type;
 }
 
 #define LW_INSTALLDICTIONARY_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), LW_TYPE_INSTALLDICTIONARY, LwInstallDictionaryPrivate));
