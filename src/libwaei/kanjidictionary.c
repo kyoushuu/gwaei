@@ -89,7 +89,6 @@ lw_kanjidictionary_constructed (GObject *object)
 
       priv->longname = g_strdup (gettext("Kanji Dictionary"));
       priv->shortname = g_strdup (gettext("Kanji"));
-      priv->load_position = 2;
     }
 }
 

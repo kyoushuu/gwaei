@@ -41,14 +41,15 @@ gboolean lw_dictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRele
 
 FILE* lw_dictionary_open (LwDictionary*);
 
-gint lw_dictionary_get_load_position (LwDictionary*);
-void lw_dictionary_set_load_position (LwDictionary*, gint);
-
 const gchar* lw_dictionary_get_filename (LwDictionary*);
 const gchar* lw_dictionary_get_typename (LwDictionary*);
+
 gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 gboolean lw_dictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 size_t lw_dictionary_get_length (LwDictionary*);
+
+gboolean lw_dictionary_equals (LwDictionary*, LwDictionary*);
+gchar* lw_dictionary_build_description (LwDictionary*);
 
 G_END_DECLS
 

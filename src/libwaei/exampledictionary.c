@@ -88,7 +88,6 @@ lw_exampledictionary_constructed (GObject *object)
 
       priv->longname = g_strdup (gettext("Example Dictionary"));
       priv->shortname = g_strdup (gettext("Example"));
-      priv->load_position = 2;
     }
 }
 

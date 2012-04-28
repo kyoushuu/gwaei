@@ -103,7 +103,6 @@ lw_edictionary_constructed (GObject *object)
 
       priv->longname = g_strdup (gettext("English Dictionary"));
       priv->shortname = g_strdup (gettext("English"));
-      priv->load_position = 1;
     }
 }
 

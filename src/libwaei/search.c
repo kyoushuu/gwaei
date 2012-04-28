@@ -501,7 +501,7 @@ lw_search_stream_results_thread (gpointer data)
 
     //Initializations
     search = LW_SEARCHITEM (data);
-    show_only_exact_matches = search->exact;
+    show_only_exact_matches = search->preferences & LW_SEARCH_PREFERENCE_FLAG_EXACT;
 
     if (search == NULL || search->fd == NULL) return NULL;
 

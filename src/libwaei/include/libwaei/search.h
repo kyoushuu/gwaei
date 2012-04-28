@@ -30,10 +30,11 @@ typedef enum
 
 typedef enum
 {
-  LW_SEARCH_PREFERENCE_EXACT = 0x1,
-  LW_SEARCH_PREFERENCE_ = 0x2
-
-}
+  LW_SEARCH_PREFERENCE_FLAG_EXACT              = (1 << 0),
+  LW_SEARCH_PREFERENCE_FLAG_DELIMIT_WHITESPACE = (1 << 1),
+  LW_SEARCH_PREFERENCE_FLAG_JAPANESE_STEP      = (1 << 2),
+  LW_SEARCH_PREFERENCE_FLAG_ROMAJI_STEP        = (1 << 3)
+} LwSearchPreferenceFlag;
 
 typedef void(*LwSearchDataFreeFunc)(gpointer);
 

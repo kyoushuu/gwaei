@@ -55,7 +55,6 @@ lw_dictionary_init (LwDictionary *dictionary)
     dictionary->priv = LW_DICTIONARY_GET_PRIVATE (dictionary);
     memset(dictionary->priv, 0, sizeof(LwDictionaryPrivate));
 
-    dictionary->priv->load_position = -1;
     dictionary->priv->length = -1;
 }
 
@@ -229,30 +228,6 @@ lw_dictionary_uninstall (LwDictionary *dictionary, LwIoProgressCallback cb, GErr
 }
  
 
-gint
-lw_dictionary_get_load_position (LwDictionary *dictionary)
-{
-    g_return_val_if_fail (dictionary != NULL, -1);
-
-    LwDictionaryPrivate *priv;
-
-    priv = dictionary->priv;
-
-    return priv->load_position;
-}
-
-void
-lw_dictionary_set_load_position (LwDictionary *dictionary, gint load_position)
-{
-    g_return_if_fail (dictionary != NULL);
-
-    LwDictionaryPrivate *priv;
-
-    priv = dictionary->priv;
-    priv->load_position = load_position;
-}
-
-
 FILE*
 lw_dictionary_open (LwDictionary *dictionary)
 {
@@ -417,3 +392,51 @@ lw_dictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resul
 
     return klass->compare (dictionary, query, result, RELEVANCE);
 }
+
+
+gboolean
+lw_dictionary_equals (LwDictionary *dictionary1, LwDictionary *dictionary2)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary1 != NULL && dictionary2 != NULL, FALSE);
+
+    //Declarations
+    const gchar *FILENAME1;
+    const gchar *FILENAME2;
+    GType type1;
+    GType type2;
+    gboolean filenames_are_equal;
+    gboolean types_are_equal;
+
+    //Initializations
+    FILENAME1 = lw_dictionary_get_filename (dictionary1);
+    FILENAME2 = lw_dictionary_get_filename (dictionary2);
+    type1 = G_OBJECT_TYPE (dictionary1);
+    type2 = G_OBJECT_TYPE (dictionary2);
+
+    filenames_are_equal = (strcmp(FILENAME1, FILENAME2) == 0);
+    types_are_equal = g_type_is_a (type1, type2);
+
+    return (filenames_are_equal && types_are_equal);
+}
+
+
+gchar*
+lw_dictionary_build_description (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    gchar *description;
+    const gchar *TYPENAME;
+    const gchar *FILENAME;
+
+    //Initializations
+    TYPENAME = G_OBJECT_TYPE_NAME (dictionary);
+    FILENAME = lw_dictionary_get_filename (dictionary);
+    description = g_strdup_printf ("%s/%s", TYPENAME, FILENAME);
+
+    return description;
+}
+

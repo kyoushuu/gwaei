@@ -7,7 +7,6 @@ struct _LwDictionaryPrivate {
     gchar *filename;
     gchar *longname;
     gchar *shortname;
-    gint load_position;  //!< load position in the GUI
     size_t length;       //!< Length of the file
 };
 
