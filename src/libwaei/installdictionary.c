@@ -276,6 +276,7 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
 
     //Declarations
 		LwInstallDictionaryPrivate *priv;
+    const gchar* filename;
     gchar *cache_filename;
     gchar *engine_filename;
     const gchar *compression_ext;
@@ -299,8 +300,9 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
         temp[i][j] = NULL;
 
     //Initializations
-    cache_filename = lw_util_build_filename (LW_PATH_CACHE, priv->filename);
-    engine_filename = lw_util_build_filename_by_dicttype (priv->type, priv->filename);
+    filename = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
+    cache_filename = lw_util_build_filename (LW_PATH_CACHE, filename);
+    engine_filename = lw_util_build_filename_by_dicttype (priv->type, filename);
     compression_ext = lw_util_get_compression_name (priv->compression);
     encoding_ext = lw_util_get_encoding_name (priv->encoding);
 
