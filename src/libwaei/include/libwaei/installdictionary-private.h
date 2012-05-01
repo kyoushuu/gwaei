@@ -4,9 +4,6 @@
 G_BEGIN_DECLS
 
 struct _LwInstallDictionaryPrivate {
-  gchar *filename; 
-  gchar *longname; 
-  gchar *shortname;
   gchar *description;
   gchar *uri[LW_INSTALLDICTIONARY_TOTAL_URIS];
   gdouble progress;
@@ -26,6 +23,7 @@ struct _LwInstallDictionaryPrivate {
   gboolean merge;
   GMutex mutex;
 	GType type;
+  gboolean cancel;
 }
 
 #define LW_INSTALLDICTIONARY_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), LW_TYPE_INSTALLDICTIONARY, LwInstallDictionaryPrivate));

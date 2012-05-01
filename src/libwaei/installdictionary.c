@@ -40,8 +40,6 @@
 
 #include <libwaei/installdictionary-private.h>
 
-static gboolean _cancel = FALSE;
-
 G_DEFINE_TYPE (LwInstallDictionary, lw_installdictionary, LW_TYPE_DICTIONARY)
 
 
@@ -59,7 +57,7 @@ lw_installdictionary_new ()
 }
 
 
-static void 
+void 
 lw_installdictionary_init (LwInstallDictionary *dictionary)
 {
 		LwInstallDictionary *installdictionary;
@@ -426,18 +424,21 @@ lw_installdictionary_download (LwInstallDictionary *dictionary, LwIoProgressCall
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    if (_cancel) return FALSE;
-    g_assert (dictionary != NULL);
+    g_return_value_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
+    LwInstallDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
     gint i;
     LwInstallDictionaryUri group_index;
 
     //Initializations
+    priv = dictionary->priv;
     group_index = LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING;
     i = 0;
+
+    if (priv->cancel) return FALSE;
 
     while ((source = lw_installdictionary_get_source_uri (dictionary, group_index, i)) != NULL &&
            (target = lw_installdictionary_get_target_uri (dictionary, group_index, i)) != NULL
@@ -473,8 +474,7 @@ lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCa
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    if (_cancel) return FALSE;
-    g_assert (dictionary != NULL);
+    g_return_value_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
 		LwInstallDictionaryPrivate *priv;
@@ -485,6 +485,7 @@ lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCa
     //Initializations
 		priv = dictionary->priv;
     group_index = LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION;
+    if (priv->cancel) return FALSE;
 
     if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
         (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
@@ -539,8 +540,7 @@ lw_installdictionary_convert_encoding (LwInstallDictionary *dictionary, LwIoProg
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    if (_cancel) return FALSE;
-    g_assert (dictionary != NULL);
+    g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
 		LwInstallDictionaryPrivate *priv;
@@ -591,8 +591,7 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    if (_cancel) return FALSE;
-    g_assert (dictionary != NULL);
+    g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
     gchar *source;
@@ -605,6 +604,8 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
     //Initializations
 		priv = dictionary->priv;
     group_index = LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING;
+
+    if (priv->cancel) return FALSE;
 
     //Rebuild the mix dictionary
     if (priv->merge)
@@ -659,10 +660,10 @@ lw_installdictionary_finish (LwInstallDictionary *dictionary, LwIoProgressCallba
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    if (_cancel) return FALSE;
-    g_assert (dictionary != NULL);
+    g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
+    LwInstallDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
     LwInstallDictionaryUri group_index;
@@ -671,6 +672,8 @@ lw_installdictionary_finish (LwInstallDictionary *dictionary, LwIoProgressCallba
     //Initializations
     group_index = LW_INSTALLDICTIONARY_NEEDS_FINALIZATION;
     i = 0;
+
+    if (priv->cancel) return FALSE;
 
     while ((source = lw_installdictionary_get_source_uri (dictionary, group_index, i)) != NULL &&
            (target = lw_installdictionary_get_target_uri (dictionary, group_index, i)) != NULL
@@ -1006,7 +1009,10 @@ lw_installdictionary_get_target_uri (LwInstallDictionary *dictionary, const LwIn
 void 
 lw_installdictionary_set_cancel_operations (LwInstallDictionary *dictionary, gboolean state)
 {
-    _cancel = state;
+    LwInstallDictionaryPrivate *priv;
+
+    priv = dictionary->priv;
+    priv->cancel = state;
     lw_io_set_cancel_operations (state);
 }
 
