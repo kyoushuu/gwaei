@@ -278,7 +278,6 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
 		LwInstallDictionaryPrivate *priv;
     const gchar* filename;
     gchar *cache_filename;
-    gchar *engine_filename;
     const gchar *compression_ext;
     const gchar *encoding_ext;
     gchar *temp[2][LW_INSTALLDICTIONARY_TOTAL_URIS];
@@ -302,7 +301,6 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
     //Initializations
     filename = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
     cache_filename = lw_util_build_filename (LW_PATH_CACHE, filename);
-    engine_filename = lw_util_build_filename_by_dicttype (priv->type, filename);
     compression_ext = lw_util_get_compression_name (priv->compression);
     encoding_ext = lw_util_get_encoding_name (priv->encoding);
 
@@ -310,7 +308,7 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
     temp[0][LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING] =   g_strjoin (".", cache_filename, encoding_ext, NULL);
     temp[0][LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING] =   g_strjoin (".", cache_filename, "UTF8", NULL);
     temp[0][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION] =  g_strdup (cache_filename);
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] =  g_strdup (engine_filename);
+    temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] =  g_strdup (filename);
 
     //Adjust the uris for the split dictionary exception case
     if (priv->split)
@@ -345,7 +343,6 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
         if (temp[i][j] != NULL) g_free (temp[i][j]);
 
     g_free (cache_filename);
-    g_free (engine_filename);
 
 /*
     for (i = 1; i < LW_INSTALLDICTIONARY_TOTAL_URIS; i++)
@@ -367,12 +364,12 @@ lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
 {
     //Declarations
 		LwInstallDictionaryPrivate *priv;
-    gchar *ptr;
+    const gchar *ptr;
     gchar **temp_string_array;
     gint total_download_arguments;
 
 		priv = dictionary->priv;
-    ptr = priv->filename;
+    ptr = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
     if (ptr == NULL || strlen (ptr) == 0) return FALSE;
 
     ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING];
@@ -426,7 +423,7 @@ lw_installdictionary_download (LwInstallDictionary *dictionary, LwIoProgressCall
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    g_return_value_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
     LwInstallDictionaryPrivate *priv;
@@ -476,7 +473,7 @@ lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCa
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
-    g_return_value_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
 		LwInstallDictionaryPrivate *priv;
@@ -770,47 +767,49 @@ lw_installdictionary_get_status_string (LwInstallDictionary *dictionary, gboolea
 {
     //Declarations
 		LwInstallDictionaryPrivate *priv;
-    gchar *string;
+    gchar *text;
+    const gchar *longname;
 
 		priv = dictionary->priv;
+    longname = lw_dictionary_get_longname (LW_DICTIONARY (longname));
 
     switch (priv->uri_group_index) {
       case LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING:
         if (long_form)
-          string = g_strdup_printf (gettext("Downloading %s..."), priv->longname);
+          text = g_strdup_printf (gettext("Downloading %s..."), longname);
         else
-          string = g_strdup_printf (gettext("Downloading..."));
+          text = g_strdup_printf (gettext("Downloading..."));
         break;
       case LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING:
         if (long_form)
-          string = g_strdup_printf (gettext("Converting the encoding of %s from %s to UTF-8..."), priv->longname, lw_util_get_encoding_name (priv->encoding));
+          text = g_strdup_printf (gettext("Converting the encoding of %s from %s to UTF-8..."), longname, lw_util_get_encoding_name (priv->encoding));
         else
-          string = g_strdup_printf (gettext("Converting the encoding to UTF-8..."));
+          text = g_strdup_printf (gettext("Converting the encoding to UTF-8..."));
         break;
       case LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION:
         if (long_form)
-          string = g_strdup_printf (gettext("Decompressing %s from %s file..."), priv->longname, lw_util_get_compression_name (priv->compression));
+          text = g_strdup_printf (gettext("Decompressing %s from %s file..."), longname, lw_util_get_compression_name (priv->compression));
         else
-          string = g_strdup_printf (gettext("Decompressing..."));
+          text = g_strdup_printf (gettext("Decompressing..."));
         break;
       case LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING:
         if (long_form)
-          string = g_strdup_printf (gettext("Doing postprocessing on %s..."), priv->longname);
+          text = g_strdup_printf (gettext("Doing postprocessing on %s..."), longname);
         else
-          string = g_strdup_printf (gettext("Postprocessing..."));
+          text = g_strdup_printf (gettext("Postprocessing..."));
         break;
       case LW_INSTALLDICTIONARY_NEEDS_FINALIZATION:
-        string = g_strdup_printf (gettext("Finalizing installation of %s..."), priv->longname);
+        text = g_strdup_printf (gettext("Finalizing installation of %s..."), longname);
         break;
       case LW_INSTALLDICTIONARY_NEEDS_NOTHING:
-        string = g_strdup_printf (gettext("Installed."));
+        text = g_strdup_printf (gettext("Installed."));
         break;
       default:
-        string = g_strdup_printf (" ");
+        text = g_strdup_printf (" ");
         break;
     }
 
-    return string;
+    return text;
 }
 
 

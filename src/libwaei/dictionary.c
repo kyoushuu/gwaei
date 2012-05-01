@@ -299,6 +299,17 @@ lw_dictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd
 
 
 const gchar*
+lw_dictionary_get_longname (LwDictionary *dictionary)
+{
+    LwDictionaryPrivate *priv;
+
+    priv = dictionary->priv;
+
+    return priv->longname;
+}
+
+
+const gchar*
 lw_dictionary_get_filename (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;

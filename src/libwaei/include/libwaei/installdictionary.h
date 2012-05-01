@@ -45,40 +45,7 @@ struct _LwInstallDictionaryClass {
 //Methods
 GType lw_installdictionary_get_type (void) G_GNUC_CONST;
 
-LwInstallDictionary* lw_installdictionary_new_using_pref_uri (const gchar*, 
-                                            const gchar*,
-                                            const gchar*,
-                                            const gchar*,
-                                            LwPreferences*,
-                                            const gchar*,
-                                            const gchar*,
-																						GType,
-                                            const LwCompression,
-                                            const LwEncoding,
-                                            gboolean, gboolean, gboolean);
-
-LwInstallDictionary* lw_installdictionary_new (const gchar*,
-                             const gchar*,
-                             const gchar*,
-                             const gchar*,
-                             const gchar*,
-														 GType,
-                             const LwCompression,
-                             const LwEncoding,
-                             gboolean, gboolean, gboolean);
-void lw_installdictionary_free (LwInstallDictionary*);
-void lw_installdictionary_init (LwInstallDictionary*,
-                       const gchar*,
-                       const gchar*,
-                       const gchar*,
-                       const gchar*,
-                       const gchar*,
-											 GType,
-                       const LwCompression,
-                       const LwEncoding,
-                       gboolean, gboolean, gboolean);
-void lw_installdictionary_deinit (LwInstallDictionary*);
-
+LwDictionary* lw_installdictionary_new (void);
 
 void lw_installdictionary_set_filename (LwInstallDictionary*, const gchar*);
 void lw_installdictionary_set_type (LwInstallDictionary*, GType);

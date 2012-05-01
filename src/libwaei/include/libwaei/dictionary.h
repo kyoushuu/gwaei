@@ -42,7 +42,7 @@ gboolean lw_dictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRele
 FILE* lw_dictionary_open (LwDictionary*);
 
 const gchar* lw_dictionary_get_filename (LwDictionary*);
-const gchar* lw_dictionary_get_typename (LwDictionary*);
+const gchar* lw_dictionary_get_longname (LwDictionary*);
 
 gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 gboolean lw_dictionary_parse_result (LwDictionary*, LwResult*, FILE*);
