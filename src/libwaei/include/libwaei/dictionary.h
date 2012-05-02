@@ -7,10 +7,22 @@
 
 G_BEGIN_DECLS
 
+
+typedef enum {
+  LW_DICTIONARY_NEEDS_DOWNLOADING,
+  LW_DICTIONARY_NEEDS_DECOMPRESSION,
+  LW_DICTIONARY_NEEDS_TEXT_ENCODING,
+  LW_DICTIONARY_NEEDS_POSTPROCESSING,
+  LW_DICTIONARY_NEEDS_FINALIZATION,
+  LW_DICTIONARY_NEEDS_NOTHING,
+  LW_DICTIONARY_TOTAL_URIS
+} LwInstallDictionaryUri;
+
 //Boilerplate
 typedef struct _LwDictionary LwDictionary;
 typedef struct _LwDictionaryClass LwDictionaryClass;
 typedef struct _LwDictionaryPrivate LwDictionaryPrivate;
+typedef struct _LwDictionaryInstall LwDictionaryInstall;
 
 #define LW_TYPE_DICTIONARY              (lw_dictionary_get_type())
 #define LW_DICTIONARY(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), LW_TYPE_DICTIONARY, LwDictionary))

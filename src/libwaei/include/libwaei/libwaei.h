@@ -13,8 +13,6 @@
 #include <libwaei/exampledictionary.h>
 #include <libwaei/unknowndictionary.h>
 #include <libwaei/dictionarylist.h>
-#include <libwaei/installdictionary.h>
-#include <libwaei/installdictionarylist.h>
 #include <libwaei/result.h>
 #include <libwaei/query.h>
 #include <libwaei/search.h>
