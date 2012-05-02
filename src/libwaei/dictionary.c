@@ -74,6 +74,8 @@ lw_dictionary_finalize (GObject *object)
     if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
     if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;
 
+    if (priv->install != NULL) lw_dictionaryinstall_free (priv->install); priv->install = NULL;
+
     G_OBJECT_CLASS (lw_dictionary_parent_class)->finalize (object);
 }
 
@@ -179,7 +181,6 @@ lw_dictionary_class_init (LwDictionaryClass *klass)
     dictionary_class->get_uri = NULL;
     dictionary_class->parse_query = NULL;
     dictionary_class->parse_result = NULL;
-    dictionary_class->get_typename = NULL;
 
     g_type_class_add_private (object_class, sizeof (LwDictionaryPrivate));
 
@@ -191,8 +192,6 @@ lw_dictionary_class_init (LwDictionaryClass *klass)
     );
     g_object_class_install_property (object_class, PROP_FILENAME, pspec);
 }
-
-
 
 
 //!
@@ -320,70 +319,6 @@ lw_dictionary_get_filename (LwDictionary *dictionary)
 }
 
 
-const gchar* 
-lw_dictionary_get_typename (LwDictionary *dictionary)
-{
-    g_return_val_if_fail (dictionary != NULL, FALSE);
-
-    LwDictionaryClass *klass;
-
-    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
-
-    g_return_val_if_fail (klass->get_typename != NULL, FALSE);
-
-    return klass->get_typename (dictionary);
-}
-
-
-//!
-//! @brief Parses the dicttype from a string
-//! @param ENGINENAME The LwDictType in string form
-//! @returns A LwDictType value or -1 if it is invalid
-//!
-GType
-lw_dictionary_get_type_from_typename (const char *TYPENAME)
-{
-/*
-  //Declarations
-  char *lower;
-  LwDictType engine;
-
-  //Initializations
-  lower = g_utf8_strdown (ENGINENAME, -1);
-  engine = -1;
-
-  if (strcmp(lower, "edict") == 0)
-  {
-    engine = LW_DICTTYPE_EDICT;
-    engine = g_type_from_name ()
-  }
-  else if (strcmp(lower, "kanji") == 0)
-  {
-    engine = LW_DICTTYPE_KANJI;
-  }
-  else if (strcmp(lower, "examples") == 0)
-  {
-    engine = LW_DICTTYPE_EXAMPLES;
-  }
-  else if (strcmp(lower, "unknown") == 0)
-  {
-    engine = LW_DICTTYPE_UNKNOWN;
-  }
-  else
-  {
-    g_assert_not_reached ();
-    engine = -1;
-  }
-
-  g_free (lower);
-  lower = NULL;
-
-  return engine;
-*/
-  return 0;
-}
-
-
 //!
 //! @brief Comparison function that should be moved to the LwSearch file when it matures
 //! @param item A LwSearch to get search information from
@@ -433,7 +368,7 @@ lw_dictionary_equals (LwDictionary *dictionary1, LwDictionary *dictionary2)
 
 
 gchar*
-lw_dictionary_build_description (LwDictionary *dictionary)
+lw_dictionary_build_id (LwDictionary *dictionary)
 {
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, NULL);
@@ -452,29 +387,19 @@ lw_dictionary_build_description (LwDictionary *dictionary)
 }
 
 
-/*install dictionary code*/
-
-
 LwDictionaryInstall*
-lw_installdictionary_new ()
+lw_dictionaryinstall_new ()
 {
-		LwInstallDictionary *installdictionary;
+		LwDictionaryInstall *install;
 
-    install = g_new0(LwDictionaryInstall, 1);
-
-    if (install != NULL)
-    {
-      priv->uri_group_index = -1;
-      priv->uri_atom_index = -1;
-
-    }
+    install = g_new0 (LwDictionaryInstall, 1);
 
     return install;
 }
 
 
 static void
-lw_installdictionary_free (LwDictionaryInstall *install)
+lw_dictionaryinstall_free (LwDictionaryInstall *install)
 {
     //Declarations
 		int i;
@@ -487,69 +412,24 @@ lw_installdictionary_free (LwDictionaryInstall *install)
       install->listenerid = 0;
     }
 
-    g_strfreev (install->current_source_uris); install->current_source_uris = NULL;
-    g_strfreev (install->current_target_uris); install->current_target_uris = NULL;
-
-    for (i = 0; i < LW_INSTALLDICTIONARY_TOTAL_URIS; i++)
-    {
-      g_free(install->uri[i]); install->uri[i] = NULL;
-    }
-
     if (install->schema != NULL) g_free (install->schema); install->schema = NULL;
     if (install->key != NULL) g_free (install->key); install->key = NULL;
-
-    g_mutex_clear (&install->mutex);
 }
 
 
 
 /*
-    pirv->schema = g_strdup (schema);
+    priv->schema = g_strdup (schema);
     priv->key = g_strdup (key);
-    priv->listenerid = lw_preferences_add_change_listener_by_schema (preferences, schema, key, gw_installdictionary_update_source_uri_cb, dictionary);
+    priv->listenerid = lw_preferences_add_change_listener_by_schema (
+      preferences, 
+      schema, 
+      key, 
+      gw_installdictionary_update_source_uri_cb, 
+      dictionary
+    );
     priv->preferences = preferences;
 */
-
-
-//!
-//! @brief A callback that updates the LwInstallDictionary source uri when the pref changes
-//! @param setting A GSetting object
-//! @param KEY The key of the pref
-//! @param data User data passed to the preference listener
-//!
-void gw_installdictionary_update_source_uri_cb (GSettings *settings, gchar* key, gpointer data)
-{
-    //Declarations
-    LwInstallDictionary *dictionary;
-		LwInstallDictionaryPrivate *priv;
-    gchar source_uri[200];
-
-    //Initialiations
-    dictionary = LW_INSTALLDICTIONARY (data);
-		priv = dictionary->priv;
-    lw_preferences_get_string (source_uri, settings, key, 200);
-
-    if (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING] != NULL)
-      g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING]);
-    priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING] = g_strdup (source_uri);
-}
-
-
-//!
-//! @brief Updates the engine of the LwInstallDictionary
-//! @param dictionary The LwInstallDictionary object to set the DICTTYPE to
-//! @param DICTTYPE the engine that you want to set
-//!
-void 
-lw_installdictionary_set_engine (LwInstallDictionary *dictionary, GType type)
-{
-		LwInstallDictionaryPrivate *priv;
-
-		priv = dictionary->priv;
-    priv->type = type;
-
-    lw_installdictionary_regenerate_save_target_uris (dictionary);
-}
 
 
 //!
@@ -558,14 +438,12 @@ lw_installdictionary_set_engine (LwInstallDictionary *dictionary, GType type)
 //! @param ENCODING Tells the LwDictInfo object what the initial character encoding of the downloaded file will be
 //!
 void 
-lw_installdictionary_set_encoding (LwInstallDictionary *dictionary, const LwEncoding ENCODING)
+lw_dictionary_set_install_encoding (LwInstallDictionary *dictionary, const LwEncoding ENCODING)
 {
 		LwInstallDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
     priv->encoding = ENCODING;
-
-    lw_installdictionary_regenerate_save_target_uris (dictionary);
 }
 
 
@@ -575,17 +453,13 @@ lw_installdictionary_set_encoding (LwInstallDictionary *dictionary, const LwEnco
 //! @param COMPRESSION Tells the LwDictInfo object what kind of compression the downloaded dictionary file will have.
 //!
 void 
-lw_installdictionary_set_compression (LwInstallDictionary *dictionary, const LwCompression COMPRESSION)
+lw_dictionary_set_install_compression (LwInstallDictionary *dictionary, const LwCompression COMPRESSION)
 {
 		LwInstallDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
     priv->compression = COMPRESSION;
-
-    lw_installdictionary_regenerate_save_target_uris (dictionary);
 }
-
-
 
 
 //!
@@ -594,15 +468,15 @@ lw_installdictionary_set_compression (LwInstallDictionary *dictionary, const LwC
 //! @param SOURCE The source string to copy to the LwInstallDictionary object.
 //!
 void 
-lw_installdictionary_set_download_source (LwInstallDictionary *dictionary, const gchar *SOURCE)
+lw_dictionary_set_install_download_uri (LwInstallDictionary *dictionary, const gchar *SOURCE)
 {
 		LwInstallDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
 
-    if (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING] != NULL)
-      g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING]);
-    priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING] = g_strdup (SOURCE);
+    if (priv->install->download_uri_list != NULL)
+      g_free (priv->install->download_uri_list);
+    priv->install->download_uri_list = g_strdup (SOURCE);
 }
 
 
@@ -612,7 +486,7 @@ lw_installdictionary_set_download_source (LwInstallDictionary *dictionary, const
 //! @param MERGE The merge setting to copy to the LwInstallDictionary.
 //!
 void 
-lw_installdictionary_set_merge (LwInstallDictionary *dictionary, const gboolean MERGE)
+lw_dictionary_set_install_merge (LwInstallDictionary *dictionary, const gboolean MERGE)
 {
 		LwInstallDictionaryPrivate *priv;
 
@@ -629,7 +503,7 @@ lw_installdictionary_set_merge (LwInstallDictionary *dictionary, const gboolean 
 //! @param SPLIT The split setting to copy to the LwInstallDictionary.
 //!
 void 
-lw_installdictionary_set_split (LwInstallDictionary *dictionary, const gboolean SPLIT)
+lw_dictionary_set_install_split (LwInstallDictionary *dictionary, const gboolean SPLIT)
 {
 		LwInstallDictionaryPrivate *priv;
 
@@ -640,54 +514,32 @@ lw_installdictionary_set_split (LwInstallDictionary *dictionary, const gboolean 
 }
 
 
-//!
-//! @brief This method should be called after the filename, engine, compression,
-//!        or encoding members of the LwInstallDictionary is changed to sync the new paths
-//! @dictionary The LwDictInfo object to regenerate the save target uris of.
-//!
-void 
-lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionary)
+static gchar**
+lw_dictionary_get_install_decompression_uri_list (LwDictionary *dictionary)
 {
-    //Sanity check
-    g_assert (dictionary != NULL);
+    gchar *base;
 
-    //Declarations
-		LwInstallDictionaryPrivate *priv;
-    const gchar* filename;
-    gchar *cache_filename;
-    const gchar *compression_ext;
-    const gchar *encoding_ext;
-    gchar *temp[2][LW_INSTALLDICTIONARY_TOTAL_URIS];
-    gchar *radicals_cache_filename;
-    gint i, j;
-	
-		priv = dictionary->priv;
+    base = lw_util_build_filename (LW_PATH_CACHE, filename);
+    list =  g_strjoin (".", base, compression_ext, NULL);
+}
 
-    //Remove the previous contents
-    g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION]);
-    g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING]);
-    g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING]);
-    g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_FINALIZATION]);
-    g_free (priv->uri[LW_INSTALLDICTIONARY_NEEDS_NOTHING]);
+static gchar**
+lw_dictionary_get_install_encoding_uri_list (LwDictionary *dictionary)
+{
+    gchar *base;
 
-    //Initialize the array
-    for (i = 0; i < 2; i++)
-      for (j = 1; j < LW_INSTALLDICTIONARY_TOTAL_URIS; j++)
-        temp[i][j] = NULL;
+    base = lw_util_build_filename (LW_PATH_CACHE, filename);
+    list = g_strjoin (".", base, encoding_ext, NULL);
+}
 
-    //Initializations
-    filename = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
-    cache_filename = lw_util_build_filename (LW_PATH_CACHE, filename);
-    compression_ext = lw_util_get_compression_name (priv->compression);
-    encoding_ext = lw_util_get_encoding_name (priv->encoding);
+static gchar**
+lw_dictionary_get_install_postprocessing_uri_list (LwDictionary *dictionary)
+{
+    gchar *base;
 
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION] =  g_strjoin (".", cache_filename, compression_ext, NULL);
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING] =   g_strjoin (".", cache_filename, encoding_ext, NULL);
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING] =   g_strjoin (".", cache_filename, "UTF8", NULL);
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION] =  g_strdup (cache_filename);
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] =  g_strdup (filename);
+    base = lw_util_build_filename (LW_PATH_CACHE, filename);
+    list = g_strjoin (".", base, "UTF8", NULL);
 
-    //Adjust the uris for the split dictionary exception case
     if (priv->split)
     {
       g_free (temp[0][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION]);
@@ -698,7 +550,30 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
       temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] = lw_util_build_filename_by_dicttype (priv->type, "Names");
       temp[1][LW_INSTALLDICTIONARY_NEEDS_NOTHING] = lw_util_build_filename_by_dicttype (priv->type, "Places");
     }
-    //Adjust the uris for the merge dictionary exception case
+}
+
+static gchar**
+lw_dictionary_get_install_finish_uri_list (LwDictionary *dictionary)
+{
+    gchar *base;
+
+    base = lw_util_build_filename (LW_PATH_CACHE, filename);
+    list = g_strjoin (".", base, "finish", NULL);
+}
+
+
+static gchar**
+lw_dictionary_get_install_uri_list (LwDictionary *dictionary)
+{
+}
+
+    //Initializations
+    filename = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
+    compression_ext = lw_util_get_compression_name (priv->compression);
+    encoding_ext = lw_util_get_encoding_name (priv->encoding);
+
+    temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] =  g_strdup (filename);
+
     else if (priv->merge)
     {
       radicals_cache_filename = lw_util_build_filename (LW_PATH_CACHE, "Radicals");
@@ -714,19 +589,7 @@ lw_installdictionary_regenerate_save_target_uris (LwInstallDictionary *dictionar
       priv->uri[i] = g_strjoin (";", temp[0][i], temp[1][i], NULL);
     }
 
-    //Cleanup
-    for (i = 0; i < 2; i++)
-      for (j = 1; j < LW_INSTALLDICTIONARY_TOTAL_URIS; j++)
-        if (temp[i][j] != NULL) g_free (temp[i][j]);
 
-    g_free (cache_filename);
-
-/*
-    for (i = 1; i < LW_INSTALLDICTIONARY_TOTAL_URIS; i++)
-      printf("%s\n", priv->uri[i]);
-    printf("\n");
-*/
-}
 
 
 //!

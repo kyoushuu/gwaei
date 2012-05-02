@@ -31,7 +31,7 @@ struct _LwDictionaryInstall {
   gboolean split;
   gboolean merge;
   gboolean cancel;
-}
+};
 
 #define LW_DICTIONARY_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), LW_TYPE_DICTIONARY, LwDictionaryPrivate));
 

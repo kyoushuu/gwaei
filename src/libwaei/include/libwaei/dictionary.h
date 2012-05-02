@@ -8,16 +8,6 @@
 G_BEGIN_DECLS
 
 
-typedef enum {
-  LW_DICTIONARY_NEEDS_DOWNLOADING,
-  LW_DICTIONARY_NEEDS_DECOMPRESSION,
-  LW_DICTIONARY_NEEDS_TEXT_ENCODING,
-  LW_DICTIONARY_NEEDS_POSTPROCESSING,
-  LW_DICTIONARY_NEEDS_FINALIZATION,
-  LW_DICTIONARY_NEEDS_NOTHING,
-  LW_DICTIONARY_TOTAL_URIS
-} LwInstallDictionaryUri;
-
 //Boilerplate
 typedef struct _LwDictionary LwDictionary;
 typedef struct _LwDictionaryClass LwDictionaryClass;
@@ -41,7 +31,6 @@ struct _LwDictionaryClass {
   gchar*   (*get_uri) (LwDictionary *dictionary);
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
-  const gchar* (*get_typename) (LwDictionary *dictionary);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
 };
 
