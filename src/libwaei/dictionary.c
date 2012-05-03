@@ -433,14 +433,14 @@ lw_dictionaryinstall_free (LwDictionaryInstall *install)
 
 
 //!
-//! @brief Updates the encoding of the LwInstallDictionary
+//! @brief Updates the encoding of the LwDictionary
 //! @param dictionary The LwDictInfo object to set the ENCODING to
 //! @param ENCODING Tells the LwDictInfo object what the initial character encoding of the downloaded file will be
 //!
 void 
-lw_dictionary_set_install_encoding (LwInstallDictionary *dictionary, const LwEncoding ENCODING)
+lw_dictionary_install_set_encoding (LwDictionary *dictionary, const LwEncoding ENCODING)
 {
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
     priv->encoding = ENCODING;
@@ -448,29 +448,14 @@ lw_dictionary_set_install_encoding (LwInstallDictionary *dictionary, const LwEnc
 
 
 //!
-//! @brief Updates the compression of the LwInstallDictionary
-//! @param dictionary The LwDictInfo objcet to set the COMPRESSION variable on
-//! @param COMPRESSION Tells the LwDictInfo object what kind of compression the downloaded dictionary file will have.
-//!
-void 
-lw_dictionary_set_install_compression (LwInstallDictionary *dictionary, const LwCompression COMPRESSION)
-{
-		LwInstallDictionaryPrivate *priv;
-
-		priv = dictionary->priv;
-    priv->compression = COMPRESSION;
-}
-
-
-//!
-//! @brief Updates the download source of the LwInstallDictionary object
+//! @brief Updates the download source of the LwDictionary object
 //! @param dictionary The LwDictInfo objcet to set the SOURCE variable on
-//! @param SOURCE The source string to copy to the LwInstallDictionary object.
+//! @param SOURCE The source string to copy to the LwDictionary object.
 //!
 void 
-lw_dictionary_set_install_download_uri (LwInstallDictionary *dictionary, const gchar *SOURCE)
+lw_dictionary_install_set_download_urilist (LwDictionary *dictionary, const gchar *SOURCE)
 {
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
 
@@ -481,79 +466,133 @@ lw_dictionary_set_install_download_uri (LwInstallDictionary *dictionary, const g
 
 
 //!
-//! @brief Updates the merge state of the LwInstallDictionary.
-//! @param dictionary The LwDictInfo objcet to set the MERGE variable on.
-//! @param MERGE The merge setting to copy to the LwInstallDictionary.
+//! @brief Updates the split state of the LwDictionary
+//! @param dictionary The LwDictInfo objcet to set the POSTPROCESS variable on
+//! @param POSTPROCESS The split setting to copy to the LwDictionary.
 //!
 void 
-lw_dictionary_set_install_merge (LwInstallDictionary *dictionary, const gboolean MERGE)
+lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean POSTPROCESS)
 {
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
-    priv->merge = MERGE;
-
-    lw_installdictionary_regenerate_save_target_uris (dictionary);
-}
-
-
-//!
-//! @brief Updates the split state of the LwInstallDictionary
-//! @param dictionary The LwDictInfo objcet to set the SPLIT variable on
-//! @param SPLIT The split setting to copy to the LwInstallDictionary.
-//!
-void 
-lw_dictionary_set_install_split (LwInstallDictionary *dictionary, const gboolean SPLIT)
-{
-		LwInstallDictionaryPrivate *priv;
-
-		priv = dictionary->priv;
-    priv->split = SPLIT;
+    priv->postprocess = postprocess;
 
     lw_installdictionary_regenerate_save_target_uris (dictionary);
 }
 
 
 static gchar**
-lw_dictionary_get_install_decompression_uri_list (LwDictionary *dictionary)
+lw_dictionary_install_get_uri_downloadlist (LwDictionary *dictionary)
 {
-    gchar *base;
+    //Declarations
+    LwDictionaryPrivate *priv;
+    gchar **list;
 
-    base = lw_util_build_filename (LW_PATH_CACHE, filename);
-    list =  g_strjoin (".", base, compression_ext, NULL);
+    //Initalizations
+    priv = dictionary->priv;
+    list = g_strplit (priv->install->download_urilist, ";", -1);
+
+    return list;
 }
 
-static gchar**
-lw_dictionary_get_install_encoding_uri_list (LwDictionary *dictionary)
-{
-    gchar *base;
-
-    base = lw_util_build_filename (LW_PATH_CACHE, filename);
-    list = g_strjoin (".", base, encoding_ext, NULL);
-}
 
 static gchar**
-lw_dictionary_get_install_postprocessing_uri_list (LwDictionary *dictionary)
+lw_dictionary_install_get_uri_decompresslist (LwDictionary *dictionary)
 {
-    gchar *base;
+    gchar **list;
+    gchar **ptr;
+    gchar *separator, *separator1, *separator2;
+    gchar *filename;
 
-    base = lw_util_build_filename (LW_PATH_CACHE, filename);
-    list = g_strjoin (".", base, "UTF8", NULL);
+    list = lw_dictionary_install_get_uri_downloadlist (dictionary);
 
-    if (priv->split)
+    if (list != NULL)
     {
-      g_free (temp[0][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION]);
-      temp[0][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION] = lw_util_build_filename (LW_PATH_CACHE, "Names");
-      temp[1][LW_INSTALLDICTIONARY_NEEDS_FINALIZATION] = lw_util_build_filename (LW_PATH_CACHE, "Places");
+      for (ptr = list; *ptr != NULL; ptr++)
+      {
+        separator1 = strrchar(*ptr, G_DIR_SEPARATOR);
+        separator2 = strrchar(*ptr, '/');
+        if (separator1 > separator2)
+          separator = separator1;
+        else
+          separator = separator2;
 
-      g_free (temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING]);
-      temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] = lw_util_build_filename_by_dicttype (priv->type, "Names");
-      temp[1][LW_INSTALLDICTIONARY_NEEDS_NOTHING] = lw_util_build_filename_by_dicttype (priv->type, "Places");
+        separator++;
+
+        if (*separator != '\0')
+        {
+          filename = lw_util_build_filename (LW_PATH_CACHE, filename);
+          g_free(*ptr); 
+          *ptr = filename;
+        }
+      }
     }
+
+    return list;
 }
 
+
 static gchar**
-lw_dictionary_get_install_finish_uri_list (LwDictionary *dictionary)
+lw_dictionary_install_get_uri_encodelist (LwDictionary *dictionary)
+{
+    gchar **list;
+    const gchar* encodingname;
+
+    list = lw_dictionary_install_get_uri_decompresslist (LwDictionary *dictionary)
+    encodingname = lw_util_get_encoding_name (priv->install->encoding);
+
+    if (list != NULL)
+    {
+      for (ptr = list; *ptr != NULL; ptr++)
+      {
+        separator = strchar(*ptr, '.');
+
+        if (separator != NULL)
+        {
+          *separator = '\0';
+          filename = g_strjoin (".", *ptr, encodingname);
+          g_free(*ptr); 
+          *ptr = filename;
+        }
+      }
+    }
+
+    return list;
+}
+
+
+static gchar**
+lw_dictionary_install_get_uri_postprocesslist (LwDictionary *dictionary)
+{
+    gchar **list;
+    const gchar* encodingname;
+
+    list = lw_dictionary_install_get_uri_encodelist (LwDictionary *dictionary)
+    encodingname = lw_util_get_encoding_name (LW_ENCODING_UTF8);
+
+    if (list != NULL)
+    {
+      for (ptr = list; *ptr != NULL; ptr++)
+      {
+        separator = strchar(*ptr, '.');
+
+        if (separator != NULL)
+        {
+          *separator = '\0';
+          filename = g_strjoin (".", *ptr, encodingname);
+          g_free(*ptr); 
+          *ptr = filename;
+        }
+      }
+    }
+
+    return list;
+}
+
+
+static gchar**
+lw_dictionary_install_get_uri_finalizelist (LwDictionary *dictionary)
 {
     gchar *base;
 
@@ -563,7 +602,7 @@ lw_dictionary_get_install_finish_uri_list (LwDictionary *dictionary)
 
 
 static gchar**
-lw_dictionary_get_install_uri_list (LwDictionary *dictionary)
+lw_dictionary_install_get_uri_installedlist (LwDictionary *dictionary)
 {
 }
 
@@ -595,15 +634,15 @@ lw_dictionary_get_install_uri_list (LwDictionary *dictionary)
 //!
 //! @brief Tells the installer mechanism if it is going to fail if it tries
 //!        installing because of missing info
-//! @param dictionary The LwInstallDictionary objcet to check the validity of the urls of.  This tells you
-//!        if the LWInstallDictionary object can have the lw_installdictionary_install method
+//! @param dictionary The LwDictionary objcet to check the validity of the urls of.  This tells you
+//!        if the LWDictionary object can have the lw_installdictionary_install method
 //!        called without crashing.
 //!
 gboolean 
-lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
+lw_dictionary_install_is_valid (LwDictionary *dictionary)
 {
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     const gchar *ptr;
     gchar **temp_string_array;
     gint total_download_arguments;
@@ -649,7 +688,7 @@ lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
 //!
 //! @brief Downloads or copies the file to the dictionary directory to be worked on
 //!        This function should normally only be used in the lw_installdictionary_install method.
-//! @param dictionary The LwInstallDictionary object to use to download the dictionary with.
+//! @param dictionary The LwDictionary object to use to download the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the download is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -658,24 +697,20 @@ lw_installdictionary_data_is_valid (LwInstallDictionary *dictionary)
 //! @see lw_installdictionary_postprocess
 //! @see lw_installdictionary_install
 //!
-gboolean 
-lw_installdictionary_download (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+static gboolean 
+lw_dictionary_install_download (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
-    LwInstallDictionaryPrivate *priv;
+    LwDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
-    gint i;
-    LwInstallDictionaryUri group_index;
 
     //Initializations
     priv = dictionary->priv;
-    group_index = LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING;
-    i = 0;
 
     if (priv->cancel) return FALSE;
 
@@ -699,7 +734,7 @@ lw_installdictionary_download (LwInstallDictionary *dictionary, LwIoProgressCall
 //!
 //! @brief Detects the compression scheme of a file and decompresses it using the approprate function.
 //!        This function should normally only be used in the lw_installdictionary_install function.
-//! @param dictionary The LwInstallDictionary object to use to decompress the dictionary with.
+//! @param dictionary The LwDictionary object to use to decompress the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the decompression is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -708,18 +743,18 @@ lw_installdictionary_download (LwInstallDictionary *dictionary, LwIoProgressCall
 //! @see lw_installdictionary_postprocess
 //! @see lw_installdictionary_install
 //!
-gboolean 
-lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+static gboolean 
+lw_dictionary_install_decompress (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
-    LwInstallDictionaryUri group_index;
+    LwDictionaryUri group_index;
 
     //Initializations
 		priv = dictionary->priv;
@@ -765,7 +800,7 @@ lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCa
 //!
 //! @brief Converts the encoding to UTF8 for the file
 //!        This function should normally only be used in the lw_installdictionary_install function.
-//! @param dictionary The LwInstallDictionary object to use to convert the text encoding the dictionary with.
+//! @param dictionary The LwDictionary object to use to convert the text encoding the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the text encoding conversion is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -774,19 +809,19 @@ lw_installdictionary_decompress (LwInstallDictionary *dictionary, LwIoProgressCa
 //! @see lw_installdictionary_postprocess
 //! @see lw_installdictionary_install
 //!
-gboolean 
-lw_installdictionary_convert_encoding (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+static gboolean 
+lw_dictionary_install_convert_encoding (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
     const gchar *encoding_name;
-    LwInstallDictionaryUri group_index;
+    LwDictionaryUri group_index;
 
     //Initializations
 		priv = dictionary->priv;
@@ -816,7 +851,7 @@ lw_installdictionary_convert_encoding (LwInstallDictionary *dictionary, LwIoProg
 //!
 //! @brief does the required postprocessing on a dictionary
 //!        This function should normally only be used in the lw_installdictionary_install function.
-//! @param dictionary The LwInstallDictionary object to use for postprocessing the dictionary with.
+//! @param dictionary The LwDictionary object to use for postprocessing the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the postprocessing is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -825,8 +860,8 @@ lw_installdictionary_convert_encoding (LwInstallDictionary *dictionary, LwIoProg
 //! @see lw_installdictionary_postprocess
 //! @see lw_installdictionary_install
 //!
-gboolean 
-lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+static gboolean 
+lw_dictionary_install_postprocess (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -837,8 +872,8 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
     gchar *source2;
     gchar *target;
     gchar *target2;
-		LwInstallDictionaryPrivate *priv;
-    LwInstallDictionaryUri group_index;
+		LwDictionaryPrivate *priv;
+    LwDictionaryUri group_index;
 
     //Initializations
 		priv = dictionary->priv;
@@ -885,7 +920,7 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
 //!
 //! @brief does the required postprocessing on a dictionary
 //!        This function should normally only be used in the lw_installdictionary_install function.
-//! @param dictionary The LwInstallDictionary object to use for finalizing the dictionary with.
+//! @param dictionary The LwDictionary object to use for finalizing the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the finalization is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -894,18 +929,18 @@ lw_installdictionary_postprocess (LwInstallDictionary *dictionary, LwIoProgressC
 //! @see lw_installdictionary_postprocess
 //! @see lw_installdictionary_install
 //!
-gboolean 
-lw_installdictionary_finish (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+static gboolean 
+lw_dictionary_install_finalize (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
-    LwInstallDictionaryPrivate *priv;
+    LwDictionaryPrivate *priv;
     gchar *source;
     gchar *target;
-    LwInstallDictionaryUri group_index;
+    LwDictionaryUri group_index;
     gint i;
 
     //Initializations
@@ -929,16 +964,16 @@ lw_installdictionary_finish (LwInstallDictionary *dictionary, LwIoProgressCallba
 
 //!
 //! @brief removes temporary files created by installation in the dictionary cache folder
-//! @param dictionary The LwInstallDictionary object to use to clean the files.
+//! @param dictionary The LwDictionary object to use to clean the files.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the finalization is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //!
-void 
-lw_installdictionary_clean (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
+static void 
+lw_dictionary_install_clean (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
 {
     //Declarations
-		LwInstallDictionaryPrivate *priv;
-    LwInstallDictionaryUri group_index;
+		LwDictionaryPrivate *priv;
+    LwDictionaryUri group_index;
     gint i;
     gchar *source;
 
@@ -968,9 +1003,9 @@ lw_installdictionary_clean (LwInstallDictionary *dictionary, LwIoProgressCallbac
 
 
 //!
-//! @brief Installs a LwInstallDictionary object using the provided gui update callback
+//! @brief Installs a LwDictionary object using the provided gui update callback
 //!        This function should normally only be used in the lw_installdictionary_install function.
-//! @param dictionary The LwInstallDictionary object to use for installing the dictionary with.
+//! @param dictionary The LwDictionary object to use for installing the dictionary with.
 //! @param cb A LwIoProgressCallback used to giver user feedback on how far the installation is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
@@ -980,7 +1015,7 @@ lw_installdictionary_clean (LwInstallDictionary *dictionary, LwIoProgressCallbac
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_installdictionary_install (LwInstallDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     g_assert (*error == NULL && dictionary != NULL);
 
@@ -997,16 +1032,16 @@ lw_installdictionary_install (LwInstallDictionary *dictionary, LwIoProgressCallb
 
 //!
 //! @brief Returns a status string describing the current process being taken
-//!        on a LwInstallDictionary object
-//! @param dictionary A LwInstallDictionary object to get the status of.
+//!        on a LwDictionary object
+//! @param dictionary A LwDictionary object to get the status of.
 //! @param long_form Whether you want the long or short form of the status messages.
 //! @returns An allocated string that should be freed with gfree when finished
 //!
 gchar* 
-lw_installdictionary_get_status_string (LwInstallDictionary *dictionary, gboolean long_form)
+lw_installdictionary_get_status_string (LwDictionary *dictionary, gboolean long_form)
 {
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gchar *text;
     const gchar *longname;
 
@@ -1054,19 +1089,19 @@ lw_installdictionary_get_status_string (LwInstallDictionary *dictionary, gboolea
 
 
 //!
-//! @brief Returns the percent progress as a double for only the current LwInstallDictionary
-//! @param dictionary The LwInstallDictionary to get the progress of
+//! @brief Returns the percent progress as a double for only the current LwDictionary
+//! @param dictionary The LwDictionary to get the progress of
 //! @param fraction The fraction percentage of the current process
-//! @param The fraction percentage of all the LwInstallDictionary processes together.
+//! @param The fraction percentage of all the LwDictionary processes together.
 //!
-double lw_installdictionary_get_process_progress (LwInstallDictionary *dictionary, double fraction)
+double lw_installdictionary_get_process_progress (LwDictionary *dictionary, double fraction)
 {
     //Declarations
     gdouble current;
     gdouble final;
     gdouble output_fraction;
     gchar *ptr;
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     
     //Initializations
     current = 0.0;
@@ -1093,16 +1128,16 @@ double lw_installdictionary_get_process_progress (LwInstallDictionary *dictionar
 
 
 //!
-//! @brief Gets the total possible progress for the LwInstallDictionary.  It should be
+//! @brief Gets the total possible progress for the LwDictionary.  It should be
 //!        divided by the current progress to get the appropriate fraction
 //! @param dictionary The LwDictInfo object to get the total progress of
 //! @param fraction The fraction progress of the current process.
 //!
 double 
-lw_installdictionary_get_total_progress (LwInstallDictionary *dictionary, double fraction)
+lw_installdictionary_get_total_progress (LwDictionary *dictionary, double fraction)
 {
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gdouble output_fraction, current, final;
     gint i;
     gchar *ptr;
@@ -1158,16 +1193,16 @@ lw_installdictionary_get_total_progress (LwInstallDictionary *dictionary, double
 //! @param dictionary The LwDictInfo object to get the source uri of.
 //! @param GROUP_INDEX The group index designates the process step in the install
 //! @param ATOM_INDEX The desired atom if there are multiple files being acted upon in a step
-//! @returns An allocated string internal to the LwInstallDictionary that should not be freed
+//! @returns An allocated string internal to the LwDictionary that should not be freed
 //!
 gchar* 
-lw_installdictionary_get_source_uri (LwInstallDictionary *dictionary, const LwInstallDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
+lw_installdictionary_get_source_uri (LwDictionary *dictionary, const LwDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
 {
     //Sanity check
     g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
 
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gchar *uri;
 
 		priv = dictionary->priv;
@@ -1203,16 +1238,16 @@ lw_installdictionary_get_source_uri (LwInstallDictionary *dictionary, const LwIn
 //! @param dictionary The LwDictInfo object to get the source uri of.
 //! @param GROUP_INDEX The group index designates the process step in the install
 //! @param ATOM_INDEX The desired atom if there are multiple files being acted upon in a step
-//! @returns An allocated string internal to the LwInstallDictionary that should not be freed
+//! @returns An allocated string internal to the LwDictionary that should not be freed
 //!
 gchar* 
-lw_installdictionary_get_target_uri (LwInstallDictionary *dictionary, const LwInstallDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
+lw_installdictionary_get_target_uri (LwDictionary *dictionary, const LwDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
 {
     //Sanity check
     g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
 
     //Declarations
-		LwInstallDictionaryPrivate *priv;
+		LwDictionaryPrivate *priv;
     gchar *uri;
 
 		priv = dictionary->priv;
@@ -1243,14 +1278,14 @@ lw_installdictionary_get_target_uri (LwInstallDictionary *dictionary, const LwIn
 }
 
 //!
-//! @brief Used to tell the LwInstallDictionary installer to stop installation.
-//! @param dictionary The LwInstallDictionary object to stop or prevent the install on.
+//! @brief Used to tell the LwDictionary installer to stop installation.
+//! @param dictionary The LwDictionary object to stop or prevent the install on.
 //! @param state Whether to turn on the requested cancel operation or not.
 //!
 void 
-lw_installdictionary_set_cancel_operations (LwInstallDictionary *dictionary, gboolean state)
+lw_installdictionary_set_cancel_operations (LwDictionary *dictionary, gboolean state)
 {
-    LwInstallDictionaryPrivate *priv;
+    LwDictionaryPrivate *priv;
 
     priv = dictionary->priv;
     priv->cancel = state;

@@ -15,21 +15,15 @@ struct _LwDictionaryPrivate {
 };
 
 struct _LwDictionaryInstall {
-  gchar *uri[LW_INSTALLDICTIONARY_TOTAL_URIS];
+  gchar *download_urilist;
   gboolean selected;
   LwPreferences *preferences;
   gchar *schema;
   gchar *key;
   gboolean builtin;
   gulong listenerid;            //!< An id to hold the g_signal_connect value when the source copy uri pref is set
-  LwCompression compression;    //!< Path to the gziped dictionary file
   LwEncoding encoding;          //!< Path to the raw unziped dictionary file
-  LwInstallDictionaryUri uri_group_index;
-  gint uri_atom_index;
-  gchar **current_source_uris;
-  gchar **current_target_uris;
-  gboolean split;
-  gboolean merge;
+  gboolean postprocess;
   gboolean cancel;
 };
 
