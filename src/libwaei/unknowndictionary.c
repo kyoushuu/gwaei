@@ -38,7 +38,6 @@
 #include <libwaei/libwaei.h>
 #include <libwaei/dictionary-private.h>
 
-static gchar* lw_unknowndictionary_get_uri (LwDictionary*);
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_unknowndictionary_get_typename (LwDictionary*);
@@ -109,27 +108,7 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_unknowndictionary_parse_query;
     dictionary_class->parse_result = lw_unknowndictionary_parse_result;
-    dictionary_class->get_uri = lw_unknowndictionary_get_uri;
     dictionary_class->get_typename = lw_unknowndictionary_get_typename;
-}
-
-
-static gchar*
-lw_unknowndictionary_get_uri (LwDictionary *dictionary)
-{
-    //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, NULL);
-    g_return_val_if_fail (dictionary->priv->filename != NULL, NULL);
-
-    //Declarations
-    LwDictionaryPrivate *priv;
-    gchar *path;
-
-    //Initializations
-    priv = dictionary->priv;
-    path = lw_util_build_filename (LW_PATH_DICTIONARY_UNKNOWN, priv->filename);
-  
-    return path;
 }
 
 

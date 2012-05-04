@@ -151,7 +151,7 @@ lw_dictionary_get_length (LwDictionary *dictionary)
 
     if (priv->length < 0)
     {
-      uri = lw_dictionary_get_uri (dictionary);
+      uri = lw_dictionary_get_path (dictionary);
       if (uri != NULL)
       {
         priv->length = lw_io_get_size_for_uri (uri);
@@ -178,7 +178,6 @@ lw_dictionary_class_init (LwDictionaryClass *klass)
     object_class->finalize = lw_dictionary_finalize;
 
     dictionary_class = LW_DICTIONARY_CLASS (klass);
-    dictionary_class->get_uri = NULL;
     dictionary_class->parse_query = NULL;
     dictionary_class->parse_result = NULL;
 
@@ -213,7 +212,7 @@ lw_dictionary_uninstall (LwDictionary *dictionary, LwIoProgressCallback cb, GErr
     gchar *uri;
 
     //Initializations
-    uri =  lw_dictionary_get_uri (dictionary);
+    uri =  lw_dictionary_get_path (dictionary);
 
     if (uri != NULL)
     {
@@ -234,7 +233,7 @@ lw_dictionary_open (LwDictionary *dictionary)
     gchar *uri;
 
     file = NULL;
-    uri = lw_dictionary_get_uri (dictionary);
+    uri = lw_dictionary_get_path (dictionary);
     
     if (uri != NULL)
     {
@@ -246,18 +245,45 @@ lw_dictionary_open (LwDictionary *dictionary)
 }
 
 
+gchar*
+lw_dictionary_get_directory (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    gchar *path;
+
+    //Initializations
+    priv = LW_DICTIONARY (dictionary)->priv;
+    g_return_val_if_fail (priv->filename != NULL, NULL);
+    path = lw_util_build_filename (LW_PATH_DICTIONARY, G_OBJECT_TYPE_NAME (dictionary));
+  
+    return path;
+}
+
+
 gchar* 
-lw_dictionary_get_uri (LwDictionary *dictionary)
+lw_dictionary_get_path (LwDictionary *dictionary)
 {
     g_return_val_if_fail (dictionary != NULL, NULL);
 
-    LwDictionaryClass *klass;
+    gchar *directory;
+    const gchar *filename;
+    gchar *path;
 
-    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+    directory = lw_dictionary_get_directory (dictionary);
+    filename = lw_dictionary_get_filename (dictionary);
+    path = NULL;
 
-    g_return_val_if_fail (klass->get_uri != NULL, NULL);
+    if (directory != NULL)
+    {
+      path = g_build_filename (directory, filename, NULL);
+      g_free (directory); directory = NULL;
+    }
 
-    return klass->get_uri (dictionary);
+    return path;
 }
 
 
@@ -477,13 +503,11 @@ lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean 
 
 		priv = dictionary->priv;
     priv->postprocess = postprocess;
-
-    lw_installdictionary_regenerate_save_target_uris (dictionary);
 }
 
 
 static gchar**
-lw_dictionary_install_get_uri_downloadlist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_downloadlist (LwDictionary *dictionary)
 {
     //Declarations
     LwDictionaryPrivate *priv;
@@ -498,21 +522,21 @@ lw_dictionary_install_get_uri_downloadlist (LwDictionary *dictionary)
 
 
 static gchar**
-lw_dictionary_install_get_uri_decompresslist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_decompresslist (LwDictionary *dictionary)
 {
     gchar **list;
     gchar **ptr;
     gchar *separator, *separator1, *separator2;
     gchar *filename;
 
-    list = lw_dictionary_install_get_uri_downloadlist (dictionary);
+    list = lw_dictionary_install_get_path_downloadlist (dictionary);
 
     if (list != NULL)
     {
       for (ptr = list; *ptr != NULL; ptr++)
       {
-        separator1 = strrchar(*ptr, G_DIR_SEPARATOR);
-        separator2 = strrchar(*ptr, '/');
+        separator1 = strrchr(*ptr, G_DIR_SEPARATOR);
+        separator2 = strrchr(*ptr, '/');
         if (separator1 > separator2)
           separator = separator1;
         else
@@ -534,12 +558,12 @@ lw_dictionary_install_get_uri_decompresslist (LwDictionary *dictionary)
 
 
 static gchar**
-lw_dictionary_install_get_uri_encodelist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_encodelist (LwDictionary *dictionary)
 {
     gchar **list;
     const gchar* encodingname;
 
-    list = lw_dictionary_install_get_uri_decompresslist (LwDictionary *dictionary)
+    list = lw_dictionary_install_get_path_decompresslist (LwDictionary *dictionary)
     encodingname = lw_util_get_encoding_name (priv->install->encoding);
 
     if (list != NULL)
@@ -563,12 +587,13 @@ lw_dictionary_install_get_uri_encodelist (LwDictionary *dictionary)
 
 
 static gchar**
-lw_dictionary_install_get_uri_postprocesslist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_postprocesslist (LwDictionary *dictionary)
 {
     gchar **list;
+    gchar **ptr;
     const gchar* encodingname;
 
-    list = lw_dictionary_install_get_uri_encodelist (LwDictionary *dictionary)
+    list = lw_dictionary_install_get_path_encodelist (LwDictionary *dictionary)
     encodingname = lw_util_get_encoding_name (LW_ENCODING_UTF8);
 
     if (list != NULL)
@@ -592,43 +617,69 @@ lw_dictionary_install_get_uri_postprocesslist (LwDictionary *dictionary)
 
 
 static gchar**
-lw_dictionary_install_get_uri_finalizelist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_installlist (LwDictionary *dictionary)
 {
-    gchar *base;
+    g_return_val_if_fail (dictionary != NULL, NULL);
 
-    base = lw_util_build_filename (LW_PATH_CACHE, filename);
-    list = g_strjoin (".", base, "finish", NULL);
+    gchar **list;
+    gchar **ptr;
+    gchar  *separator;
+    
+    if (klass->install_get_path_finaliselist != NULL)
+    {
+      list = klass->install_get_path_finalizelist (dictionary);
+    }
+    else
+    {
+      list = g_new (gchar**, 2);
+      list[0] = lw_util_build_filename (LW_PATH_CACHE, lw_dictionary_get_filename (dictionary));
+      list[1] = NULL;
+    }
+
+    return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_uri_installedlist (LwDictionary *dictionary)
+lw_dictionary_install_get_path_installedlist (LwDictionary *dictionary)
 {
+    gchar **list;
+    gchar **ptr;
+    gchar  *separator;
+    gchar *filename;
+    gchar *directory;
+    
+    list = lw_dictionary_install_get_path_finalizelist (dictionary);
+    directory = lw_dictionary_get_directory (dictionary);
+
+    if (directory != NULL)
+    {
+      if (list != NULL)
+      {
+        for (ptr = list; ptr != NULL; ptr++)
+        {
+          separator = strrchr(*ptr, G_DIR_SEPARATOR);
+          if (separator != NULL)
+          {
+            separator++;
+            if (*separator != '\0')
+            {
+              filename = g_build_filename (directory, separator, NULL);
+              if (filename != NULL)
+              {
+                g_free (*ptr); *ptr = g_build_filename (directory, filename, NULL);
+                g_free (filename); filename = NULL;
+              }
+            }
+          }
+        }
+      }
+      g_free (directory); directory = NULL;
+    }
+
+
+    return list;
 }
-
-    //Initializations
-    filename = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
-    compression_ext = lw_util_get_compression_name (priv->compression);
-    encoding_ext = lw_util_get_encoding_name (priv->encoding);
-
-    temp[0][LW_INSTALLDICTIONARY_NEEDS_NOTHING] =  g_strdup (filename);
-
-    else if (priv->merge)
-    {
-      radicals_cache_filename = lw_util_build_filename (LW_PATH_CACHE, "Radicals");
-      temp[1][LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION] =  g_strjoin (".", radicals_cache_filename, "gz", NULL);
-      temp[1][LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING] =   g_strjoin (".", radicals_cache_filename, "EUC-JP", NULL);
-      temp[1][LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING] =   g_strjoin (".", radicals_cache_filename, "UTF8", NULL);
-      g_free (radicals_cache_filename);
-    }
-
-    //Join the strings if appropriate
-    for (i = 1; i < LW_INSTALLDICTIONARY_TOTAL_URIS; i++)
-    {
-      priv->uri[i] = g_strjoin (";", temp[0][i], temp[1][i], NULL);
-    }
-
-
 
 
 //!

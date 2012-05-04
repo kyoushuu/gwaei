@@ -40,7 +40,6 @@
 
 G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 
-static gchar* lw_exampledictionary_get_uri (LwDictionary*);
 static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_exampledictionary_get_typename (LwDictionary*);
@@ -114,27 +113,7 @@ lw_exampledictionary_class_init (LwExampleDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_exampledictionary_parse_query;
     dictionary_class->parse_result = lw_exampledictionary_parse_result;
-    dictionary_class->get_uri = lw_exampledictionary_get_uri;
     dictionary_class->get_typename = lw_exampledictionary_get_typename;
-}
-
-
-static gchar*
-lw_exampledictionary_get_uri (LwDictionary *dictionary)
-{
-    //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, NULL);
-
-    //Declarations
-    LwDictionaryPrivate *priv;
-    gchar *path;
-
-    //Initializations
-    priv = LW_DICTIONARY (dictionary)->priv;
-    g_return_val_if_fail (priv->filename != NULL, NULL);
-    path = lw_util_build_filename (LW_PATH_DICTIONARY_EXAMPLE, priv->filename);
-  
-    return path;
 }
 
 

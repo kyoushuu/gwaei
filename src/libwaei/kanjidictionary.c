@@ -40,7 +40,6 @@
 
 G_DEFINE_TYPE (LwKanjiDictionary, lw_kanjidictionary, LW_TYPE_DICTIONARY)
 
-static gchar* lw_kanjidictionary_get_uri (LwDictionary*);
 static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError **);
 static gboolean lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static const gchar* lw_kanjidictionary_get_typename (LwDictionary*);
@@ -115,28 +114,8 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_kanjidictionary_parse_query;
     dictionary_class->parse_result = lw_kanjidictionary_parse_result;
-    dictionary_class->get_uri = lw_kanjidictionary_get_uri;
     dictionary_class->get_typename = lw_kanjidictionary_get_typename;
     dictionary_class->compare = lw_kanjidictionary_compare;
-}
-
-
-static gchar*
-lw_kanjidictionary_get_uri (LwDictionary *dictionary)
-{
-    //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, NULL);
-
-    //Declarations
-    LwDictionaryPrivate *priv;
-    gchar *path;
-
-    //Initializations
-    priv = LW_DICTIONARY (dictionary)->priv;
-    g_return_val_if_fail (priv->filename != NULL, NULL);
-    path = lw_util_build_filename (LW_PATH_DICTIONARY_KANJI, priv->filename);
-  
-    return path;
 }
 
 

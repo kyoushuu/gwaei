@@ -28,16 +28,17 @@ struct _LwDictionary {
 
 struct _LwDictionaryClass {
   GObjectClass parent_class;
-  gchar*   (*get_uri) (LwDictionary *dictionary);
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
+  gchar**  (*install_get_uri_finalizelist) (LwDictionary *dictionary);
 };
 
 //Methods
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
-gchar* lw_dictionary_get_uri (LwDictionary*);
+gchar* lw_dictionary_get_directory (LwDictionary*);
+gchar* lw_dictionary_get_path (LwDictionary*);
 gboolean lw_dictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
 FILE* lw_dictionary_open (LwDictionary*);
