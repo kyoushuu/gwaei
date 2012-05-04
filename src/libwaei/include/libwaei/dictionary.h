@@ -31,7 +31,7 @@ struct _LwDictionaryClass {
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
-  gchar**  (*install_get_uri_finalizelist) (LwDictionary *dictionary);
+  gchar**  (*install_get_installlist) (LwDictionary *dictionary);
 };
 
 //Methods

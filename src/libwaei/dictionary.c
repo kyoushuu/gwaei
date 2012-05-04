@@ -511,7 +511,7 @@ lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean 
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_downloadlist (LwDictionary *dictionary)
 {
     //Declarations
@@ -532,7 +532,7 @@ lw_dictionary_install_get_downloadlist (LwDictionary *dictionary)
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
@@ -576,7 +576,7 @@ lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
@@ -616,7 +616,7 @@ lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
@@ -656,7 +656,7 @@ lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_installlist (LwDictionary *dictionary)
 {
     g_return_val_if_fail (dictionary != NULL, NULL);
@@ -664,8 +664,6 @@ lw_dictionary_install_get_installlist (LwDictionary *dictionary)
     LwDictionaryClass *klass;
     LwDictionaryPrivate *priv;
     gchar **list;
-    gchar **ptr;
-    gchar  *separator;
     
     priv = dictionary->priv;
     klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
@@ -679,18 +677,18 @@ lw_dictionary_install_get_installlist (LwDictionary *dictionary)
     }
     else
     {
-      list = g_new (gchar**, 2);
+      list = g_new (gchar*, 2);
       list[0] = lw_util_build_filename (LW_PATH_CACHE, lw_dictionary_get_filename (dictionary));
       list[1] = NULL;
     }
 
-    priv->install->installist = list;
+    priv->install->installlist = list;
 
     return list;
 }
 
 
-static gchar**
+static const gchar**
 lw_dictionary_install_get_installedlist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
