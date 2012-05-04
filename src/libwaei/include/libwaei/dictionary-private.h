@@ -15,7 +15,14 @@ struct _LwDictionaryPrivate {
 };
 
 struct _LwDictionaryInstall {
-  gchar *download_urilist;
+  gchar *download_preference;
+  gchar **downloadlist;
+  gchar **decompresslist;
+  gchar **encodelist;
+  gchar **postprocesslist;
+  gchar **installlist;
+  gchar **installedlist;
+
   gboolean selected;
   LwPreferences *preferences;
   gchar *schema;

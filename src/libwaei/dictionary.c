@@ -40,6 +40,8 @@
 
 #include <libwaei/dictionary-private.h>
 
+static void lw_dictionaryinstall_free (LwDictionaryInstall*);
+
 G_DEFINE_TYPE (LwDictionary, lw_dictionary, G_TYPE_OBJECT)
 
 typedef enum
@@ -427,10 +429,13 @@ lw_dictionaryinstall_new ()
 static void
 lw_dictionaryinstall_free (LwDictionaryInstall *install)
 {
-    //Declarations
-		int i;
+    if (install->download_preference != NULL) g_free (install->download_preference); install->download_preference = NULL;
 
-    //Initalizations
+    if (install->decompresslist != NULL) g_strfreev (install->decompresslist); install->decompresslist = NULL;
+    if (install->encodelist) g_strfreev (install->encodelist); install->encodelist = NULL;
+    if (install->postprocesslist) g_strfreev (install->postprocesslist); install->postprocesslist = NULL;
+    if (install->installlist) g_strfreev (install->installlist); install->installlist = NULL;
+    if (install->installedlist) g_strfreev (install->installedlist); install->installedlist = NULL;
 
     if (install->preferences != NULL && install->listenerid != 0)
     {
@@ -469,7 +474,7 @@ lw_dictionary_install_set_encoding (LwDictionary *dictionary, const LwEncoding E
 		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
-    priv->encoding = ENCODING;
+    priv->install->encoding = ENCODING;
 }
 
 
@@ -479,15 +484,15 @@ lw_dictionary_install_set_encoding (LwDictionary *dictionary, const LwEncoding E
 //! @param SOURCE The source string to copy to the LwDictionary object.
 //!
 void 
-lw_dictionary_install_set_download_urilist (LwDictionary *dictionary, const gchar *SOURCE)
+lw_dictionary_install_set_downloadlist (LwDictionary *dictionary, const gchar *SOURCE)
 {
 		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
 
-    if (priv->install->download_uri_list != NULL)
-      g_free (priv->install->download_uri_list);
-    priv->install->download_uri_list = g_strdup (SOURCE);
+    if (priv->install->download_preference != NULL)
+      g_free (priv->install->download_preference);
+    priv->install->download_preference = g_strdup (SOURCE);
 }
 
 
@@ -502,12 +507,12 @@ lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean 
 		LwDictionaryPrivate *priv;
 
 		priv = dictionary->priv;
-    priv->postprocess = postprocess;
+    priv->install->postprocess = POSTPROCESS;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_downloadlist (LwDictionary *dictionary)
+lw_dictionary_install_get_downloadlist (LwDictionary *dictionary)
 {
     //Declarations
     LwDictionaryPrivate *priv;
@@ -515,21 +520,33 @@ lw_dictionary_install_get_path_downloadlist (LwDictionary *dictionary)
 
     //Initalizations
     priv = dictionary->priv;
-    list = g_strplit (priv->install->download_urilist, ";", -1);
+
+    if (priv->install->downloadlist != NULL)
+      return priv->install->downloadlist;
+
+    list = g_strsplit (priv->install->download_preference, ";", -1);
+
+    priv->install->downloadlist = list;
 
     return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_decompresslist (LwDictionary *dictionary)
+lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
 {
+    LwDictionaryPrivate *priv;
     gchar **list;
     gchar **ptr;
     gchar *separator, *separator1, *separator2;
     gchar *filename;
 
-    list = lw_dictionary_install_get_path_downloadlist (dictionary);
+    priv = dictionary->priv;
+
+    if (priv->install->decompresslist != NULL)
+      return priv->install->decompresslist;
+
+    list = lw_dictionary_install_get_downloadlist (dictionary);
 
     if (list != NULL)
     {
@@ -553,81 +570,112 @@ lw_dictionary_install_get_path_decompresslist (LwDictionary *dictionary)
       }
     }
 
+    priv->install->decompresslist = list;
+
     return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_encodelist (LwDictionary *dictionary)
+lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
 {
+    LwDictionaryPrivate *priv;
     gchar **list;
+    gchar **ptr;
     const gchar* encodingname;
+    gchar *separator;
+    gchar *filename;
 
-    list = lw_dictionary_install_get_path_decompresslist (LwDictionary *dictionary)
+    priv = dictionary->priv;
+
+    if (priv->install->encodelist != NULL)
+      return priv->install->encodelist;
+
+    list = lw_dictionary_install_get_decompresslist (dictionary);
     encodingname = lw_util_get_encoding_name (priv->install->encoding);
 
     if (list != NULL)
     {
       for (ptr = list; *ptr != NULL; ptr++)
       {
-        separator = strchar(*ptr, '.');
+        separator = strchr(*ptr, '.');
 
         if (separator != NULL)
         {
           *separator = '\0';
-          filename = g_strjoin (".", *ptr, encodingname);
+          filename = g_strjoin (".", *ptr, encodingname, NULL);
           g_free(*ptr); 
           *ptr = filename;
         }
       }
     }
 
+    priv->install->encodelist = list;
+
     return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_postprocesslist (LwDictionary *dictionary)
+lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
 {
+    LwDictionaryPrivate *priv;
     gchar **list;
     gchar **ptr;
     const gchar* encodingname;
+    gchar *separator;
+    gchar *filename;
 
-    list = lw_dictionary_install_get_path_encodelist (LwDictionary *dictionary)
+    priv = dictionary->priv;
+
+    if (priv->install->postprocesslist != NULL)
+      return priv->install->postprocesslist;
+
+    list = lw_dictionary_install_get_encodelist (dictionary);
     encodingname = lw_util_get_encoding_name (LW_ENCODING_UTF8);
 
     if (list != NULL)
     {
       for (ptr = list; *ptr != NULL; ptr++)
       {
-        separator = strchar(*ptr, '.');
+        separator = strchr(*ptr, '.');
 
         if (separator != NULL)
         {
           *separator = '\0';
-          filename = g_strjoin (".", *ptr, encodingname);
+          filename = g_strjoin (".", *ptr, encodingname, NULL);
           g_free(*ptr); 
           *ptr = filename;
         }
       }
     }
 
+    priv->install->postprocesslist = list;
+
     return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_installlist (LwDictionary *dictionary)
+lw_dictionary_install_get_installlist (LwDictionary *dictionary)
 {
     g_return_val_if_fail (dictionary != NULL, NULL);
 
+    LwDictionaryClass *klass;
+    LwDictionaryPrivate *priv;
     gchar **list;
     gchar **ptr;
     gchar  *separator;
     
-    if (klass->install_get_path_finaliselist != NULL)
+    priv = dictionary->priv;
+    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+
+    if (priv->install->installlist != NULL)
+      return priv->install->installlist;
+
+    if (klass->install_get_installlist != NULL)
     {
-      list = klass->install_get_path_finalizelist (dictionary);
+      list = klass->install_get_installlist (dictionary);
     }
     else
     {
@@ -636,20 +684,28 @@ lw_dictionary_install_get_path_installlist (LwDictionary *dictionary)
       list[1] = NULL;
     }
 
+    priv->install->installist = list;
+
     return list;
 }
 
 
 static gchar**
-lw_dictionary_install_get_path_installedlist (LwDictionary *dictionary)
+lw_dictionary_install_get_installedlist (LwDictionary *dictionary)
 {
+    LwDictionaryPrivate *priv;
     gchar **list;
     gchar **ptr;
     gchar  *separator;
     gchar *filename;
     gchar *directory;
     
-    list = lw_dictionary_install_get_path_finalizelist (dictionary);
+    priv = dictionary->priv;
+
+    if (priv->install->installedlist != NULL)
+      return priv->install->installedlist;
+
+    list = lw_dictionary_install_get_installlist (dictionary);
     directory = lw_dictionary_get_directory (dictionary);
 
     if (directory != NULL)
@@ -677,6 +733,7 @@ lw_dictionary_install_get_path_installedlist (LwDictionary *dictionary)
       g_free (directory); directory = NULL;
     }
 
+    priv->install->installedlist = list;
 
     return list;
 }
