@@ -261,6 +261,27 @@ lw_dictionary_open (LwDictionary *dictionary)
 }
 
 
+gchar**
+lw_dictionary_installer_get_filelist (LwDictionary *dictionary)
+{
+    gchar **list;
+
+    if (priv->installer_get_filelist != NULL)
+    {
+      list = klass->installer_get_filelist (dictionary);
+    } 
+
+    else
+    {
+      list = g_new (gchar*, 2);
+      list[0] = g_strdup (lw_dictionary_get_filename (dictionary));
+      list[1] = NULL;
+    }
+
+    return list;
+}
+
+
 gchar*
 lw_dictionary_get_directory (LwDictionary *dictionary)
 {
@@ -688,15 +709,9 @@ lw_dictionary_installer_get_installlist (LwDictionary *dictionary)
       return (const gchar**) priv->install->installlist;
 
     filelist = (gchar**) lw_dictionary_installer_get_filelist (dictionary);
-    if (klass->install_get_installlist != NULL)
+  
+    foreach (filelist)
     {
-      list = klass->install_get_installlist (dictionary);
-    }
-    else
-    {
-      list = g_new (gchar*, 2);
-      list[0] = lw_util_build_filename (LW_PATH_CACHE, lw_dictionary_get_filename (dictionary));
-      list[1] = NULL;
     }
 
     priv->install->installlist = list;
@@ -717,11 +732,6 @@ lw_dictionary_installer_get_installedlist (LwDictionary *dictionary)
     gchar **filelist;
     
     priv = dictionary->priv;
-
-/*
-    if (priv->install->installedlist != NULL)
-      return priv->install->installedlist;
-*/
 
     list = (gchar**) lw_dictionary_installer_get_installlist (dictionary);
     directory = lw_dictionary_get_directory (dictionary);
@@ -998,9 +1008,9 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
 
     if (sourcelist != NULL && targetlist != NULL)
     {
-      if (priv->postprocess != NULL)
+      if (klass->installer_postprocess != NULL)
       {
-        priv->postprocess(sourcelist, targetlist, cb, data, error);
+        klass->installer->postprocess(dictionary, sourcelist, targetlist, cb, data, error);
       }
       else
       {
