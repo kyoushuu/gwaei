@@ -51,6 +51,20 @@ typedef enum
 } LwDictionaryProps;
 
 
+LwDictionary* lw_dictionary_installer_new (GType type)
+{
+    g_return_val_if_fail (g_type_is_a (type, LW_TYPE_DICTIONARY) != FALSE, NULL);
+
+    //Declarations
+    LwDictionary *dictionary;
+
+    //Initializations
+    dictionary = LW_DICTIONARY (g_object_new (type, NULL));
+
+    return dictionary;
+}
+
+
 static void 
 lw_dictionary_init (LwDictionary *dictionary)
 {
@@ -469,7 +483,7 @@ lw_dictionaryinstall_free (LwDictionaryInstall *install)
 //! @param ENCODING Tells the LwDictInfo object what the initial character encoding of the downloaded file will be
 //!
 void 
-lw_dictionary_install_set_encoding (LwDictionary *dictionary, const LwEncoding ENCODING)
+lw_dictionary_installer_set_encoding (LwDictionary *dictionary, const LwEncoding ENCODING)
 {
 		LwDictionaryPrivate *priv;
 
@@ -484,7 +498,7 @@ lw_dictionary_install_set_encoding (LwDictionary *dictionary, const LwEncoding E
 //! @param SOURCE The source string to copy to the LwDictionary object.
 //!
 void 
-lw_dictionary_install_set_downloadlist (LwDictionary *dictionary, const gchar *SOURCE)
+lw_dictionary_installer_set_downloadlist (LwDictionary *dictionary, const gchar *SOURCE)
 {
 		LwDictionaryPrivate *priv;
 
@@ -502,7 +516,7 @@ lw_dictionary_install_set_downloadlist (LwDictionary *dictionary, const gchar *S
 //! @param POSTPROCESS The split setting to copy to the LwDictionary.
 //!
 void 
-lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean POSTPROCESS)
+lw_dictionary_installer_set_postprocess (LwDictionary *dictionary, const gboolean POSTPROCESS)
 {
 		LwDictionaryPrivate *priv;
 
@@ -512,7 +526,7 @@ lw_dictionary_install_set_postprocess (LwDictionary *dictionary, const gboolean 
 
 
 static const gchar**
-lw_dictionary_install_get_downloadlist (LwDictionary *dictionary)
+lw_dictionary_installer_get_downloadlist (LwDictionary *dictionary)
 {
     //Declarations
     LwDictionaryPrivate *priv;
@@ -522,18 +536,18 @@ lw_dictionary_install_get_downloadlist (LwDictionary *dictionary)
     priv = dictionary->priv;
 
     if (priv->install->downloadlist != NULL)
-      return priv->install->downloadlist;
+      return (const gchar**) priv->install->downloadlist;
 
     list = g_strsplit (priv->install->download_preference, ";", -1);
 
     priv->install->downloadlist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
 static const gchar**
-lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
+lw_dictionary_installer_get_decompresslist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
     gchar **list;
@@ -544,9 +558,9 @@ lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
     priv = dictionary->priv;
 
     if (priv->install->decompresslist != NULL)
-      return priv->install->decompresslist;
+      return (const gchar**) priv->install->decompresslist;
 
-    list = lw_dictionary_install_get_downloadlist (dictionary);
+    list = (gchar**) lw_dictionary_installer_get_downloadlist (dictionary);
 
     if (list != NULL)
     {
@@ -572,12 +586,12 @@ lw_dictionary_install_get_decompresslist (LwDictionary *dictionary)
 
     priv->install->decompresslist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
 static const gchar**
-lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
+lw_dictionary_installer_get_encodelist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
     gchar **list;
@@ -589,10 +603,10 @@ lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
     priv = dictionary->priv;
 
     if (priv->install->encodelist != NULL)
-      return priv->install->encodelist;
+      return (const gchar**) priv->install->encodelist;
 
-    list = lw_dictionary_install_get_decompresslist (dictionary);
-    encodingname = lw_util_get_encoding_name (priv->install->encoding);
+    list = (gchar**) lw_dictionary_installer_get_decompresslist (dictionary);
+    encodingname = lw_util_get_encodingname (priv->install->encoding);
 
     if (list != NULL)
     {
@@ -612,12 +626,12 @@ lw_dictionary_install_get_encodelist (LwDictionary *dictionary)
 
     priv->install->encodelist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
 static const gchar**
-lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
+lw_dictionary_installer_get_postprocesslist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
     gchar **list;
@@ -629,10 +643,10 @@ lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
     priv = dictionary->priv;
 
     if (priv->install->postprocesslist != NULL)
-      return priv->install->postprocesslist;
+      return (const gchar**) priv->install->postprocesslist;
 
-    list = lw_dictionary_install_get_encodelist (dictionary);
-    encodingname = lw_util_get_encoding_name (LW_ENCODING_UTF8);
+    list = (gchar**) lw_dictionary_installer_get_encodelist (dictionary);
+    encodingname = lw_util_get_encodingname (LW_ENCODING_UTF8);
 
     if (list != NULL)
     {
@@ -652,25 +666,28 @@ lw_dictionary_install_get_postprocesslist (LwDictionary *dictionary)
 
     priv->install->postprocesslist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
 static const gchar**
-lw_dictionary_install_get_installlist (LwDictionary *dictionary)
+lw_dictionary_installer_get_installlist (LwDictionary *dictionary)
 {
     g_return_val_if_fail (dictionary != NULL, NULL);
 
     LwDictionaryClass *klass;
     LwDictionaryPrivate *priv;
     gchar **list;
+    gchar **filelist;
     
+//where does the install filelist come from!?
     priv = dictionary->priv;
     klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
 
     if (priv->install->installlist != NULL)
-      return priv->install->installlist;
+      return (const gchar**) priv->install->installlist;
 
+    filelist = (gchar**) lw_dictionary_installer_get_filelist (dictionary);
     if (klass->install_get_installlist != NULL)
     {
       list = klass->install_get_installlist (dictionary);
@@ -684,26 +701,29 @@ lw_dictionary_install_get_installlist (LwDictionary *dictionary)
 
     priv->install->installlist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
 static const gchar**
-lw_dictionary_install_get_installedlist (LwDictionary *dictionary)
+lw_dictionary_installer_get_installedlist (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
     gchar **list;
     gchar **ptr;
-    gchar  *separator;
+    gchar *separator;
     gchar *filename;
     gchar *directory;
+    gchar **filelist;
     
     priv = dictionary->priv;
 
+/*
     if (priv->install->installedlist != NULL)
       return priv->install->installedlist;
+*/
 
-    list = lw_dictionary_install_get_installlist (dictionary);
+    list = (gchar**) lw_dictionary_installer_get_installlist (dictionary);
     directory = lw_dictionary_get_directory (dictionary);
 
     if (directory != NULL)
@@ -733,7 +753,7 @@ lw_dictionary_install_get_installedlist (LwDictionary *dictionary)
 
     priv->install->installedlist = list;
 
-    return list;
+    return (const gchar**) list;
 }
 
 
@@ -745,8 +765,9 @@ lw_dictionary_install_get_installedlist (LwDictionary *dictionary)
 //!        called without crashing.
 //!
 gboolean 
-lw_dictionary_install_is_valid (LwDictionary *dictionary)
+lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 {
+/*
     //Declarations
 		LwDictionaryPrivate *priv;
     const gchar *ptr;
@@ -786,7 +807,7 @@ lw_dictionary_install_is_valid (LwDictionary *dictionary)
     //if (priv->type < 0 || priv->type >= TOTAL_LW_DICTTYPES) return FALSE;
     if (priv->compression < 0 || priv->compression >= LW_COMPRESSION_TOTAL) return FALSE;
     if (priv->encoding < 0 || priv->encoding >= LW_ENCODING_TOTAL) return FALSE;
-
+*/
     return TRUE;
 }
 
@@ -804,7 +825,7 @@ lw_dictionary_install_is_valid (LwDictionary *dictionary)
 //! @see lw_installdictionary_install
 //!
 static gboolean 
-lw_dictionary_install_download (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -812,25 +833,30 @@ lw_dictionary_install_download (LwDictionary *dictionary, LwIoProgressCallback c
 
     //Declarations
     LwDictionaryPrivate *priv;
-    gchar *source;
-    gchar *target;
+    const gchar **sourcelist, **sourceiter;
+    const gchar **targetlist, **targetiter;
 
     //Initializations
     priv = dictionary->priv;
+    sourceiter = sourcelist = lw_dictionary_installer_get_downloadlist (dictionary);
+    targetiter = targetlist = lw_dictionary_installer_get_decompresslist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (priv->install->cancel) return FALSE;
 
-    while ((source = lw_installdictionary_get_source_uri (dictionary, group_index, i)) != NULL &&
-           (target = lw_installdictionary_get_target_uri (dictionary, group_index, i)) != NULL
-          )
+    if (sourcelist != NULL && targetlist != NULL)
     {
-      //File is located locally so copy it
-      if (g_file_test (source, G_FILE_TEST_IS_REGULAR))
-        lw_io_copy (source, target, (LwIoProgressCallback) cb, data, error);
-      //Download the file
-      else
-        lw_io_download (source, target, cb, data, error);
-      i++;
+      while (*sourceiter != NULL && *targetiter != NULL)
+      {
+        //File is located locally so copy it
+        if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
+          lw_io_copy (*sourceiter, *targetiter, (LwIoProgressCallback) cb, data, error);
+        //Download the file
+        else
+          lw_io_download (*sourceiter, *targetiter, cb, data, error);
+
+        sourceiter++;
+        targetiter++;
+      }
     }
 
     return (*error == NULL);
@@ -850,7 +876,7 @@ lw_dictionary_install_download (LwDictionary *dictionary, LwIoProgressCallback c
 //! @see lw_installdictionary_install
 //!
 static gboolean 
-lw_dictionary_install_decompress (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -858,44 +884,31 @@ lw_dictionary_install_decompress (LwDictionary *dictionary, LwIoProgressCallback
 
     //Declarations
 		LwDictionaryPrivate *priv;
-    gchar *source;
-    gchar *target;
-    LwDictionaryUri group_index;
+    const gchar **sourcelist, **sourceiter;
+    const gchar **targetlist, **targetiter;
 
     //Initializations
 		priv = dictionary->priv;
-    group_index = LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION;
-    if (priv->cancel) return FALSE;
 
-    if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-        (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
-       )
+    if (priv->install->cancel) return FALSE;
+
+    sourceiter = sourcelist = lw_dictionary_installer_get_decompresslist (dictionary);
+    targetiter = targetlist = lw_dictionary_installer_get_encodelist (dictionary);
+
+    if (sourcelist != NULL && targetlist != NULL)
     {
-      //Sanity check
-      g_assert (g_file_test (source, G_FILE_TEST_IS_REGULAR));
-
-      //Preform the correct decompression
-      switch (priv->compression)
+      while (*sourceiter != NULL && *targetiter != NULL)
       {
-        case LW_COMPRESSION_GZIP:
-          lw_io_gunzip_file (source, target, cb, data, error);
-          break;
-        case LW_COMPRESSION_NONE:
-          lw_io_copy (source, target, cb, data, error);
-          break;
-        default:
-          break;
-      }
+        if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
+        {
+          if (g_str_has_suffix (*sourceiter, "gz") || g_str_has_suffix (*sourceiter, "gzip"))
+            lw_io_gunzip_file (*sourceiter, *targetiter, cb, data, error);
+          else
+            lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+        }
 
-      //If there is another path, it is assumed to be the radicals dictionary
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 1)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 1)) != NULL
-         )
-      {
-        //Sanity check
-        g_assert (g_file_test (source, G_FILE_TEST_IS_REGULAR));
-
-        lw_io_gunzip_file (source, target, cb, data, error);
+        sourceiter++;
+        targetiter++;
       }
     }
 
@@ -916,7 +929,7 @@ lw_dictionary_install_decompress (LwDictionary *dictionary, LwIoProgressCallback
 //! @see lw_installdictionary_install
 //!
 static gboolean 
-lw_dictionary_install_convert_encoding (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -924,30 +937,28 @@ lw_dictionary_install_convert_encoding (LwDictionary *dictionary, LwIoProgressCa
 
     //Declarations
 		LwDictionaryPrivate *priv;
-    gchar *source;
-    gchar *target;
-    const gchar *encoding_name;
-    LwDictionaryUri group_index;
+    const gchar **sourcelist, **sourceiter;
+    const gchar **targetlist, **targetiter;
+    const gchar *encodingname;
 
     //Initializations
 		priv = dictionary->priv;
-    group_index = LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING;
-    encoding_name = lw_util_get_encoding_name (priv->encoding);
+    sourceiter = sourcelist = lw_dictionary_installer_get_encodelist (dictionary);
+    targetiter = targetlist = lw_dictionary_installer_get_postprocesslist (dictionary);
+    encodingname = lw_util_get_encodingname (priv->install->encoding);
 
-    if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-        (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
-       )
+    if (sourcelist != NULL && targetlist != NULL)
     {
-      if (priv->encoding == LW_ENCODING_UTF8)
-        lw_io_copy (source, target, cb, data, error);
-      else
-        lw_io_copy_with_encoding (source, target, encoding_name, "UTF-8", cb, data, error);
+      while (*sourceiter != NULL && *targetiter != NULL)
+      {
+        if (priv->install->encoding == LW_ENCODING_UTF8)
+          lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+        else
+          lw_io_copy_with_encoding (*targetiter, *sourceiter, encodingname, "UTF-8", cb, data, error);
 
-      //If there is another path, it is assumed to be the radicals dictionary
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 1)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 1)) != NULL
-         )
-        lw_io_copy_with_encoding (source, target, "EUC-JP", "UTF-8", cb, data, error);
+        sourceiter++;
+        targetiter++;
+      }
     }
 
     return (*error == NULL);
@@ -967,55 +978,40 @@ lw_dictionary_install_convert_encoding (LwDictionary *dictionary, LwIoProgressCa
 //! @see lw_installdictionary_install
 //!
 static gboolean 
-lw_dictionary_install_postprocess (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
-    gchar *source;
-    gchar *source2;
-    gchar *target;
-    gchar *target2;
 		LwDictionaryPrivate *priv;
-    LwDictionaryUri group_index;
+    const gchar **sourcelist, **sourceiter;
+    const gchar **targetlist, **targetiter;
 
     //Initializations
 		priv = dictionary->priv;
-    group_index = LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING;
+    sourceiter = sourcelist = lw_dictionary_installer_get_postprocesslist (dictionary);
+    targetiter = targetlist = lw_dictionary_installer_get_installlist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (priv->install->cancel) return FALSE;
 
-    //Rebuild the mix dictionary
-    if (priv->merge)
+    if (sourcelist != NULL && targetlist != NULL)
     {
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-          (source2 = lw_installdictionary_get_source_uri (dictionary, group_index, 1)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
-         )
+      if (priv->postprocess != NULL)
       {
-      lw_io_create_mix_dictionary (target, source, source2, cb, data, error);
+        priv->postprocess(sourcelist, targetlist, cb, data, error);
       }
-    }
+      else
+      {
+        while (*sourceiter != NULL && *targetiter != NULL)
+        {
+          lw_io_copy (*sourceiter, *targetiter, cb, data, error);
 
-    //Rebuild the names dictionary
-    else if(priv->split)
-    {
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL &&
-          (target2 = lw_installdictionary_get_target_uri (dictionary, group_index, 1)) != NULL
-         )
-      lw_io_split_places_from_names_dictionary (target, target2, source, cb, data, error);
-    }
-
-    //Just copy the file no postprocessing required
-    else
-    {
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
-         )
-      lw_io_copy (source, target, cb, data, error);
+          sourceiter++;
+          targetiter++;
+        }
+      }
     }
 
     //Finish
@@ -1036,7 +1032,7 @@ lw_dictionary_install_postprocess (LwDictionary *dictionary, LwIoProgressCallbac
 //! @see lw_installdictionary_install
 //!
 static gboolean 
-lw_dictionary_install_finalize (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -1044,23 +1040,24 @@ lw_dictionary_install_finalize (LwDictionary *dictionary, LwIoProgressCallback c
 
     //Declarations
     LwDictionaryPrivate *priv;
-    gchar *source;
-    gchar *target;
-    LwDictionaryUri group_index;
-    gint i;
+    const gchar **sourcelist, **sourceiter;
+    const gchar **targetlist, **targetiter;
 
     //Initializations
-    group_index = LW_INSTALLDICTIONARY_NEEDS_FINALIZATION;
-    i = 0;
+    sourceiter = sourcelist = lw_dictionary_installer_get_installlist (dictionary);
+    targetiter = targetlist = lw_dictionary_installer_get_installedlist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (priv->install->cancel) return FALSE;
 
-    while ((source = lw_installdictionary_get_source_uri (dictionary, group_index, i)) != NULL &&
-           (target = lw_installdictionary_get_target_uri (dictionary, group_index, i)) != NULL
-          )
+    if (sourcelist != NULL && targetiter != NULL)
     {
-      lw_io_copy (source, target, cb, data, error);
-      i++;
+      while (*sourceiter != NULL && *targetiter != NULL)
+      {
+        lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+
+        sourceiter++;
+        targetiter++;
+      }
     }
 
     //Finish
@@ -1075,8 +1072,9 @@ lw_dictionary_install_finalize (LwDictionary *dictionary, LwIoProgressCallback c
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //!
 static void 
-lw_dictionary_install_clean (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
+lw_dictionary_installer_clean (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
 {
+/*
     //Declarations
 		LwDictionaryPrivate *priv;
     LwDictionaryUri group_index;
@@ -1105,6 +1103,7 @@ lw_dictionary_install_clean (LwDictionary *dictionary, LwIoProgressCallback cb, 
     priv->current_target_uris = NULL;
     priv->uri_group_index = -1;
     priv->uri_atom_index = -1;
+*/
 }
 
 
@@ -1125,12 +1124,12 @@ lw_dictionary_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpoint
 {
     g_assert (*error == NULL && dictionary != NULL);
 
-    lw_installdictionary_download (dictionary, cb, data, error);
-    lw_installdictionary_decompress (dictionary, cb, data, error);
-    lw_installdictionary_convert_encoding (dictionary, cb, data, error);
-    lw_installdictionary_postprocess (dictionary, cb, data, error);
-    lw_installdictionary_finish (dictionary, cb, data, error);
-    lw_installdictionary_clean (dictionary, cb, data);
+    lw_dictionary_installer_download (dictionary, cb, data, error);
+    lw_dictionary_installer_decompress (dictionary, cb, data, error);
+    lw_dictionary_installer_convert_encoding (dictionary, cb, data, error);
+    lw_dictionary_installer_postprocess (dictionary, cb, data, error);
+    lw_dictionary_installer_install (dictionary, cb, data, error);
+    lw_dictionary_installer_clean (dictionary, cb, data);
 
     return (*error == NULL);
 }
@@ -1146,6 +1145,7 @@ lw_dictionary_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpoint
 gchar* 
 lw_installdictionary_get_status_string (LwDictionary *dictionary, gboolean long_form)
 {
+/*
     //Declarations
 		LwDictionaryPrivate *priv;
     gchar *text;
@@ -1163,13 +1163,13 @@ lw_installdictionary_get_status_string (LwDictionary *dictionary, gboolean long_
         break;
       case LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING:
         if (long_form)
-          text = g_strdup_printf (gettext("Converting the encoding of %s from %s to UTF-8..."), longname, lw_util_get_encoding_name (priv->encoding));
+          text = g_strdup_printf (gettext("Converting the encoding of %s from %s to UTF-8..."), longname, lw_util_get_encodingname (priv->install->encoding));
         else
           text = g_strdup_printf (gettext("Converting the encoding to UTF-8..."));
         break;
       case LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION:
         if (long_form)
-          text = g_strdup_printf (gettext("Decompressing %s from %s file..."), longname, lw_util_get_compression_name (priv->compression));
+          text = g_strdup_printf (gettext("Decompressing %s from %s file..."), longname, lw_util_get_compressionname (priv->install->compression));
         else
           text = g_strdup_printf (gettext("Decompressing..."));
         break;
@@ -1189,6 +1189,8 @@ lw_installdictionary_get_status_string (LwDictionary *dictionary, gboolean long_
         text = g_strdup_printf (" ");
         break;
     }
+*/
+    gchar *text = NULL;
 
     return text;
 }
@@ -1202,6 +1204,7 @@ lw_installdictionary_get_status_string (LwDictionary *dictionary, gboolean long_
 //!
 double lw_installdictionary_get_process_progress (LwDictionary *dictionary, double fraction)
 {
+/*
     //Declarations
     gdouble current;
     gdouble final;
@@ -1228,6 +1231,8 @@ double lw_installdictionary_get_process_progress (LwDictionary *dictionary, doub
 
     if (final > 0.0)
       output_fraction = current / final;
+*/
+    gdouble output_fraction = 0.0;
 
     return output_fraction;
 }
@@ -1242,6 +1247,7 @@ double lw_installdictionary_get_process_progress (LwDictionary *dictionary, doub
 double 
 lw_installdictionary_get_total_progress (LwDictionary *dictionary, double fraction)
 {
+/*
     //Declarations
 		LwDictionaryPrivate *priv;
     gdouble output_fraction, current, final;
@@ -1289,99 +1295,12 @@ lw_installdictionary_get_total_progress (LwDictionary *dictionary, double fracti
 
     if (final > 0.0)
       output_fraction = current / final;
+*/  
+    double output_fraction = 0.0;
 
     return output_fraction;
 }
 
-
-//!
-//! @brief Gets the uris saved in the LwDictInfo in the form of an array.  It should not be freed.
-//! @param dictionary The LwDictInfo object to get the source uri of.
-//! @param GROUP_INDEX The group index designates the process step in the install
-//! @param ATOM_INDEX The desired atom if there are multiple files being acted upon in a step
-//! @returns An allocated string internal to the LwDictionary that should not be freed
-//!
-gchar* 
-lw_installdictionary_get_source_uri (LwDictionary *dictionary, const LwDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
-{
-    //Sanity check
-    g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
-
-    //Declarations
-		LwDictionaryPrivate *priv;
-    gchar *uri;
-
-		priv = dictionary->priv;
-
-    //Set up the backbone if it isn't already
-    if (GROUP_INDEX != priv->uri_group_index)
-    {
-      if (priv->current_source_uris != NULL) g_strfreev (priv->current_source_uris);
-      if (priv->current_target_uris != NULL) g_strfreev (priv->current_target_uris);
-      priv->current_source_uris = g_strsplit (priv->uri[GROUP_INDEX], ";", -1);
-      priv->current_target_uris = g_strsplit (priv->uri[GROUP_INDEX + 1], ";", -1);
-    }
-
-    //Get the information we came here for
-    if (ATOM_INDEX >= 0 && ATOM_INDEX < g_strv_length (priv->current_source_uris))
-    {
-      priv->uri_group_index = GROUP_INDEX;
-      priv->progress = 0.0;
-      priv->uri_atom_index = ATOM_INDEX;
-      uri = priv->current_source_uris[ATOM_INDEX];
-    }
-    else
-    {
-      uri = NULL;
-    }
-
-    return uri;
-}
-
-
-//!
-//! @brief Gets the uris saved in the LwDictInfo in the form of an array.  It should not be freed.
-//! @param dictionary The LwDictInfo object to get the source uri of.
-//! @param GROUP_INDEX The group index designates the process step in the install
-//! @param ATOM_INDEX The desired atom if there are multiple files being acted upon in a step
-//! @returns An allocated string internal to the LwDictionary that should not be freed
-//!
-gchar* 
-lw_installdictionary_get_target_uri (LwDictionary *dictionary, const LwDictionaryUri GROUP_INDEX, const gint ATOM_INDEX)
-{
-    //Sanity check
-    g_assert (GROUP_INDEX >= 0 && GROUP_INDEX < LW_INSTALLDICTIONARY_NEEDS_NOTHING);
-
-    //Declarations
-		LwDictionaryPrivate *priv;
-    gchar *uri;
-
-		priv = dictionary->priv;
-
-    //Set up the backbone if it isn't already
-    if (GROUP_INDEX != priv->uri_group_index)
-    {
-      priv->uri_group_index = GROUP_INDEX;
-      //priv->progress = 0.0;
-      if (priv->current_source_uris != NULL) g_strfreev (priv->current_source_uris);
-      if (priv->current_target_uris != NULL) g_strfreev (priv->current_target_uris);
-      priv->current_source_uris = g_strsplit (priv->uri[GROUP_INDEX], ";", -1);
-      priv->current_target_uris = g_strsplit (priv->uri[GROUP_INDEX + 1], ";", -1);
-    }
-
-    //Get the information we came here for
-    if (ATOM_INDEX >= 0 && ATOM_INDEX < g_strv_length (priv->current_target_uris))
-    {
-      //priv->uri_atom_index = ATOM_INDEX; //Only source sets this variable.  not target.
-      uri = priv->current_target_uris[ATOM_INDEX];
-    }
-    else
-    {
-      uri = NULL;
-    }
-
-    return uri;
-}
 
 //!
 //! @brief Used to tell the LwDictionary installer to stop installation.
@@ -1394,7 +1313,7 @@ lw_installdictionary_set_cancel_operations (LwDictionary *dictionary, gboolean s
     LwDictionaryPrivate *priv;
 
     priv = dictionary->priv;
-    priv->cancel = state;
+    priv->install->cancel = state;
     lw_io_set_cancel_operations (state);
 }
 

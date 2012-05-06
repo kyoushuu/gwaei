@@ -616,3 +616,14 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     return FALSE;
 }
 
+    //Rebuild the names dictionary
+    else if(priv->split)
+    {
+      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
+          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL &&
+          (target2 = lw_installdictionary_get_target_uri (dictionary, group_index, 1)) != NULL
+         )
+      lw_io_split_places_from_names_dictionary (target, target2, source, cb, data, error);
+    }
+
+

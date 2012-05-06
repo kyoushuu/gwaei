@@ -274,7 +274,7 @@ static int _libcurl_update_progress (void  *custom,
 //! @param error Error handling
 //!
 gboolean 
-lw_io_download (char *source_path, char *target_path, LwIoProgressCallback cb,
+lw_io_download (const char *source_path, const char *target_path, LwIoProgressCallback cb,
                 gpointer data, GError **error)
 {
     if (error != NULL && *error != NULL) return FALSE;

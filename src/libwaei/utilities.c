@@ -109,7 +109,7 @@ lw_util_build_filename (const LwFolderPath PATH, const char *FILENAME)
 //! @returns A constant string that should not be freed
 //!
 const char* 
-lw_util_get_compression_name (const LwCompression COMPRESSION)
+lw_util_get_compressionname (const LwCompression COMPRESSION)
 {
     char *type;
 
@@ -142,7 +142,7 @@ lw_util_get_compression_name (const LwCompression COMPRESSION)
 //! @returns A constant string that should not be freed
 //!
 const char* 
-lw_util_get_encoding_name (const LwEncoding ENCODING)
+lw_util_get_encodingname (const LwEncoding ENCODING)
 {
     char *type;
 

@@ -33,8 +33,8 @@ typedef enum {
 
 
 gchar* lw_util_build_filename (const LwFolderPath, const char*);
-const char* lw_util_get_compression_name (const LwCompression);
-const char* lw_util_get_encoding_name (const LwEncoding);
+const char* lw_util_get_compressionname (const LwCompression);
+const char* lw_util_get_encodingname (const LwEncoding);
 
 
 const char* lw_util_next_hira_char_from_roma (const char*);

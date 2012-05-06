@@ -336,3 +336,17 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     return FALSE;
 }
 
+
+    //Rebuild the mix dictionary
+    if (priv->merge)
+    {
+      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
+          (source2 = lw_installdictionary_get_source_uri (dictionary, group_index, 1)) != NULL &&
+          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
+         )
+      {
+      lw_io_create_mix_dictionary (target, source, source2, cb, data, error);
+      }
+    }
+
+

@@ -25,24 +25,24 @@ typedef enum  {
   LW_IO_ENCODING_CONVERSION_ERROR
 } LwIoErrorTypes;
 
-void lw_io_write_file (const char*, const char*, gchar*, LwIoProgressCallback, gpointer, GError**);
-char** lw_io_get_dictionary_file_list (const int);
-size_t lw_io_get_filesize (const char*);
+void lw_io_write_file (const gchar*, const gchar*, gchar*, LwIoProgressCallback, gpointer, GError**);
+gchar** lw_io_get_dictionary_file_list (const int);
+size_t lw_io_get_filesize (const gchar*);
 
-gboolean lw_io_create_mix_dictionary (const char*, const char*, const char*, LwIoProgressCallback, gpointer, GError**);
-gboolean lw_io_split_places_from_names_dictionary (const char*, const char*, const char*, LwIoProgressCallback, gpointer, GError**);
-gboolean lw_io_copy_with_encoding (const char*, const char*, const char*, const char*, LwIoProgressCallback, gpointer, GError**);
-gboolean lw_io_copy (const char*, const char*, LwIoProgressCallback, gpointer, GError**);
-gboolean lw_io_remove (const char*, GError**);
-gboolean lw_io_download (char*, char*, LwIoProgressCallback, gpointer, GError**);
-gboolean lw_io_gunzip_file (const char*, const char*, LwIoProgressCallback, gpointer, GError **);
-gboolean lw_io_unzip_file (char*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_create_mix_dictionary (const gchar*, const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_split_places_from_names_dictionary (const gchar*, const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_copy_with_encoding (const gchar*, const gchar*, const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_copy (const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_remove (const gchar*, GError**);
+gboolean lw_io_download (const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_io_gunzip_file (const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError **);
+gboolean lw_io_unzip_file (gchar*, LwIoProgressCallback, gpointer, GError**);
 
 void lw_io_set_savepath (const gchar *);
 const gchar* lw_io_get_savepath (void);
 
 void lw_io_set_cancel_operations (gboolean);
-long lw_io_get_size_for_uri (const char*);
+long lw_io_get_size_for_uri (const gchar*);
 
 G_END_DECLS
 
