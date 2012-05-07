@@ -801,7 +801,6 @@ errored:
     if (templist != NULL) g_strfreev (templist); templist = NULL;
     if (directory != NULL) g_free (directory); directory = NULL;
     return NULL;
-
 }
 
 

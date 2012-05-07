@@ -43,8 +43,8 @@ G_DEFINE_TYPE (LwEDictionary, lw_edictionary, LW_TYPE_DICTIONARY)
 static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
 static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-static const gchar* lw_edictionary_get_typename (LwDictionary*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
+static gboolean lw_edictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
 const static gchar *kanji_high = "^(無|不|非|お|御|)(%s)";
 const static gchar *kanji_medium = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と|$)";
@@ -129,6 +129,7 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->parse_query = lw_edictionary_parse_query;
     dictionary_class->parse_result = lw_edictionary_parse_result;
     dictionary_class->compare = lw_edictionary_compare;
+    dictionary_class->installer_postprocess = lw_edictionary_installer_postprocess;
 }
 
 
@@ -608,14 +609,19 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     return FALSE;
 }
 
-    //Rebuild the names dictionary
-    else if(priv->split)
-    {
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL &&
-          (target2 = lw_installdictionary_get_target_uri (dictionary, group_index, 1)) != NULL
-         )
-      lw_io_split_places_from_names_dictionary (target, target2, source, cb, data, error);
-    }
 
+static gboolean
+lw_edictionary_installer_postprocess (LwDictionary *dictionary, 
+                                      gchar **sourcelist, 
+                                      gchar **targetlist, 
+                                      LwIoProgressCallback cb,
+                                      gpointer data,
+                                      GError **error)
+{
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (g_strv_length (sourcelist) < 1, FALSE);
+    g_return_val_if_fail (g_strv_length (targetlist) < 2, FALSE);
+
+    return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, error);
+}
 

@@ -42,8 +42,8 @@ G_DEFINE_TYPE (LwKanjiDictionary, lw_kanjidictionary, LW_TYPE_DICTIONARY)
 
 static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError **);
 static gboolean lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-static const gchar* lw_kanjidictionary_get_typename (LwDictionary*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
+static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -114,15 +114,15 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_kanjidictionary_parse_query;
     dictionary_class->parse_result = lw_kanjidictionary_parse_result;
-    dictionary_class->get_typename = lw_kanjidictionary_get_typename;
     dictionary_class->compare = lw_kanjidictionary_compare;
+    dictionary_class->installer_postprocess = lw_kanjidictionary_installer_postprocess;
 }
 
 
 static gboolean 
 lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
-    if (error != NULL && *error != NULL) return;
+    if (error != NULL && *error != NULL) return FALSE;
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
@@ -141,13 +141,6 @@ static gboolean
 lw_kanjidictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
     return TRUE;
-}
-
-
-static const gchar*
-lw_kanjidictionary_get_typename (LwDictionary *dictionary)
-{
-    return "kanji";
 }
 
 
@@ -337,16 +330,18 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
 }
 
 
-    //Rebuild the mix dictionary
-    if (priv->merge)
-    {
-      if ((source = lw_installdictionary_get_source_uri (dictionary, group_index, 0)) != NULL &&
-          (source2 = lw_installdictionary_get_source_uri (dictionary, group_index, 1)) != NULL &&
-          (target = lw_installdictionary_get_target_uri (dictionary, group_index, 0)) != NULL
-         )
-      {
-      lw_io_create_mix_dictionary (target, source, source2, cb, data, error);
-      }
-    }
+static gboolean
+lw_kanjidictionary_installer_postprocess (LwDictionary *dictionary, 
+                                          gchar **sourcelist, 
+                                          gchar **targetlist, 
+                                          LwIoProgressCallback cb,
+                                          gpointer data,
+                                          GError **error)
+{
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (g_strv_length (sourcelist) < 2, FALSE);
+    g_return_val_if_fail (g_strv_length (targetlist) < 1, FALSE);
 
+    return lw_io_create_mix_dictionary (targetlist[0], sourcelist[0], sourcelist[1], cb, data, error);
+}
 

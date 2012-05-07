@@ -40,7 +40,6 @@
 
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-static const gchar* lw_unknowndictionary_get_typename (LwDictionary*);
 
 
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
@@ -108,7 +107,6 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_unknowndictionary_parse_query;
     dictionary_class->parse_result = lw_unknowndictionary_parse_result;
-    dictionary_class->get_typename = lw_unknowndictionary_get_typename;
 }
 
 
@@ -126,7 +124,7 @@ lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, F
 static gboolean
 lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
-    if (error != NULL && *error != NULL) return;
+    if (error != NULL && *error != NULL) return FALSE;
 /*
     tokens = lw_unknowninfo_get_tokens (dictionary, text);
 
@@ -150,10 +148,4 @@ lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     return (error == NULL || *error == NULL);
 }
 
-
-const gchar*
-lw_unknowndictionary_get_typename (LwDictionary *dictionary)
-{
-  return "unknown";
-}
 

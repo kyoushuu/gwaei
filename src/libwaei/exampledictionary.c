@@ -42,7 +42,6 @@ G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 
 static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-static const gchar* lw_exampledictionary_get_typename (LwDictionary*);
 
 LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 {
@@ -113,14 +112,13 @@ lw_exampledictionary_class_init (LwExampleDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_exampledictionary_parse_query;
     dictionary_class->parse_result = lw_exampledictionary_parse_result;
-    dictionary_class->get_typename = lw_exampledictionary_get_typename;
 }
 
 
 static gboolean 
 lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
-    if (error != NULL && *error != NULL) return;
+    if (error != NULL && *error != NULL) return FALSE;
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
@@ -139,13 +137,6 @@ static gboolean
 lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
     return TRUE;
-}
-
-
-static const gchar*
-lw_exampledictionary_get_typename (LwDictionary *dictionary)
-{
-    return "example";
 }
 
 
