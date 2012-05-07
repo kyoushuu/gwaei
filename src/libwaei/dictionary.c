@@ -264,9 +264,12 @@ lw_dictionary_open (LwDictionary *dictionary)
 gchar**
 lw_dictionary_installer_get_filelist (LwDictionary *dictionary)
 {
+    LwDictionaryClass *klass;
     gchar **list;
 
-    if (priv->installer_get_filelist != NULL)
+    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+
+    if (klass->installer_get_filelist != NULL)
     {
       list = klass->installer_get_filelist (dictionary);
     } 
@@ -546,224 +549,259 @@ lw_dictionary_installer_set_postprocess (LwDictionary *dictionary, const gboolea
 }
 
 
-static const gchar**
+static gchar**
 lw_dictionary_installer_get_downloadlist (LwDictionary *dictionary)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
     //Declarations
     LwDictionaryPrivate *priv;
-    gchar **list;
+    LwDictionaryInstall *install;
 
     //Initalizations
     priv = dictionary->priv;
+    install = priv->install;
 
-    if (priv->install->downloadlist != NULL)
-      return (const gchar**) priv->install->downloadlist;
+    if (install->downloadlist == NULL)
+    {
+      install->downloadlist = g_strsplit (priv->install->download_preference, ";", -1);
+    }
 
-    list = g_strsplit (priv->install->download_preference, ";", -1);
-
-    priv->install->downloadlist = list;
-
-    return (const gchar**) list;
+    return install->downloadlist;
 }
 
 
-static const gchar**
+static gchar**
 lw_dictionary_installer_get_decompresslist (LwDictionary *dictionary)
 {
-    LwDictionaryPrivate *priv;
-    gchar **list;
-    gchar **ptr;
-    gchar *separator, *separator1, *separator2;
-    gchar *filename;
-
-    priv = dictionary->priv;
-
-    if (priv->install->decompresslist != NULL)
-      return (const gchar**) priv->install->decompresslist;
-
-    list = (gchar**) lw_dictionary_installer_get_downloadlist (dictionary);
-
-    if (list != NULL)
-    {
-      for (ptr = list; *ptr != NULL; ptr++)
-      {
-        separator1 = strrchr(*ptr, G_DIR_SEPARATOR);
-        separator2 = strrchr(*ptr, '/');
-        if (separator1 > separator2)
-          separator = separator1;
-        else
-          separator = separator2;
-
-        separator++;
-
-        if (*separator != '\0')
-        {
-          filename = lw_util_build_filename (LW_PATH_CACHE, filename);
-          g_free(*ptr); 
-          *ptr = filename;
-        }
-      }
-    }
-
-    priv->install->decompresslist = list;
-
-    return (const gchar**) list;
-}
-
-
-static const gchar**
-lw_dictionary_installer_get_encodelist (LwDictionary *dictionary)
-{
-    LwDictionaryPrivate *priv;
-    gchar **list;
-    gchar **ptr;
-    const gchar* encodingname;
-    gchar *separator;
-    gchar *filename;
-
-    priv = dictionary->priv;
-
-    if (priv->install->encodelist != NULL)
-      return (const gchar**) priv->install->encodelist;
-
-    list = (gchar**) lw_dictionary_installer_get_decompresslist (dictionary);
-    encodingname = lw_util_get_encodingname (priv->install->encoding);
-
-    if (list != NULL)
-    {
-      for (ptr = list; *ptr != NULL; ptr++)
-      {
-        separator = strchr(*ptr, '.');
-
-        if (separator != NULL)
-        {
-          *separator = '\0';
-          filename = g_strjoin (".", *ptr, encodingname, NULL);
-          g_free(*ptr); 
-          *ptr = filename;
-        }
-      }
-    }
-
-    priv->install->encodelist = list;
-
-    return (const gchar**) list;
-}
-
-
-static const gchar**
-lw_dictionary_installer_get_postprocesslist (LwDictionary *dictionary)
-{
-    LwDictionaryPrivate *priv;
-    gchar **list;
-    gchar **ptr;
-    const gchar* encodingname;
-    gchar *separator;
-    gchar *filename;
-
-    priv = dictionary->priv;
-
-    if (priv->install->postprocesslist != NULL)
-      return (const gchar**) priv->install->postprocesslist;
-
-    list = (gchar**) lw_dictionary_installer_get_encodelist (dictionary);
-    encodingname = lw_util_get_encodingname (LW_ENCODING_UTF8);
-
-    if (list != NULL)
-    {
-      for (ptr = list; *ptr != NULL; ptr++)
-      {
-        separator = strchr(*ptr, '.');
-
-        if (separator != NULL)
-        {
-          *separator = '\0';
-          filename = g_strjoin (".", *ptr, encodingname, NULL);
-          g_free(*ptr); 
-          *ptr = filename;
-        }
-      }
-    }
-
-    priv->install->postprocesslist = list;
-
-    return (const gchar**) list;
-}
-
-
-static const gchar**
-lw_dictionary_installer_get_installlist (LwDictionary *dictionary)
-{
+    //Sanity checks
     g_return_val_if_fail (dictionary != NULL, NULL);
 
-    LwDictionaryClass *klass;
+    //Declarations
     LwDictionaryPrivate *priv;
-    gchar **list;
-    gchar **filelist;
-    
-//where does the install filelist come from!?
+    LwDictionaryInstall *install;
+    gchar **templist, **tempiter;
+    gchar *filename;
+    gchar *path;
+
+    //Initializations
     priv = dictionary->priv;
-    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+    install = priv->install;
+    templist = NULL;
 
-    if (priv->install->installlist != NULL)
-      return (const gchar**) priv->install->installlist;
-
-    filelist = (gchar**) lw_dictionary_installer_get_filelist (dictionary);
-  
-    foreach (filelist)
+    if (install->decompresslist == NULL)
     {
+      tempiter = templist = g_strdupv (lw_dictionary_installer_get_downloadlist (dictionary));
+      if (templist == NULL) goto errored;
+
+      while (*tempiter != NULL)
+      {
+        filename = strrchr(*tempiter, G_DIR_SEPARATOR);
+        if (filename == NULL || *(filename + 1) == '\0') goto errored;
+        filename++;
+
+        path = lw_util_build_filename (LW_PATH_CACHE, filename);
+        if (path == NULL) goto errored;
+        g_free(*tempiter); *tempiter = path; path = NULL;
+
+        tempiter++;
+      }
+
+      install->decompresslist = templist; templist = NULL;
     }
 
-    priv->install->installlist = list;
+    return install->decompresslist;
 
-    return (const gchar**) list;
+errored:
+    if (templist != NULL) g_strfreev (templist); templist = NULL;
+    return NULL;
 }
 
 
-static const gchar**
-lw_dictionary_installer_get_installedlist (LwDictionary *dictionary)
+static gchar**
+lw_dictionary_installer_get_encodelist (LwDictionary *dictionary)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
     LwDictionaryPrivate *priv;
-    gchar **list;
-    gchar **ptr;
-    gchar *separator;
-    gchar *filename;
-    gchar *directory;
-    gchar **filelist;
-    
+    LwDictionaryInstall *install;
+    gchar **templist, **tempiter;
+    const gchar* encodingname;
+    gchar *extension;
+    gchar *path;
+
+    //Initializations
     priv = dictionary->priv;
+    install = priv->install;
+    templist = NULL;
 
-    list = (gchar**) lw_dictionary_installer_get_installlist (dictionary);
-    directory = lw_dictionary_get_directory (dictionary);
-
-    if (directory != NULL)
+    if (install->encodelist == NULL)
     {
-      if (list != NULL)
+      tempiter = templist = g_strdupv (lw_dictionary_installer_get_decompresslist (dictionary));
+      if (templist == NULL) goto errored;
+      encodingname = lw_util_get_encodingname (install->encoding);
+
+      while (*tempiter != NULL)
       {
-        for (ptr = list; ptr != NULL; ptr++)
-        {
-          separator = strrchr(*ptr, G_DIR_SEPARATOR);
-          if (separator != NULL)
-          {
-            separator++;
-            if (*separator != '\0')
-            {
-              filename = g_build_filename (directory, separator, NULL);
-              if (filename != NULL)
-              {
-                g_free (*ptr); *ptr = g_build_filename (directory, filename, NULL);
-                g_free (filename); filename = NULL;
-              }
-            }
-          }
-        }
+        extension = strchr(*tempiter, '.');
+        if (extension == NULL) goto errored;
+
+        *extension = '\0';
+        path = g_strjoin (".", *tempiter, encodingname, NULL);
+        if (path == NULL) goto errored;
+        g_free(*tempiter); *tempiter = path; path = NULL;
+
+        tempiter++;
       }
-      g_free (directory); directory = NULL;
+
+      install->encodelist = templist; templist = NULL;
     }
 
-    priv->install->installedlist = list;
+    return install->encodelist;
 
-    return (const gchar**) list;
+errored:
+    if (templist != NULL) g_strfreev (templist); templist = NULL;
+    return NULL;
+}
+
+
+static gchar**
+lw_dictionary_installer_get_postprocesslist (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    gchar **templist, **tempiter;
+    const gchar* encodingname;
+    gchar *extension;
+    gchar *path;
+
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+    encodingname = lw_util_get_encodingname (LW_ENCODING_UTF8);
+    templist = NULL;
+
+    if (install->postprocesslist == NULL)
+    {
+      tempiter = templist = g_strdupv (lw_dictionary_installer_get_encodelist (dictionary));
+      if (templist == NULL) goto errored;
+
+      while (tempiter != NULL)
+      {
+        extension = strchr(*tempiter, '.');
+        if (extension == NULL) goto errored;
+
+        *extension = '\0';
+        path = g_strjoin (".", *tempiter, encodingname, NULL);
+        if (path == NULL) goto errored;
+        g_free(*tempiter); *tempiter = path; path = NULL;
+
+        tempiter++;
+      }
+
+      install->postprocesslist = templist; templist = NULL;
+    }
+
+    return install->postprocesslist;
+
+errored:
+    if (templist != NULL) g_strfreev (templist); templist = NULL;
+    return NULL;
+}
+
+
+static gchar**
+lw_dictionary_installer_get_installlist (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    gchar **templist, **tempiter;
+    gchar *path;
+    
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+    templist = NULL;
+
+    if (install->installlist == NULL)
+    {
+      tempiter = templist = lw_dictionary_installer_get_filelist (dictionary);
+      if (templist == NULL) goto errored;
+
+      while (*tempiter != NULL)
+      {
+        path = lw_util_build_filename (LW_PATH_CACHE, *tempiter);
+        if (path == NULL) goto errored;
+        g_free (*tempiter); *tempiter = path; path = NULL;
+    
+        tempiter++;
+      }
+
+      install->installlist = templist; templist = NULL;
+    }
+
+    return install->installlist;
+
+errored:
+    if (templist != NULL) g_strfreev (templist); templist = NULL;
+    return NULL;
+}
+
+
+static gchar**
+lw_dictionary_installer_get_installedlist (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    gchar **templist, **tempiter;
+    gchar *path;
+    gchar *directory;
+    
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+    directory = lw_dictionary_get_directory (dictionary);
+    templist = NULL;
+
+    if (install->installedlist == NULL)
+    {
+      tempiter = templist = lw_dictionary_installer_get_filelist (dictionary);
+      if (templist == NULL) goto errored;
+
+      while (*tempiter != NULL)
+      {
+        path = g_build_filename (directory, *tempiter, NULL);
+        if (path == NULL) goto errored;
+        g_free (*tempiter); *tempiter = path; path = NULL;
+    
+        tempiter++;
+      }
+
+      install->installedlist = templist; templist = NULL;
+    }
+
+    return install->installedlist;
+
+errored:
+    if (templist != NULL) g_strfreev (templist); templist = NULL;
+    if (directory != NULL) g_free (directory); directory = NULL;
+    return NULL;
+
 }
 
 
@@ -843,8 +881,8 @@ lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback
 
     //Declarations
     LwDictionaryPrivate *priv;
-    const gchar **sourcelist, **sourceiter;
-    const gchar **targetlist, **targetiter;
+    gchar **sourcelist, **sourceiter;
+    gchar **targetlist, **targetiter;
 
     //Initializations
     priv = dictionary->priv;
@@ -894,8 +932,8 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallba
 
     //Declarations
 		LwDictionaryPrivate *priv;
-    const gchar **sourcelist, **sourceiter;
-    const gchar **targetlist, **targetiter;
+    gchar **sourcelist, **sourceiter;
+    gchar **targetlist, **targetiter;
 
     //Initializations
 		priv = dictionary->priv;
@@ -947,8 +985,8 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgress
 
     //Declarations
 		LwDictionaryPrivate *priv;
-    const gchar **sourcelist, **sourceiter;
-    const gchar **targetlist, **targetiter;
+    gchar **sourcelist, **sourceiter;
+    gchar **targetlist, **targetiter;
     const gchar *encodingname;
 
     //Initializations
@@ -995,11 +1033,13 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
     g_return_val_if_fail (dictionary != NULL, FALSE);
 
     //Declarations
+    LwDictionaryClass *klass;
 		LwDictionaryPrivate *priv;
-    const gchar **sourcelist, **sourceiter;
-    const gchar **targetlist, **targetiter;
+    gchar **sourcelist, **sourceiter;
+    gchar **targetlist, **targetiter;
 
     //Initializations
+    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
 		priv = dictionary->priv;
     sourceiter = sourcelist = lw_dictionary_installer_get_postprocesslist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installlist (dictionary);
@@ -1010,7 +1050,7 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
     {
       if (klass->installer_postprocess != NULL)
       {
-        klass->installer->postprocess(dictionary, sourcelist, targetlist, cb, data, error);
+        klass->installer_postprocess (dictionary, sourcelist, targetlist, cb, data, error);
       }
       else
       {
@@ -1050,10 +1090,11 @@ lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback 
 
     //Declarations
     LwDictionaryPrivate *priv;
-    const gchar **sourcelist, **sourceiter;
-    const gchar **targetlist, **targetiter;
+    gchar **sourcelist, **sourceiter;
+    gchar **targetlist, **targetiter;
 
     //Initializations
+    priv = dictionary->priv;
     sourceiter = sourcelist = lw_dictionary_installer_get_installlist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installedlist (dictionary);
 

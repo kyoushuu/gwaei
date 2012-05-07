@@ -128,7 +128,6 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_edictionary_parse_query;
     dictionary_class->parse_result = lw_edictionary_parse_result;
-    dictionary_class->get_typename = lw_edictionary_get_typename;
     dictionary_class->compare = lw_edictionary_compare;
 }
 
@@ -481,13 +480,6 @@ lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *f
     }
 
     return TRUE;
-}
-
-
-static const gchar*
-lw_edictionary_get_typename (LwDictionary *dictionary)
-{
-    return "edict";
 }
 
 
