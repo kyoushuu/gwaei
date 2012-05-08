@@ -41,6 +41,7 @@
 #include <libwaei/dictionary-private.h>
 
 static void lw_dictionaryinstall_free (LwDictionaryInstall*);
+static LwDictionaryInstall* lw_dictionaryinstall_new (void);
 
 G_DEFINE_TYPE (LwDictionary, lw_dictionary, G_TYPE_OBJECT)
 
@@ -62,6 +63,68 @@ LwDictionary* lw_dictionary_installer_new (GType type)
     dictionary = LW_DICTIONARY (g_object_new (type, NULL));
 
     return dictionary;
+}
+
+
+void
+lw_dictionary_set_installer (LwDictionary *dictionary,
+                             const gchar *FILES,
+                             const gchar *DOWNLOADS,
+                             const gchar *NAME,
+                             const gchar *DESCRIPTION,
+                             LwEncoding encoding,
+                             gboolean postprocess)
+{
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (FILES != NULL && *FILES != '\0');
+    g_return_if_fail (encoding > -1);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+
+    //Initializations
+    priv = dictionary->priv;
+    if (priv->install != NULL) lw_dictionaryinstall_free (priv->install); 
+    priv->install = lw_dictionaryinstall_new ();
+    if (priv->install == NULL) return;
+    install = priv->install;
+
+    if (FILES != NULL) install->files = g_strdup (FILES);
+    if (DOWNLOADS != NULL) install->downloads = g_strdup (DOWNLOADS);
+    if (NAME != NULL) install->name = g_strdup (NAME);
+    if (DESCRIPTION != NULL) install->description = g_strdup (DESCRIPTION);
+    install->encoding = encoding;
+    install->postprocess = postprocess;
+}
+
+
+void
+lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
+                                     const gchar *FILES,
+                                     LwPreferences *preferences,
+                                     const gchar *KEY,
+                                     const gchar *NAME,
+                                     const gchar *DESCRIPTION,
+                                     LwEncoding encoding,
+                                     gboolean postprocess,
+                                     gboolean buildin)
+{
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (FILES != NULL);
+    g_return_if_fail (preferences != NULL);
+    g_return_if_fail (KEY != NULL);
+    g_return_if_fail (encoding > -1);
+
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+
+    lw_dictionary_set_installer (dictionary, FILES, NULL, NAME, DESCRIPTION, encoding, postprocess);
+    if (priv->install == NULL) return;
+    install = priv->install;
+
+    install->preferences = preferences;
+    install->key = KEY;
 }
 
 
@@ -87,8 +150,8 @@ lw_dictionary_finalize (GObject *object)
     priv = dictionary->priv;
 
     if (priv->filename != NULL) g_free (priv->filename); priv->filename = NULL;
-    if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
     if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;
+    if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
 
     if (priv->install != NULL) lw_dictionaryinstall_free (priv->install); priv->install = NULL;
 
@@ -115,10 +178,10 @@ lw_dictionary_set_property (GObject      *object,
       case PROP_FILENAME:
         if (priv->filename != NULL) g_free (priv->filename);
         priv->filename = g_value_dup_string (value);
-        if (priv->longname != NULL) g_free (priv->longname);
-        priv->longname = g_strdup_printf (gettext("%s Dictionary"), priv->filename);
         if (priv->shortname != NULL) g_free (priv->shortname);
         priv->shortname = g_strdup (priv->filename);
+        if (priv->longname != NULL) g_free (priv->longname);
+        priv->longname = g_strdup_printf (gettext("%s Dictionary"), priv->shortname);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -264,6 +327,8 @@ lw_dictionary_open (LwDictionary *dictionary)
 gchar**
 lw_dictionary_installer_get_filelist (LwDictionary *dictionary)
 {
+g_warning ("This is broken! Fix me before running!\n");
+exit(1);
     LwDictionaryClass *klass;
     gchar **list;
 
@@ -274,13 +339,15 @@ lw_dictionary_installer_get_filelist (LwDictionary *dictionary)
       list = klass->installer_get_filelist (dictionary);
     } 
 
+//THE CODE HERE SHOULD SPLIT the string stored in install->files
+/*
     else
     {
       list = g_new (gchar*, 2);
       list[0] = g_strdup (lw_dictionary_get_filename (dictionary));
       list[1] = NULL;
     }
-
+*/
     return list;
 }
 
@@ -453,7 +520,7 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 }
 
 
-LwDictionaryInstall*
+static LwDictionaryInstall*
 lw_dictionaryinstall_new ()
 {
 		LwDictionaryInstall *install;
@@ -467,7 +534,8 @@ lw_dictionaryinstall_new ()
 static void
 lw_dictionaryinstall_free (LwDictionaryInstall *install)
 {
-    if (install->download_preference != NULL) g_free (install->download_preference); install->download_preference = NULL;
+    if (install->files != NULL) g_free (install->files); install->files = NULL;
+    if (install->downloads != NULL) g_free (install->downloads); install->downloads = NULL;
 
     if (install->decompresslist != NULL) g_strfreev (install->decompresslist); install->decompresslist = NULL;
     if (install->encodelist) g_strfreev (install->encodelist); install->encodelist = NULL;
@@ -477,12 +545,9 @@ lw_dictionaryinstall_free (LwDictionaryInstall *install)
 
     if (install->preferences != NULL && install->listenerid != 0)
     {
-      lw_preferences_remove_change_listener_by_schema (install->preferences, install->schema, install->listenerid);
+      lw_preferences_remove_change_listener_by_schema (install->preferences, LW_SCHEMA_DICTIONARY, install->listenerid);
       install->listenerid = 0;
     }
-
-    if (install->schema != NULL) g_free (install->schema); install->schema = NULL;
-    if (install->key != NULL) g_free (install->key); install->key = NULL;
 }
 
 
@@ -517,24 +582,6 @@ lw_dictionary_installer_set_encoding (LwDictionary *dictionary, const LwEncoding
 
 
 //!
-//! @brief Updates the download source of the LwDictionary object
-//! @param dictionary The LwDictInfo objcet to set the SOURCE variable on
-//! @param SOURCE The source string to copy to the LwDictionary object.
-//!
-void 
-lw_dictionary_installer_set_downloadlist (LwDictionary *dictionary, const gchar *SOURCE)
-{
-		LwDictionaryPrivate *priv;
-
-		priv = dictionary->priv;
-
-    if (priv->install->download_preference != NULL)
-      g_free (priv->install->download_preference);
-    priv->install->download_preference = g_strdup (SOURCE);
-}
-
-
-//!
 //! @brief Updates the split state of the LwDictionary
 //! @param dictionary The LwDictInfo objcet to set the POSTPROCESS variable on
 //! @param POSTPROCESS The split setting to copy to the LwDictionary.
@@ -565,7 +612,7 @@ lw_dictionary_installer_get_downloadlist (LwDictionary *dictionary)
 
     if (install->downloadlist == NULL)
     {
-      install->downloadlist = g_strsplit (priv->install->download_preference, ";", -1);
+      install->downloadlist = g_strsplit (install->downloads, ";", -1);
     }
 
     return install->downloadlist;

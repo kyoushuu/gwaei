@@ -627,10 +627,8 @@ lw_dictionarylist_build_install_list (LwPreferences *preferences)
       preferences,
       LW_SCHEMA_DICTIONARY,
       LW_KEY_ENGLISH_SOURCE,
-      LW_DICTTYPE_EDICT,
-      LW_COMPRESSION_GZIP,
+      LW_TYPE_EDICTIONARY,
       LW_ENCODING_EUC_JP,
-      FALSE,
       FALSE,
       TRUE 
     );
@@ -644,10 +642,8 @@ lw_dictionarylist_build_install_list (LwPreferences *preferences)
       preferences,
       LW_SCHEMA_DICTIONARY,
       LW_KEY_KANJI_SOURCE,
-      LW_DICTTYPE_KANJI,
-      LW_COMPRESSION_GZIP,
+      LW_TYPE_KANJIDICTIONARY,
       LW_ENCODING_EUC_JP,
-      FALSE,
       TRUE,
       TRUE 
     );
@@ -661,11 +657,9 @@ lw_dictionarylist_build_install_list (LwPreferences *preferences)
       preferences,
       LW_SCHEMA_DICTIONARY,
       LW_KEY_NAMES_PLACES_SOURCE,
-      LW_DICTTYPE_EDICT,
-      LW_COMPRESSION_GZIP,
+      LW_TYPE_EDICTIONARY,
       LW_ENCODING_EUC_JP,
       TRUE,
-      FALSE,
       TRUE 
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
@@ -679,10 +673,8 @@ lw_dictionarylist_build_install_list (LwPreferences *preferences)
       preferences,
       LW_SCHEMA_DICTIONARY,
       LW_KEY_EXAMPLES_SOURCE,
-      LW_DICTTYPE_EXAMPLES,
-      LW_COMPRESSION_GZIP,
+      LW_TYPE_EXAMPLEDICTIONARY,
       LW_ENCODING_EUC_JP,
-      FALSE,
       FALSE,
       TRUE 
     );
@@ -694,10 +686,9 @@ lw_dictionarylist_build_install_list (LwPreferences *preferences)
       gettext("Other Dictionary"),
       gettext("Install a custom dictionary."),
       "",
-      LW_DICTTYPE_UNKNOWN,
+      LW_TYPE_UNKNOWNDICTIONARY,
       LW_COMPRESSION_NONE,
       LW_ENCODING_UTF8,
-      FALSE,
       FALSE,
       FALSE
     );

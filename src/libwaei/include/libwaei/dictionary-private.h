@@ -5,9 +5,8 @@ G_BEGIN_DECLS
 
 struct _LwDictionaryPrivate {
     gchar *filename;
-    gchar *longname;
     gchar *shortname;
-    gchar *description;
+    gchar *longname;
     gdouble progress;
     size_t length;       //!< Length of the file
     GMutex mutex;
@@ -15,7 +14,12 @@ struct _LwDictionaryPrivate {
 };
 
 struct _LwDictionaryInstall {
-  gchar *download_preference;
+  gchar *name;
+  gchar *description;
+
+  gchar *files;
+  gchar *downloads;
+
   gchar **downloadlist;
   gchar **decompresslist;
   gchar **encodelist;
@@ -25,8 +29,7 @@ struct _LwDictionaryInstall {
 
   gboolean selected;
   LwPreferences *preferences;
-  gchar *schema;
-  gchar *key;
+  const gchar *key;
   gboolean builtin;
   gulong listenerid;            //!< An id to hold the g_signal_connect value when the source copy uri pref is set
   LwEncoding encoding;          //!< Path to the raw unziped dictionary file
