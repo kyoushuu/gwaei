@@ -1,6 +1,8 @@
 #ifndef LW_VOCABULARYLIST_INCLUDED
 #define LW_VOCABULARYLIST_INCLUDED
 
+#include <libwaei/vocabulary.h>
+
 G_BEGIN_DECLS
 
 struct _LwVocabularyList {

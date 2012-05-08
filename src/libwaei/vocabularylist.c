@@ -99,7 +99,7 @@ lw_vocabularylist_free (LwVocabularyList *list)
     if (list->name != NULL) g_free (list->name);
     if (list->items != NULL)
     {
-      g_list_foreach (list->items, (GFunc) lw_vocabularyitem_free, NULL);
+      g_list_foreach (list->items, (GFunc) lw_vocabulary_free, NULL);
       g_list_free (list->items); list->items = NULL;
     }
     g_free (list);
@@ -109,7 +109,7 @@ lw_vocabularylist_free (LwVocabularyList *list)
 void
 lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
-    LwVocabularyItem *item;
+    LwVocabulary *item;
     gchar *uri;
     FILE *stream;
     const gint MAX = 512;
@@ -130,7 +130,7 @@ lw_vocabularylist_load (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
           if (fgets (buffer, MAX, stream) != NULL)
           {
             buffer[MAX] = '\0';
-            item = lw_vocabularyitem_new_from_string (buffer);
+            item = lw_vocabulary_new_from_string (buffer);
             if (item != NULL)
             {
               list->items = g_list_append (list->items, item);
@@ -151,7 +151,7 @@ void
 lw_vocabularylist_save (LwVocabularyList *list, const gchar *FILENAME, LwIoProgressCallback cb)
 {
     //Declarations
-    LwVocabularyItem *item;
+    LwVocabulary *item;
     GList *iter;
     gint i;
     gchar *uri;
@@ -169,10 +169,10 @@ lw_vocabularylist_save (LwVocabularyList *list, const gchar *FILENAME, LwIoProgr
       {
         for (iter = list->items; iter != NULL; iter = iter->next)
         {
-          item = LW_VOCABULARYITEM (iter->data);
+          item = LW_VOCABULARY (iter->data);
           if (item != NULL)
           {
-            for (i = 0; i < TOTAL_LW_VOCABULARYITEM_FIELDS - 1 && feof (stream) == 0; i++)
+            for (i = 0; i < TOTAL_LW_VOCABULARY_FIELDS - 1 && feof (stream) == 0; i++)
             {
               if (item->fields[i] != NULL)
               {

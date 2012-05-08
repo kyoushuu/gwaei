@@ -5,7 +5,7 @@
 #include <libwaei/utilities.h>
 #include <libwaei/io.h>
 #include <libwaei/preferences.h>
-#include <libwaei/vocabularyitem.h>
+#include <libwaei/vocabulary.h>
 #include <libwaei/vocabularylist.h>
 #include <libwaei/dictionary.h>
 #include <libwaei/edictionary.h>
