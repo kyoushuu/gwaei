@@ -54,6 +54,10 @@ size_t lw_dictionary_get_length (LwDictionary*);
 gboolean lw_dictionary_equals (LwDictionary*, LwDictionary*);
 gchar* lw_dictionary_build_description (LwDictionary*);
 
+gboolean lw_dictionary_installer_is_valid (LwDictionary*);
+gboolean lw_dictionary_installer_is_selected (LwDictionary*);
+
+
 G_END_DECLS
 
 #endif

@@ -804,6 +804,24 @@ errored:
 }
 
 
+gboolean
+lw_dictionary_installer_is_selected (LwDictionary *dictionary)
+{
+    //Sanity check
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+
+    return install->selected;
+}
+
+
 //!
 //! @brief Tells the installer mechanism if it is going to fail if it tries
 //!        installing because of missing info
@@ -814,48 +832,27 @@ errored:
 gboolean 
 lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 {
-/*
     //Declarations
 		LwDictionaryPrivate *priv;
-    const gchar *ptr;
-    gchar **temp_string_array;
-    gint total_download_arguments;
+    LwDictionaryInstall *install;
+    gchar **filelist;
+    gchar **downloadlist;
+    gboolean filesvalid, downloadsvalid, encodingvalid;
 
 		priv = dictionary->priv;
-    ptr = lw_dictionary_get_filename (LW_DICTIONARY (dictionary));
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
+    install = priv->install;
 
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_DOWNLOADING];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
+    downloadlist = lw_dictionary_installer_get_downloadlist (dictionary);
+    downloadsvalid = (downloadlist != NULL && g_strv_length (downloadlist) > 0);
+    if (downloadlist != NULL) g_strfreev (downloadlist); downloadlist = NULL;
 
-    //Make sure the correct number of download arguments are available
-    temp_string_array = g_strsplit (ptr, ";", -1);
-    total_download_arguments = g_strv_length (temp_string_array);
-    g_strfreev (temp_string_array);
+    filelist = lw_dictionary_installer_get_filelist (dictionary);
+    filesvalid = (filelist != NULL && g_strv_length (filelist) > 0);
+    if (filelist != NULL) g_strfreev (filelist); filelist = NULL;
 
-    if (priv->merge && total_download_arguments != 2) return FALSE;
-    if (!priv->merge && total_download_arguments != 1) return FALSE;
+    encodingvalid = (install->encoding >= 0 && install->encoding < LW_ENCODING_TOTAL);
 
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_DECOMPRESSION];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
-
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_TEXT_ENCODING];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
-
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_POSTPROCESSING];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
-
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_FINALIZATION];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
-
-    ptr = priv->uri[LW_INSTALLDICTIONARY_NEEDS_NOTHING];
-    if (ptr == NULL || strlen (ptr) == 0) return FALSE;
-
-    //if (priv->type < 0 || priv->type >= TOTAL_LW_DICTTYPES) return FALSE;
-    if (priv->compression < 0 || priv->compression >= LW_COMPRESSION_TOTAL) return FALSE;
-    if (priv->encoding < 0 || priv->encoding >= LW_ENCODING_TOTAL) return FALSE;
-*/
-    return TRUE;
+    return (downloadsvalid && filesvalid && encodingvalid);;
 }
 
 

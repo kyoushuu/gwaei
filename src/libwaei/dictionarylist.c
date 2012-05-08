@@ -245,7 +245,7 @@ lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList *dictionarylist, const 
     if (FUZZY_DESCRIPTION == NULL )
     {
       if (dictionarylist->list != NULL)
-        dictionary = (LwDictionary*) dictionarylist->list->data;
+        dictionary = LW_DICTIONARY (dictionarylist->list->data);
       else
         dictionary = NULL;
     }
@@ -551,33 +551,38 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
 
 
 
-/*
 //!
 //! @brief Checks to see if the current InstallDictionaryList is installation ready
 //!
 gboolean 
-lw_dictionarylist_installer_data_is_valid (LwDictionaryList *dictionarylist)
+lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
 {
     //Declarations
-    GList *link;
+    GList *list, *link;
     LwDictionary* dictionary;
-    LwDictionaryPrivate *priv;
-    LwDictionaryInstall *install;
     gint number_selected;
+    gboolean selected;
+    gboolean valid;
 
     //Initializations
+    link = list = dictionarylist->list;
     number_selected = 0;
 
-    for (link = dictionarylist->list; link != NULL; link = link->next)
+    while (link != NULL)
     {
-      dictionary = LwDictionary (link->data);
-      priv = dictionary->priv;
-      install = priv->install;
-      if (!lw_dictionary_data_is_valid (dictionary) && install->selected) return FALSE;
-      if (install->selected) number_selected++;
+      dictionary = LW_DICTIONARY (link->data);
+      valid = lw_dictionary_installer_is_valid (dictionary);
+      selected = lw_dictionary_installer_is_selected (dictionary);
+
+      if (!valid && selected) return FALSE;
+      if (selected) number_selected++;
+
+      link = link->next;
     }
+
     return (number_selected > 0);
 }
+/*
 
 
 void 
