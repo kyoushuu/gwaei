@@ -26,7 +26,6 @@ typedef enum  {
 } LwIoErrorTypes;
 
 void lw_io_write_file (const gchar*, const gchar*, gchar*, LwIoProgressCallback, gpointer, GError**);
-gchar** lw_io_get_dictionary_file_list (const int);
 size_t lw_io_get_filesize (const gchar*);
 
 gboolean lw_io_create_mix_dictionary (const gchar*, const gchar*, const gchar*, LwIoProgressCallback, gpointer, GError**);

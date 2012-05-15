@@ -25,7 +25,7 @@ void lw_dictionarylist_add_dictionary (LwDictionaryList*, LwDictionary*);
 
 LwDictionary* lw_dictionarylist_get_dictionary (LwDictionaryList*, GType, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_by_filename (LwDictionaryList*, const gchar*);
-LwDictionary* lw_dictionarylist_get_dictionary_by_id_string (LwDictionaryList*, const gchar*);
+LwDictionary* lw_dictionarylist_get_dictionary_by_id (LwDictionaryList*, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList*, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_by_position (LwDictionaryList*, gint);
 

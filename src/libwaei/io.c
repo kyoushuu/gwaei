@@ -663,53 +663,6 @@ lw_io_unzip_file (char *SOURCE_PATH, LwIoProgressCallback cb, gpointer data, GEr
 
 
 //!
-//! @brief Gets a list of the currently installed dictionaries as an array of strings.
-//! The format will be DICTTYPE/FILENAME and the array is null terminated.  Both the array
-//! and string themselves must be freed after.
-//!
-//! @returns An array of strings that must be freed.  We recommend g_strfreev() from glib
-//!
-char** 
-lw_io_get_dictionary_file_list (const int MAX)
-{
-/*
-    //Declarations and initializations
-    LwDictType type;
-    GDir *dir;
-    const char* typename;
-    const char* filename;
-    char *directory;
-    char** atoms = (char**) malloc((MAX + 1) * sizeof(int));
-    int i = 0;
-
-    //Go through each engine folder looking for dictionaries
-    for (type = 0; type < TOTAL_LW_DICTTYPES && i < MAX; type++)
-    {
-      typename = lw_util_dicttype_to_string (type);
-      directory = lw_util_build_filename_by_dicttype (type, NULL);
-      if (directory != NULL)
-      {
-        dir = g_dir_open (directory, 0, NULL);
-
-        //Look for files in the directory and stop if we reached the max for the program
-        while (dir != NULL && (filename =  g_dir_read_name (dir)) != NULL && i < MAX)
-        {
-          atoms[i] = g_strdup_printf("%s/%s", typename, filename);
-          i++;
-        }
-        g_dir_close(dir);
-        g_free (directory);
-      }
-    }
-    atoms[i] = NULL;
-
-    return atoms;
-*/
-    return NULL;
-}
-
-
-//!
 //! @brief Gets the size of a file in bytes
 //! @param URI The path to the file to calculate the size of
 //! @returns The size of the file in bytes

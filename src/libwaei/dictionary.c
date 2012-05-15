@@ -457,22 +457,40 @@ lw_dictionary_equals (LwDictionary *dictionary1, LwDictionary *dictionary2)
 
 
 gchar*
+lw_dictionary_build_id_from_type (GType type, const gchar *FILENAME)
+{
+    //Sanity checks
+    g_return_val_if_fail (FILENAME != NULL, NULL);
+
+    //Declarations
+    gchar *id;
+    const gchar *TYPENAME;
+
+    //Initializations
+    TYPENAME = g_type_name (type);
+    id = g_strdup_printf ("%s/%s", TYPENAME, FILENAME);
+
+    return id;
+}
+
+
+gchar*
 lw_dictionary_build_id (LwDictionary *dictionary)
 {
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, NULL);
 
     //Declarations
-    gchar *description;
-    const gchar *TYPENAME;
+    gchar *id;
+    GType type;
     const gchar *FILENAME;
 
     //Initializations
-    TYPENAME = G_OBJECT_TYPE_NAME (dictionary);
+    type = G_OBJECT_TYPE (dictionary);
     FILENAME = lw_dictionary_get_filename (dictionary);
-    description = g_strdup_printf ("%s/%s", TYPENAME, FILENAME);
+    id = lw_dictionary_build_id_from_type (type, FILENAME);
 
-    return description;
+    return id;
 }
 
 
@@ -570,4 +588,95 @@ lw_dictionary_cancel (LwDictionary *dictionary)
     }
 }
 
+
+gchar**
+lw_dictionary_get_installed_idlist (GType type_filter)
+{
+    //Declarations
+    GType* childlist;
+    GType *childiter;
+
+    const gchar* filename;
+    const gchar* directoryname;
+    gchar *directorypath;
+    GDir *directory;
+
+    gchar **idlist;
+    gchar **iditer;
+
+    gint length;
+  
+    {
+      GType type;
+      type = lw_edictionary_get_type ();
+      type = lw_kanjidictionary_get_type ();
+      type = lw_unknowndictionary_get_type ();
+      type = lw_exampledictionary_get_type ();
+    }
+
+    if (g_type_is_a (type_filter, LW_TYPE_DICTIONARY))
+{
+      childiter = childlist = g_type_children (type_filter, NULL);
+printf("BREAK is a type\n");
+}
+    else
+{
+      guint total;
+      childiter = childlist = g_type_children (LW_TYPE_DICTIONARY, &total);
+printf("BREAK is not a type %d\n", total);
+}
+  
+    if (childiter == NULL) return NULL;
+
+    length = 0;
+
+    //Find out how long the array has to be
+    while (*childiter != 0)
+    {
+      directoryname = g_type_name (*childiter);
+      directorypath = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
+printf("directorypath: %s\n", directorypath);
+      directory = g_dir_open (directorypath, 0, NULL);
+
+      while ((filename = g_dir_read_name (directory)) != NULL)
+      {
+        length++;
+      }
+
+      childiter++;
+
+      g_free (directorypath); directorypath = NULL;
+      g_dir_close (directory); directory = NULL;
+    }
+printf("length %d\n", length);
+
+    iditer = idlist = g_new0 (gchar*, length + 1);
+    childiter = childlist;
+
+    //Find out how long the array has to be
+    while (*childiter != 0)
+    {
+      directoryname = g_type_name (*childiter);
+      directorypath = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
+      directory = g_dir_open (directorypath, 0, NULL);
+
+      while ((filename = g_dir_read_name (directory)) != NULL && length > 0)
+      {
+        *iditer = lw_dictionary_build_id_from_type (*childiter, filename);
+        printf("id: %s\n", *iditer);
+        
+        iditer++;
+        length--;
+      }
+
+      childiter++;
+
+      g_free (directorypath); directorypath = NULL;
+      g_dir_close (directory); directory = NULL;
+    }
+
+   
+
+    return idlist;
+}
 

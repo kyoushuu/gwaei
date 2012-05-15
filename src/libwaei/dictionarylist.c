@@ -117,9 +117,10 @@ lw_dictionarylist_clear (LwDictionaryList *dictionarylist)
 void 
 lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
 {
+printf("BREAK load installed 1\n");
     //Declarations
-    gchar** filelist;
-    gchar **ptr;
+    gchar** idlist;
+    gchar **iditer;
     gchar** pair;
     GType type;
     LwDictionary *dictionary;
@@ -127,14 +128,17 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
 
     lw_dictionarylist_clear (dictionarylist);
 
-    filelist = lw_io_get_dictionary_file_list (100);
-    if (filelist != NULL)
+    idlist = lw_dictionary_get_installed_idlist (G_TYPE_NONE);
+    if (idlist != NULL)
     {
-      for (ptr = filelist; *ptr != NULL; ptr++)
+printf("BREAK load installed 2\n");
+      for (iditer = idlist; *iditer != NULL; iditer++)
       {
-        pair = g_strsplit_set (*ptr, "/", 2);
+printf("BREAK load installed 3 %s\n", *iditer);
+        pair = g_strsplit_set (*iditer, "/", 2);
         if (pair != NULL && pair[0] != NULL && pair[1] != NULL) 
         {
+printf("BREAK load installed 4 %s\n", *iditer);
           type = g_type_from_name (pair[0]);
           FILENAME = pair[1];
           dictionary = LW_DICTIONARY (g_object_new (type, "dictionary-filename", FILENAME, NULL));
@@ -143,7 +147,7 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
         }
         g_strfreev (pair); pair = NULL;
       }
-      g_strfreev (filelist); filelist = NULL;
+      g_strfreev (idlist); idlist = NULL;
     }
 }
 
@@ -255,7 +259,7 @@ lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList *dictionarylist, const 
     else
     {
       if (dictionary == NULL)
-        dictionary = lw_dictionarylist_get_dictionary_by_id_string (dictionarylist, FUZZY_DESCRIPTION);
+        dictionary = lw_dictionarylist_get_dictionary_by_id (dictionarylist, FUZZY_DESCRIPTION);
       if (dictionary == NULL)
         dictionary = lw_dictionarylist_get_dictionary_by_filename (dictionarylist, FUZZY_DESCRIPTION);
     }
@@ -307,10 +311,10 @@ lw_dictionarylist_get_dictionary_by_filename (LwDictionaryList *dictionarylist, 
 //! @returns The requested LwDictionary object if found or NULL.
 //!
 LwDictionary* 
-lw_dictionarylist_get_dictionary_by_id_string (LwDictionaryList *dictionarylist, const char* ENGINE_AND_FILENAME)
+lw_dictionarylist_get_dictionary_by_id (LwDictionaryList *dictionarylist, const gchar* ENGINE_AND_FILENAME)
 {
     //Sanity checks
-    g_assert (ENGINE_AND_FILENAME != NULL);
+    g_return_val_if_fail (dictionarylist != NULL && ENGINE_AND_FILENAME != NULL, NULL);
 
     //Declarations
     GList *link;
@@ -553,40 +557,6 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
 }
 
 
-
-//!
-//! @brief Checks to see if the current InstallDictionaryList is installation ready
-//!
-gboolean 
-lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
-{
-    //Declarations
-    GList *list, *link;
-    LwDictionary* dictionary;
-    gint number_selected;
-    gboolean selected;
-    gboolean valid;
-
-    //Initializations
-    link = list = dictionarylist->list;
-    number_selected = 0;
-
-    while (link != NULL)
-    {
-      dictionary = LW_DICTIONARY (link->data);
-      valid = lw_dictionary_installer_is_valid (dictionary);
-      selected = lw_dictionary_is_selected (dictionary);
-
-      if (!valid && selected) return FALSE;
-      if (selected) number_selected++;
-
-      link = link->next;
-    }
-
-    return (number_selected > 0);
-}
-
-
 void 
 lw_dictionarylist_cancel (LwDictionaryList *dictionarylist, gboolean state)
 {
@@ -710,3 +680,38 @@ lw_dictionarylist_load_installable (LwDictionaryList *list)
   curl_global_init (CURL_GLOBAL_ALL);
     curl_global_cleanup ();
 */
+
+
+
+//!
+//! @brief Checks to see if the current InstallDictionaryList is installation ready
+//!
+gboolean 
+lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
+{
+    //Declarations
+    GList *list, *link;
+    LwDictionary* dictionary;
+    gint number_selected;
+    gboolean selected;
+    gboolean valid;
+
+    //Initializations
+    link = list = dictionarylist->list;
+    number_selected = 0;
+
+    while (link != NULL)
+    {
+      dictionary = LW_DICTIONARY (link->data);
+      valid = lw_dictionary_installer_is_valid (dictionary);
+      selected = lw_dictionary_is_selected (dictionary);
+
+      if (!valid && selected) return FALSE;
+      if (selected) number_selected++;
+
+      link = link->next;
+    }
+
+    return (number_selected > 0);
+}
+
