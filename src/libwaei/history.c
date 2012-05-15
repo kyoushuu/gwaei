@@ -212,7 +212,7 @@ lw_history_add_search (LwHistory *list, LwSearch *search)
     if (g_list_length (list->back) >= list->max)
     {
       link = g_list_last (list->back); 
-      lw_search_free (LW_SEARCHITEM (link->data));
+      lw_search_free (LW_SEARCH (link->data));
       list->back = g_list_delete_link (list->back, link);
     }
 }
@@ -257,7 +257,7 @@ lw_history_go_back (LwHistory *list, LwSearch *pushed)
     }
 
     link = g_list_last (list->back); 
-    popped = LW_SEARCHITEM (link->data);
+    popped = LW_SEARCH (link->data);
     list->back = g_list_delete_link (list->back, link);
 
     return popped;
@@ -283,7 +283,7 @@ lw_history_go_forward (LwHistory *list, LwSearch *pushed)
     }
 
     link = g_list_last (list->forward); 
-    popped = LW_SEARCHITEM (link->data);
+    popped = LW_SEARCH (link->data);
     list->forward = g_list_delete_link (list->forward, link);
 
     return popped;

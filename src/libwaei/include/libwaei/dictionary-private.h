@@ -10,7 +10,10 @@ struct _LwDictionaryPrivate {
     gdouble progress;
     size_t length;       //!< Length of the file
     GMutex mutex;
+    LwDictionaryState state;
     LwDictionaryInstall *install;
+    gboolean selected;
+    gboolean cancel;
 };
 
 struct _LwDictionaryInstall {
@@ -27,14 +30,13 @@ struct _LwDictionaryInstall {
   gchar **installlist;
   gchar **installedlist;
 
-  gboolean selected;
   LwPreferences *preferences;
   const gchar *key;
   gboolean builtin;
   gulong listenerid;            //!< An id to hold the g_signal_connect value when the source copy uri pref is set
   LwEncoding encoding;          //!< Path to the raw unziped dictionary file
   gboolean postprocess;
-  gboolean cancel;
+  LwDictionaryInstallerState state;
 };
 
 #define LW_DICTIONARY_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), LW_TYPE_DICTIONARY, LwDictionaryPrivate));

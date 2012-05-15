@@ -32,52 +32,27 @@
 
 #include <libwaei/libwaei.h>
 
-static gboolean _query_is_sane (const char* query)
-{
-    //Declarations
-    char *q;
-    gboolean is_sane;
-
-    //Initializations
-    q = lw_util_prepare_query (query, TRUE); 
-    is_sane = TRUE;
-
-    //Tests
-    if (strlen (q) == 0)
-      is_sane = FALSE;
-
-    if (g_str_has_prefix (q, "|") || g_str_has_prefix (q, "&")) 
-      is_sane = FALSE;
-    if (g_str_has_suffix (q, "\\") || g_str_has_suffix (q, "|") || g_str_has_suffix (q, "&")) 
-      is_sane = FALSE;
-
-    g_free (q);
-
-    return is_sane;
-}
-
+static void lw_search_init (LwSearch*, const gchar*, LwDictionary*, LwSearchFlags, GError**);
+static void lw_search_deinit (LwSearch*);
 
 //!
 //! @brief Creates a new LwSearch object. 
 //! @param query The text to be search for
 //! @param dictionary The LwDictionary object to use
 //! @param TARGET The widget to output the results to
-//! @param preferences The Application preference manager to get information from
 //! @param error A GError to place errors into or NULL
 //! @return Returns an allocated LwSearch object that should be freed with lw_search_free or NULL on error
 //!
 LwSearch* 
-lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
+lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
 {
-    if (!_query_is_sane (QUERY)) return NULL;
-
     LwSearch *temp;
 
-    temp = (LwSearch*) malloc(sizeof(LwSearch));
+    temp = g_new (LwSearch, 1);
 
     if (temp != NULL)
     {
-      lw_search_init (temp, QUERY, dictionary, preferences, error);
+      lw_search_init (temp, QUERY, dictionary, flags, error);
 
       if (error != NULL && *error != NULL)
       {
@@ -118,11 +93,10 @@ lw_search_free (LwSearch* search)
 //! @param QUERY The text to be search for
 //! @param dictionary The LwDictionary object to use
 //! @param TARGET The widget to output the results to
-//! @param preferences The Application preference manager to get information from
 //! @param error A GError to place errors into or NULL
 //!
-void 
-lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, LwPreferences *preferences, GError **error)
+static void
+lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
 {
     memset(search, 0, sizeof(LwSearch));
 
@@ -130,6 +104,7 @@ lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, L
     search->status = LW_SEARCHSTATUS_IDLE;
     search->dictionary = dictionary;
     search->query = lw_query_new ();
+    search->flags = flags;
 
     lw_dictionary_parse_query (search->dictionary, search->query, TEXT, error);
 }
@@ -141,10 +116,10 @@ lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, L
 //!         in class implimentations that extends LwSearch.
 //! @param search The LwSearch object to have it's inner memory freed.
 //!
-void 
+static void 
 lw_search_deinit (LwSearch *search)
 {
-    lw_search_cancel_search (search);
+    lw_search_cancel (search);
     lw_search_clear_results (search);
     lw_search_cleanup_search (search);
     lw_query_free (search->query);
@@ -446,8 +421,31 @@ lw_search_get_status (LwSearch *search)
 gboolean
 lw_search_read_line (LwSearch *search)
 {
+    //TODO this readline code should be handled by the lw_dictionary_parse_result in a type specific way
     gchar *ptr;
-    ptr = fgets(search->result->text, LW_IO_MAX_FGETS_LINE, search->fd);
+    do {
+      ptr = fgets(search->result->text, LW_IO_MAX_FGETS_LINE, search->fd);
+    } while (ptr != NULL && *ptr == '#');
+
+    if (ptr != NULL)
+    {
+      search->current += strlen(search->result->text);
+
+      //Commented input in the dictionary...we should skip over it
+      if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
+          fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
+      {
+        search->current += strlen(search->scratch_buffer);
+        gchar *eraser = NULL;
+        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
+        strcat(search->result->text, ":");
+        strcat(search->result->text, search->scratch_buffer);
+      }
+      //lw_search_parse_result_string (search);
+      lw_dictionary_parse_result (search->dictionary, search->result, search->fd);
+    }
 
     return (ptr != NULL && search->status != LW_SEARCHSTATUS_FINISHING);
 }
@@ -498,10 +496,11 @@ lw_search_stream_results_thread (gpointer data)
     //Declarations
     LwSearch *search;
     gboolean show_only_exact_matches;
+    gint relevance;
 
     //Initializations
-    search = LW_SEARCHITEM (data);
-    show_only_exact_matches = search->preferences & LW_SEARCH_PREFERENCE_FLAG_EXACT;
+    search = LW_SEARCH (data);
+    show_only_exact_matches = search->flags & LW_SEARCH_FLAG_EXACT;
 
     if (search == NULL || search->fd == NULL) return NULL;
 
@@ -520,31 +519,10 @@ lw_search_stream_results_thread (gpointer data)
       }
       lw_search_lock (search);
 
-      search->current += strlen(search->result->text);
-
-      //Commented input in the dictionary...we should skip over it
-      if(search->result->text[0] == '#' || g_utf8_get_char(search->result->text) == L'？') 
-      {
-        continue;
-      }
-      else if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
-               fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
-      {
-        search->current += strlen(search->scratch_buffer);
-        char *eraser = NULL;
-        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
-        strcat(search->result->text, ":");
-        strcat(search->result->text, search->scratch_buffer);
-      }
-      lw_search_parse_result_string (search);
-
-
       //Results match, add to the text buffer
       if (lw_search_compare (search, LW_RELEVANCE_LOW))
       {
-        int relevance = lw_search_get_relevance (search);
+        relevance = lw_search_get_relevance (search);
         switch(relevance)
         {
           case LW_RELEVANCE_HIGH:
@@ -599,7 +577,7 @@ lw_search_stream_results_thread (gpointer data)
 //! @param exact Whether to show only exact matches for this search
 //!
 void 
-lw_search_start_search (LwSearch *search, gboolean create_thread)
+lw_search_start (LwSearch *search, gboolean create_thread)
 {
     GError *error;
 
@@ -635,7 +613,7 @@ lw_search_start_search (LwSearch *search, gboolean create_thread)
 //! @param search A LwSearch to gleam information from
 //!
 void 
-lw_search_cancel_search (LwSearch *search)
+lw_search_cancel (LwSearch *search)
 {
     if (search == NULL) return;
 
@@ -706,7 +684,7 @@ lw_search_should_check_results (LwSearch *search)
 
     if (status == LW_SEARCHSTATUS_FINISHING)
     {
-      lw_search_cancel_search (search);
+      lw_search_cancel (search);
       should_check_results = FALSE;
     }
     else

@@ -1,5 +1,5 @@
-#ifndef LW_SEARCHITEM_INCLUDED
-#define LW_SEARCHITEM_INCLUDED
+#ifndef LW_SEARCH_INCLUDED
+#define LW_SEARCH_INCLUDED
 
 #include <stdio.h>
 
@@ -13,8 +13,8 @@ G_BEGIN_DECLS
 #define LW_MAX_MEDIUM_IRRELEVENT_RESULTS 1000
 #define LW_MAX_LOW_IRRELEVENT_RESULTS    1000
 
-#define LW_SEARCHITEM(object) (LwSearch*) object
-#define LW_SEARCHITEM_DATA_FREE_FUNC(object) (LwSearchDataFreeFunc)object
+#define LW_SEARCH(object) (LwSearch*) object
+#define LW_SEARCH_DATA_FREE_FUNC(object) (LwSearchDataFreeFunc)object
 #define LW_HISTORY_TIME_TO_RELEVANCE 20
 
 //!
@@ -24,17 +24,20 @@ typedef enum
 {
   LW_SEARCHSTATUS_IDLE,
   LW_SEARCHSTATUS_SEARCHING,
+  LW_SEARCHSTATUS_CANCELING,
   LW_SEARCHSTATUS_FINISHING
 } LwSearchStatus;
 
 
 typedef enum
 {
-  LW_SEARCH_PREFERENCE_FLAG_EXACT              = (1 << 0),
-  LW_SEARCH_PREFERENCE_FLAG_DELIMIT_WHITESPACE = (1 << 1),
-  LW_SEARCH_PREFERENCE_FLAG_JAPANESE_STEP      = (1 << 2),
-  LW_SEARCH_PREFERENCE_FLAG_ROMAJI_STEP        = (1 << 3)
-} LwSearchPreferenceFlag;
+  LW_SEARCH_FLAG_EXACT              = (1 << 0)
+/*
+  LW_SEARCH_FLAG_DELIMIT_WHITESPACE = (1 << 1),
+  LW_SEARCH_FLAG_JAPANESE_STEP      = (1 << 2),
+  LW_SEARCH_FLAG_ROMAJI_STEP        = (1 << 3)
+*/
+} LwSearchFlags;
 
 typedef void(*LwSearchDataFreeFunc)(gpointer);
 
@@ -51,6 +54,7 @@ struct _LwSearch {
     GMutex mutex;                          //!< Mutext to help ensure threadsafe operation
 
     LwSearchStatus status;                  //!< Used to test if a search is in progress.
+    LwSearchFlags flags;
     char *scratch_buffer;                   //!< Scratch space
     long current;                           //!< Current line in the dictionary file
     int history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
@@ -74,10 +78,8 @@ struct _LwSearch {
 typedef struct _LwSearch LwSearch;
 
 //Methods
-LwSearch* lw_search_new (const char*, LwDictionary*, LwPreferences*, GError**);
+LwSearch* lw_search_new (const gchar*, LwDictionary*, LwSearchFlags, GError**);
 void lw_search_free (LwSearch*);
-void lw_search_init (LwSearch*, const char*, LwDictionary*, LwPreferences*, GError**);
-void lw_search_deinit (LwSearch*);
 
 void lw_search_cleanup_search (LwSearch*);
 void lw_search_clear_results (LwSearch*);
@@ -96,7 +98,7 @@ gboolean lw_search_has_data (LwSearch*);
 gboolean lw_search_should_check_results (LwSearch*);
 LwResult* lw_search_get_result (LwSearch*);
 void lw_search_parse_result_string (LwSearch*);
-void lw_search_cancel_search (LwSearch*);
+void lw_search_cancel (LwSearch*);
 
 void lw_search_lock (LwSearch*);
 void lw_search_unlock (LwSearch*);
@@ -107,7 +109,7 @@ LwSearchStatus lw_search_get_status (LwSearch*);
 double lw_search_get_progress (LwSearch*);
 gboolean lw_search_read_line (LwSearch*);
 
-void lw_search_start (LwSearch*, gboolean, gboolean);
+void lw_search_start (LwSearch*, gboolean);
 
 
 

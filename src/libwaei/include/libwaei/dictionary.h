@@ -12,7 +12,6 @@ G_BEGIN_DECLS
 typedef struct _LwDictionary LwDictionary;
 typedef struct _LwDictionaryClass LwDictionaryClass;
 typedef struct _LwDictionaryPrivate LwDictionaryPrivate;
-typedef struct _LwDictionaryInstall LwDictionaryInstall;
 
 #define LW_TYPE_DICTIONARY              (lw_dictionary_get_type())
 #define LW_DICTIONARY(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), LW_TYPE_DICTIONARY, LwDictionary))
@@ -20,6 +19,16 @@ typedef struct _LwDictionaryInstall LwDictionaryInstall;
 #define LW_IS_DICTIONARY(obj)           (G_TYPE_CHECK_INSTANCE_TYPE((obj), LW_TYPE_DICTIONARY))
 #define LW_IS_DICTIONARY_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE ((klass), LW_TYPE_DICTIONARY))
 #define LW_DICTIONARY_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS((obj), LW_TYPE_DICTIONARY, LwDictionaryClass))
+
+
+typedef enum {
+  LW_DICTIONARY_STATE_INSTALLED,
+  LW_DICTIONARY_STATE_INSTALLING,
+  LW_DICTIONARY_STATE_UNINSTALLING,
+  LW_DICTIONARY_STATE_NOT_INSTALLED,
+  TOTAL_LW_DICTIONARY_STATES
+} LwDictionaryState;
+
 
 struct _LwDictionary {
   GObject object;
@@ -37,6 +46,7 @@ struct _LwDictionaryClass {
 
 //Methods
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
+gboolean lw_dictionary_install (LwDictionary*, LwIoProgressCallback, gpointer, GError**);
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
 gchar* lw_dictionary_get_directory (LwDictionary*);
 gchar* lw_dictionary_get_path (LwDictionary*);
@@ -50,14 +60,15 @@ const gchar* lw_dictionary_get_longname (LwDictionary*);
 gboolean lw_dictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 gboolean lw_dictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 size_t lw_dictionary_get_length (LwDictionary*);
+LwDictionaryState lw_dictionary_get_state (LwDictionary*);
+void lw_dictionary_cancel (LwDictionary*);
 
 gboolean lw_dictionary_equals (LwDictionary*, LwDictionary*);
-gchar* lw_dictionary_build_description (LwDictionary*);
-
-gboolean lw_dictionary_installer_is_valid (LwDictionary*);
-gboolean lw_dictionary_installer_is_selected (LwDictionary*);
-
+gchar* lw_dictionary_build_id (LwDictionary*);
+gboolean lw_dictionary_is_selected (LwDictionary*);
 
 G_END_DECLS
+
+#include <libwaei/dictionary-installer.h>
 
 #endif

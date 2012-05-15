@@ -91,8 +91,8 @@ w_application_finalize (GObject *object)
     application = W_APPLICATION (object);
     priv = application->priv;
 
-    if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist); priv->dictinstlist = NULL;
-    if (priv->dictinfolist != NULL) lw_dictinfolist_free (priv->dictinfolist); priv->dictinfolist = NULL;
+    if (priv->installed_dictionarylist != NULL) lw_dictionarylist_free (priv->installed_dictionarylist); priv->installed_dictionarylist = NULL;
+    if (priv->installable_dictionarylist != NULL) lw_dictionarylist_free (priv->installable_dictionarylist); priv->installable_dictionarylist = NULL;
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
@@ -257,8 +257,8 @@ w_application_get_preferences (WApplication *application)
 }
 
 
-LwDictInfoList* 
-w_application_get_dictinfolist (WApplication *application)
+LwDictionaryList* 
+w_application_get_installed_dictionarylist (WApplication *application)
 {
     WApplicationPrivate *priv;
     LwPreferences *preferences;
@@ -266,31 +266,31 @@ w_application_get_dictinfolist (WApplication *application)
     priv = application->priv;
     preferences = w_application_get_preferences (application);
 
-    if (priv->dictinfolist == NULL)
+    if (priv->installed_dictionarylist == NULL)
     {
-      priv->dictinfolist = lw_dictinfolist_new (20);
-      lw_dictinfolist_load_order (priv->dictinfolist, preferences);
+      priv->installed_dictionarylist = lw_dictionarylist_new ();
+      lw_dictionarylist_load_installed (priv->installed_dictionarylist);
+      lw_dictionarylist_load_order (priv->installed_dictionarylist, preferences);
     }
 
-    return priv->dictinfolist;
+    return priv->installed_dictionarylist;
 }
 
 
-LwDictInstList* 
-w_application_get_dictinstlist (WApplication *application)
+LwDictionaryList* 
+w_application_get_installable_dictionarylist (WApplication *application)
 {
-  WApplicationPrivate *priv;
-  LwPreferences *preferences;
+    WApplicationPrivate *priv;
 
-  priv = application->priv;
+    priv = application->priv;
 
-  if (priv->dictinstlist == NULL)
-  {
-    preferences = w_application_get_preferences (application);
-    priv->dictinstlist = lw_dictinstlist_new (preferences);
-  }
+    if (priv->installable_dictionarylist == NULL)
+    {
+      priv->installable_dictionarylist = lw_dictionarylist_new ();
+      lw_dictionarylist_load_installable (priv->installable_dictionarylist);
+    }
 
-  return priv->dictinstlist;
+    return priv->installable_dictionarylist;
 }
 
 
@@ -324,11 +324,11 @@ w_application_run (WApplication *application, int *argc, char **argv[])
 
     //User wants to install a dictionary
     else if (priv->arg_install_switch_data != NULL)
-      resolution = w_console_install_dictinst (application, &error);
+      resolution = w_console_install_dictionary (application, &error);
 
     //User wants to uninstall a dictionary
     else if (priv->arg_uninstall_switch_data != NULL)
-      resolution = w_console_uninstall_dictinfo (application, &error);
+      resolution = w_console_uninstall_dictionary (application, &error);
 
     //User wants to do a search
     else if (priv->arg_query_text_data != NULL)

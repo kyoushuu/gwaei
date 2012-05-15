@@ -47,28 +47,28 @@
 //!
 //! @param name A string of the name of the dictionary to uninstall.
 //!
-int 
-w_console_uninstall_dictinfo (WApplication* application, GError **error)
+gint 
+w_console_uninstall_dictionary (WApplication* application, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return 1;
 
     //Declarations
-    LwDictInfoList *dictinfolist;
-    LwDictInfo *di;
-    int resolution;
+    LwDictionaryList *dictionarylist;
+    LwDictionary *dictionary;
+    gint resolution;
     const gchar *uninstall_switch_data;
 
     //Initializations
     uninstall_switch_data = w_application_get_uninstall_switch_data (application);
-    dictinfolist = w_application_get_dictinfolist (application);
-    di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, uninstall_switch_data);
+    dictionarylist = w_application_get_installed_dictionarylist (application);
+    dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, uninstall_switch_data);
     resolution = 0;
 
-    if (di != NULL)
+    if (dictionary != NULL)
     {
-      printf(gettext("Uninstalling %s...\n"), di->longname);
-      lw_dictinfo_uninstall (di, w_console_uninstall_progress_cb, error);
+      printf(gettext("Uninstalling %s...\n"), lw_dictionary_get_longname (dictionary));
+      lw_dictionary_uninstall (dictionary, w_console_uninstall_progress_cb, error);
     }
     else
     {
@@ -90,28 +90,28 @@ w_console_uninstall_dictinfo (WApplication* application, GError **error)
 //!
 //! @param name A string of the name of the dictionary to install.
 //!
-int 
-w_console_install_dictinst (WApplication *application, GError **error)
+gint 
+w_console_install_dictionary (WApplication *application, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return 1;
 
     //Declarations
-    LwDictInstList *dictinstlist;
-    LwDictInst *di;
-    int resolution;
+    LwDictionaryList *dictionarylist;
+    LwDictionary *dictionary;
+    gint resolution;
     const gchar *install_switch_data;
 
     //Initializations
     install_switch_data = w_application_get_install_switch_data (application);
-    dictinstlist = w_application_get_dictinstlist (application);
-    di = lw_dictinstlist_get_dictinst_fuzzy (dictinstlist, install_switch_data);
+    dictionarylist = w_application_get_installable_dictionarylist (application);
+    dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, install_switch_data);
     resolution = 0;
 
-    if (di != NULL)
+    if (dictionary != NULL)
     {
-      printf(gettext("Installing %s...\n"), di->longname);
-      lw_dictinst_install (di, w_console_install_progress_cb, di, error);
+      printf(gettext("Installing %s...\n"), lw_dictionary_get_longname (dictionary));
+      lw_dictionary_install (dictionary, w_console_install_progress_cb, dictionary, error);
     }
     else
     {
@@ -155,25 +155,27 @@ w_console_print_installable_dictionaries (WApplication *application)
     printf(gettext("Installable dictionaries are:\n"));
 
     //Declarations
-    int i;
-    int j;
+    gint i;
+    gint j;
     GList *iter;
-    LwDictInstList *dictinstlist;
-    LwDictInst* di;
+    LwDictionaryList *dictionarylist;
+    LwDictionary* dictionary;
+    const gchar* filename;
 
     //Initializations
     i = 0; 
-    dictinstlist = w_application_get_dictinstlist (application);
-    iter = dictinstlist->list;
+    dictionarylist = w_application_get_installable_dictionarylist (application);
+    iter = dictionarylist->list;
 
     while (iter != NULL)
     {
-      di = (LwDictInst*) iter->data;
-      if (lw_dictinst_data_is_valid (di))
+      dictionary = LW_DICTIONARY (iter->data);
+      if (lw_dictionary_installer_is_valid (dictionary))
       {
-        printf("  %s", di->filename);
-        for (j = strlen(di->filename); j < 20; j++) printf(" ");
-        printf("(AKA: %s)\n", di->longname);
+        filename = lw_dictionary_get_filename (dictionary);
+        printf("  %s", filename);
+        for (j = strlen(filename); j < 20; j++) printf(" ");
+        printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));
         i++;
       }
       iter = iter->next;
@@ -193,25 +195,29 @@ void
 w_console_print_available_dictionaries (WApplication *application)
 {
     //Declarations
-    int i;
-    int j;
-    LwDictInstList *dictinstlist;
-    LwDictInfo* di;
+    gint i;
+    gint j;
+    LwDictionaryList *dictionarylist;
+    LwDictionary* dictionary;
     GList *iter;
+    const gchar *filename;
 
     //Initializations
     i = 0;
     j = 0;
-    dictinstlist = w_application_get_dictinstlist (application);
-	  iter = dictinstlist->list;
+    dictionarylist = w_application_get_installed_dictionarylist (application);
+	  iter = dictionarylist->list;
 
     printf(gettext("Available dictionaries are:\n"));
 
     while (iter != NULL) {
-      di = iter->data;
-      printf("  %s", di->filename);
-      for (j = strlen(di->filename); j < 20; j++) printf(" ");
-      printf("(AKA: %s)\n", di->longname);
+      dictionary = LW_DICTIONARY (iter->data);
+      filename = lw_dictionary_get_filename (dictionary);
+
+      printf("  %s", filename);
+      for (j = strlen(filename); j < 20; j++) printf(" ");
+      printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));
+
       i++;
       iter = iter->next;
     }
@@ -250,7 +256,7 @@ w_console_handle_error (WApplication* app, GError **error)
 }
 
 
-int 
+gint 
 w_console_search (WApplication *application, GError **error)
 {
     //Sanity check
@@ -258,43 +264,43 @@ w_console_search (WApplication *application, GError **error)
 
     //Declarations
     WSearchData *sdata;
-    LwSearchItem *item;
-    LwDictInfoList *dictinfolist;
-    LwPreferences* preferences;
+    LwSearch *search;
+    LwDictionaryList *dictionarylist;
+//    LwPreferences* preferences;
 
     const gchar* dictionary_switch_data;
     const gchar* query_text_data;
     gboolean quiet_switch;
-    gboolean exact_switch;
+//    gboolean exact_switch;
 
     char *message_total;
     char *message_relevant;
-    LwDictInfo *di;
-    int resolution;
+    LwDictionary *dictionary;
+    gint resolution;
     GMainLoop *loop;
 
     //Initializations
-    dictinfolist = w_application_get_dictinfolist (application);
-    preferences = w_application_get_preferences (application);
+    dictionarylist = w_application_get_installed_dictionarylist (application);
+//    preferences = w_application_get_preferences (application);
 
     dictionary_switch_data = w_application_get_dictionary_switch_data (application);
     query_text_data = w_application_get_query_text_data (application);
     quiet_switch = w_application_get_quiet_switch (application);
-    exact_switch = w_application_get_exact_switch (application);
+//    exact_switch = w_application_get_exact_switch (application);
 
-    di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, dictionary_switch_data);
-    item = lw_searchitem_new (query_text_data, di, preferences, error);
+    dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, dictionary_switch_data);
+    search = lw_search_new (query_text_data, dictionary, 0, error);
     resolution = 0;
 
     //Sanity checks
-    if (di == NULL)
+    if (dictionary == NULL)
     {
       resolution = 1;
       fprintf (stderr, gettext("Requested dictionary not found!\n"));
       return resolution;
     }
 
-    if (item == NULL)
+    if (search == NULL)
     {
       resolution = 1;
       return resolution;
@@ -304,10 +310,10 @@ w_console_search (WApplication *application, GError **error)
     if (!quiet_switch)
     {
       // TRANSLATORS: 'Searching for "${query}" in ${dictionary long name}'
-      printf(gettext("Searching for \"%s\" in %s...\n"), query_text_data, di->longname);
+      printf(gettext("Searching for \"%s\" in %s...\n"), query_text_data, lw_dictionary_get_longname (dictionary));
 #if WITH_MECAB
-      if (item->queryline->morphology) {
-          printf(gettext("Also showing results for 「%s」\n"), item->queryline->morphology);
+      if (search->queryline->morphology) {
+          printf(gettext("Also showing results for 「%s」\n"), search->queryline->morphology);
       }
 #endif
       printf("\n");
@@ -315,16 +321,16 @@ w_console_search (WApplication *application, GError **error)
 
     loop = g_main_loop_new (NULL, FALSE); 
     sdata = w_searchdata_new (loop, application);
-    lw_searchitem_set_data (item, sdata, LW_SEARCHITEM_DATA_FREE_FUNC (w_searchdata_free));
+    lw_search_set_data (search, sdata, LW_SEARCH_DATA_FREE_FUNC (w_searchdata_free));
 
     //Print the results
-    lw_searchitem_start_search (item, TRUE, exact_switch);
+    lw_search_start (search, TRUE);
 
     g_timeout_add_full (
         G_PRIORITY_LOW,
         100,
         (GSourceFunc) w_console_append_result_timeout,
-        item,
+        search,
         NULL
     );
 
@@ -333,18 +339,18 @@ w_console_search (WApplication *application, GError **error)
     //Print final header
     if (quiet_switch == FALSE)
     {
-      message_total = ngettext("Found %d result", "Found %d results", item->total_results);
-      message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", item->total_relevant_results);
-      printf(message_total, item->total_results);
-      if (item->total_relevant_results != item->total_results)
-        printf(message_relevant, item->total_relevant_results);
+      message_total = ngettext("Found %d result", "Found %d results", search->total_results);
+      message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", search->total_relevant_results);
+      printf(message_total, search->total_results);
+      if (search->total_relevant_results != search->total_results)
+        printf(message_relevant, search->total_relevant_results);
       printf("\n");
     }
 
-    lw_searchitem_cancel_search (item);
+    lw_search_cancel (search);
 
     //Cleanup
-    lw_searchitem_free (item);
+    lw_search_free (search);
     g_main_loop_unref (loop);
 
     return 0;

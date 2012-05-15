@@ -154,3 +154,30 @@ lw_query_is_parsed (LwQuery *query)
     return (query->parsed);
 }
 
+/*
+gboolean 
+lw_query_is_sane (const char* query)
+{
+    //Declarations
+    char *q;
+    gboolean is_sane;
+
+    //Initializations
+    q = lw_util_prepare_query (query, TRUE); 
+    is_sane = TRUE;
+
+    //Tests
+    if (strlen (q) == 0)
+      is_sane = FALSE;
+
+    if (g_str_has_prefix (q, "|") || g_str_has_prefix (q, "&")) 
+      is_sane = FALSE;
+    if (g_str_has_suffix (q, "\\") || g_str_has_suffix (q, "|") || g_str_has_suffix (q, "&")) 
+      is_sane = FALSE;
+
+    g_free (q);
+
+    return is_sane;
+}
+*/
+

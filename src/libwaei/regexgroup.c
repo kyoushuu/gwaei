@@ -3,7 +3,7 @@
 #include <libwaei/regexgroup.h>
 
 LwRegexGroup*
-lw_regroup_new ()
+lw_regexgroup_new ()
 {
     LwRegexGroup *temp;
 

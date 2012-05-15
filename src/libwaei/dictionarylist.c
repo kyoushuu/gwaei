@@ -35,6 +35,8 @@
 
 
 //Private methods
+static void lw_dictionarylist_init (LwDictionaryList*);
+static void lw_dictionarylist_deinit (LwDictionaryList*);
 static gint lw_dictionarylist_sort_compare_function (gconstpointer, gconstpointer, gpointer);
 
 
@@ -71,17 +73,15 @@ lw_dictionarylist_free (LwDictionaryList *dictionarylist)
 
 
 
-void 
+static void 
 lw_dictionarylist_init (LwDictionaryList *dictionarylist)
 {
-    dictionarylist->list = NULL;
+    memset(dictionarylist, 0, sizeof(LwDictionaryList));
     g_mutex_init (&dictionarylist->mutex);
-
-    lw_dictionarylist_reload (dictionarylist);
 }
 
 
-void 
+static void 
 lw_dictionarylist_deinit (LwDictionaryList *dictionarylist)
 {
     lw_dictionarylist_clear (dictionarylist);
@@ -115,7 +115,7 @@ lw_dictionarylist_clear (LwDictionaryList *dictionarylist)
 
 
 void 
-lw_dictionarylist_reload (LwDictionaryList *dictionarylist)
+lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
 {
     //Declarations
     gchar** filelist;
@@ -178,6 +178,7 @@ lw_dictionarylist_add_dictionary (LwDictionaryList *dictionarylist, LwDictionary
     //Sanity checks
     g_return_if_fail (dictionarylist != NULL);
     g_return_if_fail (dictionary != NULL);
+
     if (lw_dictionarylist_dictionary_exists (dictionarylist, dictionary)) return;
 
     //Append to the dictionary list if was loadable
@@ -254,7 +255,7 @@ lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList *dictionarylist, const 
     else
     {
       if (dictionary == NULL)
-        dictionary = lw_dictionarylist_get_dictionary_by_idstring (dictionarylist, FUZZY_DESCRIPTION);
+        dictionary = lw_dictionarylist_get_dictionary_by_id_string (dictionarylist, FUZZY_DESCRIPTION);
       if (dictionary == NULL)
         dictionary = lw_dictionarylist_get_dictionary_by_filename (dictionarylist, FUZZY_DESCRIPTION);
     }
@@ -368,11 +369,13 @@ lw_dictionarylist_dictionary_exists (LwDictionaryList *dictionarylist, LwDiction
 
     //Initializations
     exists = FALSE;
+    link = dictionarylist->list;
 
     //Return true if the dictionary exists
-    for (link = dictionarylist->list; link != NULL && exists == FALSE; link = link->next)
+    while (link != NULL && exists == FALSE)
     {
       exists = lw_dictionary_equals (dictionary, LW_DICTIONARY (link->data));
+      link = link->next;
     }
 
     return exists;
@@ -424,7 +427,7 @@ lw_dictionarylist_save_order (LwDictionaryList *dictionarylist, LwPreferences *p
       for (link = dictionarylist->list; link != NULL; link = link->next)
       {
         dictionary = LW_DICTIONARY (link->data);
-        *ptr = lw_dictionary_build_description (dictionary);
+        *ptr = lw_dictionary_build_id (dictionary);
         if (*ptr == NULL) break;
         ptr++;
       }
@@ -509,7 +512,7 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
     found_a = found_b = FALSE;
 
     dictionary_a = LW_DICTIONARY (a);
-    description_a = lw_dictionary_build_description (dictionary_a);
+    description_a = lw_dictionary_build_id (dictionary_a);
     if (description_a != NULL)
     {
       found_a = g_hash_table_lookup_extended (hashtable, &description_a, NULL, &position_a_ptr);
@@ -518,7 +521,7 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
     }
     
     dictionary_b = LW_DICTIONARY (b);
-    description_b = lw_dictionary_build_description (dictionary_b);
+    description_b = lw_dictionary_build_id (dictionary_b);
     if (description_b != NULL)
     {
       found_b = g_hash_table_lookup_extended (hashtable, &description_b, NULL, &position_b_ptr);
@@ -572,7 +575,7 @@ lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
     {
       dictionary = LW_DICTIONARY (link->data);
       valid = lw_dictionary_installer_is_valid (dictionary);
-      selected = lw_dictionary_installer_is_selected (dictionary);
+      selected = lw_dictionary_is_selected (dictionary);
 
       if (!valid && selected) return FALSE;
       if (selected) number_selected++;
@@ -582,124 +585,128 @@ lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
 
     return (number_selected > 0);
 }
-/*
 
 
 void 
-lw_dictionarylist_set_cancel_operations (LwDictionaryList *dictionarylist, gboolean state)
+lw_dictionarylist_cancel (LwDictionaryList *dictionarylist, gboolean state)
 {
     LwDictionary *dictionary;
     GList *link;
 
-    for (link = dictionarylist->list; link != NULL; link = link->next)
-    {
-      dictionary = LwDictionary (link->data);
-      if (dictionary != NULL)
-        lw_dictionary_set_cancel_operations (dictionary, state);
-    }
+    link = dictionarylist->list;
 
-    dictionarylist->cancel = state;
+    while (link != NULL)
+    {
+      dictionary = LW_DICTIONARY (link->data);
+
+      if (dictionary != NULL)
+      {
+        lw_dictionary_cancel (dictionary);
+      }
+
+      link = link->next;
+    }
 }
 
 
 //!
 //! @brief Sets up the built-in installabale dictionaries
 //!
-LwDictionaryList* 
-lw_dictionarylist_build_install_list (LwPreferences *preferences)
+void
+lw_dictionarylist_load_installable (LwDictionaryList *list)
 {
+/*
 
-  LwDictionary *dictionary;
-  LwDictionaryList *dictionarylist;
+    LwDictionary *dictionary;
+    LwDictionaryList *dictionarylist;
 
-  dictionarylist = lw_dictionarylist_new ();
+    dictionarylist = lw_dictionarylist_new ();
 
-  if (dictionarylist != NULL)
-  {
-    dictionarylist->list = NULL;
-    dictionarylist->cancel = FALSE;
+    if (dictionarylist != NULL)
+    {
+      dictionarylist->list = NULL;
+      dictionarylist->cancel = FALSE;
 
-    dictionary = lw_dictionary_new_using_pref_uri (
-      "English",
-      gettext("English"),
-      gettext("English Dictionary"),
-      gettext("The venerable Japanese-English Dictionary developed by Jim Breen."),
-      preferences,
-      LW_SCHEMA_DICTIONARY,
-      LW_KEY_ENGLISH_SOURCE,
-      LW_TYPE_EDICTIONARY,
-      LW_ENCODING_EUC_JP,
-      FALSE,
-      TRUE 
-    );
-    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+      dictionary = lw_dictionary_new_using_pref_uri (
+        "English",
+        gettext("English"),
+        gettext("English Dictionary"),
+        gettext("The venerable Japanese-English Dictionary developed by Jim Breen."),
+        preferences,
+        LW_SCHEMA_DICTIONARY,
+        LW_KEY_ENGLISH_SOURCE,
+        LW_TYPE_EDICTIONARY,
+        LW_ENCODING_EUC_JP,
+        FALSE,
+        TRUE 
+      );
+      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_dictionary_new_using_pref_uri (
-      "Kanji",
-      gettext("Kanji"),
-      gettext("Kanji Dictionary"),
-      gettext("A Kanji dictionary based off of kanjidic with radical information combined."),
-      preferences,
-      LW_SCHEMA_DICTIONARY,
-      LW_KEY_KANJI_SOURCE,
-      LW_TYPE_KANJIDICTIONARY,
-      LW_ENCODING_EUC_JP,
-      TRUE,
-      TRUE 
-    );
-    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+      dictionary = lw_dictionary_new_using_pref_uri (
+        "Kanji",
+        gettext("Kanji"),
+        gettext("Kanji Dictionary"),
+        gettext("A Kanji dictionary based off of kanjidic with radical information combined."),
+        preferences,
+        LW_SCHEMA_DICTIONARY,
+        LW_KEY_KANJI_SOURCE,
+        LW_TYPE_KANJIDICTIONARY,
+        LW_ENCODING_EUC_JP,
+        TRUE,
+        TRUE 
+      );
+      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_dictionary_new_using_pref_uri (
-      "Names and Places",
-      gettext("Names and Places"),
-      gettext("Names and Places Dictionary"),
-      gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
-      preferences,
-      LW_SCHEMA_DICTIONARY,
-      LW_KEY_NAMES_PLACES_SOURCE,
-      LW_TYPE_EDICTIONARY,
-      LW_ENCODING_EUC_JP,
-      TRUE,
-      TRUE 
-    );
-    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+      dictionary = lw_dictionary_new_using_pref_uri (
+        "Names and Places",
+        gettext("Names and Places"),
+        gettext("Names and Places Dictionary"),
+        gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
+        preferences,
+        LW_SCHEMA_DICTIONARY,
+        LW_KEY_NAMES_PLACES_SOURCE,
+        LW_TYPE_EDICTIONARY,
+        LW_ENCODING_EUC_JP,
+        TRUE,
+        TRUE 
+      );
+      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_dictionary_new_using_pref_uri (
-      "Examples",
-      gettext("Examples"),
-      gettext("Examples Dictionary"),
-      gettext("A collection of Japanese/English sentences initially compiled "
-              "by Professor Yasuhito Tanaka at Hyogo University and his students."),
-      preferences,
-      LW_SCHEMA_DICTIONARY,
-      LW_KEY_EXAMPLES_SOURCE,
-      LW_TYPE_EXAMPLEDICTIONARY,
-      LW_ENCODING_EUC_JP,
-      FALSE,
-      TRUE 
-    );
-    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+      dictionary = lw_dictionary_new_using_pref_uri (
+        "Examples",
+        gettext("Examples"),
+        gettext("Examples Dictionary"),
+        gettext("A collection of Japanese/English sentences initially compiled "
+                "by Professor Yasuhito Tanaka at Hyogo University and his students."),
+        preferences,
+        LW_SCHEMA_DICTIONARY,
+        LW_KEY_EXAMPLES_SOURCE,
+        LW_TYPE_EXAMPLEDICTIONARY,
+        LW_ENCODING_EUC_JP,
+        FALSE,
+        TRUE 
+      );
+      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_dictionary_new (
-      "",
-      gettext("Other"),
-      gettext("Other Dictionary"),
-      gettext("Install a custom dictionary."),
-      "",
-      LW_TYPE_UNKNOWNDICTIONARY,
-      LW_COMPRESSION_NONE,
-      LW_ENCODING_UTF8,
-      FALSE,
-      FALSE
-    );
-    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+      dictionary = lw_dictionary_new (
+        "",
+        gettext("Other"),
+        gettext("Other Dictionary"),
+        gettext("Install a custom dictionary."),
+        "",
+        LW_TYPE_UNKNOWNDICTIONARY,
+        LW_COMPRESSION_NONE,
+        LW_ENCODING_UTF8,
+        FALSE,
+        FALSE
+      );
+      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-  }
-
-  return dictionarylist;
+    }
+*/
 }
 
-
+/*
   curl_global_init (CURL_GLOBAL_ALL);
     curl_global_cleanup ();
 */

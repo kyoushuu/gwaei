@@ -34,42 +34,45 @@
 
 #include <waei/waei.h>
 
-int 
-w_console_uninstall_progress_cb (double fraction, gpointer data)
+gint 
+w_console_uninstall_progress_cb (gdouble fraction, gpointer data)
 {
-  //Declarations
-  LwDictInfo *di;
-  char *uri;
+    //Declarations
+    LwDictionary *dictionary;
+    gchar *path;
 
-  //Initializations
-  di = data;
-  uri = lw_util_build_filename_by_dicttype (di->type, di->filename);
+    //Initializations
+    dictionary = data;
+    path = lw_dictionary_get_path (dictionary);
+    
+    if (path != NULL)
+    {
+      printf("Removing %s...\n", path);
+      g_free (path); path = NULL;
+    }
 
-  printf("Removing %s...\n", uri);
-
-  g_free (uri);
-
-  return FALSE;
+    return FALSE;
 }
 
 
 
 
 static gboolean _group_index_changed = FALSE;
-static int _previous_percent = -1;
-int 
-w_console_install_progress_cb (double fraction, gpointer data)
+static gint _previous_percent = -1;
+
+gint 
+w_console_install_progress_cb (gdouble fraction, gpointer data)
 {
   //Declarations
-  LwDictInst *di;
-  char *status;
-  double current_fraction;
-  int current_percent;
+  LwDictionary *dictionary;
+  gchar *status;
+  gdouble current_fraction;
+  gint current_percent;
 
   //Initializations
-  di = data;
-  current_fraction = lw_dictinst_get_process_progress (di, fraction);
-  current_percent = (int) (100.0 * current_fraction); 
+  dictionary = data;
+  current_fraction = lw_dictionary_installer_get_step_progress (dictionary);
+  current_percent = (gint) (100.0 * current_fraction); 
 
   //Update the dictinst progress state only when the delta is large enough
   if (current_percent < 100 && _group_index_changed)
@@ -82,10 +85,13 @@ w_console_install_progress_cb (double fraction, gpointer data)
     _group_index_changed = TRUE;
   }
 
-  status = lw_dictinst_get_status_string (di, TRUE);
-  printf("\r [%d%%] %s", current_percent, status);
-  _previous_percent = current_percent;
-  g_free (status);
+  status = lw_dictionary_installer_get_status_string (dictionary, TRUE);
+  if (status != NULL)
+  {
+    printf("\r [%d%%] %s", current_percent, status);
+    _previous_percent = current_percent;
+    g_free (status); status = NULL;
+  }
 
   return FALSE;
 }
@@ -94,20 +100,20 @@ w_console_install_progress_cb (double fraction, gpointer data)
 gboolean 
 w_console_append_result_timeout (gpointer data)
 {
-  LwSearchItem *item;
+  LwSearch *item;
   WSearchData *sdata;
-  int chunk;
-  int max_chunk;
+  gint chunk;
+  gint max_chunk;
   gboolean is_still_searching;
 
-  item = LW_SEARCHITEM (data);
-  sdata = W_SEARCHDATA (lw_searchitem_get_data (item));
+  item = LW_SEARCH (data);
+  sdata = W_SEARCHDATA (lw_search_get_data (item));
   chunk = 0;
   max_chunk = 50;
 
-  if (item != NULL && lw_searchitem_should_check_results (item))
+  if (item != NULL && lw_search_should_check_results (item))
   {
-    while (item != NULL && lw_searchitem_should_check_results (item) && chunk < max_chunk)
+    while (item != NULL && lw_search_should_check_results (item) && chunk < max_chunk)
     {
       w_console_append_result (sdata->application, item);
       chunk++;
