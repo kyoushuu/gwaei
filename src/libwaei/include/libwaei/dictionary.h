@@ -38,7 +38,7 @@ struct _LwDictionary {
 struct _LwDictionaryClass {
   GObjectClass parent_class;
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
-  gboolean (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
+  gint (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
   gchar** (*installer_get_filelist) (LwDictionary *dictionary);
   gboolean (*installer_postprocess) (LwDictionary *dictionary, gchar** sourcelist, gchar** targetlist, LwIoProgressCallback cb, gpointer data, GError **error);

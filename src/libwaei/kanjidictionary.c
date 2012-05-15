@@ -41,7 +41,7 @@
 G_DEFINE_TYPE (LwKanjiDictionary, lw_kanjidictionary, LW_TYPE_DICTIONARY)
 
 static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError **);
-static gboolean lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+static gint lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
 static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
@@ -137,7 +137,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
 //!
 //! @brief, Retrieve a line from FILE, parse it according to the LwKanjiDictionary rules and put the results into the LwResult
 //!
-static gboolean
+static gint
 lw_kanjidictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
     return TRUE;

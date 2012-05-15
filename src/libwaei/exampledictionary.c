@@ -41,7 +41,7 @@
 G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 
 static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
-static gboolean lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+static gint lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 
 LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 {
@@ -133,9 +133,31 @@ lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
 //!
 //! @brief, Retrieve a line from FILE, parse it according to the LwExampleDictionary rules and put the results into the LwResult
 //!
-static gboolean
+static gint
 lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
+/*
+    if (ptr != NULL)
+    {
+      search->current += strlen(search->result->text);
+
+      //Commented input in the dictionary...we should skip over it
+      if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
+          fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
+      {
+        search->current += strlen(search->scratch_buffer);
+        gchar *eraser = NULL;
+        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
+        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
+        strcat(search->result->text, ":");
+        strcat(search->result->text, search->scratch_buffer);
+      }
+      //lw_search_parse_result_string (search);
+      lw_dictionary_parse_result (search->dictionary, search->result, search->fd);
+    }
+*/
+
     return TRUE;
 }
 

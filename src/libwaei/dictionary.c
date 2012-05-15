@@ -476,8 +476,8 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 }
 
 
-
-LwDictionaryState lw_dictionary_get_state (LwDictionary *dictionary)
+LwDictionaryState 
+lw_dictionary_get_state (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
 
@@ -537,7 +537,7 @@ lw_dictionary_is_selected (LwDictionary *dictionary)
 //! @param state Whether to turn on the requested cancel operation or not.
 //!
 gboolean
-lw_dictionary_is_canceled (LwDictionary *dictionary)
+lw_dictionary_is_cancelled (LwDictionary *dictionary)
 {
     LwDictionaryPrivate *priv;
 

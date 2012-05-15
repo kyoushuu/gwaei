@@ -48,8 +48,6 @@ lw_regexgroup_free (LwRegexGroup *regexgroup)
       g_list_free (regexgroup->low); regexgroup->low = NULL;
     }
 
-
-
     g_free (regexgroup);
 }
 

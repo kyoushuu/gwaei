@@ -386,14 +386,24 @@ lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gcha
 //!
 //! @brief, Retrieve a line from FILE, parse it according to the LwEDictionary rules and put the results into the LwResult
 //!
-static gboolean
+static gint 
 lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
-    gchar *ptr = result->text;
+    gchar *ptr = NULL;
     gchar *next = NULL;
     gchar *nextnext = NULL;
     gchar *nextnextnext = NULL;
     gchar *temp = NULL;
+    gint bytes_read = 0;
+
+    //Read the next line
+    do {
+      ptr = fgets(result->text, LW_IO_MAX_FGETS_LINE, fd);
+      if (ptr != NULL) bytes_read += strlen(result->text);
+    } while (ptr != NULL && *ptr == '#');
+
+    if (ptr == NULL) return bytes_read;
+    bytes_read += strlen(result->text);
 
     //Remove the final line break
     if ((temp = g_utf8_strchr (result->text, -1, '\n')) != NULL)
@@ -480,7 +490,7 @@ lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *f
       }
     }
 
-    return TRUE;
+    return bytes_read;
 }
 
 

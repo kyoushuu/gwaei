@@ -419,35 +419,14 @@ lw_search_get_status (LwSearch *search)
 
 
 gboolean
-lw_search_read_line (LwSearch *search)
+lw_search_parse_result (LwSearch *search)
 {
-    //TODO this readline code should be handled by the lw_dictionary_parse_result in a type specific way
-    gchar *ptr;
-    do {
-      ptr = fgets(search->result->text, LW_IO_MAX_FGETS_LINE, search->fd);
-    } while (ptr != NULL && *ptr == '#');
+    gint bytes_read;
 
-    if (ptr != NULL)
-    {
-      search->current += strlen(search->result->text);
+    bytes_read = lw_dictionary_parse_result (search->dictionary, search->result, search->fd);
+    search->current += bytes_read;
 
-      //Commented input in the dictionary...we should skip over it
-      if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
-          fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
-      {
-        search->current += strlen(search->scratch_buffer);
-        gchar *eraser = NULL;
-        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
-        strcat(search->result->text, ":");
-        strcat(search->result->text, search->scratch_buffer);
-      }
-      //lw_search_parse_result_string (search);
-      lw_dictionary_parse_result (search->dictionary, search->result, search->fd);
-    }
-
-    return (ptr != NULL && search->status != LW_SEARCHSTATUS_FINISHING);
+    return (bytes_read > 0 && search->status == LW_SEARCHSTATUS_SEARCHING);
 }
 
 
@@ -500,20 +479,19 @@ lw_search_stream_results_thread (gpointer data)
 
     //Initializations
     search = LW_SEARCH (data);
+    g_return_val_if_fail (search != NULL && search->fd != NULL, NULL);
     show_only_exact_matches = search->flags & LW_SEARCH_FLAG_EXACT;
-
-    if (search == NULL || search->fd == NULL) return NULL;
 
     lw_search_lock (search);
     search->status = LW_SEARCHSTATUS_SEARCHING;
 
     //We loop, processing lines of the file until the max chunk size has been
     //reached or we reach the end of the file or a cancel request is recieved.
-    while (lw_search_read_line (search))
+    while (lw_search_parse_result (search))
     {
       //Give a chance for something else to run
       lw_search_unlock (search);
-      if (search->status != LW_SEARCHSTATUS_FINISHING && g_main_context_pending (NULL))
+      if (search->status == LW_SEARCHSTATUS_SEARCHING && g_main_context_pending (NULL))
       {
         g_main_context_iteration (NULL, FALSE);
       }
@@ -617,6 +595,7 @@ lw_search_cancel (LwSearch *search)
 {
     if (search == NULL) return;
 
+    search->cancel = TRUE;
     lw_search_set_status (search, LW_SEARCHSTATUS_FINISHING);
 
     if (search->thread != NULL)
@@ -625,6 +604,7 @@ lw_search_cancel (LwSearch *search)
       search->thread = NULL;
     }
 
+    search->cancel = FALSE;
     lw_search_set_status (search, LW_SEARCHSTATUS_IDLE);
 }
 

@@ -24,7 +24,6 @@ typedef enum
 {
   LW_SEARCHSTATUS_IDLE,
   LW_SEARCHSTATUS_SEARCHING,
-  LW_SEARCHSTATUS_CANCELING,
   LW_SEARCHSTATUS_FINISHING
 } LwSearchStatus;
 
@@ -55,13 +54,15 @@ struct _LwSearch {
 
     LwSearchStatus status;                  //!< Used to test if a search is in progress.
     LwSearchFlags flags;
-    char *scratch_buffer;                   //!< Scratch space
+    gchar *scratch_buffer;                   //!< Scratch space
     long current;                           //!< Current line in the dictionary file
-    int history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
+    gint history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
 
-    int total_relevant_results;             //!< Total results guessed to be highly relevant to the query
-    int total_irrelevant_results;           //!< Total results guessed to be vaguely relevant to the query
-    int total_results;                      //!< Total results returned from the search
+    gint total_relevant_results;             //!< Total results guessed to be highly relevant to the query
+    gint total_irrelevant_results;           //!< Total results guessed to be vaguely relevant to the query
+    gint total_results;                      //!< Total results returned from the search
+
+    gboolean cancel;
 
     GList *results_high;                    //!< Buffer storing mediumly relevant result for later display
     GList *results_medium;                  //!< Buffer storing mediumly relevant result for later display

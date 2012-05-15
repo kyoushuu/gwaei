@@ -39,7 +39,7 @@
 #include <libwaei/dictionary-private.h>
 
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
-static gboolean lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
+static gint lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 
 
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
@@ -114,7 +114,7 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
 //! @brief Parses a string for an unknown format string
 //! @param rl The Resultline object this method works on
 //!
-static gboolean
+static gint
 lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *file)
 {
     return FALSE;
