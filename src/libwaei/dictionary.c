@@ -40,7 +40,7 @@
 
 #include <libwaei/dictionary-private.h>
 
-G_DEFINE_TYPE (LwDictionary, lw_dictionary, G_TYPE_OBJECT)
+G_DEFINE_ABSTRACT_TYPE (LwDictionary, lw_dictionary, G_TYPE_OBJECT)
 
 typedef enum
 {
@@ -605,27 +605,14 @@ lw_dictionary_get_installed_idlist (GType type_filter)
     gchar **iditer;
 
     gint length;
-  
-    {
-      GType type;
-      type = lw_edictionary_get_type ();
-      type = lw_kanjidictionary_get_type ();
-      type = lw_unknowndictionary_get_type ();
-      type = lw_exampledictionary_get_type ();
-    }
 
-    if (g_type_is_a (type_filter, LW_TYPE_DICTIONARY))
-{
-      childiter = childlist = g_type_children (type_filter, NULL);
-printf("BREAK is a type\n");
-}
-    else
-{
-      guint total;
-      childiter = childlist = g_type_children (LW_TYPE_DICTIONARY, &total);
-printf("BREAK is not a type %d\n", total);
-}
-  
+    childiter = childlist = g_new (GType, 5);
+    childlist[0] = lw_edictionary_get_type ();
+    childlist[1] = lw_kanjidictionary_get_type ();
+    childlist[2] = lw_exampledictionary_get_type ();
+    childlist[3] = lw_unknowndictionary_get_type ();
+    childlist[4] = 0;
+
     if (childiter == NULL) return NULL;
 
     length = 0;
@@ -637,16 +624,16 @@ printf("BREAK is not a type %d\n", total);
       directorypath = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
 printf("directorypath: %s\n", directorypath);
       directory = g_dir_open (directorypath, 0, NULL);
-
-      while ((filename = g_dir_read_name (directory)) != NULL)
+      if (directory != NULL)
       {
-        length++;
+        while ((filename = g_dir_read_name (directory)) != NULL)
+        {
+          length++;
+        }
+        g_dir_close (directory); directory = NULL;
       }
-
-      childiter++;
-
       g_free (directorypath); directorypath = NULL;
-      g_dir_close (directory); directory = NULL;
+      childiter++;
     }
 printf("length %d\n", length);
 
@@ -659,20 +646,20 @@ printf("length %d\n", length);
       directoryname = g_type_name (*childiter);
       directorypath = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
       directory = g_dir_open (directorypath, 0, NULL);
-
-      while ((filename = g_dir_read_name (directory)) != NULL && length > 0)
+      if (directory != NULL)
       {
-        *iditer = lw_dictionary_build_id_from_type (*childiter, filename);
-        printf("id: %s\n", *iditer);
-        
-        iditer++;
-        length--;
+        while ((filename = g_dir_read_name (directory)) != NULL && length > 0)
+        {
+          *iditer = lw_dictionary_build_id_from_type (*childiter, filename);
+          printf("id: %s\n", *iditer);
+          
+          iditer++;
+          length--;
+        }
+        g_dir_close (directory); directory = NULL;
       }
-
-      childiter++;
-
       g_free (directorypath); directorypath = NULL;
-      g_dir_close (directory); directory = NULL;
+      childiter++;
     }
 
    
