@@ -307,21 +307,56 @@ lw_dictionary_open (LwDictionary *dictionary)
 }
 
 
+gchar*
+lw_dictionary_get_directoryname (GType dictionary_type)
+{
+    //Declarations
+    const gchar* TYPENAME;
+    const gchar *start;
+    const gchar *end;
+    gint length;
+    gchar *name;
+    gchar *lowercase;
+    
+    name = NULL;
+    lowercase = NULL;
+    TYPENAME = g_type_name (dictionary_type);
+    start = TYPENAME + strlen("Lw");
+    end = TYPENAME + strlen(TYPENAME) - strlen("Dictionary");
+    if (strcmp(end, "Dictionary") != 0) goto errored;
+    if (start > end) goto errored;
+
+    name = g_strndup (start, end - start);
+    if (name == NULL) goto errored;
+
+    lowercase = g_ascii_strdown (name, -1);
+
+    return lowercase;
+    
+errored:
+    if (name != NULL) g_free (name); name = NULL;
+    if (lowercase != NULL) g_free (lowercase); lowercase = NULL;
+
+    return NULL;
+}
+
 
 gchar*
-lw_dictionary_get_directory (LwDictionary *dictionary)
+lw_dictionary_get_directory (GType dictionary_type)
 {
-    //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, NULL);
-
     //Declarations
-    LwDictionaryPrivate *priv;
     gchar *path;
+    gchar *directoryname;
 
     //Initializations
-    priv = LW_DICTIONARY (dictionary)->priv;
-    g_return_val_if_fail (priv->filename != NULL, NULL);
-    path = lw_util_build_filename (LW_PATH_DICTIONARY, G_OBJECT_TYPE_NAME (dictionary));
+    path = NULL;
+    directoryname = lw_dictionary_get_directoryname (dictionary_type);
+
+    if (directoryname != NULL) 
+    {
+      path = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
+      g_free (directoryname); directoryname = NULL;
+    }
   
     return path;
 }
@@ -330,13 +365,16 @@ lw_dictionary_get_directory (LwDictionary *dictionary)
 gchar* 
 lw_dictionary_get_path (LwDictionary *dictionary)
 {
+    //Sanity checks
     g_return_val_if_fail (dictionary != NULL, NULL);
 
+    //Declarations
     gchar *directory;
     const gchar *filename;
     gchar *path;
 
-    directory = lw_dictionary_get_directory (dictionary);
+    //Initializations
+    directory = lw_dictionary_get_directory (G_OBJECT_TYPE (dictionary));
     filename = lw_dictionary_get_filename (dictionary);
     path = NULL;
 
@@ -620,8 +658,7 @@ lw_dictionary_get_installed_idlist (GType type_filter)
     //Find out how long the array has to be
     while (*childiter != 0)
     {
-      directoryname = g_type_name (*childiter);
-      directorypath = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
+      directorypath = lw_dictionary_get_directory (*childiter);
 printf("directorypath: %s\n", directorypath);
       directory = g_dir_open (directorypath, 0, NULL);
       if (directory != NULL)

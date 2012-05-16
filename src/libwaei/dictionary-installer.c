@@ -384,7 +384,7 @@ lw_dictionary_installer_get_installedlist (LwDictionary *dictionary)
     //Initializations
     priv = dictionary->priv;
     install = priv->install;
-    directory = lw_dictionary_get_directory (dictionary);
+    directory = lw_dictionary_get_directory (G_OBJECT_TYPE (dictionary));
     templist = NULL;
 
     if (install->installedlist == NULL)

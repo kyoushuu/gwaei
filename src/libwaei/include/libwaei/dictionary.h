@@ -48,7 +48,7 @@ struct _LwDictionaryClass {
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
 gboolean lw_dictionary_install (LwDictionary*, LwIoProgressCallback, gpointer, GError**);
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
-gchar* lw_dictionary_get_directory (LwDictionary*);
+gchar* lw_dictionary_get_directory (GType);
 gchar* lw_dictionary_get_path (LwDictionary*);
 gboolean lw_dictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
