@@ -117,6 +117,9 @@ lw_dictionarylist_clear (LwDictionaryList *dictionarylist)
 void 
 lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
 {
+    //Sanity checks
+    g_return_if_fail (dictionarylist != NULL);
+
 printf("BREAK load installed 1\n");
     //Declarations
     gchar** idlist;
@@ -141,7 +144,7 @@ printf("BREAK load installed 3 %s\n", *iditer);
 printf("BREAK load installed 4 %s\n", *iditer);
           type = g_type_from_name (pair[0]);
           FILENAME = pair[1];
-          dictionary = LW_DICTIONARY (g_object_new (type, "dictionary-filename", FILENAME, NULL));
+          dictionary = LW_DICTIONARY (g_object_new (type, "filename", FILENAME, NULL));
           if (dictionary != NULL && LW_IS_DICTIONARY (dictionary))
             lw_dictionarylist_add_dictionary (dictionarylist, dictionary);
         }
@@ -247,7 +250,7 @@ lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList *dictionarylist, const 
     dictionary = NULL;
 
     //Try getting the first dictionary if none is specified
-    if (FUZZY_DESCRIPTION == NULL )
+    if (FUZZY_DESCRIPTION == NULL)
     {
       if (dictionarylist->list != NULL)
         dictionary = LW_DICTIONARY (dictionarylist->list->data);

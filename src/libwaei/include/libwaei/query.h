@@ -9,15 +9,6 @@ G_BEGIN_DECLS
 
 
 typedef enum {
-  LW_QUERY_RELEVANCE_UNSET,
-  LW_QUERY_RELEVANCE_LOW,
-  LW_QUERY_RELEVANCE_MEDIUM,
-  LW_QUERY_RELEVANCE_HIGH,
-  TOTAL_QUERY_RELEVANCE
-} LwQueryRelevance;
-
-
-typedef enum {
   LW_QUERY_REGEX_TYPE_KANJI,
   LW_QUERY_REGEX_TYPE_FURIGANA,
   LW_QUERY_REGEX_TYPE_ROMAJI,
@@ -55,6 +46,7 @@ gboolean lw_query_is_parsed (LwQuery*);
 void lw_query_init_regexgroup (LwQuery*);
 void lw_query_init_tokens (LwQuery*);
 
+void lw_query_clear (LwQuery*);
 
 G_END_DECLS
 

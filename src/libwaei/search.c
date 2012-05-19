@@ -32,7 +32,7 @@
 
 #include <libwaei/libwaei.h>
 
-static void lw_search_init (LwSearch*, const gchar*, LwDictionary*, LwSearchFlags, GError**);
+static void lw_search_init (LwSearch*, LwDictionary*, const gchar*, LwSearchFlags, GError**);
 static void lw_search_deinit (LwSearch*);
 
 //!
@@ -46,13 +46,16 @@ static void lw_search_deinit (LwSearch*);
 LwSearch* 
 lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
 {
+    g_return_val_if_fail (QUERY != NULL && dictionary != NULL, NULL);
+    if (error != NULL && *error != NULL) return NULL;
+
     LwSearch *temp;
 
-    temp = g_new (LwSearch, 1);
+    temp = g_new0 (LwSearch, 1);
 
     if (temp != NULL)
     {
-      lw_search_init (temp, QUERY, dictionary, flags, error);
+      lw_search_init (temp, dictionary, QUERY, flags, error);
 
       if (error != NULL && *error != NULL)
       {
@@ -96,16 +99,15 @@ lw_search_free (LwSearch* search)
 //! @param error A GError to place errors into or NULL
 //!
 static void
-lw_search_init (LwSearch *search, const gchar* TEXT, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
+lw_search_init (LwSearch *search, LwDictionary* dictionary, const gchar* TEXT, LwSearchFlags flags, GError **error)
 {
-    memset(search, 0, sizeof(LwSearch));
-
     g_mutex_init (&search->mutex);
     search->status = LW_SEARCHSTATUS_IDLE;
     search->dictionary = dictionary;
     search->query = lw_query_new ();
     search->flags = flags;
 
+    printf("%d %d\n", dictionary, TEXT);
     lw_dictionary_parse_query (search->dictionary, search->query, TEXT, error);
 }
 
@@ -496,7 +498,6 @@ lw_search_stream_results_thread (gpointer data)
         g_main_context_iteration (NULL, FALSE);
       }
       lw_search_lock (search);
-
       //Results match, add to the text buffer
       if (lw_search_compare (search, LW_RELEVANCE_LOW))
       {

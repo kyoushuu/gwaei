@@ -16,36 +16,30 @@ lw_regexgroup_new ()
 void
 lw_regexgroup_free (LwRegexGroup *regexgroup)
 {
+    //Sanity checks
+    if (regexgroup == NULL) return;
+
+    //Declarations
+    GList **relevance;
     GList *link;
+    gint i;
 
-    if (regexgroup->high != NULL)
-    {
-      for (link = regexgroup->high; link !=NULL; link = link->next)
-      {
-        if (link->data != NULL) g_regex_unref (link->data);
-        link->data = NULL;
-      }
-      g_list_free (regexgroup->high); regexgroup->high = NULL;
-    }
+    i = 0;
 
-    if (regexgroup->medium != NULL)
+    while (i < TOTAL_QUERY_RELEVANCE)
     {
-      for (link = regexgroup->medium; link !=NULL; link = link->next)
+      relevance = regexgroup->relevance;
+      if (relevance[i] != NULL)
       {
-        if (link->data != NULL) g_regex_unref (link->data);
-        link->data = NULL;
+        for (link = relevance[i]; link !=NULL; link = link->next)
+        {
+          if (link->data != NULL) g_regex_unref (link->data);
+          link->data = NULL;
+        }
+        g_list_free (relevance[i]); relevance[i] = NULL;
       }
-      g_list_free (regexgroup->medium); regexgroup->medium = NULL;
-    }
 
-    if (regexgroup->low != NULL)
-    {
-      for (link = regexgroup->low; link !=NULL; link = link->next)
-      {
-        if (link->data != NULL) g_regex_unref (link->data);
-        link->data = NULL;
-      }
-      g_list_free (regexgroup->low); regexgroup->low = NULL;
+      i++;
     }
 
     g_free (regexgroup);

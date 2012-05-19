@@ -289,6 +289,7 @@ w_console_search (WApplication *application, GError **error)
 //    exact_switch = w_application_get_exact_switch (application);
 
     dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, dictionary_switch_data);
+if (dictionary == NULL) printf("dictionary equals zero! %s\n", dictionary_switch_data);
     search = lw_search_new (query_text_data, dictionary, 0, error);
     resolution = 0;
 

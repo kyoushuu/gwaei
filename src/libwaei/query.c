@@ -31,7 +31,6 @@
 
 #include <libwaei/libwaei.h>
 
-static void lw_query_clear_tokens (LwQuery *);
 
 LwQuery* 
 lw_query_new ()
@@ -49,22 +48,10 @@ lw_query_free (LwQuery* query)
 {
     g_return_if_fail (query != NULL);
 
-    lw_query_clean (query);
+    lw_query_clear (query);
     if (query->text != NULL) g_free (query->text); query->text = NULL;
 
     g_free (query);
-}
-
-
-void
-lw_query_init_tokens (LwQuery *query)
-{
-    //Sanity check
-    g_return_if_fail (query != NULL);
-
-    lw_query_clear_tokens (query);
-
-    query->tokenlist = g_new0 (GList*, TOTAL_LW_QUERY_TOKEN_TYPES);
 }
 
 
@@ -89,6 +76,17 @@ lw_query_clear_tokens (LwQuery *query)
       }
       g_free (query->tokenlist); query->tokenlist = NULL;
     }
+}
+
+
+void
+lw_query_init_tokens (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    lw_query_clear_tokens (query);
+    query->tokenlist = g_new0 (GList*, TOTAL_LW_QUERY_TOKEN_TYPES);
 }
 
 
@@ -123,13 +121,12 @@ lw_query_init_regexgroup (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_regexgroup (query);
-
     query->regexgroup = g_new0 (LwRegexGroup*, TOTAL_LW_QUERY_REGEX_TYPES);
 }
 
 
 void 
-lw_query_clean (LwQuery* query)
+lw_query_clear (LwQuery* query)
 {
     //Sanity check
     g_return_if_fail (query != NULL);

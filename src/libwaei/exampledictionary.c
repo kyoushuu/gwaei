@@ -52,7 +52,7 @@ LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 
     //Initializations
     dictionary = LW_DICTIONARY (g_object_new (LW_TYPE_EXAMPLEDICTIONARY,
-                                "dictionary-filename", FILENAME,
+                                "filename", FILENAME,
                                 NULL));
 
     return dictionary;

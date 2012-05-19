@@ -54,7 +54,7 @@ LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 
     //Initializations
     dictionary = LW_DICTIONARY (g_object_new (LW_TYPE_KANJIDICTIONARY,
-                                "dictionary-filename", FILENAME,
+                                "filename", FILENAME,
                                 NULL));
 
     return dictionary;
