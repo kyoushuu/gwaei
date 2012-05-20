@@ -314,7 +314,6 @@ lw_dictionary_get_directoryname (GType dictionary_type)
     const gchar* TYPENAME;
     const gchar *start;
     const gchar *end;
-    gint length;
     gchar *name;
     gchar *lowercase;
     
@@ -636,7 +635,6 @@ lw_dictionary_get_installed_idlist (GType type_filter)
     GType *childiter;
 
     const gchar* filename;
-    const gchar* directoryname;
     gchar *directorypath;
     GDir *directory;
 
@@ -682,7 +680,6 @@ printf("length %d\n", length);
     //Find out how long the array has to be
     while (*childiter != 0)
     {
-      directoryname = g_type_name (*childiter);
       directorypath = lw_dictionary_get_directory (*childiter);
       directory = g_dir_open (directorypath, 0, NULL);
 printf("BREAK1 %s\n", directorypath);

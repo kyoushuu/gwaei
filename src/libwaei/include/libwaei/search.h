@@ -58,15 +58,11 @@ struct _LwSearch {
     long current;                           //!< Current line in the dictionary file
     gint history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
 
-    gint total_relevant_results;             //!< Total results guessed to be highly relevant to the query
-    gint total_irrelevant_results;           //!< Total results guessed to be vaguely relevant to the query
-    gint total_results;                      //!< Total results returned from the search
+    gint total_results[TOTAL_LW_RELEVANCE];
 
     gboolean cancel;
 
-    GList *results_high;                    //!< Buffer storing mediumly relevant result for later display
-    GList *results_medium;                  //!< Buffer storing mediumly relevant result for later display
-    GList *results_low;                     //!< Buffer storing lowly relevant result for later display
+    GList *results[TOTAL_LW_RELEVANCE];
 
     LwResult* result;               //!< Result line to store parsed result
 
@@ -112,6 +108,8 @@ gboolean lw_search_read_line (LwSearch*);
 
 void lw_search_start (LwSearch*, gboolean);
 
+gint lw_search_get_total_results (LwSearch*);
+gint lw_search_get_total_relevant_results (LwSearch*);
 
 
 G_END_DECLS

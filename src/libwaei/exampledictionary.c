@@ -124,7 +124,7 @@ lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
     //Free previously used memory
-    lw_query_clean (query);
+    lw_query_clear (query);
 
     return (error == NULL || *error == NULL);
 }
@@ -161,12 +161,6 @@ lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, F
     return TRUE;
 }
 
-
-gchar**
-lw_exampledictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
-{
-    return NULL;
-}
 
 
 

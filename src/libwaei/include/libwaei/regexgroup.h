@@ -3,15 +3,8 @@
 
 G_BEGIN_DECLS
 
-typedef enum {
-  LW_QUERY_RELEVANCE_LOW,
-  LW_QUERY_RELEVANCE_MEDIUM,
-  LW_QUERY_RELEVANCE_HIGH,
-  TOTAL_QUERY_RELEVANCE
-} LwQueryRelevance;
-
 struct _LwRegexGroup {
-    GList *relevance[TOTAL_QUERY_RELEVANCE];
+    GList *relevance[TOTAL_LW_RELEVANCE];
 };
 typedef struct _LwRegexGroup LwRegexGroup;
 

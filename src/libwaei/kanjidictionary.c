@@ -128,7 +128,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
     //Free previously used memory
-    lw_query_clean (query);
+    lw_query_clear (query);
 
     return (error == NULL || *error == NULL);
 }
@@ -143,12 +143,6 @@ lw_kanjidictionary_parse_result (LwDictionary *dictionary, LwResult *result, FIL
     return TRUE;
 }
 
-
-gchar**
-lw_kanjidictionary_tolkenize_query (LwDictionary *dictionary, LwQuery *query)
-{
-    return NULL;
-}
 
 
 static gboolean 

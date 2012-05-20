@@ -364,7 +364,7 @@ w_console_append_less_relevant_header (WApplication *application, LwSearch *sear
     sdata = W_SEARCHDATA (lw_search_get_data (search));
 
     if (quiet_switch) return;
-    if (sdata->less_relevant_header_set || search->status != LW_SEARCHSTATUS_IDLE || search->results_high != NULL) return;
+    if (sdata->less_relevant_header_set || search->status != LW_SEARCHSTATUS_IDLE || search->results[LW_RELEVANCE_HIGH] != NULL) return;
 
     if (color_switch)
       printf("\n[0;31m***[0m[1m%s[0;31m***************************[0m\n\n\n", gettext("Other Results"));

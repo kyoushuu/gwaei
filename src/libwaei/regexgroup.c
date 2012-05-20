@@ -1,6 +1,6 @@
 #include <glib.h>
 
-#include <libwaei/regexgroup.h>
+#include <libwaei/libwaei.h>
 
 LwRegexGroup*
 lw_regexgroup_new ()
@@ -26,7 +26,7 @@ lw_regexgroup_free (LwRegexGroup *regexgroup)
 
     i = 0;
 
-    while (i < TOTAL_QUERY_RELEVANCE)
+    while (i < TOTAL_LW_RELEVANCE)
     {
       relevance = regexgroup->relevance;
       if (relevance[i] != NULL)

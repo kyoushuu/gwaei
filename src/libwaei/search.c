@@ -46,7 +46,8 @@ static void lw_search_deinit (LwSearch*);
 LwSearch* 
 lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
 {
-    g_return_val_if_fail (QUERY != NULL && dictionary != NULL, NULL);
+    g_return_val_if_fail (dictionary != NULL, NULL);
+    g_return_val_if_fail (QUERY != NULL, NULL);
     if (error != NULL && *error != NULL) return NULL;
 
     LwSearch *temp;
@@ -135,24 +136,18 @@ lw_search_deinit (LwSearch *search)
 void 
 lw_search_clear_results (LwSearch *search)
 {
-    search->total_relevant_results = 0;
-    search->total_irrelevant_results = 0;
-    search->total_results = 0;
+    //Sanity checks
+    g_return_if_fail (search != NULL);
 
-    while (search->results_low != NULL)
+    //Declarations
+    gint i;
+
+    memset(search->total_results, 0, sizeof(gint) * TOTAL_LW_RELEVANCE);
+
+    for (i = 0; i < TOTAL_LW_RELEVANCE; i++)
     {
-      lw_result_free (LW_RESULT (search->results_low->data));
-      search->results_low = g_list_delete_link (search->results_low, search->results_low);
-    }
-    while (search->results_medium != NULL)
-    {
-      lw_result_free (LW_RESULT (search->results_medium->data));
-      search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
-    }
-    while (search->results_high != NULL)
-    {
-      lw_result_free (LW_RESULT (search->results_high->data));
-      search->results_high = g_list_delete_link (search->results_high, search->results_high);
+      g_list_foreach (search->results[i], (GFunc) lw_result_free, NULL);
+      g_list_free (search->results[i]); search->results[i] = NULL;
     }
 }
 
@@ -180,9 +175,7 @@ lw_search_prepare_search (LwSearch* search)
     search->scratch_buffer = (char*) malloc (sizeof(char*) * LW_IO_MAX_FGETS_LINE);
     search->result = lw_result_new ();
     search->current = 0L;
-    search->total_relevant_results = 0;
-    search->total_irrelevant_results = 0;
-    search->total_results = 0;
+    memset(search->total_results, 0, sizeof(gint) * TOTAL_LW_RELEVANCE);
     search->thread = NULL;
     search->fd = lw_dictionary_open (LW_DICTIONARY (search->dictionary));
     search->status = LW_SEARCHSTATUS_SEARCHING;
@@ -376,10 +369,13 @@ lw_search_unlock (LwSearch *search)
 gdouble 
 lw_search_get_progress (LwSearch *search)
 {
+    //Sanity check
+    g_return_val_if_fail (search != NULL, 0.0);
+
     //Declarations
-    long current;
-    long length;
-    double fraction;
+    glong current;
+    glong length;
+    gdouble fraction;
 
     //Initializations
     current = 0L;
@@ -389,7 +385,7 @@ lw_search_get_progress (LwSearch *search)
     if (search != NULL && search->dictionary != NULL && search->status == LW_SEARCHSTATUS_SEARCHING)
     {
       current = search->current;
-      length = lw_dictionary_get_length(LW_DICTIONARY (search->dictionary));
+      length = lw_dictionary_get_length (LW_DICTIONARY (search->dictionary));
 
       if (current > 0L && length > 0L && current != length) 
         fraction = (gdouble) current / (gdouble) length;
@@ -502,41 +498,12 @@ lw_search_stream_results_thread (gpointer data)
       if (lw_search_compare (search, LW_RELEVANCE_LOW))
       {
         relevance = lw_search_get_relevance (search);
-        switch(relevance)
+        if (search->total_results[relevance] < LW_MAX_HIGH_RELEVENT_RESULTS)
         {
-          case LW_RELEVANCE_HIGH:
-              if (search->total_relevant_results < LW_MAX_HIGH_RELEVENT_RESULTS)
-              {
-                search->total_results++;
-                search->total_relevant_results++;
-                search->result->relevance = LW_RESULT_RELEVANCE_HIGH;
-                search->results_high =  g_list_append (search->results_high, search->result);
-                search->result = lw_result_new ();
-              }
-              break;
-          if (!show_only_exact_matches)
-          {
-            case LW_RELEVANCE_MEDIUM:
-                if (search->total_irrelevant_results < LW_MAX_MEDIUM_IRRELEVENT_RESULTS)
-                {
-                  search->total_results++;
-                  search->total_irrelevant_results++;
-                  search->result->relevance = LW_RESULT_RELEVANCE_MEDIUM;
-                  search->results_medium =  g_list_append (search->results_medium, search->result);
-                  search->result = lw_result_new ();
-                }
-                break;
-            default:
-                if (search->total_irrelevant_results < LW_MAX_LOW_IRRELEVENT_RESULTS)
-                {
-                  search->total_results++;
-                  search->total_irrelevant_results++;
-                  search->result->relevance = LW_RESULT_RELEVANCE_LOW;
-                  search->results_low = g_list_append (search->results_low, search->result);
-                  search->result = lw_result_new ();
-                }
-                break;
-          }
+          search->total_results[relevance]++;
+          search->result->relevance = relevance;
+          search->results[relevance] = g_list_append (search->results[relevance], search->result);
+          search->result = lw_result_new ();
         }
       }
     }
@@ -617,35 +584,30 @@ lw_search_cancel (LwSearch *search)
 LwResult* 
 lw_search_get_result (LwSearch *search)
 {
+    //Sanity checks
     g_assert (search != NULL);
 
-    LwResult *line;
+    //Declarations
+    LwResult *result;
+    gint relevance;
+
+    //Initializations
+    result = NULL; 
 
     lw_search_lock (search);
 
-    if (search->results_high != NULL)
+    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE && result == NULL; relevance++)
     {
-      line = LW_RESULT (search->results_high->data);
-      search->results_high = g_list_delete_link (search->results_high, search->results_high);
-    }
-    else if (search->results_medium != NULL && search->status == LW_SEARCHSTATUS_IDLE)
-    {
-      line = LW_RESULT (search->results_medium->data);
-      search->results_medium = g_list_delete_link (search->results_medium, search->results_medium);
-    }
-    else if (search->results_low != NULL && search->status == LW_SEARCHSTATUS_IDLE)
-    {
-      line = LW_RESULT (search->results_low->data);
-      search->results_low = g_list_delete_link (search->results_low, search->results_low);
-    }
-    else
-    {
-      line = NULL;
+      if (search->results[relevance] != NULL)
+      {
+        result = LW_RESULT (search->results[relevance]->data);
+        search->results[relevance] = g_list_delete_link (search->results[relevance], search->results[relevance]);
+      }
     }
 
     lw_search_unlock (search);
 
-    return line;
+    return result;
 }
 
 
@@ -672,13 +634,44 @@ lw_search_should_check_results (LwSearch *search)
     {
       lw_search_lock (search);
       should_check_results = (status != LW_SEARCHSTATUS_IDLE ||
-                              search->results_high != NULL ||
-                              search->results_medium != NULL ||
-                              search->results_low != NULL);
+                              search->results[LW_RELEVANCE_HIGH] != NULL ||
+                              search->results[LW_RELEVANCE_MEDIUM] != NULL ||
+                              search->results[LW_RELEVANCE_LOW] != NULL);
       lw_search_unlock (search);
     }
 
     return should_check_results;
 }
 
+
+gint
+lw_search_get_total_results (LwSearch *search)
+{
+    //Sanity checks
+    g_return_val_if_fail (search != NULL, 0);
+
+    //Declarations
+    gint total;
+    gint relevance;
+
+    //Initializations
+    total = 0;
+
+    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+    {
+      total += search->total_results[relevance];
+    }
+
+    return total;
+}
+
+
+gint
+lw_search_get_total_relevant_results (LwSearch *search)
+{
+    //Sanity checks
+    g_return_val_if_fail (search != NULL, 0);
+
+    return search->total_results[LW_RELEVANCE_HIGH];
+}
 

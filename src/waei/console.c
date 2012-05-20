@@ -272,6 +272,8 @@ w_console_search (WApplication *application, GError **error)
     const gchar* query_text_data;
     gboolean quiet_switch;
 //    gboolean exact_switch;
+    gint total_results;
+    gint total_relevant_results;
 
     char *message_total;
     char *message_relevant;
@@ -340,11 +342,15 @@ if (dictionary == NULL) printf("dictionary equals zero! %s\n", dictionary_switch
     //Print final header
     if (quiet_switch == FALSE)
     {
-      message_total = ngettext("Found %d result", "Found %d results", search->total_results);
-      message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", search->total_relevant_results);
-      printf(message_total, search->total_results);
-      if (search->total_relevant_results != search->total_results)
-        printf(message_relevant, search->total_relevant_results);
+      total_results = lw_search_get_total_results (search);
+      message_total = ngettext("Found %d result", "Found %d results", total_results);
+      printf(message_total, total_results);
+
+      total_relevant_results = lw_search_get_total_relevant_results (search);
+      message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", total_relevant_results);
+      if (total_relevant_results != total_results)
+        printf(message_relevant, total_relevant_results);
+
       printf("\n");
     }
 

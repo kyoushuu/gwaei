@@ -10,27 +10,8 @@ G_BEGIN_DECLS
 #define LW_RE_LOCATE_FLAGS  (0)
 #define LW_RE_EXIST_FLAGS   (0)
 
-typedef enum
-{
-  LW_RELEVANCE_HIGH,
-  LW_RELEVANCE_MEDIUM,
-  LW_RELEVANCE_LOW,
-  LW_RELEVANCE_LOCATE,
-  LW_RELEVANCE_TOTAL
-} LwRelevance;
-
-
 void lw_regex_initialize (void);
 void lw_regex_free (void);
-
-/*
-GRegex* lw_regex_kanji_new (const char*, LwDictType, LwRelevance, GError**);
-GRegex* lw_regex_furi_new (const char*, LwDictType, LwRelevance, GError**);
-GRegex* lw_regex_romaji_new (const char*, LwDictType, LwRelevance, GError**);
-GRegex* lw_regex_mix_new (const char*, LwDictType, LwRelevance, GError**);
-GRegex* lw_regex_new (const char*, LwDictType, LwRelevance, GError**);
-*/
-
 
 typedef enum {
   LW_RE_NUMBER,
