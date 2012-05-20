@@ -160,6 +160,7 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
+printf("TEXT: %s, DELIMITED: %s\n", query->text, delimited);
     tokens = g_strsplit (delimited, DELIMITOR, -1);
 
     if (tokens != NULL)
@@ -525,38 +526,41 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     if (result->kanji_start != NULL)
     {
       link = list = regexgroup[LW_QUERY_REGEX_TYPE_KANJI]->relevance[RELEVANCE];
+      found = TRUE;
       while (link != NULL)
       {
         re = (GRegex*) link->data;
-        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) break;
+        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) found = FALSE;
         link = link->next;
       }
-      if (list != NULL) return TRUE;
+      if (list != NULL && found == TRUE) return TRUE;
     }
 
     //Compare furigana atoms
     if (result->furigana_start != NULL)
     {
       link = list = regexgroup[LW_QUERY_REGEX_TYPE_FURIGANA]->relevance[RELEVANCE];
+      found = TRUE;
       while (link != NULL)
       {
         re = (GRegex*) link->data;
-        if (g_regex_match (re, result->furigana_start, 0, NULL) == FALSE) break;
+        if (g_regex_match (re, result->furigana_start, 0, NULL) == FALSE) found = FALSE;
         link = link->next;
       }
-      if (list != NULL) return TRUE;
+      if (list != NULL && found == TRUE) return TRUE;
     }
 
     if (result->kanji_start != NULL)
     {
       link = list = regexgroup[LW_QUERY_REGEX_TYPE_FURIGANA]->relevance[RELEVANCE];
-      while (link != NULL)
+      found = TRUE;
+      while (link != NULL && found == TRUE)
       {
         re = (GRegex*) link->data;
-        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) break;
+        if (g_regex_match (re, result->kanji_start, 0, NULL) == FALSE) found = FALSE;
         link = link->next;
       }
-      if (list != NULL) return TRUE;
+      if (list != NULL && found == TRUE) return TRUE;
     }
 
     //Compare romaji atoms

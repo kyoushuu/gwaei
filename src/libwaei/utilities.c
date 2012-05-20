@@ -1411,6 +1411,27 @@ lw_util_collapse_string (const gchar *text)
 }
 
 
+static gboolean
+lw_util_script_changed (GUnicodeScript p, GUnicodeScript n)
+{
+    //Declarations
+    gboolean has_common;
+    gboolean has_changed;
+    gboolean is_japanese_p;
+    gboolean is_japanese_n;
+    gboolean is_japanese_change;
+    
+    //Initializations;
+    has_common = (p == G_UNICODE_SCRIPT_INVALID_CODE ||	n == G_UNICODE_SCRIPT_COMMON || p == G_UNICODE_SCRIPT_COMMON);
+    has_changed = (p != n);
+    is_japanese_p = (p == G_UNICODE_SCRIPT_HAN || p == G_UNICODE_SCRIPT_HIRAGANA || p == G_UNICODE_SCRIPT_KATAKANA);
+    is_japanese_n = (n == G_UNICODE_SCRIPT_HAN || n == G_UNICODE_SCRIPT_HIRAGANA || n == G_UNICODE_SCRIPT_KATAKANA);
+    is_japanese_change = (is_japanese_p && is_japanese_n);
+
+    return (has_changed && !has_common && !is_japanese_change);
+}
+
+
 gchar*
 lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 {
@@ -1435,10 +1456,7 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
     {
       c = g_utf8_get_char (source_ptr);
       this_script = g_unichar_get_script (c);
-      script_changed = (this_script != previous_script &&
-                        previous_script != G_UNICODE_SCRIPT_INVALID_CODE &&
-					              this_script != G_UNICODE_SCRIPT_COMMON &&
-                        previous_script != G_UNICODE_SCRIPT_COMMON);
+      script_changed = lw_util_script_changed (previous_script, this_script);
 
       if (script_changed)
       {
@@ -1458,21 +1476,15 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 			{
 				c = g_utf8_get_char (source_ptr);
 				this_script = g_unichar_get_script (c);
-        script_changed = (this_script != previous_script &&
-                          previous_script != G_UNICODE_SCRIPT_INVALID_CODE &&
-                          this_script != G_UNICODE_SCRIPT_COMMON &&
-                          previous_script != G_UNICODE_SCRIPT_COMMON);
+        script_changed = lw_util_script_changed (previous_script, this_script);
 
         if (script_changed)
 				{
 					strcpy(target_ptr, DELIMITOR);
 					target_ptr += delimitor_length;
 				}
-				else
-				{
-					target_ptr += g_unichar_to_utf8 (c, target_ptr);
-					*target_ptr = '\0';
-				}
+        target_ptr += g_unichar_to_utf8 (c, target_ptr);
+        *target_ptr = '\0';
 
 				previous_script = this_script;
 			}
