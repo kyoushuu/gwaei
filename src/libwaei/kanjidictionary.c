@@ -122,13 +122,23 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
 static gboolean 
 lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (query != NULL, FALSE);
+    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
+    g_return_val_if_fail (query->tokenlist != NULL, FALSE);
+    g_return_val_if_fail (TEXT != NULL, FALSE);
+    g_return_val_if_fail (error != NULL, FALSE);
     if (error != NULL && *error != NULL) return FALSE;
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+ 
+    lw_dictionary_tokenize_query (dictionary, query);
 
-    //Free previously used memory
-    lw_query_clear (query);
+    lw_edictionary_build_kanji_regex (dictionary, query, error);
+    lw_edictionary_build_furigana_regex (dictionary, query, error);
+    lw_edictionary_build_romaji_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
 }

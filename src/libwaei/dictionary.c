@@ -704,3 +704,75 @@ printf("BREAK3\n");
     return idlist;
 }
 
+
+static void
+lw_dictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+{
+    //Declarations
+    gchar *temp;
+    gchar *delimited;
+    gchar **tokens;
+    static const gchar *DELIMITOR = "|";
+    gboolean split_script_changes, split_whitespace;
+    gint i;
+    
+    //Initializations
+    delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
+    split_script_changes = split_whitespace = TRUE;
+
+    if (split_script_changes)
+    {
+      temp = lw_util_delimit_script_changes (DELIMITOR, delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    if (split_whitespace)
+    {
+      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+printf("TEXT: %s, DELIMITED: %s\n", query->text, delimited);
+    tokens = g_strsplit (delimited, DELIMITOR, -1);
+
+    if (tokens != NULL)
+    {
+      for (i = 0; tokens[i] != NULL; i++)
+      {
+        if (lw_util_is_furigana_str (tokens[i]))
+        {
+          printf("adding furigana token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA], tokens[i]);
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+          }
+*/
+        }
+        else if (lw_util_is_kanji_ish_str (tokens[i]))
+        {
+          printf("adding kanjiish token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+          }
+*/
+        }
+        else if (lw_util_is_romaji_str (tokens[i]))
+        {
+          printf("adding romaji token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI], tokens[i]);
+        }
+        else
+        {
+          g_free (tokens[i]);
+        }
+      }
+      g_free (tokens); tokens = NULL;
+    }
+}
