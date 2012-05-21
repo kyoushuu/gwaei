@@ -42,6 +42,19 @@ static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const
 static gint lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 
 
+/*
+//Kanji
+          format = "^(無|不|非|お|御|)(%s)$";
+          format = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と|$)";
+//Furi
+          format = "^(お|)(%s)$";
+          format = "(^お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
+//Romaji
+          format = "(^|\\)|/|^to |\\) )(%s)(\\(|/|$|!| \\()";
+          format = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
+*/
+
+
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
 
 

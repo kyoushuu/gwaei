@@ -1412,7 +1412,7 @@ lw_util_collapse_string (const gchar *text)
 
 
 static gboolean
-lw_util_script_changed (GUnicodeScript p, GUnicodeScript n)
+lw_util_script_changed (GUnicodeScript p, GUnicodeScript n, gboolean split_kanji_furigana)
 {
     //Declarations
     gboolean has_common;
@@ -1426,14 +1426,14 @@ lw_util_script_changed (GUnicodeScript p, GUnicodeScript n)
     has_changed = (p != n);
     is_japanese_p = (p == G_UNICODE_SCRIPT_HAN || p == G_UNICODE_SCRIPT_HIRAGANA || p == G_UNICODE_SCRIPT_KATAKANA);
     is_japanese_n = (n == G_UNICODE_SCRIPT_HAN || n == G_UNICODE_SCRIPT_HIRAGANA || n == G_UNICODE_SCRIPT_KATAKANA);
-    is_japanese_change = (is_japanese_p && is_japanese_n);
+    is_japanese_change = (is_japanese_p && is_japanese_n  && p != n && split_kanji_furigana);
 
     return (has_changed && !has_common && !is_japanese_change);
 }
 
 
 gchar*
-lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
+lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT, gboolean split_kanji_furigana)
 {
     //Sanity check
     g_return_val_if_fail (DELIMITOR != NULL && TEXT != NULL, NULL);
@@ -1456,7 +1456,7 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
     {
       c = g_utf8_get_char (source_ptr);
       this_script = g_unichar_get_script (c);
-      script_changed = lw_util_script_changed (previous_script, this_script);
+      script_changed = lw_util_script_changed (previous_script, this_script, split_kanji_furigana);
 
       if (script_changed)
       {
@@ -1476,7 +1476,7 @@ lw_util_delimit_script_changes (const gchar *DELIMITOR, const gchar* TEXT)
 			{
 				c = g_utf8_get_char (source_ptr);
 				this_script = g_unichar_get_script (c);
-        script_changed = lw_util_script_changed (previous_script, this_script);
+        script_changed = lw_util_script_changed (previous_script, this_script, split_kanji_furigana);
 
         if (script_changed)
 				{

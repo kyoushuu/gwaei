@@ -45,6 +45,27 @@ static gint lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
 static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
+static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
+
+//KANJI
+        else if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "^(%s)$";
+        if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "%s";
+//FURIGANA
+        else if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "(^|\\s)%s(\\s|$)";
+        if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "(^|\\s)(%s)(\\s|$)";
+
+//ROMAJI
+        else if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "\\{(%s)\\}";
+        if (DICTTYPE == LW_DICTTYPE_KANJI)
+          format = "\\b(%s)\\b";
+
+
+
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
     g_return_val_if_fail (FILENAME != NULL, NULL);
@@ -134,7 +155,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
  
-    lw_dictionary_tokenize_query (dictionary, query);
+    lw_kanjidictionary_tokenize_query (dictionary, query);
 
     lw_edictionary_build_kanji_regex (dictionary, query, error);
     lw_edictionary_build_furigana_regex (dictionary, query, error);
@@ -349,3 +370,74 @@ lw_kanjidictionary_installer_postprocess (LwDictionary *dictionary,
     return lw_io_create_mix_dictionary (targetlist[0], sourcelist[0], sourcelist[1], cb, data, error);
 }
 
+
+static void
+lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+{
+    //Declarations
+    gchar *temp;
+    gchar *delimited;
+    gchar **tokens;
+    static const gchar *DELIMITOR = "|";
+    gboolean split_script_changes, split_whitespace;
+    gint i;
+    
+    //Initializations
+    delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
+    split_script_changes = split_whitespace = TRUE;
+
+    if (split_script_changes)
+    {
+      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, TRUE);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    if (split_whitespace)
+    {
+      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    tokens = g_strsplit (delimited, DELIMITOR, -1);
+
+    if (tokens != NULL)
+    {
+      for (i = 0; tokens[i] != NULL; i++)
+      {
+        if (lw_util_is_furigana_str (tokens[i]))
+        {
+          printf("adding furigana token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA], tokens[i]);
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+          }
+*/
+        }
+        else if (lw_util_is_kanji_ish_str (tokens[i]))
+        {
+          printf("adding kanjiish token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+          }
+*/
+        }
+        else if (lw_util_is_romaji_str (tokens[i]))
+        {
+          printf("adding romaji token  %s\n", tokens[i]);
+          query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI], tokens[i]);
+        }
+        else
+        {
+          g_free (tokens[i]);
+        }
+      }
+      g_free (tokens); tokens = NULL;
+    }
+}

@@ -43,6 +43,21 @@ G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gint lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 
+
+/*
+//Kanji
+        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
+          format = "%s";
+//Furi
+        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
+          format = "%s";
+//Romaji
+        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
+          format = "%s";
+*/
+
+
+
 LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 {
     g_return_val_if_fail (FILENAME != NULL, NULL);
