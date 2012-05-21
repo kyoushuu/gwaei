@@ -472,13 +472,13 @@ lw_search_stream_results_thread (gpointer data)
 {
     //Declarations
     LwSearch *search;
-    gboolean show_only_exact_matches;
+    gboolean exact;
     gint relevance;
 
     //Initializations
     search = LW_SEARCH (data);
     g_return_val_if_fail (search != NULL && search->fd != NULL, NULL);
-    show_only_exact_matches = search->flags & LW_SEARCH_FLAG_EXACT;
+    exact = search->flags & LW_SEARCH_FLAG_EXACT;
 
     lw_search_lock (search);
     search->status = LW_SEARCHSTATUS_SEARCHING;
@@ -500,10 +500,13 @@ lw_search_stream_results_thread (gpointer data)
         relevance = lw_search_get_relevance (search);
         if (search->total_results[relevance] < LW_MAX_HIGH_RELEVENT_RESULTS)
         {
-          search->total_results[relevance]++;
-          search->result->relevance = relevance;
-          search->results[relevance] = g_list_append (search->results[relevance], search->result);
-          search->result = lw_result_new ();
+          if (exact && relevance == LW_RELEVANCE_HIGH || !exact)
+          {
+            search->total_results[relevance]++;
+            search->result->relevance = relevance;
+            search->results[relevance] = g_list_append (search->results[relevance], search->result);
+            search->result = lw_result_new ();
+          }
         }
       }
     }
