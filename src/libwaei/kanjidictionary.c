@@ -108,6 +108,7 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     //Declarations
     GObjectClass *object_class;
     LwDictionaryClass *dictionary_class;
+    gint i;
 
     //Initializations
     object_class = G_OBJECT_CLASS (klass);
@@ -119,6 +120,12 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class->parse_result = lw_kanjidictionary_parse_result;
     dictionary_class->compare = lw_kanjidictionary_compare;
     dictionary_class->installer_postprocess = lw_kanjidictionary_installer_postprocess;
+
+    dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_REGEX_TYPES + 1);
+    for (i = 0; i < TOTAL_LW_REGEX_TYPES; i++)
+    {
+      dictionary_class->patterns[i] = g_new0 (gchar*, TOTAL_LW_RELEVANCE + 1);
+    }
 
     dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(%s)";
