@@ -500,7 +500,7 @@ lw_search_stream_results_thread (gpointer data)
         relevance = lw_search_get_relevance (search);
         if (search->total_results[relevance] < LW_MAX_HIGH_RELEVENT_RESULTS)
         {
-          if (exact && (relevance == LW_RELEVANCE_HIGH || !exact))
+          if (!exact || (relevance == LW_RELEVANCE_HIGH && exact))
           {
             search->total_results[relevance]++;
             search->result->relevance = relevance;
