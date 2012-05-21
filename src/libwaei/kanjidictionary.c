@@ -47,24 +47,6 @@ static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**
 
 static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
 
-//KANJI
-        else if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "^(%s)$";
-        if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "%s";
-//FURIGANA
-        else if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "(^|\\s)%s(\\s|$)";
-        if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "(^|\\s)(%s)(\\s|$)";
-
-//ROMAJI
-        else if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "\\{(%s)\\}";
-        if (DICTTYPE == LW_DICTTYPE_KANJI)
-          format = "\\b(%s)\\b";
-
-
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -137,6 +119,18 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class->parse_result = lw_kanjidictionary_parse_result;
     dictionary_class->compare = lw_kanjidictionary_compare;
     dictionary_class->installer_postprocess = lw_kanjidictionary_installer_postprocess;
+
+    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(%s)$";
+
+    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(^|\\s)(%s)(\\s|$)";
+    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^|\\s)(%s)(\\s|$)";
+    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "(^|\\s)(%s)(\\s|$)";
+
+    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "\\b(%s)\\b";
+    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_HIGH] =  "\\{(%s)\\}";
 }
 
 
@@ -157,9 +151,11 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
  
     lw_kanjidictionary_tokenize_query (dictionary, query);
 
+/*
     lw_edictionary_build_kanji_regex (dictionary, query, error);
     lw_edictionary_build_furigana_regex (dictionary, query, error);
     lw_edictionary_build_romaji_regex (dictionary, query, error);
+*/
 
     return (error == NULL || *error == NULL);
 }

@@ -101,7 +101,7 @@ lw_query_clear_regexgroup (LwQuery *query)
 
     if (query->regexgroup != NULL)
     {
-      for (i = 0; i < TOTAL_LW_QUERY_REGEX_TYPES; i++)
+      for (i = 0; i < TOTAL_LW_REGEX_TYPES; i++)
       {
         if (query->regexgroup[i] != NULL)
         {
@@ -121,7 +121,7 @@ lw_query_init_regexgroup (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_regexgroup (query);
-    query->regexgroup = g_new0 (LwRegexGroup*, TOTAL_LW_QUERY_REGEX_TYPES);
+    query->regexgroup = g_new0 (LwRegexGroup*, TOTAL_LW_REGEX_TYPES);
 }
 
 

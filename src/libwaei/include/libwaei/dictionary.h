@@ -42,6 +42,7 @@ struct _LwDictionaryClass {
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
   gchar** (*installer_get_filelist) (LwDictionary *dictionary);
   gboolean (*installer_postprocess) (LwDictionary *dictionary, gchar** sourcelist, gchar** targetlist, LwIoProgressCallback cb, gpointer data, GError **error);
+  gchar ***patterns;  
 };
 
 //Methods
