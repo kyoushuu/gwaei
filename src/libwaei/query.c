@@ -86,7 +86,8 @@ lw_query_init_tokens (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_tokens (query);
-    query->tokenlist = g_new0 (GList*, TOTAL_LW_QUERY_TOKEN_TYPES);
+    query->tokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TOKEN_TYPES);
+    query->supplimentaltokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TOKEN_TYPES);
 }
 
 
