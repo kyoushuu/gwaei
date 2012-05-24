@@ -121,23 +121,23 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class->compare = lw_kanjidictionary_compare;
     dictionary_class->installer_postprocess = lw_kanjidictionary_installer_postprocess;
 
-    dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_REGEX_TYPES + 1);
-    for (i = 0; i < TOTAL_LW_REGEX_TYPES; i++)
+    dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_QUERY_TYPES + 1);
+    for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
     {
       dictionary_class->patterns[i] = g_new0 (gchar*, TOTAL_LW_RELEVANCE + 1);
     }
 
-    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
-    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(%s)";
-    dictionary_class->patterns[LW_REGEX_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(%s)$";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(%s)$";
 
-    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(^|\\s)(%s)(\\s|$)";
-    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^|\\s)(%s)(\\s|$)";
-    dictionary_class->patterns[LW_REGEX_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "(^|\\s)(%s)(\\s|$)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(^|\\s)(%s)(\\s|$)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^|\\s)(%s)(\\s|$)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "(^|\\s)(%s)(\\s|$)";
 
-    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
-    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "\\b(%s)\\b";
-    dictionary_class->patterns[LW_REGEX_TYPE_ROMAJI][LW_RELEVANCE_HIGH] =  "\\{(%s)\\}";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "\\b(%s)\\b";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_HIGH] =  "\\{(%s)\\}";
 }
 
 
@@ -410,31 +410,31 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
         if (lw_util_is_furigana_str (tokens[i]))
         {
           printf("adding furigana token  %s\n", tokens[i]);
-          query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_FURIGANA], tokens[i]);
+          query->tokenlist[LW_QUERY_TYPE_FURIGANA] = g_list_append (query->tokenlist[LW_QUERY_TYPE_FURIGANA], tokens[i]);
 /*
           if (get_japanese_morphology)
           {
             lw_morphology_get_stem ()
-            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
           }
 */
         }
         else if (lw_util_is_kanji_ish_str (tokens[i]))
         {
           printf("adding kanjiish token  %s\n", tokens[i]);
-          query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+          query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
 /*
           if (get_japanese_morphology)
           {
             lw_morphology_get_stem ()
-            query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_KANJI], tokens[i]);
+            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
           }
 */
         }
         else if (lw_util_is_romaji_str (tokens[i]))
         {
           printf("adding romaji token  %s\n", tokens[i]);
-          query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI] = g_list_append (query->tokenlist[LW_QUERY_TOKEN_TYPE_ROMAJI], tokens[i]);
+          query->tokenlist[LW_QUERY_TYPE_ROMAJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_ROMAJI], tokens[i]);
         }
         else
         {

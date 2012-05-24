@@ -66,13 +66,11 @@ lw_query_clear_tokens (LwQuery *query)
 
     if (query->tokenlist != NULL)
     {
-      for (i = 0; i < TOTAL_LW_QUERY_TOKEN_TYPES; i++)
+      i = 0;
+      while (i < TOTAL_LW_QUERY_TYPES)
       {
-        if (query->tokenlist[i] != NULL)
-        {
-          g_list_foreach (query->tokenlist[i], (GFunc) g_free, NULL);
-          query->tokenlist[i] = NULL; 
-        }
+        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); query->tokenlist = NULL;
+        i++;
       }
       g_free (query->tokenlist); query->tokenlist = NULL;
     }
@@ -86,8 +84,7 @@ lw_query_init_tokens (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_tokens (query);
-    query->tokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TOKEN_TYPES);
-    query->supplimentaltokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TOKEN_TYPES);
+    query->tokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TYPES);
 }
 
 
@@ -102,7 +99,7 @@ lw_query_clear_regexgroup (LwQuery *query)
 
     if (query->regexgroup != NULL)
     {
-      for (i = 0; i < TOTAL_LW_REGEX_TYPES; i++)
+      for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
       {
         if (query->regexgroup[i] != NULL)
         {
@@ -122,7 +119,7 @@ lw_query_init_regexgroup (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_regexgroup (query);
-    query->regexgroup = g_new0 (LwRegexGroup*, TOTAL_LW_REGEX_TYPES);
+    query->regexgroup = g_new0 (GRegex**, TOTAL_LW_QUERY_TYPES);
 }
 
 

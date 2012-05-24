@@ -9,29 +9,22 @@ G_BEGIN_DECLS
 
 
 typedef enum {
-  LW_REGEX_TYPE_KANJI,
-  LW_REGEX_TYPE_FURIGANA,
-  LW_REGEX_TYPE_ROMAJI,
-  LW_REGEX_TYPE_MIX,
-  LW_REGEX_TYPE_STROKES,
-  LW_REGEX_TYPE_GRADE,
-  LW_REGEX_TYPE_JLPT,
-  TOTAL_LW_REGEX_TYPES
-} LwRegexType;
-
-typedef enum {
-  LW_QUERY_TOKEN_TYPE_ROMAJI,
-  LW_QUERY_TOKEN_TYPE_FURIGANA,
-  LW_QUERY_TOKEN_TYPE_KANJI,
-  TOTAL_LW_QUERY_TOKEN_TYPES
-} LwQueryTokenType;
+  LW_QUERY_TYPE_MIX,
+  LW_QUERY_TYPE_KANJI,
+  LW_QUERY_TYPE_FURIGANA,
+  LW_QUERY_TYPE_ROMAJI,
+  LW_QUERY_TYPE_STROKES,
+  LW_QUERY_TYPE_GRADE,
+  LW_QUERY_TYPE_JLPT,
+  LW_QUERY_TYPE_FREQUENCY,
+  TOTAL_LW_QUERY_TYPES
+} LwQueryType;
 
 
 struct _LwQuery {
     gchar *text;
-    GString *tokenlist;
-    GString *supplimenttokenlist;
-    LwRegexGroup **regexgroup;
+    gchar **tokenlist;
+    GRegex ***regexgroup;
     gboolean parsed;
 };
 typedef struct _LwQuery LwQuery;

@@ -3,13 +3,8 @@
 
 G_BEGIN_DECLS
 
-struct _LwRegexGroup {
-    GList *relevance[TOTAL_LW_RELEVANCE];
-};
-typedef struct _LwRegexGroup LwRegexGroup;
-
-LwRegexGroup *lw_regexgroup_new ();
-void lw_regexgroup_free (LwRegexGroup*);
+GRegex **lw_regexgroup_new ();
+void lw_regexgroup_free (GRegex**);
 
 
 G_END_DECLS
