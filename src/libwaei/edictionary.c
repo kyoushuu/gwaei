@@ -163,19 +163,21 @@ lw_edictionary_build_kanji_regex (LwDictionary *dictionary, LwQuery *query, GErr
     //Initializations
     klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
     regexgroup = lw_regexgroup_new ();
-    text = query->tokenlist[LW_QUERY_TYPE_KANJI];
     kanji = klass->patterns[LW_QUERY_TYPE_KANJI];
 
-    if (text != NULL)
+    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance);
+      if (text != NULL)
       {
+printf("BREAK buliding kanji %s\n", text);
         regex = lw_regex_new (kanji[relevance], text, error);
         if (regex != NULL) regexgroup[relevance] = regex;
+        g_free (text);
       }
-
-      query->regexgroup[LW_QUERY_TYPE_KANJI] = regexgroup;
     }
+
+    query->regexgroup[LW_QUERY_TYPE_KANJI] = regexgroup;
 }
 
 
@@ -201,26 +203,26 @@ lw_edictionary_build_furigana_regex (LwDictionary *dictionary, LwQuery *query, G
     //Initializations
     klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
     regexgroup = lw_regexgroup_new ();
-    text = query->tokenlist[LW_QUERY_TYPE_FURIGANA];
     furigana = klass->patterns[LW_QUERY_TYPE_FURIGANA];
 
-    if (text != NULL)
+    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance);
+      if (text != NULL)
       {
         regex = lw_regex_new (furigana[relevance], text, error);
         if (regex != NULL) regexgroup[relevance] = regex;
       }
+    }
 
 /*
-      if (get_japanese_morphology)
-      {
-        regex = lw_regex_new (furigana_medium_prefix, text, furigana_medium_suffix, error);
-        regexgroup->medium = g_list_append (regexgroup->low, regex);
-      }
-*/
-      query->regexgroup[LW_QUERY_TYPE_FURIGANA] = regexgroup;
+    if (get_japanese_morphology)
+    {
+      regex = lw_regex_new (furigana_medium_prefix, text, furigana_medium_suffix, error);
+      regexgroup->medium = g_list_append (regexgroup->low, regex);
     }
+*/
+    query->regexgroup[LW_QUERY_TYPE_FURIGANA] = regexgroup;
 }
 
 
@@ -246,26 +248,27 @@ lw_edictionary_build_romaji_regex (LwDictionary *dictionary, LwQuery *query, GEr
     //Initializations
     klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
     regexgroup = lw_regexgroup_new ();
-    text = query->tokenlist[LW_QUERY_TYPE_ROMAJI];
     romaji = klass->patterns[LW_QUERY_TYPE_ROMAJI];
 
-    if (text != NULL)
+    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_ROMAJI, relevance);
+      if (text != NULL)
       {
         regex = lw_regex_new (romaji[relevance], text, error);
         if (regex != NULL) regexgroup[relevance] = regex;
+        g_free (text);
       }
-/*
-      if (get_english_stemp)
-      {
-        romaji_stem
-        regex = lw_regex_new (romaji_medium_prefix, text, romaji_medium_suffix, error);
-        regexgroup->medium = g_list_append (regexgroup->low, regex);
-      }
-*/
-      query->regexgroup[LW_QUERY_TYPE_ROMAJI] = regexgroup;
     }
+/*
+    if (get_english_stemp)
+    {
+      romaji_stem
+      regex = lw_regex_new (romaji_medium_prefix, text, romaji_medium_suffix, error);
+      regexgroup->medium = g_list_append (regexgroup->low, regex);
+    }
+*/
+    query->regexgroup[LW_QUERY_TYPE_ROMAJI] = regexgroup;
 
 }
 
@@ -423,6 +426,8 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     regex = query->regexgroup[LW_QUERY_TYPE_KANJI][RELEVANCE];
     if (result->kanji_start != NULL && regex != NULL)
     {
+printf("BREAK comparing kanji\n");
+exit(0);
       found = g_regex_match (regex, result->kanji_start, 0, NULL);
       if (found) return TRUE;
     }
@@ -431,6 +436,8 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     regex = query->regexgroup[LW_QUERY_TYPE_FURIGANA][RELEVANCE];
     if (result->furigana_start != NULL && regex != NULL)
     {
+printf("BREAK comparing furigana\n");
+exit(0);
       found = g_regex_match (regex, result->furigana_start, 0, NULL);
       if (found) return TRUE;
     }
@@ -438,6 +445,8 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     regex = query->regexgroup[LW_QUERY_TYPE_FURIGANA][RELEVANCE];
     if (result->kanji_start != NULL && regex != NULL)
     {
+printf("BREAK comparing kanjiish\n");
+exit(0);
       found = g_regex_match (regex, result->kanji_start, 0, NULL) == FALSE;
       if (found) return TRUE;
     }
@@ -447,7 +456,9 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     for (j = 0; result->def_start[j] != NULL; j++)
     {
       found = g_regex_match (regex, result->def_start[j], 0, NULL);
-      if (found) return TRUE;
+      if (found == TRUE) {
+        return TRUE;
+      }
     }
 /*
     //Compare mix atoms

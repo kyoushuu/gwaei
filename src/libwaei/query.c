@@ -214,3 +214,12 @@ printf("BREAK2\n");
     printf("BREAK updated tokenlist %s\n", query->tokenlist[type]);
 }
 
+
+gchar*
+lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance)
+{
+    if (type == LW_QUERY_TYPE_ROMAJI)
+      return g_strdup ("fish");
+    return NULL;
+}
+
