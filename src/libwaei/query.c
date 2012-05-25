@@ -176,3 +176,41 @@ lw_query_is_sane (const char* query)
 }
 */
 
+
+void
+lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevance, const gchar *token)
+{
+    //Sanity checks
+    g_return_if_fail (query != NULL);
+printf("BREAK type %s %d %d\n", token, type, TOTAL_LW_QUERY_TYPES);
+    //g_return_if_fail (type > -1 && type < TOTAL_LW_QUERY_TYPES);
+printf("BREAK type %s %d %d\n", token, type, TOTAL_LW_QUERY_TYPES);
+    ///g_return_if_fail (relevance > -1 && relevance < TOTAL_LW_RELEVANCE);
+    g_return_if_fail (token != NULL);
+
+    //Declarations
+    gchar number;
+    gchar *combined;
+    static const gchar DELIMITOR = '|';
+printf("BREAK2\n");
+    //Initializations
+    if (relevance < 10)
+      number = '0' + (gchar) relevance;
+    else
+      number = '0'; 
+
+    if (query->tokenlist[type] == NULL)
+    {
+      combined = g_strdup_printf ("%c%s", number, token);
+      if (combined == NULL) return;
+      query->tokenlist[type] = combined;
+    } 
+    else
+    {
+      combined = g_strdup_printf ("%s%c%c%s", query->tokenlist[type], DELIMITOR, number, token);
+      if (combined == NULL) return;
+      g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
+    }
+    printf("BREAK updated tokenlist %s\n", query->tokenlist[type]);
+}
+

@@ -42,6 +42,8 @@ void lw_query_init_tokens (LwQuery*);
 
 void lw_query_clear (LwQuery*);
 
+void lw_query_tokenlist_append (LwQuery*, LwQueryType, LwRelevance, const gchar*);
+
 G_END_DECLS
 
 #endif
