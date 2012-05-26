@@ -149,6 +149,7 @@ lw_query_is_parsed (LwQuery *query)
     return (query->parsed);
 }
 
+
 /*
 gboolean 
 lw_query_is_sane (const char* query)
@@ -178,36 +179,33 @@ lw_query_is_sane (const char* query)
 
 
 void
-lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevance, const gchar *token)
+lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevance, gboolean primary, const gchar *token)
 {
     //Sanity checks
     g_return_if_fail (query != NULL);
-printf("BREAK type %s %d %d\n", token, type, TOTAL_LW_QUERY_TYPES);
     //g_return_if_fail (type > -1 && type < TOTAL_LW_QUERY_TYPES);
-printf("BREAK type %s %d %d\n", token, type, TOTAL_LW_QUERY_TYPES);
     ///g_return_if_fail (relevance > -1 && relevance < TOTAL_LW_RELEVANCE);
     g_return_if_fail (token != NULL);
 
     //Declarations
-    gchar number;
+    gchar number_character;
+    gchar primary_character;
     gchar *combined;
     static const gchar DELIMITOR = '|';
-printf("BREAK2\n");
+
     //Initializations
-    if (relevance < 10)
-      number = '0' + (gchar) relevance;
-    else
-      number = '0'; 
+    number_character = '0' + (gchar) relevance;
+    primary_character = '0' + (gchar) primary;
 
     if (query->tokenlist[type] == NULL)
     {
-      combined = g_strdup_printf ("%c%s", number, token);
+      combined = g_strdup_printf ("%c%c%s", number_character, primary_character, token);
       if (combined == NULL) return;
       query->tokenlist[type] = combined;
     } 
     else
     {
-      combined = g_strdup_printf ("%s%c%c%s", query->tokenlist[type], DELIMITOR, number, token);
+      combined = g_strdup_printf ("%s%c%c%c%s", query->tokenlist[type], DELIMITOR, number_character, primary_character, token);
       if (combined == NULL) return;
       g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
     }
@@ -216,10 +214,41 @@ printf("BREAK2\n");
 
 
 gchar*
-lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance)
+lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_filter, gboolean only_primary)
 {
-    if (type == LW_QUERY_TYPE_ROMAJI)
-      return g_strdup ("fish");
-    return NULL;
+    gchar *buffer, *bufferptr;
+    gchar **tokeniter, **tokenlist, *tokenptr;
+    const static gchar *DELIMITOR = "|";
+    LwRelevance relevance;
+    gboolean primary;
+
+    if (query->tokenlist[type] == NULL) return NULL;
+    bufferptr = buffer = g_new (gchar, strlen (query->tokenlist[type]) + 1);
+    if (buffer == NULL) return NULL;
+    tokeniter = tokenlist = g_strsplit (query->tokenlist[type], DELIMITOR, -1);
+
+    if (tokenlist != NULL)
+    {
+      while (*tokeniter != NULL)
+      {
+        tokenptr = *tokeniter;
+        relevance = (gint) (*tokenptr - '0');
+        tokenptr++;
+        primary = (gint) (*tokenptr - '0');
+        tokenptr++;
+        if (relevance >= relevance_filter && (!only_primary || primary))
+        {   
+          if (bufferptr > buffer) *(bufferptr++) = '|';
+          while (*tokenptr != '\0') *(bufferptr++) = *(tokenptr++);
+        }
+        tokeniter++;
+      }
+    }
+    *bufferptr = '\0';
+    
+    g_strfreev (tokenlist); tokenlist = tokeniter = NULL; tokenptr = NULL;
+    
+    return buffer;
 }
+
 

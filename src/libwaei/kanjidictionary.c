@@ -410,7 +410,7 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
         if (lw_util_is_furigana_str (tokens[i]))
         {
           printf("adding furigana token  %s\n", tokens[i]);
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
 /*
           if (get_japanese_morphology)
           {
@@ -422,7 +422,7 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
         else if (lw_util_is_kanji_ish_str (tokens[i]))
         {
           printf("adding kanjiish token  %s\n", tokens[i]);
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
 /*
           if (get_japanese_morphology)
           {
@@ -434,7 +434,7 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
         else if (lw_util_is_romaji_str (tokens[i]))
         {
           printf("adding romaji token  %s\n", tokens[i]);
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
         }
         else
         {

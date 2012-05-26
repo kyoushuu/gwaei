@@ -167,7 +167,7 @@ lw_edictionary_build_kanji_regex (LwDictionary *dictionary, LwQuery *query, GErr
 
     for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance);
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance, FALSE);
       if (text != NULL)
       {
 printf("BREAK buliding kanji %s\n", text);
@@ -207,7 +207,7 @@ lw_edictionary_build_furigana_regex (LwDictionary *dictionary, LwQuery *query, G
 
     for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance);
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_KANJI, relevance, FALSE);
       if (text != NULL)
       {
         regex = lw_regex_new (furigana[relevance], text, error);
@@ -252,7 +252,7 @@ lw_edictionary_build_romaji_regex (LwDictionary *dictionary, LwQuery *query, GEr
 
     for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
     {
-      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_ROMAJI, relevance);
+      text = lw_query_get_tokenlist (query, LW_QUERY_TYPE_ROMAJI, relevance, FALSE);
       if (text != NULL)
       {
         regex = lw_regex_new (romaji[relevance], text, error);
@@ -531,7 +531,7 @@ printf("TEXT: %s, DELIMITED: %s\n", query->text, delimited);
       {
         if (lw_util_is_furigana_str (tokens[i]))
         {
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
           printf("adding furigana token  %s\n", tokens[i]);
 /*
           if (get_japanese_morphology)
@@ -544,7 +544,7 @@ printf("TEXT: %s, DELIMITED: %s\n", query->text, delimited);
         else if (lw_util_is_kanji_ish_str (tokens[i]))
         {
           printf("adding kanjiish token  %s\n", tokens[i]);
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
 /*
           if (get_japanese_morphology)
           {
@@ -556,7 +556,7 @@ printf("TEXT: %s, DELIMITED: %s\n", query->text, delimited);
         else if (lw_util_is_romaji_str (tokens[i]))
         {
           printf("adding romaji token  %s\n", tokens[i]);
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, tokens[i]);
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
         }
         else
         {
