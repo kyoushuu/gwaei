@@ -17,10 +17,10 @@ typedef enum {
 } LwQueryType;
 
 typedef enum {
-  LW_QUERY_TYPE_STROKES,
-  LW_QUERY_TYPE_GRADE,
-  LW_QUERY_TYPE_JLPT,
-  LW_QUERY_TYPE_FREQUENCY,
+  LW_QUERY_RANGE_TYPE_STROKES,
+  LW_QUERY_RANGE_TYPE_GRADE,
+  LW_QUERY_RANGE_TYPE_JLPT,
+  LW_QUERY_RANGE_TYPE_FREQUENCY,
   TOTAL_LW_QUERY_RANGE_TYPES
 } LwQueryRangeType;
 
@@ -43,11 +43,15 @@ gboolean lw_query_is_parsed (LwQuery*);
 
 void lw_query_init_regexgroup (LwQuery*);
 void lw_query_init_tokens (LwQuery*);
+void lw_query_init_rangelist (LwQuery*);
 
 void lw_query_clear (LwQuery*);
 
 void lw_query_tokenlist_append (LwQuery*, LwQueryType, LwRelevance, gboolean, const gchar*);
 gchar* lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
+
+void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);
+LwRange* lw_query_rangelist_get (LwQuery*, LwQueryRangeType);
 
 G_END_DECLS
 

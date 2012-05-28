@@ -47,9 +47,6 @@ static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**
 
 static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
 
-static gboolean lw_kanjidictionary_is_number_range (const gchar*);
-static gchar* lw_kanjidictionary_number_range_to_regex_pattern (const gchar*);
-
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -158,7 +155,8 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
- 
+
+    lw_query_init_rangelist (query);
     lw_kanjidictionary_tokenize_query (dictionary, query);
 
 /*
@@ -410,17 +408,19 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
     {
       for (i = 0; tokens[i] != NULL; i++)
       {
-        if (lw_kanjidictionary_is_number_range (tokens[i]))
+        if (lw_range_pattern_is_valid (tokens[i]))
         {
-          gchar* pattern = lw_kanjidictionary_number_range_to_regex_pattern (tokens[i]);
+          LwRange* range = lw_range_new_from_pattern (tokens[i]);
           if (*tokens[i] == 's' || *tokens[i] == 'S')
-            lw_query_tokenlist_append (query, LW_QUERY_TYPE_STROKES, LW_RELEVANCE_HIGH, TRUE, pattern);
-          if (*tokens[i] == 'g' || *tokens[i] == 'G')
-            lw_query_tokenlist_append (query, LW_QUERY_TYPE_GRADE, LW_RELEVANCE_HIGH, TRUE, pattern);
-          if (*tokens[i] == 'f' || *tokens[i] == 'f')
-            lw_query_tokenlist_append (query, LW_QUERY_TYPE_FREQUENCY, LW_RELEVANCE_HIGH, TRUE, pattern);
-          if (*tokens[i] == 'j' || *tokens[i] == 'J')
-            lw_query_tokenlist_append (query, LW_QUERY_TYPE_JLPT, LW_RELEVANCE_HIGH, TRUE, pattern);
+            lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_STROKES, range);
+          else if (*tokens[i] == 'g' || *tokens[i] == 'G')
+            lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_GRADE, range);
+          else if (*tokens[i] == 'f' || *tokens[i] == 'f')
+            lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_FREQUENCY, range);
+          else if (*tokens[i] == 'j' || *tokens[i] == 'J')
+            lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_JLPT, range);
+          else
+            lw_range_free (range);
         }
         else if (lw_util_is_furigana_str (tokens[i]))
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
@@ -436,29 +436,4 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
     }
 }
 
-
-
-
-
-
-static gchar*
-lw_kanjidictionary_number_range_to_regex_pattern (const gchar *NUMBER_RANGE)
-{
-    //Sanity checks
-    g_return_val_if_fail (NUMBER_RANGE != NULL, NULL);
-    g_return_val_if_fail (lw_kanjidictionary_is_number_range (NUMBER_RANGE) != FALSE, NULL);
-
-    //Declarations
-    gchar *from, *to;
-    const gchar *ptr;
-
-    //Initializations
-    ptr = strchr(NUMBER_RANGE, '-');
-    if (ptr == NULL || ptr == NUMBER_RANGE || *(ptr + 1) == '\0') return NULL;
-    from = g_strndup (NUMBER_RANGE + 1, ptr - NUMBER_RANGE - 1);
-    to = g_strdup (ptr + 1);
-
-    printf("FROM %s, TO %s\n", from, to);
-    exit(0);
-}
 

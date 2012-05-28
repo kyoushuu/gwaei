@@ -123,6 +123,33 @@ lw_query_init_regexgroup (LwQuery *query)
 }
 
 
+void
+lw_query_clear_rangelist (LwQuery *query)
+{
+    gint i;
+
+    if (query->rangelist != NULL) 
+    {
+      for (i = 0; i < TOTAL_LW_QUERY_RANGE_TYPES; i++)
+      {
+        lw_range_free (query->rangelist[i]); query->rangelist[i] = NULL;
+      }
+      g_free (query->rangelist); query->rangelist = NULL;
+    }
+}
+
+
+void
+lw_query_init_rangelist (LwQuery *query)
+{
+    //Sanity check
+    g_return_if_fail (query != NULL);
+
+    lw_query_clear_rangelist (query);
+    query->rangelist = g_new0 (LwRange*, TOTAL_LW_QUERY_RANGE_TYPES);
+}
+
+
 void 
 lw_query_clear (LwQuery* query)
 {
@@ -131,6 +158,7 @@ lw_query_clear (LwQuery* query)
 
     lw_query_clear_tokens (query);
     lw_query_clear_regexgroup (query);
+    lw_query_clear_rangelist (query);
 
     query->parsed = FALSE;
 }
@@ -252,3 +280,25 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
 }
 
 
+void
+lw_query_rangelist_set (LwQuery *query, LwQueryRangeType type, LwRange *range)
+{
+    //Sanity checks
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (range != NULL);
+    g_return_if_fail (query->rangelist != NULL);
+
+    if (query->rangelist[type] != NULL) lw_range_free (query->rangelist[type]);
+    query->rangelist[type] = range;
+}
+
+
+LwRange*
+lw_query_rangelist_get (LwQuery *query, LwQueryRangeType type)
+{
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (query->rangelist != NULL, NULL);
+
+    return query->rangelist[type];
+}

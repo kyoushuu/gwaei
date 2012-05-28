@@ -75,6 +75,14 @@ lw_range_new_from_pattern (const gchar* PATTERN)
     return range;
 }
 
+void
+lw_range_free (LwRange *range)
+{
+    if (range == NULL) return;
+    
+    g_free (range);
+}
+
 
 gboolean
 lw_range_pattern_is_valid (const gchar *TEXT)
