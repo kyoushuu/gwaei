@@ -567,7 +567,7 @@ lw_search_cancel (LwSearch *search)
     if (search == NULL) return;
 
     search->cancel = TRUE;
-    lw_search_set_status (search, LW_SEARCHSTATUS_FINISHING);
+    lw_search_set_status (search, LW_SEARCHSTATUS_CANCELING);
 
     if (search->thread != NULL)
     {
@@ -627,17 +627,12 @@ lw_search_should_check_results (LwSearch *search)
     LwSearchStatus status;
 
     status = lw_search_get_status (search);
+    should_check_results = FALSE;
 
-    if (status == LW_SEARCHSTATUS_FINISHING)
-    {
-      lw_search_cancel (search);
-      should_check_results = FALSE;
-    }
-    else
+    if (status == LW_SEARCHSTATUS_SEARCHING || status == LW_SEARCHSTATUS_FINISHING)
     {
       lw_search_lock (search);
-      should_check_results = (status != LW_SEARCHSTATUS_IDLE ||
-                              search->results[LW_RELEVANCE_HIGH] != NULL ||
+      should_check_results = (search->results[LW_RELEVANCE_HIGH] != NULL ||
                               search->results[LW_RELEVANCE_MEDIUM] != NULL ||
                               search->results[LW_RELEVANCE_LOW] != NULL);
       lw_search_unlock (search);

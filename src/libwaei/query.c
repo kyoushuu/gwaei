@@ -69,7 +69,8 @@ lw_query_clear_tokens (LwQuery *query)
       i = 0;
       while (i < TOTAL_LW_QUERY_TYPES)
       {
-        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); query->tokenlist = NULL;
+        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); 
+        query->tokenlist[i] = NULL;
         i++;
       }
       g_free (query->tokenlist); query->tokenlist = NULL;

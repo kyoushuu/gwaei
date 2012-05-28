@@ -334,7 +334,6 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     gboolean radical_check_passed;
     gint kanji_index;
     gint radical_index;
-    gboolean found;
     LwRange *range;
     GRegex *regex;
     gint i;
@@ -387,9 +386,9 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     regex = query->regexgroup[LW_QUERY_TYPE_ROMAJI][RELEVANCE];
     if (regex != NULL && result->meanings != NULL)
     {
-       if (g_regex_match (regex, result->meanings, 0, NULL) == TRUE)
+       if (g_regex_match (regex, result->meanings, 0, NULL) == FALSE)
        {
-          romaji_check_passed = TRUE;
+          romaji_check_passed = FALSE;
         }
     }
 
@@ -399,8 +398,8 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     {
       for (i = 0; i < 3 && result->readings[i] != NULL; i++)
       {
-        found = g_regex_match (regex, result->readings[i], 0, NULL);
-        if (found) furigana_check_passed =  TRUE;
+        if (g_regex_match (regex, result->readings[i], 0, NULL) == FALSE)
+          furigana_check_passed =  FALSE;
       }
     }
 
@@ -409,8 +408,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     if (result->kanji != NULL && regex != NULL)
     {
       kanji_index = 0;
-      found = g_regex_match (regex, result->kanji, 0, NULL);
-      if (found == FALSE) 
+      if (g_regex_match (regex, result->kanji, 0, NULL) == FALSE)
       {
         kanji_check_passed = FALSE;
         kanji_index = -1;
@@ -423,8 +421,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     if (result->radicals != NULL && regex != NULL)
     {
       radical_index = 0;
-      found = g_regex_match (regex, result->radicals, 0, NULL);
-      if (found == FALSE) 
+      if (g_regex_match (regex, result->radicals, 0, NULL) == FALSE)
       {
         if (radical_index != kanji_index)
           kanji_check_passed = FALSE;
