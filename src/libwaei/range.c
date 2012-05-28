@@ -56,13 +56,13 @@ lw_range_new_from_pattern (const gchar* PATTERN)
     if (range == NULL) return NULL;
     ptr = endptr = PATTERN;
 
-    while (*endptr < '0' && *endptr > '9' && *endptr != '\0') endptr++;
+    while ((*endptr < '0' || *endptr > '9') && *endptr != '\0') endptr++;
     if (endptr == PATTERN || *endptr == '\0') return NULL;
     range->identifier = g_strndup (ptr, endptr - PATTERN);
     ptr = endptr;
     while (*endptr != '-' && *endptr != '\0') endptr++;
     range->lower = range->higher = (gint) g_ascii_strtoll (ptr, (gchar**) &endptr, 10);
-    if (*endptr == '-') range->higher = (gint) g_ascii_strtoll (endptr, NULL, 10);
+    if (*endptr == '-') range->higher = (gint) g_ascii_strtoll (endptr + 1, NULL, 10);
     
     if (range->lower > range->higher)
     {
