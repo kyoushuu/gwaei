@@ -316,11 +316,6 @@ w_console_search (WApplication *application, GError **error)
     {
       // TRANSLATORS: 'Searching for "${query}" in ${dictionary long name}'
       printf(gettext("Searching for \"%s\" in %s...\n"), query_text_data, lw_dictionary_get_longname (dictionary));
-#if WITH_MECAB
-      if (search->queryline->morphology) {
-          printf(gettext("Also showing results for 「%s」\n"), search->queryline->morphology);
-      }
-#endif
       printf("\n");
     }
 

@@ -94,7 +94,7 @@ lw_result_clear (LwResult *result)
     //A place for a copy of the raw string
     result->text[0] = '\0';
 
-    result->relevance = LW_RESULT_RELEVANCE_UNSET;
+    result->relevance = LW_RELEVANCE_UNSET;
     
     //General formatting
     result->def_start[0] = NULL;

@@ -47,6 +47,9 @@ static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**
 
 static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
 
+static gboolean lw_kanjidictionary_is_number_range (const gchar*);
+static gchar* lw_kanjidictionary_number_range_to_regex_pattern (const gchar*);
+
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -407,40 +410,55 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
     {
       for (i = 0; tokens[i] != NULL; i++)
       {
-        if (lw_util_is_furigana_str (tokens[i]))
+        if (lw_kanjidictionary_is_number_range (tokens[i]))
         {
-          printf("adding furigana token  %s\n", tokens[i]);
+          gchar* pattern = lw_kanjidictionary_number_range_to_regex_pattern (tokens[i]);
+          if (*tokens[i] == 's' || *tokens[i] == 'S')
+            lw_query_tokenlist_append (query, LW_QUERY_TYPE_STROKES, LW_RELEVANCE_HIGH, TRUE, pattern);
+          if (*tokens[i] == 'g' || *tokens[i] == 'G')
+            lw_query_tokenlist_append (query, LW_QUERY_TYPE_GRADE, LW_RELEVANCE_HIGH, TRUE, pattern);
+          if (*tokens[i] == 'f' || *tokens[i] == 'f')
+            lw_query_tokenlist_append (query, LW_QUERY_TYPE_FREQUENCY, LW_RELEVANCE_HIGH, TRUE, pattern);
+          if (*tokens[i] == 'j' || *tokens[i] == 'J')
+            lw_query_tokenlist_append (query, LW_QUERY_TYPE_JLPT, LW_RELEVANCE_HIGH, TRUE, pattern);
+        }
+        else if (lw_util_is_furigana_str (tokens[i]))
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-/*
-          if (get_japanese_morphology)
-          {
-            lw_morphology_get_stem ()
-            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
-          }
-*/
-        }
         else if (lw_util_is_kanji_ish_str (tokens[i]))
-        {
-          printf("adding kanjiish token  %s\n", tokens[i]);
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-/*
-          if (get_japanese_morphology)
-          {
-            lw_morphology_get_stem ()
-            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
-          }
-*/
-        }
         else if (lw_util_is_romaji_str (tokens[i]))
-        {
-          printf("adding romaji token  %s\n", tokens[i]);
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        }
         else
-        {
           g_free (tokens[i]);
-        }
+        tokens[i] = NULL;
       }
       g_free (tokens); tokens = NULL;
     }
 }
+
+
+
+
+
+
+static gchar*
+lw_kanjidictionary_number_range_to_regex_pattern (const gchar *NUMBER_RANGE)
+{
+    //Sanity checks
+    g_return_val_if_fail (NUMBER_RANGE != NULL, NULL);
+    g_return_val_if_fail (lw_kanjidictionary_is_number_range (NUMBER_RANGE) != FALSE, NULL);
+
+    //Declarations
+    gchar *from, *to;
+    const gchar *ptr;
+
+    //Initializations
+    ptr = strchr(NUMBER_RANGE, '-');
+    if (ptr == NULL || ptr == NUMBER_RANGE || *(ptr + 1) == '\0') return NULL;
+    from = g_strndup (NUMBER_RANGE + 1, ptr - NUMBER_RANGE - 1);
+    to = g_strdup (ptr + 1);
+
+    printf("FROM %s, TO %s\n", from, to);
+    exit(0);
+}
+

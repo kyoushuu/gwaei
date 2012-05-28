@@ -96,12 +96,6 @@ w_application_finalize (GObject *object)
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;
-#if WITH_MECAB
-    if (lw_morphologyengine_has_default ()) 
-    {
-      lw_morphologyengine_free (lw_morphologyengine_get_default ()); 
-    }
-#endif
 
     lw_regex_free ();
 

@@ -2,29 +2,33 @@
 #define LW_QUERYLINE_INCLUDED
 
 #include <libwaei/regexgroup.h>
+#include <libwaei/range.h>
 
 G_BEGIN_DECLS
 
 #define LW_QUERYLINE(object) (LwQuery*) object
-
 
 typedef enum {
   LW_QUERY_TYPE_MIX,
   LW_QUERY_TYPE_KANJI,
   LW_QUERY_TYPE_FURIGANA,
   LW_QUERY_TYPE_ROMAJI,
+  TOTAL_LW_QUERY_TYPES
+} LwQueryType;
+
+typedef enum {
   LW_QUERY_TYPE_STROKES,
   LW_QUERY_TYPE_GRADE,
   LW_QUERY_TYPE_JLPT,
   LW_QUERY_TYPE_FREQUENCY,
-  TOTAL_LW_QUERY_TYPES
-} LwQueryType;
-
+  TOTAL_LW_QUERY_RANGE_TYPES
+} LwQueryRangeType;
 
 struct _LwQuery {
     gchar *text;
     gchar **tokenlist;
     GRegex ***regexgroup;
+    LwRange **rangelist;
     gboolean parsed;
 };
 typedef struct _LwQuery LwQuery;

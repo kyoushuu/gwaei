@@ -1555,14 +1555,14 @@ lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 
 
 GRegex*
-lw_regex_new (const gchar *REGEX, const gchar *EXPRESSION, GError **error)
+lw_regex_new (const gchar *PATTERN, const gchar *EXPRESSION, GError **error)
 {
     //Declarations
     GRegex *regex;
     gchar *expression;
 
     //Initializations
-    expression = g_strdup_printf (REGEX, EXPRESSION);
+    expression = g_strdup_printf (PATTERN, EXPRESSION);
     regex = NULL;
 
     if (expression != NULL)
@@ -1573,4 +1573,5 @@ lw_regex_new (const gchar *REGEX, const gchar *EXPRESSION, GError **error)
 
     return regex;
 }
+
 
