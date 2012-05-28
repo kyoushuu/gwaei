@@ -46,6 +46,7 @@ static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, 
 static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
 static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
+static void lw_kanjidictionary_build_regex (LwDictionary*, LwQuery*, GError**);
 
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
@@ -159,6 +160,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
     lw_query_init_rangelist (query);
     lw_kanjidictionary_tokenize_query (dictionary, query);
 
+    lw_kanjidictionary_build_regex (dictionary, query, error);
 /*
     lw_edictionary_build_kanji_regex (dictionary, query, error);
     lw_edictionary_build_furigana_regex (dictionary, query, error);
@@ -175,7 +177,145 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
 static gint
 lw_kanjidictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
-    return TRUE;
+    //Declarations
+    GMatchInfo* match_info;
+    gint start[LW_RE_TOTAL];
+    gint end[LW_RE_TOTAL];
+    GUnicodeScript script;
+    gchar *ptr = result->text;
+    gint bytes_read = 0;
+
+    lw_result_clear (result);
+
+    //Read the next line
+    do {
+      ptr = fgets(result->text, LW_IO_MAX_FGETS_LINE, fd);
+      if (ptr != NULL) bytes_read += strlen(result->text);
+    } while (ptr != NULL && *ptr == '#');
+
+    if (ptr == NULL) return bytes_read;
+    bytes_read += strlen(result->text);
+
+
+    //First generate the grade, stroke, frequency, and jlpt fields
+
+    //Get strokes
+    result->strokes = NULL;
+    g_regex_match (lw_re[LW_RE_STROKES], ptr, 0, &match_info);
+    if (g_match_info_matches (match_info))
+    {
+      g_match_info_fetch_pos (match_info, 0, &start[LW_RE_STROKES], &end[LW_RE_STROKES]);
+      result->strokes = ptr + start[LW_RE_STROKES] + 1;
+    }
+    g_match_info_free (match_info);
+
+    //Get frequency
+    result->frequency = NULL;
+    g_regex_match (lw_re[LW_RE_FREQUENCY], ptr, 0, &match_info);
+    if (g_match_info_matches (match_info))
+    {
+      g_match_info_fetch_pos (match_info, 0, &start[LW_RE_FREQUENCY], &end[LW_RE_FREQUENCY]);
+      result->frequency = ptr + start[LW_RE_FREQUENCY] + 1;
+    }
+    g_match_info_free (match_info);
+
+
+    //Get grade level
+    result->grade = NULL;
+    g_regex_match (lw_re[LW_RE_GRADE], ptr, 0, &match_info);
+    if (g_match_info_matches (match_info))
+    {
+      g_match_info_fetch_pos (match_info, 0, &start[LW_RE_GRADE], &end[LW_RE_GRADE]);
+      result->grade = ptr + start[LW_RE_GRADE] + 1;
+    }
+    g_match_info_free (match_info);
+
+    //Get JLPT level
+    result->jlpt = NULL;
+    g_regex_match (lw_re[LW_RE_JLPT], ptr, 0, &match_info);
+    if (g_match_info_matches (match_info))
+    {
+      g_match_info_fetch_pos (match_info, 0, &start[LW_RE_JLPT], &end[LW_RE_JLPT]);
+      result->jlpt = ptr + start[LW_RE_JLPT] + 1;
+    }
+    g_match_info_free (match_info);
+
+
+    //Get the kanji character
+    result->kanji = ptr;
+    ptr = g_utf8_strchr (ptr, -1, g_utf8_get_char (" "));
+    if (ptr == NULL)
+    {
+      fprintf(stderr, "This dictionary is incorrectly formatted\n");
+      exit (1);
+    }
+    *ptr = '\0';
+    ptr++;
+
+    //Test if the radicals information is present
+    result->radicals = NULL;
+    script = g_unichar_get_script (g_utf8_get_char (ptr));
+    if (script != G_UNICODE_SCRIPT_LATIN)
+    {
+      result->radicals = ptr;
+      ptr = g_utf8_next_char (ptr);
+      script = g_unichar_get_script (g_utf8_get_char (ptr));
+      while (*ptr == ' ' || (script != G_UNICODE_SCRIPT_LATIN && script != G_UNICODE_SCRIPT_COMMON))
+      {
+        ptr = g_utf8_next_char(ptr);
+        script = g_unichar_get_script (g_utf8_get_char (ptr));
+      }
+      *(ptr - 1) = '\0';
+    }
+
+    //Go to the readings section
+    script = g_unichar_get_script (g_utf8_get_char(ptr));
+    while (script != G_UNICODE_SCRIPT_KATAKANA && script != G_UNICODE_SCRIPT_HIRAGANA && *ptr != '\0')
+    {
+      ptr = g_utf8_next_char (ptr);
+      script = g_unichar_get_script (g_utf8_get_char(ptr));
+    }
+    result->readings[0] = ptr;
+
+    //Copy the rest of the data
+    while (*ptr != '\0' && *ptr != '{')
+    {
+      //The strange T1 character between kana readings
+      if (g_utf8_get_char (ptr) == g_utf8_get_char ("T")) {
+        ptr = g_utf8_next_char (ptr);
+        if (g_utf8_get_char (ptr) == g_utf8_get_char ("1"))
+        {
+          *(ptr - 1) = '\0';
+          ptr = g_utf8_next_char (ptr);
+          ptr = g_utf8_next_char (ptr);
+          result->readings[1] = ptr;
+        }
+        else if (g_utf8_get_char (ptr) == g_utf8_get_char ("2"))
+        {
+          *(ptr - 1) = '\0';
+          ptr = g_utf8_next_char (ptr);
+          ptr = g_utf8_next_char (ptr);
+          result->readings[2] = ptr;
+        }
+      }
+      else
+      {
+        ptr = g_utf8_next_char (ptr);
+      }
+    }
+    *(ptr - 1) = '\0';
+
+    result->meanings = ptr;
+
+    if ((ptr = g_utf8_strrchr (ptr, -1, g_utf8_get_char ("\n"))) != NULL)
+      *ptr = '\0';
+
+    if (result->strokes)   *(result->text + end[LW_RE_STROKES]) = '\0';
+    if (result->frequency) *(result->text + end[LW_RE_FREQUENCY]) = '\0';
+    if (result->grade)     *(result->text + end[LW_RE_GRADE]) = '\0';
+    if (result->jlpt)      *(result->text + end[LW_RE_JLPT]) = '\0';
+
+    return bytes_read;
 }
 
 
@@ -183,7 +323,6 @@ lw_kanjidictionary_parse_result (LwDictionary *dictionary, LwResult *result, FIL
 static gboolean 
 lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
 {
-/*
     //Declarations
     gboolean strokes_check_passed;
     gboolean frequency_check_passed;
@@ -193,13 +332,12 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     gboolean furigana_check_passed;
     gboolean kanji_check_passed;
     gboolean radical_check_passed;
-    int kanji_index;
-    int radical_index;
-
-    GRegex ***iter;
-    GRegex *re;
-
-    int i;
+    gint kanji_index;
+    gint radical_index;
+    gboolean found;
+    LwRange *range;
+    GRegex *regex;
+    gint i;
 
     //Initializations
     strokes_check_passed = TRUE;
@@ -214,136 +352,84 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     radical_index = -1;
 
     //Calculate the strokes check
-    if (result->strokes != NULL)
+    range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_STROKES);
+    if (result->strokes != NULL && range != NULL)
     {
-      for (iter = query->re_strokes; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->strokes, 0, NULL) == FALSE) 
+      if (lw_range_string_is_in_range (range, result->strokes) == FALSE)
           strokes_check_passed = FALSE;
-      }
     }
-    else
-      if (query->re_strokes != NULL && *(query->re_strokes) != NULL)
-        strokes_check_passed = FALSE;
 
     //Calculate the frequency check
-    if (result->frequency != NULL)
+    range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_FREQUENCY);
+    if (result->frequency != NULL && range != NULL)
     {
-      for (iter = query->re_frequency; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->frequency, 0, NULL) == FALSE) 
-          frequency_check_passed = FALSE;
-      }
-    }
-    else
-      if (query->re_frequency != NULL && *(query->re_frequency) != NULL)
+      if (lw_range_string_is_in_range (range, result->frequency) == FALSE)
         frequency_check_passed = FALSE;
-
+    }
 
     //Calculate the grade check
-    if (result->grade != NULL)
+    range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_GRADE);
+    if (result->grade != NULL && range != NULL)
     {
-      for (iter = query->re_grade; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->grade, 0, NULL) == FALSE) 
-          grade_check_passed = FALSE;
-      }
-    }
-    else
-      if (query->re_grade != NULL && *(query->re_grade) != NULL)
+      if (lw_range_string_is_in_range (range, result->grade) == FALSE)
         grade_check_passed = FALSE;
-
+    }
 
     //Calculate the jlpt check
-    if (result->jlpt != NULL)
+    range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_JLPT);
+    if (result->jlpt != NULL && range != NULL)
     {
-      for (iter = query->re_jlpt; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->jlpt, 0, NULL) == FALSE) 
-          jlpt_check_passed = FALSE;
-      }
-    }
-    else
-      if (query->re_jlpt != NULL && *(query->re_jlpt) != NULL)
+      if (lw_range_string_is_in_range (range, result->jlpt) == FALSE)
         jlpt_check_passed = FALSE;
+    }
 
-
-
-    //Calculate the romaji check
-    if (result->meanings != NULL)
+    //Compare romaji atoms
+    regex = query->regexgroup[LW_QUERY_TYPE_ROMAJI][RELEVANCE];
+    if (regex != NULL && result->meanings != NULL)
     {
-      for (iter = query->re_roma; query->re_roma[0] != NULL && iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL) romaji_check_passed = FALSE;
-      }
-      //if (query->re_roma[0] != NULL && query->re_roma[0][0] != NULL) romaji_check_passed = FALSE;
-
-      for (iter = query->re_roma; iter != NULL && *iter != NULL; iter++)
-      {
-        re = (*iter)[RELEVANCE];
-
-        if (re != NULL && g_regex_match (re, result->meanings, 0, NULL) == TRUE) 
-        {
+       if (g_regex_match (regex, result->meanings, 0, NULL) == TRUE)
+       {
           romaji_check_passed = TRUE;
         }
-      }
     }
 
-
-    //Calculate the furigana check
-    if (*(query->re_furi) != NULL && (result->readings[0] != NULL || result->readings[1] != NULL || result->readings[2] != NULL))
+    //Compare furigana atoms
+    regex = query->regexgroup[LW_QUERY_TYPE_FURIGANA][RELEVANCE];
+    if (result->furigana_start != NULL && regex != NULL)
     {
-       furigana_check_passed = FALSE;
-    }
-    for (i = 0; i < 3; i++)
-    {
-      if (result->readings[i] == NULL) continue;
-
-      for (iter = query->re_furi; iter != NULL && *iter != NULL; iter++)
+      for (i = 0; i < 3 && result->readings[i] != NULL; i++)
       {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->readings[i], 0, NULL) == TRUE) 
-        {
-          furigana_check_passed = TRUE;
-        }
+        found = g_regex_match (regex, result->readings[i], 0, NULL);
+        if (found) furigana_check_passed =  TRUE;
       }
     }
 
-    //Calculate the kanji check
-    if (*(query->re_kanji) != NULL && result->kanji != NULL)
+    //Compare kanji atoms
+    regex = query->regexgroup[LW_QUERY_TYPE_KANJI][RELEVANCE];
+    if (result->kanji != NULL && regex != NULL)
     {
       kanji_index = 0;
-      for (iter = query->re_kanji; iter != NULL && *iter != NULL; iter++)
+      found = g_regex_match (regex, result->kanji, 0, NULL);
+      if (found == FALSE) 
       {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->kanji, 0, NULL) == FALSE) 
-        {
-          kanji_check_passed = FALSE;
-          kanji_index = -1;
-        }
-        if (kanji_check_passed == TRUE) kanji_index++;
+        kanji_check_passed = FALSE;
+        kanji_index = -1;
       }
+      if (kanji_check_passed == TRUE) kanji_index++;
     }
 
-    //Calculate the radical check
-    if (result->radicals != NULL)
+    //Compare kanji atoms
+    regex = query->regexgroup[LW_QUERY_TYPE_KANJI][RELEVANCE];
+    if (result->radicals != NULL && regex != NULL)
     {
       radical_index = 0;
-      for (iter = query->re_kanji; iter != NULL && *iter != NULL; iter++)
+      found = g_regex_match (regex, result->radicals, 0, NULL);
+      if (found == FALSE) 
       {
-        re = (*iter)[RELEVANCE];
-        if (re != NULL && g_regex_match (re, result->radicals, 0, NULL) == FALSE) 
-        {
-          if (radical_index != kanji_index) //Make sure the radical wasn't found as a kanji before setting false
-             radical_check_passed = FALSE;
-        }
-        radical_index++;
+        if (radical_index != kanji_index)
+          kanji_check_passed = FALSE;
       }
+      radical_index++;
     }
 
     //Return our results
@@ -354,8 +440,6 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
             romaji_check_passed &&
             furigana_check_passed &&
             (radical_check_passed || kanji_check_passed));
-*/
-    return FALSE;
 }
 
 
@@ -433,6 +517,51 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
         tokens[i] = NULL;
       }
       g_free (tokens); tokens = NULL;
+    }
+}
+
+
+static void
+lw_kanjidictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **error)
+{
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (error != NULL);
+    if (error != NULL && *error != NULL) return;
+
+    //Declarations
+    LwDictionaryClass *klass;
+    gchar *text;
+    GRegex *regex;
+    GRegex **regexgroup;
+    LwRelevance relevance;
+    gchar **pattern;
+    LwQueryType type;
+
+    //Initializations
+    for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
+    {
+      klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+      regexgroup = lw_regexgroup_new ();
+      pattern = klass->patterns[type];
+
+      if (regexgroup != NULL)
+      {
+        for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+        {
+          text = lw_query_get_tokenlist (query, type, relevance, FALSE);
+          if (text != NULL)
+          {
+            regex = lw_regex_new (pattern[relevance], text, error);
+            if (regex != NULL) regexgroup[relevance] = regex;
+          }
+        }
+
+        query->regexgroup[type] = regexgroup;
+      }
     }
 }
 
