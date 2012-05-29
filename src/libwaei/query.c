@@ -303,3 +303,14 @@ lw_query_rangelist_get (LwQuery *query, LwQueryRangeType type)
 
     return query->rangelist[type];
 }
+
+
+GRegex*
+lw_query_regexgroup_get (LwQuery *query, LwQueryType type, LwRelevance relevance)
+{
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (query->regexgroup != NULL, NULL);
+
+    return query->regexgroup[type][relevance];
+}
+

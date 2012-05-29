@@ -42,21 +42,7 @@ G_DEFINE_TYPE (LwExampleDictionary, lw_exampledictionary, LW_TYPE_DICTIONARY)
 
 static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gint lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-
-
-/*
-//Kanji
-        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
-          format = "%s";
-//Furi
-        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
-          format = "%s";
-//Romaji
-        if (DICTTYPE == LW_DICTTYPE_EXAMPLES)
-          format = "%s";
-*/
-
-
+static gboolean lw_exampledictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
 LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 {
@@ -118,6 +104,7 @@ lw_exampledictionary_class_init (LwExampleDictionaryClass *klass)
     //Declarations
     GObjectClass *object_class;
     LwDictionaryClass *dictionary_class;
+    gint i;
 
     //Initializations
     object_class = G_OBJECT_CLASS (klass);
@@ -127,22 +114,66 @@ lw_exampledictionary_class_init (LwExampleDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_exampledictionary_parse_query;
     dictionary_class->parse_result = lw_exampledictionary_parse_result;
+    dictionary_class->compare = lw_exampledictionary_compare;
+
+    dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_QUERY_TYPES + 1);
+    for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
+    {
+      dictionary_class->patterns[i] = g_new0 (gchar*, TOTAL_LW_RELEVANCE + 1);
+    }
+
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "(%s)";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "(%s)";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_HIGH] =  "\\b(%s)\\b";
 }
 
 
 static gboolean 
 lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (query != NULL, FALSE);
+    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
+    g_return_val_if_fail (query->tokenlist != NULL, FALSE);
+    g_return_val_if_fail (TEXT != NULL, FALSE);
+    g_return_val_if_fail (error != NULL, FALSE);
     if (error != NULL && *error != NULL) return FALSE;
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
-
-    //Free previously used memory
-    lw_query_clear (query);
+ 
+    lw_exampledictionary_tokenize_query (dictionary, query);
+    lw_exampledictionary_add_supplimental_tokens (dictionary, query);
+    lw_dictionary_build_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
+
 }
+
+
+static gboolean
+lw_exampledictionary_is_a (gchar *text)
+{
+    return (*text == 'A' && *(text + 1) == ':');
+}
+
+
+/*
+static gboolean
+lw_exampledictionary_is_b (gchar *text)
+{
+    return (*text == 'B' && *(text + 1) == ':');
+}
+*/
 
 
 //!
@@ -151,31 +182,83 @@ lw_exampledictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
 static gint
 lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
-/*
-    if (ptr != NULL)
-    {
-      search->current += strlen(search->result->text);
+    //Declarations
+    gchar *ptr;
+    gint bytes_read;
+    gint length;
 
-      //Commented input in the dictionary...we should skip over it
-      if (search->result->text[0] == 'A' && search->result->text[1] == ':' &&
-          fgets(search->scratch_buffer, LW_IO_MAX_FGETS_LINE, search->fd) != NULL             )
+    //Initializations
+    length = bytes_read = 0;
+
+    //Read the next line
+    do {
+      ptr = fgets(result->text, LW_IO_MAX_FGETS_LINE, fd);
+      if (ptr != NULL)
       {
-        search->current += strlen(search->scratch_buffer);
-        gchar *eraser = NULL;
-        if ((eraser = g_utf8_strchr (search->result->text, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strchr (search->scratch_buffer, -1, L'\n')) != NULL) { *eraser = '\0'; }
-        if ((eraser = g_utf8_strrchr (search->result->text, -1, L'#')) != NULL) { *eraser = '\0'; }
-        strcat(search->result->text, ":");
-        strcat(search->result->text, search->scratch_buffer);
+        length = strlen(result->text);
+        bytes_read += length;
       }
-      //lw_search_parse_result_string (search);
-      lw_dictionary_parse_result (search->dictionary, search->result, search->fd);
-    }
-*/
+    } while (ptr != NULL && *ptr == '#');
+    if (ptr == NULL) return bytes_read;
+    ptr += length;
 
-    return TRUE;
+    //Commented input in the dictionary...we should skip over it
+    if (lw_exampledictionary_is_a (result->text) && (ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd)) != NULL)
+    {
+      ptr--;
+      if (*ptr == '\n') *ptr = ':';
+      ptr++;
+
+      length = strlen(ptr);
+      bytes_read += length;
+      ptr += length - 1;
+
+      if (*ptr == '\n') *ptr = '\0';
+    }
+
+    return bytes_read;
 }
 
 
+static gboolean 
+lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (query != NULL, FALSE);
+    g_return_val_if_fail (result != NULL, FALSE);
 
+    //Declarations
+    gint j;
+    gboolean found;
+    GRegex *regex;
+
+    //Compare kanji atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+    if (result->kanji_start != NULL && regex != NULL)
+    {
+      found = g_regex_match (regex, result->kanji_start, 0, NULL);
+      if (found) return TRUE;
+    }
+
+    //Compare furigana atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    if (result->furigana_start != NULL && regex != NULL)
+    {
+      found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      if (found) return TRUE;
+    }
+
+    //Compare romaji atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    for (j = 0; result->def_start[j] != NULL; j++)
+    {
+      found = g_regex_match (regex, result->def_start[j], 0, NULL);
+      if (found == TRUE) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+}
 

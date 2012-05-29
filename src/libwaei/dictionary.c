@@ -704,3 +704,49 @@ printf("BREAK3\n");
     return idlist;
 }
 
+
+void
+lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **error)
+{
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (query->regexgroup != NULL);
+    g_return_if_fail (query->tokenlist != NULL);
+    g_return_if_fail (error != NULL);
+    if (error != NULL && *error != NULL) return;
+
+    //Declarations
+    LwDictionaryClass *klass;
+    gchar *text;
+    GRegex *regex;
+    GRegex **regexgroup;
+    LwRelevance relevance;
+    gchar **pattern;
+    LwQueryType type;
+
+    //Initializations
+    for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
+    {
+      klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+      regexgroup = lw_regexgroup_new ();
+      pattern = klass->patterns[type];
+
+      if (regexgroup != NULL)
+      {
+        for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+        {
+          text = lw_query_get_tokenlist (query, type, relevance, FALSE);
+          if (text != NULL)
+          {
+            regex = lw_regex_new (pattern[relevance], text, error);
+            if (regex != NULL) regexgroup[relevance] = regex;
+          }
+        }
+
+        query->regexgroup[type] = regexgroup;
+      }
+    }
+}
+
+

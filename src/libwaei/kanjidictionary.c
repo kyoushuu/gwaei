@@ -46,8 +46,6 @@ static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, 
 static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
 static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
-static void lw_kanjidictionary_build_regex (LwDictionary*, LwQuery*, GError**);
-
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -159,13 +157,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
 
     lw_query_init_rangelist (query);
     lw_kanjidictionary_tokenize_query (dictionary, query);
-
-    lw_kanjidictionary_build_regex (dictionary, query, error);
-/*
-    lw_edictionary_build_kanji_regex (dictionary, query, error);
-    lw_edictionary_build_furigana_regex (dictionary, query, error);
-    lw_edictionary_build_romaji_regex (dictionary, query, error);
-*/
+    lw_dictionary_build_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
 }
@@ -383,7 +375,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     }
 
     //Compare romaji atoms
-    regex = query->regexgroup[LW_QUERY_TYPE_ROMAJI][RELEVANCE];
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
     if (regex != NULL && result->meanings != NULL)
     {
        if (g_regex_match (regex, result->meanings, 0, NULL) == FALSE)
@@ -393,7 +385,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     }
 
     //Compare furigana atoms
-    regex = query->regexgroup[LW_QUERY_TYPE_FURIGANA][RELEVANCE];
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
     if (result->furigana_start != NULL && regex != NULL)
     {
       for (i = 0; i < 3 && result->readings[i] != NULL; i++)
@@ -404,7 +396,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     }
 
     //Compare kanji atoms
-    regex = query->regexgroup[LW_QUERY_TYPE_KANJI][RELEVANCE];
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
     if (result->kanji != NULL && regex != NULL)
     {
       kanji_index = 0;
@@ -417,7 +409,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     }
 
     //Compare kanji atoms
-    regex = query->regexgroup[LW_QUERY_TYPE_KANJI][RELEVANCE];
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
     if (result->radicals != NULL && regex != NULL)
     {
       radical_index = 0;
@@ -516,50 +508,4 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
       g_free (tokens); tokens = NULL;
     }
 }
-
-
-static void
-lw_kanjidictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **error)
-{
-    //Sanity checks
-    g_return_if_fail (dictionary != NULL);
-    g_return_if_fail (query != NULL);
-    g_return_if_fail (query->regexgroup != NULL);
-    g_return_if_fail (query->tokenlist != NULL);
-    g_return_if_fail (error != NULL);
-    if (error != NULL && *error != NULL) return;
-
-    //Declarations
-    LwDictionaryClass *klass;
-    gchar *text;
-    GRegex *regex;
-    GRegex **regexgroup;
-    LwRelevance relevance;
-    gchar **pattern;
-    LwQueryType type;
-
-    //Initializations
-    for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
-    {
-      klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
-      regexgroup = lw_regexgroup_new ();
-      pattern = klass->patterns[type];
-
-      if (regexgroup != NULL)
-      {
-        for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
-        {
-          text = lw_query_get_tokenlist (query, type, relevance, FALSE);
-          if (text != NULL)
-          {
-            regex = lw_regex_new (pattern[relevance], text, error);
-            if (regex != NULL) regexgroup[relevance] = regex;
-          }
-        }
-
-        query->regexgroup[type] = regexgroup;
-      }
-    }
-}
-
 

@@ -70,6 +70,8 @@ gboolean lw_dictionary_is_selected (LwDictionary*);
 
 gchar** lw_dictionary_get_installed_idlist (GType);
 
+void lw_dictionary_build_regex (LwDictionary*, LwQuery*, GError**);
+
 G_END_DECLS
 
 #include <libwaei/dictionary-installer.h>

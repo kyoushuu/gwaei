@@ -53,6 +53,8 @@ gchar* lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
 void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);
 LwRange* lw_query_rangelist_get (LwQuery*, LwQueryRangeType);
 
+GRegex* lw_query_regexgroup_get (LwQuery*, LwQueryType, LwRelevance);
+
 G_END_DECLS
 
 #endif
