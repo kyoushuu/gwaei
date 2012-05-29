@@ -186,6 +186,7 @@ lw_exampledictionary_is_b (gchar *text)
 static gint
 lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
+TODO
     //Declarations
     gchar *ptr;
     gint bytes_read;
