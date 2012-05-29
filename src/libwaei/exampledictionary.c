@@ -44,6 +44,10 @@ static gboolean lw_exampledictionary_parse_query (LwDictionary*, LwQuery*, const
 static gint lw_exampledictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_exampledictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
+static void lw_exampledictionary_tokenize_query (LwDictionary*, LwQuery*);
+static void lw_exampledictionary_add_supplimental_tokens (LwDictionary*, LwQuery*);
+
+
 LwDictionary* lw_exampledictionary_new (const gchar *FILENAME)
 {
     g_return_val_if_fail (FILENAME != NULL, NULL);
@@ -260,5 +264,67 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     }
 
     return FALSE;
+}
+
+
+static void
+lw_exampledictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+{
+    //Declarations
+    gchar *temp;
+    gchar *delimited;
+    gchar **tokens;
+    static const gchar *DELIMITOR = "|";
+    gboolean split_script_changes, split_whitespace;
+    gint i;
+    
+    //Initializations
+    delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
+    split_script_changes = split_whitespace = TRUE;
+
+    if (split_script_changes)
+    {
+      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, FALSE);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    if (split_whitespace)
+    {
+      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    tokens = g_strsplit (delimited, DELIMITOR, -1);
+
+    if (tokens != NULL)
+    {
+      for (i = 0; tokens[i] != NULL; i++)
+      {
+        if (lw_util_is_furigana_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else if (lw_util_is_kanji_ish_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else if (lw_util_is_romaji_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else
+          g_free (tokens[i]); 
+        tokens[i] = NULL;
+      }
+      g_free (tokens); tokens = NULL;
+    }
+}
+
+
+static void 
+lw_exampledictionary_add_supplimental_tokens (LwDictionary *dictionary, LwQuery *query)
+{
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
+          }
+*/
+
 }
 
