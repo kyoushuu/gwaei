@@ -208,18 +208,28 @@ TODO
     ptr += length;
 
     //Commented input in the dictionary...we should skip over it
-    if (lw_exampledictionary_is_a (result->text) && (ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd)) != NULL)
+    if (lw_exampledictionary_is_a (result->text))
     {
+      result->kanji_start = result->text + 2;
+      ptr = result->kanji_start;
+      while (*ptr != '\0' && !g_unichar_isalpha (g_utf8_get_char (ptr))) ptr = g_utf8_next_char (ptr);
+      result->romaji_start = ptr;
       ptr--;
-      if (*ptr == '\n') *ptr = ':';
+      if (*ptr == '\n') *ptr = '\0';
       ptr++;
 
-      length = strlen(ptr);
-      bytes_read += length;
-      ptr += length - 1;
+      ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd);
+      if (ptr != NULL)
+      {
 
-      if (*ptr == '\n') *ptr = '\0';
+        length = strlen(ptr);
+        bytes_read += length;
+        ptr += length - 1;
+
+        if (*ptr == '\n') *ptr = '\0';
+      }
     }
+
 
     return bytes_read;
 }
