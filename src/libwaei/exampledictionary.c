@@ -171,13 +171,11 @@ lw_exampledictionary_is_a (gchar *text)
 }
 
 
-/*
 static gboolean
 lw_exampledictionary_is_b (gchar *text)
 {
     return (*text == 'B' && *(text + 1) == ':');
 }
-*/
 
 
 //!
@@ -186,7 +184,6 @@ lw_exampledictionary_is_b (gchar *text)
 static gint
 lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
-TODO
     //Declarations
     gchar *ptr;
     gint bytes_read;
@@ -203,33 +200,41 @@ TODO
         length = strlen(result->text);
         bytes_read += length;
       }
-    } while (ptr != NULL && *ptr == '#');
-    if (ptr == NULL) return bytes_read;
-    ptr += length;
+    } while (ptr != NULL && *ptr == '#' && !lw_exampledictionary_is_a (result->text));
 
-    //Commented input in the dictionary...we should skip over it
-    if (lw_exampledictionary_is_a (result->text))
+    if (ptr == NULL) goto errored;
+    if (!lw_exampledictionary_is_a (result->text)) goto errored;
+
+    //Set the kanji string
+    ptr = result->kanji_start = result->text + 3;
+
+    //Set the romaji string
+    while (*ptr != '\0' && !g_unichar_isspace (g_utf8_get_char (ptr))) ptr = g_utf8_next_char (ptr);
+    if (*ptr == '\0') goto errored;
+    *ptr = '\0';
+    ptr++;
+    result->def_start[0] = ptr;
+
+    //Erase the id number
+    while (*ptr != '\0' && *ptr != '#') ptr = g_utf8_next_char (ptr);
+    *(ptr++) = '\0';
+
+    while (*ptr != '\n') ptr++;
+
+    //Set the "furigana" string
+    ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd);
+    if (ptr != NULL && lw_exampledictionary_is_b (ptr))
     {
-      result->kanji_start = result->text + 2;
-      ptr = result->kanji_start;
-      while (*ptr != '\0' && !g_unichar_isalpha (g_utf8_get_char (ptr))) ptr = g_utf8_next_char (ptr);
-      result->romaji_start = ptr;
-      ptr--;
+      result->furigana_start = ptr + 3;
+      
+      length = strlen(ptr);
+      bytes_read += length;
+      ptr += length - 1;
+
       if (*ptr == '\n') *ptr = '\0';
-      ptr++;
-
-      ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd);
-      if (ptr != NULL)
-      {
-
-        length = strlen(ptr);
-        bytes_read += length;
-        ptr += length - 1;
-
-        if (*ptr == '\n') *ptr = '\0';
-      }
     }
 
+errored:
 
     return bytes_read;
 }
@@ -269,7 +274,8 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     for (j = 0; result->def_start[j] != NULL; j++)
     {
       found = g_regex_match (regex, result->def_start[j], 0, NULL);
-      if (found == TRUE) {
+      if (found == TRUE)
+      {
         return TRUE;
       }
     }
