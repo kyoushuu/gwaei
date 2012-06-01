@@ -40,19 +40,7 @@
 
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gint lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
-
-
-/*
-//Kanji
-          format = "^(無|不|非|お|御|)(%s)$";
-          format = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と|$)";
-//Furi
-          format = "^(お|)(%s)$";
-          format = "(^お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
-//Romaji
-          format = "(^|\\)|/|^to |\\) )(%s)(\\(|/|$|!| \\()";
-          format = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
-*/
+static gboolean lw_unknowndictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 
 
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
@@ -120,6 +108,26 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class = LW_DICTIONARY_CLASS (klass);
     dictionary_class->parse_query = lw_unknowndictionary_parse_query;
     dictionary_class->parse_result = lw_unknowndictionary_parse_result;
+    dictionary_class->compare = lw_unknowndictionary_compare;
+    dictionary_class->installer_postprocess = lw_unknowndictionary_installer_postprocess;
+
+    dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_QUERY_TYPES + 1);
+    for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
+    {
+      dictionary_class->patterns[i] = g_new0 (gchar*, TOTAL_LW_RELEVANCE + 1);
+    }
+
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "(^|お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と|$)";
+    dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(無|不|非|お|御|)(%s)$";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "^(お|)(%s)$";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
+    dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_HIGH] = "(^|\\)|/|^to |\\) )(%s)(\\(|/|$|!| \\()";
 }
 
 
@@ -161,4 +169,46 @@ lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     return (error == NULL || *error == NULL);
 }
 
+
+static gboolean 
+lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (query != NULL, FALSE);
+    g_return_val_if_fail (result != NULL, FALSE);
+
+    //Declarations
+    gint j;
+    gboolean found;
+    GRegex *regex;
+
+    //Compare kanji atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+    if (result->kanji_start != NULL && regex != NULL)
+    {
+      found = g_regex_match (regex, result->kanji_start, 0, NULL);
+      if (found) return TRUE;
+    }
+
+    //Compare furigana atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    if (result->furigana_start != NULL && regex != NULL)
+    {
+      found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      if (found) return TRUE;
+    }
+
+    //Compare romaji atoms
+    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    for (j = 0; result->def_start[j] != NULL && regex != NULL; j++)
+    {
+      found = g_regex_match (regex, result->def_start[j], 0, NULL);
+      if (found == TRUE) {
+        return TRUE;
+      }
+    }
+
+    return FALSE;
+}
 

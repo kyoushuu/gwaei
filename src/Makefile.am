@@ -7,6 +7,7 @@ SUBDIRS += waei
 endif
 
 if WITH_GNOME
-SUBDIRS += gwaei kpengine desktop images
+#SUBDIRS += gwaei kpengine desktop images
+SUBDIRS += kpengine desktop images
 endif
 

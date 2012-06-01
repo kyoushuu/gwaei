@@ -307,7 +307,7 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
 
     //Compare romaji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    for (j = 0; result->def_start[j] != NULL; j++)
+    for (j = 0; result->def_start[j] != NULL && regex != NULL; j++)
     {
       found = g_regex_match (regex, result->def_start[j], 0, NULL);
       if (found == TRUE) {
