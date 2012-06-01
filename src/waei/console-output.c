@@ -282,7 +282,7 @@ w_console_append_unknowndict_result (WApplication *application, LwSearch *search
 
     w_console_append_less_relevant_header (application, search);
 
-    printf("%s\n", search->result->text);
+    printf("%s\n", result->text);
 
     //Cleanup
     lw_result_free (result);

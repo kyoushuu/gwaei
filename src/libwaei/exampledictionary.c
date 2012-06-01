@@ -189,6 +189,8 @@ lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, F
     gint bytes_read;
     gint length;
 
+    lw_result_clear (result);
+
     //Initializations
     length = bytes_read = 0;
 
@@ -220,6 +222,7 @@ lw_exampledictionary_parse_result (LwDictionary *dictionary, LwResult *result, F
     *(ptr++) = '\0';
 
     while (*ptr != '\n') ptr++;
+    *ptr = '\0';
 
     //Set the "furigana" string
     ptr = fgets(ptr, LW_IO_MAX_FGETS_LINE - length, fd);
@@ -249,7 +252,6 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     g_return_val_if_fail (result != NULL, FALSE);
 
     //Declarations
-    gint j;
     gboolean found;
     GRegex *regex;
 
@@ -271,9 +273,9 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
 
     //Compare romaji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    for (j = 0; result->def_start[j] != NULL && regex != NULL; j++)
+    if (result->def_start[0] != NULL && regex != NULL)
     {
-      found = g_regex_match (regex, result->def_start[j], 0, NULL);
+      found = g_regex_match (regex, result->def_start[0], 0, NULL);
       if (found == TRUE)
       {
         return TRUE;

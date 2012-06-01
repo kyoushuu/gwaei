@@ -178,6 +178,8 @@ lw_edictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *f
     gchar *temp = NULL;
     gint bytes_read = 0;
 
+    lw_result_clear (result);
+
     //Read the next line
     do {
       ptr = fgets(result->text, LW_IO_MAX_FGETS_LINE, fd);

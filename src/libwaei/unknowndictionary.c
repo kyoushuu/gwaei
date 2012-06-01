@@ -41,6 +41,8 @@
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gint lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_unknowndictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
+static void lw_unknowndictionary_tokenize_query (LwDictionary*, LwQuery*);
+static void lw_unknowndictionary_add_supplimental_tokens (LwDictionary*, LwQuery*);
 
 
 G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
@@ -99,6 +101,7 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     //Declarations
     GObjectClass *object_class;
     LwDictionaryClass *dictionary_class;
+    gint i;
 
     //Initializations
     object_class = G_OBJECT_CLASS (klass);
@@ -109,7 +112,6 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class->parse_query = lw_unknowndictionary_parse_query;
     dictionary_class->parse_result = lw_unknowndictionary_parse_result;
     dictionary_class->compare = lw_unknowndictionary_compare;
-    dictionary_class->installer_postprocess = lw_unknowndictionary_installer_postprocess;
 
     dictionary_class->patterns = g_new0 (gchar**, TOTAL_LW_QUERY_TYPES + 1);
     for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
@@ -136,38 +138,46 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
 //! @param rl The Resultline object this method works on
 //!
 static gint
-lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *file)
+lw_unknowndictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd)
 {
-    return FALSE;
+    gchar *ptr = NULL;
+    gint bytes_read = 0;
+
+    lw_result_clear (result);
+
+    //Read the next line
+    do {
+      ptr = fgets(result->text, LW_IO_MAX_FGETS_LINE, fd);
+      if (ptr != NULL) bytes_read += strlen(result->text);
+    } while (ptr != NULL && *ptr == '#');
+
+    return bytes_read;
 }
 
 
-static gboolean
+static gboolean 
 lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (query != NULL, FALSE);
+    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
+    g_return_val_if_fail (query->tokenlist != NULL, FALSE);
+    g_return_val_if_fail (TEXT != NULL, FALSE);
+    g_return_val_if_fail (error != NULL, FALSE);
     if (error != NULL && *error != NULL) return FALSE;
-/*
-    tokens = lw_unknowninfo_get_tokens (dictionary, text);
 
-    if (tokens != NULL)
-    {
-      for (i = 0; tokens[i] != NULL; i++)
-      {
-        if (lw_util_is_romaji_str (tokens[i])
-          lw_unknowninfo_append_romaji_regex (dictionary, query, tokens[i]);
-        else if (lw_util_is_kanji_ish_str (tokens[i])
-          lw_unknowninfo_append_kanji_regex (dictionary, query, tokens[i]);
-        else if (lw_util_is_furigana_str (tokens[i])
-          lw_unknowninfo_append_furigana_regex (dictionary, query, tokens[i]);
-        else
-          lw_unknowninfo_append_mix_regex (dictionary, query, tokens[i]);
-      }
-      g_strfreev (tokens); tokens = NULL;
-    }
+    //Sanity check
+    g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
+ 
+    lw_unknowndictionary_tokenize_query (dictionary, query);
+    lw_unknowndictionary_add_supplimental_tokens (dictionary, query);
+    lw_dictionary_build_regex (dictionary, query, error);
 
-*/
     return (error == NULL || *error == NULL);
 }
+
+
 
 
 static gboolean 
@@ -179,36 +189,94 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     g_return_val_if_fail (result != NULL, FALSE);
 
     //Declarations
-    gint j;
     gboolean found;
     GRegex *regex;
 
     //Compare kanji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-    if (result->kanji_start != NULL && regex != NULL)
+    if (regex != NULL)
     {
-      found = g_regex_match (regex, result->kanji_start, 0, NULL);
+      found = g_regex_match (regex, result->text, 0, NULL);
       if (found) return TRUE;
     }
 
     //Compare furigana atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    if (result->furigana_start != NULL && regex != NULL)
+    if (regex != NULL)
     {
-      found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      found = g_regex_match (regex, result->text, 0, NULL);
       if (found) return TRUE;
     }
 
     //Compare romaji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    for (j = 0; result->def_start[j] != NULL && regex != NULL; j++)
+    if (regex != NULL)
     {
-      found = g_regex_match (regex, result->def_start[j], 0, NULL);
-      if (found == TRUE) {
-        return TRUE;
-      }
+      found = g_regex_match (regex, result->text, 0, NULL);
+      if (found == TRUE) return TRUE;
     }
 
     return FALSE;
+}
+
+
+static void
+lw_unknowndictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+{
+    //Declarations
+    gchar *temp;
+    gchar *delimited;
+    gchar **tokens;
+    static const gchar *DELIMITOR = "|";
+    gboolean split_script_changes, split_whitespace;
+    gint i;
+    
+    //Initializations
+    delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
+    split_script_changes = split_whitespace = TRUE;
+
+    if (split_script_changes)
+    {
+      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, FALSE);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    if (split_whitespace)
+    {
+      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      g_free (delimited); delimited = temp; temp = NULL;
+    }
+
+    tokens = g_strsplit (delimited, DELIMITOR, -1);
+
+    if (tokens != NULL)
+    {
+      for (i = 0; tokens[i] != NULL; i++)
+      {
+        if (lw_util_is_furigana_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else if (lw_util_is_kanji_ish_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else if (lw_util_is_romaji_str (tokens[i]))
+          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
+        else
+          g_free (tokens[i]); 
+        tokens[i] = NULL;
+      }
+      g_free (tokens); tokens = NULL;
+    }
+}
+
+
+static void 
+lw_unknowndictionary_add_supplimental_tokens (LwDictionary *dictionary, LwQuery *query)
+{
+/*
+          if (get_japanese_morphology)
+          {
+            lw_morphology_get_stem ()
+            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
+          }
+*/
 }
 
