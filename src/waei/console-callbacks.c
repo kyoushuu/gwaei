@@ -106,7 +106,6 @@ w_console_append_result_timeout (gpointer data)
   //Declarations
   LwSearch *search;
   LwSearchStatus status;
-  gboolean has_results;
   WSearchData *sdata;
   gint chunk;
   gboolean keep_appending;
@@ -114,7 +113,6 @@ w_console_append_result_timeout (gpointer data)
   //Initializations
   search = LW_SEARCH (data);
   status = lw_search_get_status (search);
-  has_results = lw_search_has_results (search);
   sdata = W_SEARCHDATA (lw_search_get_data (search));
   chunk = 50;
 

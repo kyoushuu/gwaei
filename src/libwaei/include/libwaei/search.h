@@ -93,7 +93,7 @@ gpointer lw_search_get_data (LwSearch*);
 void lw_search_free_data (LwSearch*);
 gboolean lw_search_has_data (LwSearch*);
 
-gboolean lw_search_should_check_results (LwSearch*);
+gboolean  lw_search_has_results (LwSearch*);
 LwResult* lw_search_get_result (LwSearch*);
 void lw_search_parse_result_string (LwSearch*);
 void lw_search_cancel (LwSearch*);

@@ -199,19 +199,19 @@ w_console_print_available_dictionaries (WApplication *application)
     gint j;
     LwDictionaryList *dictionarylist;
     LwDictionary* dictionary;
-    GList *iter;
+    GList *link;
     const gchar *filename;
 
     //Initializations
     i = 0;
     j = 0;
     dictionarylist = w_application_get_installed_dictionarylist (application);
-	  iter = dictionarylist->list;
+	  link = dictionarylist->list;
 
     printf(gettext("Available dictionaries are:\n"));
 
-    while (iter != NULL) {
-      dictionary = LW_DICTIONARY (iter->data);
+    while (link != NULL) {
+      dictionary = LW_DICTIONARY (link->data);
       filename = lw_dictionary_get_filename (dictionary);
 
       printf("  %s", filename);
@@ -219,7 +219,7 @@ w_console_print_available_dictionaries (WApplication *application)
       printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));
 
       i++;
-      iter = iter->next;
+      link = link->next;
     }
 
     if (i == 0)

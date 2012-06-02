@@ -502,11 +502,13 @@ lw_dictionary_build_id_from_type (GType type, const gchar *FILENAME)
 
     //Declarations
     gchar *id;
-    const gchar *TYPENAME;
+    gchar *directoryname;
 
     //Initializations
-    TYPENAME = g_type_name (type);
-    id = g_strdup_printf ("%s/%s", TYPENAME, FILENAME);
+    directoryname = lw_dictionary_get_directoryname (type);
+    if (directoryname == NULL) return NULL;
+    id = g_strdup_printf ("%s/%s", directoryname, FILENAME);
+    g_free (directoryname);
 
     return id;
 }

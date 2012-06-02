@@ -459,7 +459,7 @@ lw_dictionarylist_load_order (LwDictionaryList *dictionarylist, LwPreferences *p
     //Sanity checks
     g_return_if_fail (dictionarylist != NULL && preferences != NULL);
 
-    const int MAX = 1000;
+    const int MAX = 512;
     gchar order[MAX];
     gchar **atoms;
     gchar **ptr;
@@ -467,6 +467,7 @@ lw_dictionarylist_load_order (LwDictionaryList *dictionarylist, LwPreferences *p
     gint i;
 
     lw_preferences_get_string_by_schema (preferences, order, LW_SCHEMA_DICTIONARY, LW_KEY_LOAD_ORDER, MAX);
+printf("BREAK order %s\n", order);
     atoms = g_strsplit_set (order, ";", -1);
     if (atoms != NULL)
     {
@@ -480,6 +481,7 @@ lw_dictionarylist_load_order (LwDictionaryList *dictionarylist, LwPreferences *p
           i++;
         }
 
+printf("BREAK sort\n");
         dictionarylist->list = g_list_sort_with_data (dictionarylist->list, lw_dictionarylist_sort_compare_function, hashtable);
         
         g_hash_table_destroy (hashtable); hashtable = NULL;
@@ -516,6 +518,7 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
 
     dictionary_a = LW_DICTIONARY (a);
     description_a = lw_dictionary_build_id (dictionary_a);
+printf("BREAK description_a %s\n", description_a);
     if (description_a != NULL)
     {
       found_a = g_hash_table_lookup_extended (hashtable, &description_a, NULL, &position_a_ptr);
@@ -525,6 +528,7 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
     
     dictionary_b = LW_DICTIONARY (b);
     description_b = lw_dictionary_build_id (dictionary_b);
+printf("BREAK description_b %s\n", description_b);
     if (description_b != NULL)
     {
       found_b = g_hash_table_lookup_extended (hashtable, &description_b, NULL, &position_b_ptr);
