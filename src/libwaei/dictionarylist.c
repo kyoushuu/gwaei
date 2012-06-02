@@ -120,7 +120,6 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
     //Sanity checks
     g_return_if_fail (dictionarylist != NULL);
 
-printf("BREAK load installed 1\n");
     //Declarations
     gchar** idlist;
     gchar **iditer;
@@ -134,14 +133,11 @@ printf("BREAK load installed 1\n");
     idlist = lw_dictionary_get_installed_idlist (G_TYPE_NONE);
     if (idlist != NULL)
     {
-printf("BREAK load installed 2\n");
       for (iditer = idlist; *iditer != NULL; iditer++)
       {
-printf("BREAK load installed 3 %s\n", *iditer);
         pair = g_strsplit_set (*iditer, "/", 2);
         if (pair != NULL && pair[0] != NULL && pair[1] != NULL) 
         {
-printf("BREAK load installed 4 %s\n", *iditer);
           type = g_type_from_name (pair[0]);
           FILENAME = pair[1];
           dictionary = LW_DICTIONARY (g_object_new (type, "filename", FILENAME, NULL));

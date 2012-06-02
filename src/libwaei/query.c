@@ -238,7 +238,6 @@ lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevan
       if (combined == NULL) return;
       g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
     }
-    printf("BREAK updated tokenlist %s\n", query->tokenlist[type]);
 }
 
 

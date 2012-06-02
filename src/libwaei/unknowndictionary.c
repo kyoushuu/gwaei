@@ -124,8 +124,10 @@ lw_unknowndictionary_class_init (LwUnknownDictionaryClass *klass)
     dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(無|不|非|お|御|)(%s)$";
 
     dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
-    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
-    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "^(お|)(%s)$";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "(%s)";
+    //dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(^|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|$)";
+    //dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "^(お|)(%s)$";
 
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
@@ -197,6 +199,7 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     if (regex != NULL)
     {
       found = g_regex_match (regex, result->text, 0, NULL);
+printf("kanji comparison\n");
       if (found) return TRUE;
     }
 
@@ -205,6 +208,7 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     if (regex != NULL)
     {
       found = g_regex_match (regex, result->text, 0, NULL);
+if (found) printf("Found %s\n", result->text);
       if (found) return TRUE;
     }
 
@@ -213,6 +217,7 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     if (regex != NULL)
     {
       found = g_regex_match (regex, result->text, 0, NULL);
+printf("romaji comparison\n");
       if (found == TRUE) return TRUE;
     }
 

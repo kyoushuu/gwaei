@@ -619,26 +619,26 @@ lw_search_get_result (LwSearch *search)
 //! @brief Tells if you should keep checking for results
 //!
 gboolean 
-lw_search_should_check_results (LwSearch *search)
+lw_search_has_results (LwSearch *search)
 {
-    if (search == NULL) return FALSE;
+    //Sanity checks
+    g_return_val_if_fail (search != NULL, FALSE);
 
-    gboolean should_check_results;
+    //Declarations
     LwSearchStatus status;
+    gboolean has_results;
 
-    status = lw_search_get_status (search);
-    should_check_results = FALSE;
+    //Initializations
+    lw_search_lock (search);
+    status = search->status;
+    has_results = (search->results[LW_RELEVANCE_HIGH] != NULL ||
+                   search->results[LW_RELEVANCE_MEDIUM] != NULL ||
+                   search->results[LW_RELEVANCE_LOW] != NULL);
+  
+    if (status == LW_SEARCHSTATUS_FINISHING && !has_results) search->status = LW_SEARCHSTATUS_IDLE;
+    lw_search_unlock (search);
 
-    if (status == LW_SEARCHSTATUS_SEARCHING || status == LW_SEARCHSTATUS_FINISHING)
-    {
-      lw_search_lock (search);
-      should_check_results = (search->results[LW_RELEVANCE_HIGH] != NULL ||
-                              search->results[LW_RELEVANCE_MEDIUM] != NULL ||
-                              search->results[LW_RELEVANCE_LOW] != NULL);
-      lw_search_unlock (search);
-    }
-
-    return should_check_results;
+    return has_results;
 }
 
 

@@ -662,7 +662,6 @@ printf("directorypath: %s\n", directorypath);
       directory = g_dir_open (directorypath, 0, NULL);
       if (directory != NULL)
       {
-printf("BREAK reading directory...\n");
         while ((filename = g_dir_read_name (directory)) != NULL)
         {
           length++;
@@ -682,13 +681,10 @@ printf("length %d\n", length);
     {
       directorypath = lw_dictionary_get_directory (*childiter);
       directory = g_dir_open (directorypath, 0, NULL);
-printf("BREAK1 %s\n", directorypath);
       if (directory != NULL)
       {
-printf("BREAK2\n");
         while ((filename = g_dir_read_name (directory)) != NULL && length > 0)
         {
-printf("BREAK3\n");
           *iditer = lw_dictionary_build_id_from_type (*childiter, filename);
           printf("id: %s\n", *iditer);
           

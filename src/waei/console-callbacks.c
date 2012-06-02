@@ -100,32 +100,39 @@ w_console_install_progress_cb (gdouble fraction, gpointer data)
 gboolean 
 w_console_append_result_timeout (gpointer data)
 {
-  LwSearch *item;
+  //Sanity checks
+  g_return_val_if_fail (data != NULL, FALSE);
+
+  //Declarations
+  LwSearch *search;
+  LwSearchStatus status;
+  gboolean has_results;
   WSearchData *sdata;
   gint chunk;
-  gint max_chunk;
-  gboolean is_still_searching;
+  gboolean keep_appending;
 
-  item = LW_SEARCH (data);
-  sdata = W_SEARCHDATA (lw_search_get_data (item));
-  chunk = 0;
-  max_chunk = 50;
+  //Initializations
+  search = LW_SEARCH (data);
+  status = lw_search_get_status (search);
+  has_results = lw_search_has_results (search);
+  sdata = W_SEARCHDATA (lw_search_get_data (search));
+  chunk = 50;
 
-  if (item != NULL && lw_search_should_check_results (item))
+  if  (status != LW_SEARCHSTATUS_IDLE)
   {
-    while (item != NULL && lw_search_should_check_results (item) && chunk < max_chunk)
+    while (lw_search_has_results (search) && chunk-- > 0)
     {
-      w_console_append_result (sdata->application, item);
-      chunk++;
+      w_console_append_result (sdata->application, search);
     }
-    is_still_searching = TRUE;
+    keep_appending = TRUE;
   }
   else
   {
-      w_console_no_result (sdata->application, item);
+      w_console_no_result (sdata->application, search);
       g_main_loop_quit (sdata->loop);
-      is_still_searching = FALSE;
+      keep_appending = FALSE;
   }
 
-  return is_still_searching;
+  return keep_appending;
 }
+
