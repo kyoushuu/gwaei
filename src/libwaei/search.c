@@ -408,8 +408,9 @@ LwSearchStatus
 lw_search_get_status (LwSearch *search)
 {
     LwSearchStatus status;
+
     lw_search_lock (search);
-    status = search->status;
+      status = search->status;
     lw_search_unlock (search);
 
     return status;
@@ -588,7 +589,7 @@ LwResult*
 lw_search_get_result (LwSearch *search)
 {
     //Sanity checks
-    g_assert (search != NULL);
+    g_return_val_if_fail (search != NULL, NULL);
 
     //Declarations
     LwResult *result;
@@ -607,6 +608,8 @@ lw_search_get_result (LwSearch *search)
         search->results[relevance] = g_list_delete_link (search->results[relevance], search->results[relevance]);
       }
     }
+
+    if (result == NULL && search->status == LW_SEARCHSTATUS_FINISHING) search->status = LW_SEARCHSTATUS_IDLE;
 
     lw_search_unlock (search);
 
@@ -630,12 +633,14 @@ lw_search_has_results (LwSearch *search)
 
     //Initializations
     lw_search_lock (search);
+
     status = search->status;
     has_results = (search->results[LW_RELEVANCE_HIGH] != NULL ||
                    search->results[LW_RELEVANCE_MEDIUM] != NULL ||
                    search->results[LW_RELEVANCE_LOW] != NULL);
   
     if (status == LW_SEARCHSTATUS_FINISHING && !has_results) search->status = LW_SEARCHSTATUS_IDLE;
+
     lw_search_unlock (search);
 
     return has_results;
