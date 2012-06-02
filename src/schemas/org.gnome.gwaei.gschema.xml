@@ -129,7 +129,7 @@
   <!-- Dictionary settings -->
   <schema id="org.gnome.gwaei.dictionary" path="/org/gnome/gwaei/dictionary/">
     <key name="load-order" type="s">
-      <default>'edict/English;kanji/Kanji;edict/Names;edict/Places;examples/Examples'</default>
+      <default>'e/English;kanji/Kanji;e/Names;e/Places;example/Examples'</default>
       <summary>Used for the styling of some titles</summary>
       <description>Used as a separator for the "Other results" section. Is not always used.</description>
     </key>

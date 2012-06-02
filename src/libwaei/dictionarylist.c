@@ -124,6 +124,7 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
     gchar** idlist;
     gchar **iditer;
     gchar** pair;
+    gchar *typename;
     GType type;
     LwDictionary *dictionary;
     const gchar *FILENAME;
@@ -138,7 +139,8 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
         pair = g_strsplit_set (*iditer, "/", 2);
         if (pair != NULL && pair[0] != NULL && pair[1] != NULL) 
         {
-          type = g_type_from_name (pair[0]);
+          typename = lw_dictionary_directoryname_to_typename (pair[0]);
+          type = g_type_from_name (typename);
           FILENAME = pair[1];
           dictionary = LW_DICTIONARY (g_object_new (type, "filename", FILENAME, NULL));
           if (dictionary != NULL && LW_IS_DICTIONARY (dictionary))

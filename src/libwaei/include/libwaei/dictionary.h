@@ -67,6 +67,7 @@ void lw_dictionary_cancel (LwDictionary*);
 gboolean lw_dictionary_equals (LwDictionary*, LwDictionary*);
 gchar* lw_dictionary_build_id (LwDictionary*);
 gboolean lw_dictionary_is_selected (LwDictionary*);
+gchar* lw_dictionary_directoryname_to_typename (const gchar*);
 
 gchar** lw_dictionary_get_installed_idlist (GType);
 

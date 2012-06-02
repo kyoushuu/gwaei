@@ -515,6 +515,26 @@ lw_dictionary_build_id_from_type (GType type, const gchar *FILENAME)
 
 
 gchar*
+lw_dictionary_directoryname_to_typename (const gchar *DIRECTORYNAME)
+{
+    //Sanity checks
+    g_return_val_if_fail (DIRECTORYNAME != NULL, NULL);
+
+    //Declarations
+    gchar *directoryname;
+    gchar *typename;
+
+    directoryname = g_strdup (DIRECTORYNAME);
+    if (directoryname == NULL || directoryname[0] == '\0') return NULL;
+    directoryname[0] = g_ascii_toupper (directoryname[0]);
+    typename = g_strdup_printf ("Lw%sDictionary", directoryname);
+    g_free (directoryname);
+
+    return typename;
+}
+
+
+gchar*
 lw_dictionary_build_id (LwDictionary *dictionary)
 {
     //Sanity checks
