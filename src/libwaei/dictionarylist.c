@@ -296,7 +296,7 @@ lw_dictionarylist_get_dictionary_by_filename (LwDictionaryList *dictionarylist, 
     {
       dictionary = LW_DICTIONARY (iter->data);
       FILENAME2 = lw_dictionary_get_filename (dictionary);
-      if (g_ascii_strcasecmp (FILENAME2, FILENAME) == 0)
+      if (FILENAME2 != NULL && g_ascii_strcasecmp (FILENAME2, FILENAME) == 0)
         break;
       dictionary = NULL;
     }
@@ -589,52 +589,48 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
 {
     LwDictionary* dictionary;
 
-    dictionary = lw_edictionary_new (NULL);
+    dictionary = lw_edictionary_new ("English");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "English",
       preferences,
       LW_KEY_ENGLISH_SOURCE,
-      gettext("English"),
       gettext("The venerable edict by Jim Breen."),
       LW_ENCODING_EUC_JP,
       FALSE
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_kanjidictionary_new (NULL);
+    dictionary = lw_kanjidictionary_new ("Kanji");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "Kanji",
       preferences,
       LW_KEY_KANJI_SOURCE,
-      gettext("Kanji"),
       gettext("A Kanji dictionary based off of kanjidic with radical information combined."),
       LW_ENCODING_EUC_JP,
       TRUE
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_kanjidictionary_new (NULL);
+    dictionary = lw_kanjidictionary_new ("Names and Places");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "Names;Places",
       preferences,
       LW_KEY_KANJI_SOURCE,
-      gettext("Names and Places"),
       gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
       LW_ENCODING_EUC_JP,
       TRUE
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_kanjidictionary_new (NULL);
+    dictionary = lw_kanjidictionary_new ("Examples");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "Examples",
       preferences,
       LW_KEY_KANJI_SOURCE,
-      gettext("Examples"),
       gettext("A collection of Japanese/English sentences initially compiled "
               "by Professor Yasuhito Tanaka at Hyogo University and his students."),
       LW_ENCODING_EUC_JP,
@@ -659,12 +655,6 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     }
 */
 }
-
-/*
-  curl_global_init (CURL_GLOBAL_ALL);
-    curl_global_cleanup ();
-*/
-
 
 
 //!

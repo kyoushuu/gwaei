@@ -327,11 +327,37 @@ lw_edictionary_installer_postprocess (LwDictionary *dictionary,
                                       gpointer data,
                                       GError **error)
 {
+    //Sanity checks
     g_return_val_if_fail (dictionary != NULL, FALSE);
-    g_return_val_if_fail (g_strv_length (sourcelist) < 1, FALSE);
-    g_return_val_if_fail (g_strv_length (targetlist) < 2, FALSE);
+    g_return_val_if_fail (sourcelist != NULL, FALSE);
+    g_return_val_if_fail (targetlist != NULL, FALSE);
+    if (*error != NULL) return FALSE;
 
-    return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, error);
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    gint i;
+
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+
+    if (install->postprocess == FALSE)
+    {
+      for (i = 0; targetlist[i] != NULL && sourcelist[i] != NULL; i++)
+      {
+        if (g_file_test (sourcelist[i], G_FILE_TEST_IS_REGULAR) && *error == NULL)
+          lw_io_copy (sourcelist[i], targetlist[i], cb, data, error);
+      }
+    }
+    else
+    {
+      g_return_val_if_fail (g_strv_length (sourcelist) < 1, FALSE);
+      g_return_val_if_fail (g_strv_length (targetlist) < 2, FALSE);
+      return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, error);
+    }
+
+    return FALSE;
 }
 
 

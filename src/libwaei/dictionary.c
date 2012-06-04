@@ -53,7 +53,6 @@ void
 lw_dictionary_set_installer (LwDictionary *dictionary,
                              const gchar *FILES,
                              const gchar *DOWNLOADS,
-                             const gchar *NAME,
                              const gchar *DESCRIPTION,
                              LwEncoding encoding,
                              gboolean postprocess)
@@ -74,7 +73,6 @@ lw_dictionary_set_installer (LwDictionary *dictionary,
 
     if (FILES != NULL) install->files = g_strdup (FILES);
     if (DOWNLOADS != NULL) install->downloads = g_strdup (DOWNLOADS);
-    if (NAME != NULL) install->name = g_strdup (NAME);
     if (DESCRIPTION != NULL) install->description = g_strdup (DESCRIPTION);
     install->encoding = encoding;
     install->postprocess = postprocess;
@@ -86,7 +84,6 @@ lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
                                      const gchar *FILES,
                                      LwPreferences *preferences,
                                      const gchar *KEY,
-                                     const gchar *NAME,
                                      const gchar *DESCRIPTION,
                                      LwEncoding encoding,
                                      gboolean postprocess)
@@ -103,7 +100,7 @@ lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
 
     priv = dictionary->priv;
 
-    lw_dictionary_set_installer (dictionary, FILES, "TODO", NAME, DESCRIPTION, encoding, postprocess);
+    lw_dictionary_set_installer (dictionary, FILES, NULL, DESCRIPTION, encoding, postprocess);
     lw_preferences_add_change_listener_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_ENGLISH_SOURCE, lw_dictionary_sync_downloadlist_cb, dictionary);
     
     if (priv->install == NULL) return;
@@ -558,17 +555,6 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 }
 
 
-LwDictionaryState 
-lw_dictionary_get_state (LwDictionary *dictionary)
-{
-    LwDictionaryPrivate *priv;
-
-    priv = dictionary->priv;
-
-    return priv->state;
-}
-
-
 //!
 //! @brief Installs a LwDictionary object using the provided gui update callback
 //!        This function should normally only be used in the lw_installdictionary_install function.
@@ -586,7 +572,7 @@ lw_dictionary_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpoint
 {
     g_assert (*error == NULL && dictionary != NULL);
 
-    lw_dictionary_installer_download (dictionary, cb, data, error);
+    //lw_dictionary_installer_download (dictionary, cb, data, error);
     lw_dictionary_installer_decompress (dictionary, cb, data, error);
     lw_dictionary_installer_convert_encoding (dictionary, cb, data, error);
     lw_dictionary_installer_postprocess (dictionary, cb, data, error);
@@ -637,7 +623,9 @@ lw_dictionary_is_cancelled (LwDictionary *dictionary)
 void 
 lw_dictionary_cancel (LwDictionary *dictionary)
 {
+    //TODO
     g_return_if_fail (dictionary != NULL);
+/*
 
     LwDictionaryPrivate *priv;
     LwDictionaryState state;
@@ -650,6 +638,7 @@ lw_dictionary_cancel (LwDictionary *dictionary)
       priv->cancel = TRUE;
       lw_io_set_cancel_operations (state);
     }
+*/
 }
 
 

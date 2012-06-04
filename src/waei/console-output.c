@@ -289,61 +289,6 @@ w_console_append_unknowndict_result (WApplication *application, LwSearch *search
 }
 
 
-gint 
-w_console_uninstall_progress (gdouble fraction, gpointer data)
-{
-  //Declarations
-  LwDictionary *dictionary;
-  gchar *path;
-
-  //Initializations
-  dictionary = data;
-  path = lw_dictionary_get_path (dictionary);
-
-  if (path != NULL)
-  {
-    printf("Removing %s...\n", path);
-    g_free (path); path = NULL;
-  }
-
-  return FALSE;
-}
-
-
-gint 
-w_console_install_progress (gdouble fraction, gpointer data)
-{
-  //Declarations
-  LwDictionary *dictionary;
-  gchar *status;
-  gdouble current_fraction;
-  gint current_percent;
-
-  //Initializations
-  dictionary = data;
-  current_fraction = lw_dictionary_installer_get_step_progress (dictionary);
-  current_percent = (gint) (100.0 * current_fraction); 
-
-  //Update the dictinst progress state only when the delta is large enough
-  if (current_percent < 100 && _group_index_changed)
-  {
-    _group_index_changed = FALSE;
-    printf("\n");
-  }
-  else if (current_percent == 100)
-  {
-    _group_index_changed = TRUE;
-  }
-
-  status = lw_dictionary_installer_get_status_string (dictionary, TRUE);
-  printf("\r [%d%%] %s", current_percent, status);
-  _previous_percent = current_percent;
-  g_free (status);
-
-  return FALSE;
-}
-
-
 //!
 //! @brief Print the "less relevant" header where necessary.
 //!

@@ -172,7 +172,7 @@ w_console_print_installable_dictionaries (WApplication *application)
       dictionary = LW_DICTIONARY (iter->data);
       if (lw_dictionary_installer_is_valid (dictionary))
       {
-        filename = lw_dictionary_installer_get_name (dictionary);
+        filename = lw_dictionary_get_filename (dictionary);
         printf("  %s", filename);
         for (j = strlen(filename); j < 20; j++) printf(" ");
         printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));

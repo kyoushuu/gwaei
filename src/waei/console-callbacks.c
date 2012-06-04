@@ -63,37 +63,40 @@ static gint _previous_percent = -1;
 gint 
 w_console_install_progress_cb (gdouble fraction, gpointer data)
 {
-  //Declarations
-  LwDictionary *dictionary;
-  gchar *status;
-  gdouble current_fraction;
-  gint current_percent;
+    //Declarations
+    LwDictionary *dictionary;
+    LwDictionaryInstallerStatus status;
+    gchar *message;
+    gdouble stage_fraction;
+    gint stage_percent;
 
-  //Initializations
-  dictionary = data;
-  current_fraction = lw_dictionary_installer_get_step_progress (dictionary);
-  current_percent = (gint) (100.0 * current_fraction); 
+    //Initializations
+    dictionary = LW_DICTIONARY (data);
+    status = lw_dictionary_installer_get_status (dictionary);
+    stage_fraction = lw_dictionary_installer_get_stage_progress (dictionary, fraction);
+    stage_percent = (gint) (100.0 * stage_fraction); 
 
-  //Update the dictinst progress state only when the delta is large enough
-  if (current_percent < 100 && _group_index_changed)
-  {
-    _group_index_changed = FALSE;
-    printf("\n");
-  }
-  else if (current_percent == 100)
-  {
-    _group_index_changed = TRUE;
-  }
+    //Update the dictinst progress state only when the delta is large enough
+    if (stage_percent < 100 && _group_index_changed)
+    {
+      _group_index_changed = FALSE;
+      printf("\n");
+    }
+    else if (stage_percent == 100)
+    {
+      _group_index_changed = TRUE;
+    }
 
-  status = lw_dictionary_installer_get_status_string (dictionary, TRUE);
-  if (status != NULL)
-  {
-    printf("\r [%d%%] %s", current_percent, status);
-    _previous_percent = current_percent;
-    g_free (status); status = NULL;
-  }
+    message = lw_dictionary_installer_get_status_string (dictionary, TRUE);
+    if (message != NULL && fraction == 1.0 && (status == LW_DICTIONARY_INSTALLER_STATUS_UNINSTALLED || status == LW_DICTIONARY_INSTALLER_STATUS_INSTALLED))
+      fprintf(stdout, "\n%s\n\n", message);
+    else if (message != NULL && _previous_percent != stage_percent)
+      fprintf(stdout, "\r [%d%%] %s", stage_percent, message);
+    fflush(stdout);
+    _previous_percent = stage_percent;
+    if (message != NULL) g_free (message); message = NULL;
 
-  return FALSE;
+    return FALSE;
 }
 
 

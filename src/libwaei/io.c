@@ -279,6 +279,8 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
 {
     if (error != NULL && *error != NULL) return FALSE;
 
+  curl_global_init (CURL_GLOBAL_ALL);
+
     //Declarations
     GQuark quark;
     CURL *curl;
@@ -324,6 +326,8 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
         *error = g_error_new_literal (quark, LW_IO_DOWNLOAD_ERROR, message);
       }
     }
+
+  curl_global_cleanup ();
 
     return (res == 0);
 }
