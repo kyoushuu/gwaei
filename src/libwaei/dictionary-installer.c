@@ -437,7 +437,6 @@ lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 //! @brief Downloads or copies the file to the dictionary directory to be worked on
 //!        This function should normally only be used in the lw_installdictionary_install method.
 //! @param dictionary The LwDictionary object to use to download the dictionary with.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the download is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
 //! @see lw_installdictionary_download
@@ -446,7 +445,7 @@ lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -473,10 +472,10 @@ lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback
       {
         //File is located locally so copy it
         if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
-          lw_io_copy (*sourceiter, *targetiter, (LwIoProgressCallback) cb, data, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
         //Download the file
         else
-          lw_io_download (*sourceiter, *targetiter, cb, data, error);
+          lw_io_download (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
 
         sourceiter++;
         targetiter++;
@@ -492,7 +491,6 @@ lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback
 //! @brief Detects the compression scheme of a file and decompresses it using the approprate function.
 //!        This function should normally only be used in the lw_installdictionary_install function.
 //! @param dictionary The LwDictionary object to use to decompress the dictionary with.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the decompression is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
 //! @see lw_installdictionary_download
@@ -501,7 +499,7 @@ lw_dictionary_installer_download (LwDictionary *dictionary, LwIoProgressCallback
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -529,9 +527,9 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallba
         if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
         {
           if (g_str_has_suffix (*sourceiter, "gz") || g_str_has_suffix (*sourceiter, "gzip"))
-            lw_io_gunzip_file (*sourceiter, *targetiter, cb, data, error);
+            lw_io_gunzip_file (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
           else
-            lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+            lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
         }
 
         sourceiter++;
@@ -548,7 +546,6 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallba
 //! @brief Converts the encoding to UTF8 for the file
 //!        This function should normally only be used in the lw_installdictionary_install function.
 //! @param dictionary The LwDictionary object to use to convert the text encoding the dictionary with.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the text encoding conversion is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
 //! @see lw_installdictionary_download
@@ -557,7 +554,7 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, LwIoProgressCallba
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -585,9 +582,9 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgress
       while (*sourceiter != NULL && *targetiter != NULL)
       {
         if (priv->install->encoding == LW_ENCODING_UTF8)
-          lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
         else
-          lw_io_copy_with_encoding (*sourceiter, *targetiter, encodingname, "UTF-8", cb, data, error);
+          lw_io_copy_with_encoding (*sourceiter, *targetiter, encodingname, "UTF-8", lw_dictionary_sync_progress_cb, dictionary, error);
 
         sourceiter++;
         targetiter++;
@@ -603,7 +600,6 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgress
 //! @brief does the required postprocessing on a dictionary
 //!        This function should normally only be used in the lw_installdictionary_install function.
 //! @param dictionary The LwDictionary object to use for postprocessing the dictionary with.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the postprocessing is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
 //! @see lw_installdictionary_download
@@ -612,7 +608,7 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, LwIoProgress
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -640,14 +636,14 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
       if (klass->installer_postprocess != NULL)
       {
 
-        klass->installer_postprocess (dictionary, sourcelist, targetlist, cb, data, error);
+        klass->installer_postprocess (dictionary, sourcelist, targetlist, lw_dictionary_sync_progress_cb, dictionary, error);
         priv->install->index++;
       }
       else
       {
         while (*sourceiter != NULL && *targetiter != NULL)
         {
-          lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
 
           sourceiter++;
           targetiter++;
@@ -665,7 +661,6 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
 //! @brief does the required postprocessing on a dictionary
 //!        This function should normally only be used in the lw_installdictionary_install function.
 //! @param dictionary The LwDictionary object to use for finalizing the dictionary with.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the finalization is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //! @param error A pointer to a GError object to pass errors to or NULL.
 //! @see lw_installdictionary_download
@@ -674,7 +669,7 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, LwIoProgressCallb
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -700,7 +695,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback 
       priv->install->index = 0;
       while (*sourceiter != NULL && *targetiter != NULL)
       {
-        lw_io_copy (*sourceiter, *targetiter, cb, data, error);
+        lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
 
         sourceiter++;
         targetiter++;
@@ -713,7 +708,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback 
     else
       priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_UNINSTALLED;
 
-    cb (1.0, data);
+    lw_dictionary_sync_progress_cb (1.0, dictionary);
 
     //Finish
     return (*error == NULL);
@@ -723,11 +718,10 @@ lw_dictionary_installer_install (LwDictionary *dictionary, LwIoProgressCallback 
 //!
 //! @brief removes temporary files created by installation in the dictionary cache folder
 //! @param dictionary The LwDictionary object to use to clean the files.
-//! @param cb A LwIoProgressCallback used to giver user feedback on how far the finalization is.
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //!
 void 
-lw_dictionary_installer_clean (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data)
+lw_dictionary_installer_clean (LwDictionary *dictionary)
 {
     //TODO
 /*
@@ -771,7 +765,7 @@ lw_dictionary_installer_clean (LwDictionary *dictionary, LwIoProgressCallback cb
 //! @returns An allocated string that should be freed with gfree when finished
 //!
 gchar* 
-lw_dictionary_installer_get_status_string (LwDictionary *dictionary, gboolean long_form)
+lw_dictionary_installer_get_status_message (LwDictionary *dictionary, gboolean long_form)
 {
     //Declarations
 		LwDictionaryPrivate *priv;
@@ -828,6 +822,19 @@ lw_dictionary_installer_get_status_string (LwDictionary *dictionary, gboolean lo
 }
 
 
+gdouble 
+lw_dictionary_installer_get_progress (LwDictionary *dictionary)
+{
+    //Declarations
+		LwDictionaryPrivate *priv;
+
+    //Initializations
+		priv = dictionary->priv;
+
+    return priv->progress;
+}
+
+
 //!
 //! @brief Returns the percent progress as a double for only the current LwDictionary
 //! @param dictionary The LwDictionary to get the progress of
@@ -835,7 +842,7 @@ lw_dictionary_installer_get_status_string (LwDictionary *dictionary, gboolean lo
 //! @param The fraction percentage of all the LwDictionary processes together.
 //!
 gdouble 
-lw_dictionary_installer_get_stage_progress (LwDictionary *dictionary, gdouble fraction)
+lw_dictionary_installer_get_stage_progress (LwDictionary *dictionary)
 {
     //Declarations
 		LwDictionaryPrivate *priv;
@@ -844,10 +851,11 @@ lw_dictionary_installer_get_stage_progress (LwDictionary *dictionary, gdouble fr
     gdouble current;
     gdouble final;
     gchar **list;
+    gdouble fraction;
     
     //Initializations
 		priv = dictionary->priv;
-    priv->progress = fraction;
+    fraction = priv->progress;
     current = final = 0.0;
 
     //Get the current progress
@@ -893,13 +901,14 @@ lw_dictionary_installer_get_stage_progress (LwDictionary *dictionary, gdouble fr
 //! @param fraction The fraction progress of the current process.
 //!
 gdouble 
-lw_dictionary_installer_get_total_progress (LwDictionary *dictionary, gdouble fraction)
+lw_dictionary_installer_get_total_progress (LwDictionary *dictionary)
 {
     //Declarations
 		LwDictionaryPrivate *priv;
     LwDictionaryInstallerStatus status;
     gdouble current;
     gdouble final;
+    gdouble fraction;
     gdouble temp;
     gint i;
     gchar **list;
@@ -908,7 +917,7 @@ lw_dictionary_installer_get_total_progress (LwDictionary *dictionary, gdouble fr
 		priv = dictionary->priv;
     status = lw_dictionary_installer_get_status (dictionary);
     current = final = 0.0;
-    priv->progress = fraction;
+    fraction = priv->progress;
     const gdouble DOWNLOAD_WEIGHT = 3.0;
 
     for (i = 0; i < TOTAL_LW_DICTIONARY_INSTALLER_STATUSES; i++)
@@ -942,7 +951,7 @@ lw_dictionary_installer_get_total_progress (LwDictionary *dictionary, gdouble fr
       if (i < status) current += temp;
     }
 
-    temp = lw_dictionary_installer_get_stage_progress (dictionary, fraction);
+    temp = lw_dictionary_installer_get_stage_progress (dictionary);
     if (i == LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING)
       current += temp * DOWNLOAD_WEIGHT;
     else

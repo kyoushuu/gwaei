@@ -8,7 +8,7 @@ G_BEGIN_DECLS
 #define LW_IO_MAX_FGETS_LINE 5000
 #define LW_IO_ERROR "libwaei generic error"
 
-typedef int (*LwIoProgressCallback) (double percent, gpointer data);
+typedef gint (*LwIoProgressCallback) (gdouble percent, gpointer data);
 
 struct _LwIoProgressCallbackWithData {
   LwIoProgressCallback cb;

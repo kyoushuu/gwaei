@@ -244,6 +244,17 @@ lw_dictionary_class_init (LwDictionaryClass *klass)
     dictionary_class->parse_query = NULL;
     dictionary_class->parse_result = NULL;
 
+    dictionary_class->signalid[LW_DICTIONARY_CLASS_SIGNALID_PROGRESS_CHANGED] = g_signal_new (
+        "progress-changed",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (LwDictionaryClass, progress_changed),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE,
+        1, G_TYPE_POINTER
+    );
+
     g_type_class_add_private (object_class, sizeof (LwDictionaryPrivate));
 
     pspec = g_param_spec_string ("filename",
@@ -568,16 +579,16 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_install (LwDictionary *dictionary, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_dictionary_install (LwDictionary *dictionary, GError **error)
 {
     g_assert (*error == NULL && dictionary != NULL);
 
-    //lw_dictionary_installer_download (dictionary, cb, data, error);
-    lw_dictionary_installer_decompress (dictionary, cb, data, error);
-    lw_dictionary_installer_convert_encoding (dictionary, cb, data, error);
-    lw_dictionary_installer_postprocess (dictionary, cb, data, error);
-    lw_dictionary_installer_install (dictionary, cb, data, error);
-    lw_dictionary_installer_clean (dictionary, cb, data);
+    //lw_dictionary_installer_download (dictionary, error);
+    lw_dictionary_installer_decompress (dictionary, error);
+    lw_dictionary_installer_convert_encoding (dictionary, error);
+    lw_dictionary_installer_postprocess (dictionary, error);
+    lw_dictionary_installer_install (dictionary, error);
+    lw_dictionary_installer_clean (dictionary);
 
     return (*error == NULL);
 }

@@ -100,6 +100,7 @@ w_console_install_dictionary (WApplication *application, GError **error)
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     gint resolution;
+    gulong signalid;
     const gchar *install_switch_data;
 
     //Initializations
@@ -111,7 +112,18 @@ w_console_install_dictionary (WApplication *application, GError **error)
     if (dictionary != NULL)
     {
       printf(gettext("Installing %s...\n"), lw_dictionary_get_longname (dictionary));
-      lw_dictionary_install (dictionary, w_console_install_progress_cb, dictionary, error);
+      signalid = g_signal_connect (G_OBJECT (dictionary), "progress-changed", G_CALLBACK (w_console_update_progress_cb), application);
+      lw_dictionary_install (dictionary, error);
+      if (g_signal_handler_is_connected (G_OBJECT (dictionary), signalid))
+        g_signal_handler_disconnect (G_OBJECT (dictionary), signalid);
+      if (*error == NULL) 
+      {
+        printf("\n%s\n", gettext("Installation complete."));
+      }
+      else
+      {
+        printf ("\n%s\n", gettext("Installation failed!"));
+      }
     }
     else
     {

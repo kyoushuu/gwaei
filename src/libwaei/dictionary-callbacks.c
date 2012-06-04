@@ -64,3 +64,25 @@ lw_dictionary_sync_downloadlist_cb (GSettings *settings, gchar* key, gpointer da
     if (install->downloads != NULL) g_free (install->downloads); install->downloads = NULL;
     install->downloads = g_strdup (downloads);
 }
+
+
+gint
+lw_dictionary_sync_progress_cb (gdouble fraction, gpointer data)
+{
+    LwDictionary *dictionary;
+    LwDictionaryPrivate *priv;
+    LwDictionaryClass *klass;
+    
+    dictionary = LW_DICTIONARY (data);
+    priv = dictionary->priv;
+    klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
+
+    if (priv->progress != fraction)
+    {
+      priv->progress = fraction;
+      g_signal_emit (G_OBJECT (dictionary), klass->signalid[LW_DICTIONARY_CLASS_SIGNALID_PROGRESS_CHANGED], 0);    
+    }
+
+    return 0;
+}
+

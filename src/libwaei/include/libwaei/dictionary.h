@@ -7,6 +7,10 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+  LW_DICTIONARY_CLASS_SIGNALID_PROGRESS_CHANGED,
+  TOTAL_LW_DICTIONARY_CLASS_SIGNALIDS
+} GwDictionaryClassSignalId;
 
 //Boilerplate
 typedef struct _LwDictionary LwDictionary;
@@ -28,6 +32,12 @@ struct _LwDictionary {
 
 struct _LwDictionaryClass {
   GObjectClass parent_class;
+  guint signalid[TOTAL_LW_DICTIONARY_CLASS_SIGNALIDS];
+
+  //Signal ids
+  void (*progress_changed) (LwDictionary* dictionary, gpointer data);
+
+  //Virtual methods
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gint (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
@@ -37,7 +47,7 @@ struct _LwDictionaryClass {
 
 //Methods
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
-gboolean lw_dictionary_install (LwDictionary*, LwIoProgressCallback, gpointer, GError**);
+gboolean lw_dictionary_install (LwDictionary*, GError**);
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
 gchar* lw_dictionary_get_directory (GType);
 gchar* lw_dictionary_get_path (LwDictionary*);

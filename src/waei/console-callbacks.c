@@ -60,20 +60,16 @@ w_console_uninstall_progress_cb (gdouble fraction, gpointer data)
 static gboolean _group_index_changed = FALSE;
 static gint _previous_percent = -1;
 
-gint 
-w_console_install_progress_cb (gdouble fraction, gpointer data)
+void
+w_console_update_progress_cb (LwDictionary *dictionary, gpointer data)
 {
     //Declarations
-    LwDictionary *dictionary;
-    LwDictionaryInstallerStatus status;
     gchar *message;
     gdouble stage_fraction;
     gint stage_percent;
 
     //Initializations
-    dictionary = LW_DICTIONARY (data);
-    status = lw_dictionary_installer_get_status (dictionary);
-    stage_fraction = lw_dictionary_installer_get_stage_progress (dictionary, fraction);
+    stage_fraction = lw_dictionary_installer_get_stage_progress (dictionary);
     stage_percent = (gint) (100.0 * stage_fraction); 
 
     //Update the dictinst progress state only when the delta is large enough
@@ -87,16 +83,13 @@ w_console_install_progress_cb (gdouble fraction, gpointer data)
       _group_index_changed = TRUE;
     }
 
-    message = lw_dictionary_installer_get_status_string (dictionary, TRUE);
-    if (message != NULL && fraction == 1.0 && (status == LW_DICTIONARY_INSTALLER_STATUS_UNINSTALLED || status == LW_DICTIONARY_INSTALLER_STATUS_INSTALLED))
-      fprintf(stdout, "\n%s\n\n", message);
-    else if (message != NULL && _previous_percent != stage_percent)
-      fprintf(stdout, "\r [%d%%] %s", stage_percent, message);
-    fflush(stdout);
-    _previous_percent = stage_percent;
-    if (message != NULL) g_free (message); message = NULL;
-
-    return FALSE;
+    message = lw_dictionary_installer_get_status_message (dictionary, TRUE);
+    if (message != NULL && _previous_percent != stage_percent)
+    {
+      fprintf(stdout, "\r [%d%%] %s", stage_percent, message); fflush(stdout);
+      _previous_percent = stage_percent;
+      g_free (message); message = NULL;
+    }
 }
 
 
