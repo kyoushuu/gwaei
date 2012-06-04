@@ -98,13 +98,19 @@ lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
     LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
 
-    priv = dictionary->priv;
-
     lw_dictionary_set_installer (dictionary, FILES, NULL, DESCRIPTION, encoding, postprocess);
-    lw_preferences_add_change_listener_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_ENGLISH_SOURCE, lw_dictionary_sync_downloadlist_cb, dictionary);
-    
-    if (priv->install == NULL) return;
+
+    priv = dictionary->priv;
     install = priv->install;
+    if (install == NULL) return;
+
+    install->listenerid = lw_preferences_add_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_DICTIONARY, 
+      KEY, 
+      lw_dictionary_sync_downloadlist_cb, 
+      dictionary
+    );
 
     install->preferences = preferences;
     install->key = KEY;
@@ -583,7 +589,7 @@ lw_dictionary_install (LwDictionary *dictionary, GError **error)
 {
     g_assert (*error == NULL && dictionary != NULL);
 
-    //lw_dictionary_installer_download (dictionary, error);
+    lw_dictionary_installer_download (dictionary, error);
     lw_dictionary_installer_decompress (dictionary, error);
     lw_dictionary_installer_convert_encoding (dictionary, error);
     lw_dictionary_installer_postprocess (dictionary, error);

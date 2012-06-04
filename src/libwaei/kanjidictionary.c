@@ -439,8 +439,8 @@ lw_kanjidictionary_installer_postprocess (LwDictionary *dictionary,
                                           GError **error)
 {
     g_return_val_if_fail (dictionary != NULL, FALSE);
-    g_return_val_if_fail (g_strv_length (sourcelist) < 2, FALSE);
-    g_return_val_if_fail (g_strv_length (targetlist) < 1, FALSE);
+    g_return_val_if_fail (g_strv_length (sourcelist) > 1, FALSE);
+    g_return_val_if_fail (g_strv_length (targetlist) > 0, FALSE);
 
     return lw_io_create_mix_dictionary (targetlist[0], sourcelist[0], sourcelist[1], cb, data, error);
 }

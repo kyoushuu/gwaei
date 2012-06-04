@@ -613,24 +613,24 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_kanjidictionary_new ("Names and Places");
+    dictionary = lw_edictionary_new ("Names and Places");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "Names;Places",
       preferences,
-      LW_KEY_KANJI_SOURCE,
+      LW_KEY_NAMES_PLACES_SOURCE,
       gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
       LW_ENCODING_EUC_JP,
       TRUE
     );
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
-    dictionary = lw_kanjidictionary_new ("Examples");
+    dictionary = lw_exampledictionary_new ("Examples");
     lw_dictionary_set_builtin_installer (
       dictionary, 
       "Examples",
       preferences,
-      LW_KEY_KANJI_SOURCE,
+      LW_KEY_EXAMPLES_SOURCE,
       gettext("A collection of Japanese/English sentences initially compiled "
               "by Professor Yasuhito Tanaka at Hyogo University and his students."),
       LW_ENCODING_EUC_JP,

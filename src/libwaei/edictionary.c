@@ -352,8 +352,8 @@ lw_edictionary_installer_postprocess (LwDictionary *dictionary,
     }
     else
     {
-      g_return_val_if_fail (g_strv_length (sourcelist) < 1, FALSE);
-      g_return_val_if_fail (g_strv_length (targetlist) < 2, FALSE);
+      g_return_val_if_fail (g_strv_length (sourcelist) > 0, FALSE);
+      g_return_val_if_fail (g_strv_length (targetlist) > 1, FALSE);
       return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, error);
     }
 

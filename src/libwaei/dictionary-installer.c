@@ -153,7 +153,9 @@ lw_dictionary_installer_get_downloadlist (LwDictionary *dictionary)
     //Initalizations
     priv = dictionary->priv;
     install = priv->install;
+if (install == NULL) { fprintf(stderr, "install is not set\n"); exit(0); }
 
+if (install->downloads == NULL) { fprintf(stderr, "install->downloads is not set\n"); exit(0); }
     if (install->downloadlist == NULL)
     {
       install->downloadlist = g_strsplit (install->downloads, ";", -1);
@@ -864,22 +866,23 @@ lw_dictionary_installer_get_stage_progress (LwDictionary *dictionary)
 
     switch (status)
     {
-      case LW_DICTIONARY_INSTALLER_STATUS_DECOMPRESSING:
+      case LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING:
         list = lw_dictionary_installer_get_downloadlist (dictionary);
         break;
-      case LW_DICTIONARY_INSTALLER_STATUS_ENCODING:
+      case LW_DICTIONARY_INSTALLER_STATUS_DECOMPRESSING:
         list = lw_dictionary_installer_get_encodelist (dictionary);
         break;
-      case LW_DICTIONARY_INSTALLER_STATUS_POSTPROCESSING:
+      case LW_DICTIONARY_INSTALLER_STATUS_ENCODING:
         list = lw_dictionary_installer_get_postprocesslist (dictionary);
         break;
-      case LW_DICTIONARY_INSTALLER_STATUS_FINISHING:
+      case LW_DICTIONARY_INSTALLER_STATUS_POSTPROCESSING:
         list = lw_dictionary_installer_get_installlist (dictionary);
         break;
-      case LW_DICTIONARY_INSTALLER_STATUS_INSTALLED:
+      case LW_DICTIONARY_INSTALLER_STATUS_FINISHING:
         list = lw_dictionary_installer_get_installedlist (dictionary);
         break;
       default:
+        list = NULL;
         break;
     }
 
