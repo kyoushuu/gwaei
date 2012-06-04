@@ -49,8 +49,6 @@ static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
-    g_return_val_if_fail (FILENAME != NULL, NULL);
-
     //Declarations
     LwDictionary *dictionary;
 
@@ -83,7 +81,7 @@ lw_kanjidictionary_constructed (GObject *object)
     dictionary = LW_DICTIONARY (object);
     priv = dictionary->priv;
 
-    if (strncmp(priv->filename, "Kanji", strlen("Kanji")) == 0)
+    if (priv->filename != NULL && strncmp(priv->filename, "Kanji", strlen("Kanji")) == 0)
     {
       if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
       if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;

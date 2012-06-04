@@ -597,102 +597,52 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
       LW_KEY_ENGLISH_SOURCE,
       gettext("English"),
       gettext("The venerable edict by Jim Breen."),
-      LW_COMPRESSION_GZIP,
+      LW_ENCODING_EUC_JP,
       FALSE
     );
-
-/*
-    dictionary = lw_dictionary_new_using_pref_uri (
-      "English",
-      gettext("English"),
-      gettext("English Dictionary"),
-      gettext("The venerable Japanese-English Dictionary developed by Jim Breen."),
-      preferences,
-      LW_SCHEMA_DICTIONARY,
-      LW_KEY_ENGLISH_SOURCE,
-      LW_TYPE_EDICTIONARY,
-      LW_ENCODING_EUC_JP,
-      FALSE,
-      TRUE 
-    );
-*/
-
     dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
+    dictionary = lw_kanjidictionary_new (NULL);
+    lw_dictionary_set_builtin_installer (
+      dictionary, 
+      "Kanji",
+      preferences,
+      LW_KEY_KANJI_SOURCE,
+      gettext("Kanji"),
+      gettext("A Kanji dictionary based off of kanjidic with radical information combined."),
+      LW_ENCODING_EUC_JP,
+      TRUE
+    );
+    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+
+    dictionary = lw_kanjidictionary_new (NULL);
+    lw_dictionary_set_builtin_installer (
+      dictionary, 
+      "Names;Places",
+      preferences,
+      LW_KEY_KANJI_SOURCE,
+      gettext("Names and Places"),
+      gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
+      LW_ENCODING_EUC_JP,
+      TRUE
+    );
+    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+
+    dictionary = lw_kanjidictionary_new (NULL);
+    lw_dictionary_set_builtin_installer (
+      dictionary, 
+      "Examples",
+      preferences,
+      LW_KEY_KANJI_SOURCE,
+      gettext("Examples"),
+      gettext("A collection of Japanese/English sentences initially compiled "
+              "by Professor Yasuhito Tanaka at Hyogo University and his students."),
+      LW_ENCODING_EUC_JP,
+      TRUE
+    );
+    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
 
 /*
-
-    LwDictionary *dictionary;
-    LwDictionaryList *dictionarylist;
-
-    dictionarylist = lw_dictionarylist_new ();
-
-    if (dictionarylist != NULL)
-    {
-      dictionarylist->list = NULL;
-      dictionarylist->cancel = FALSE;
-
-      dictionary = lw_dictionary_new_using_pref_uri (
-        "English",
-        gettext("English"),
-        gettext("English Dictionary"),
-        gettext("The venerable Japanese-English Dictionary developed by Jim Breen."),
-        preferences,
-        LW_SCHEMA_DICTIONARY,
-        LW_KEY_ENGLISH_SOURCE,
-        LW_TYPE_EDICTIONARY,
-        LW_ENCODING_EUC_JP,
-        FALSE,
-        TRUE 
-      );
-      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
-
-      dictionary = lw_dictionary_new_using_pref_uri (
-        "Kanji",
-        gettext("Kanji"),
-        gettext("Kanji Dictionary"),
-        gettext("A Kanji dictionary based off of kanjidic with radical information combined."),
-        preferences,
-        LW_SCHEMA_DICTIONARY,
-        LW_KEY_KANJI_SOURCE,
-        LW_TYPE_KANJIDICTIONARY,
-        LW_ENCODING_EUC_JP,
-        TRUE,
-        TRUE 
-      );
-      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
-
-      dictionary = lw_dictionary_new_using_pref_uri (
-        "Names and Places",
-        gettext("Names and Places"),
-        gettext("Names and Places Dictionary"),
-        gettext("Based off of Enamdic, but with the names split from the places for 2 separate dictionaries."),
-        preferences,
-        LW_SCHEMA_DICTIONARY,
-        LW_KEY_NAMES_PLACES_SOURCE,
-        LW_TYPE_EDICTIONARY,
-        LW_ENCODING_EUC_JP,
-        TRUE,
-        TRUE 
-      );
-      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
-
-      dictionary = lw_dictionary_new_using_pref_uri (
-        "Examples",
-        gettext("Examples"),
-        gettext("Examples Dictionary"),
-        gettext("A collection of Japanese/English sentences initially compiled "
-                "by Professor Yasuhito Tanaka at Hyogo University and his students."),
-        preferences,
-        LW_SCHEMA_DICTIONARY,
-        LW_KEY_EXAMPLES_SOURCE,
-        LW_TYPE_EXAMPLEDICTIONARY,
-        LW_ENCODING_EUC_JP,
-        FALSE,
-        TRUE 
-      );
-      dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
-
       dictionary = lw_dictionary_new (
         "",
         gettext("Other"),
@@ -706,7 +656,6 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
         FALSE
       );
       dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
-
     }
 */
 }

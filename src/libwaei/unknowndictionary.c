@@ -50,8 +50,6 @@ G_DEFINE_TYPE (LwUnknownDictionary, lw_unknowndictionary, LW_TYPE_DICTIONARY)
 
 LwDictionary* lw_unknowndictionary_new (const gchar *FILENAME)
 {
-    g_return_val_if_fail (FILENAME != NULL, NULL);
-
     //Declarations
     LwDictionary *dictionary;
 
