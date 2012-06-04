@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <glib/gstdio.h>
 
+#include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
 
@@ -584,8 +585,41 @@ lw_dictionarylist_cancel (LwDictionaryList *dictionarylist, gboolean state)
 //! @brief Sets up the built-in installabale dictionaries
 //!
 void
-lw_dictionarylist_load_installable (LwDictionaryList *list)
+lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferences *preferences)
 {
+    LwDictionary* dictionary;
+
+    dictionary = lw_edictionary_new (NULL);
+    lw_dictionary_set_builtin_installer (
+      dictionary, 
+      "English",
+      preferences,
+      LW_KEY_ENGLISH_SOURCE,
+      gettext("English"),
+      gettext("The venerable edict by Jim Breen."),
+      LW_COMPRESSION_GZIP,
+      FALSE
+    );
+
+/*
+    dictionary = lw_dictionary_new_using_pref_uri (
+      "English",
+      gettext("English"),
+      gettext("English Dictionary"),
+      gettext("The venerable Japanese-English Dictionary developed by Jim Breen."),
+      preferences,
+      LW_SCHEMA_DICTIONARY,
+      LW_KEY_ENGLISH_SOURCE,
+      LW_TYPE_EDICTIONARY,
+      LW_ENCODING_EUC_JP,
+      FALSE,
+      TRUE 
+    );
+*/
+
+    dictionarylist->list = g_list_append (dictionarylist->list, dictionary);
+
+
 /*
 
     LwDictionary *dictionary;

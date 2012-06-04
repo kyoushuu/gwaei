@@ -51,8 +51,6 @@ static void lw_edictionary_add_supplimental_tokens (LwDictionary*, LwQuery*);
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
 {
-    g_return_val_if_fail (FILENAME != NULL, NULL);
-
     //Declarations
     LwDictionary *dictionary;
 
@@ -85,7 +83,7 @@ lw_edictionary_constructed (GObject *object)
     dictionary = LW_DICTIONARY (object);
     priv = dictionary->priv;
 
-    if (strncmp(priv->filename, "English", strlen("English")) == 0)
+    if (priv->filename != NULL && strncmp(priv->filename, "English", strlen("English")) == 0)
     {
       if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
       if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;

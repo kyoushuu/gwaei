@@ -24,6 +24,8 @@ LwDictionaryInstallerState lw_dictionary_installer_get_state (LwDictionary*);
 void lw_dictionary_installer_set_state (LwDictionary*, LwDictionaryInstallerState);
 gboolean lw_dictionary_installer_is_valid (LwDictionary*);
 
+const gchar* lw_dictionary_installer_get_name (LwDictionary*);
+
 gboolean lw_dictionary_installer_download (LwDictionary*, LwIoProgressCallback, gpointer, GError**);
 gboolean lw_dictionary_installer_decompress (LwDictionary*, LwIoProgressCallback, gpointer, GError**);
 gboolean lw_dictionary_installer_convert_encoding (LwDictionary*, LwIoProgressCallback, gpointer, GError**);

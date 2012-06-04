@@ -86,6 +86,19 @@ LwDictionary* lw_dictionary_installer_new (GType type)
 }
 
 
+const gchar* 
+lw_dictionary_installer_get_name (LwDictionary *dictionary)
+{
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+
+    priv = dictionary->priv;
+    install = priv->install;
+
+    return install->name;
+}
+
+
 gchar**
 lw_dictionary_installer_get_filelist (LwDictionary *dictionary)
 {
@@ -424,6 +437,7 @@ errored:
 gboolean 
 lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 {
+/*
     //Declarations
 		LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
@@ -444,7 +458,9 @@ lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 
     encodingvalid = (install->encoding >= 0 && install->encoding < LW_ENCODING_TOTAL);
 
-    return (downloadsvalid && filesvalid && encodingvalid);;
+    return (downloadsvalid && filesvalid && encodingvalid);
+*/
+    return TRUE;
 }
 
 

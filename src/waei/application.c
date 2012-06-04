@@ -275,13 +275,15 @@ LwDictionaryList*
 w_application_get_installable_dictionarylist (WApplication *application)
 {
     WApplicationPrivate *priv;
+    LwPreferences *preferences;
 
     priv = application->priv;
 
     if (priv->installable_dictionarylist == NULL)
     {
       priv->installable_dictionarylist = lw_dictionarylist_new ();
-      lw_dictionarylist_load_installable (priv->installable_dictionarylist);
+      preferences = w_application_get_preferences (application);
+      lw_dictionarylist_load_installable (priv->installable_dictionarylist, preferences);
     }
 
     return priv->installable_dictionarylist;

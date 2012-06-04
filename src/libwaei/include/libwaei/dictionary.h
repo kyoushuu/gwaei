@@ -73,8 +73,12 @@ gchar** lw_dictionary_get_installed_idlist (GType);
 
 void lw_dictionary_build_regex (LwDictionary*, LwQuery*, GError**);
 
+void lw_dictionary_set_installer (LwDictionary*, const gchar*, const gchar*, const gchar*, const gchar*, LwEncoding, gboolean);
+void lw_dictionary_set_builtin_installer (LwDictionary*, const gchar*, LwPreferences*, const gchar*, const gchar*, const gchar*, LwEncoding, gboolean);
+
 G_END_DECLS
 
 #include <libwaei/dictionary-installer.h>
+#include <libwaei/dictionary-callbacks.h>
 
 #endif

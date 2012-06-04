@@ -60,7 +60,6 @@ lw_dictionary_set_installer (LwDictionary *dictionary,
 {
     g_return_if_fail (dictionary != NULL);
     g_return_if_fail (FILES != NULL && *FILES != '\0');
-    g_return_if_fail (encoding > -1);
 
     //Declarations
     LwDictionaryPrivate *priv;
@@ -90,24 +89,29 @@ lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
                                      const gchar *NAME,
                                      const gchar *DESCRIPTION,
                                      LwEncoding encoding,
-                                     gboolean postprocess,
-                                     gboolean buildin)
+                                     gboolean postprocess)
 {
+    //Sanity checks
     g_return_if_fail (dictionary != NULL);
     g_return_if_fail (FILES != NULL);
     g_return_if_fail (preferences != NULL);
     g_return_if_fail (KEY != NULL);
-    g_return_if_fail (encoding > -1);
 
+    //Declarations
     LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
 
-    lw_dictionary_set_installer (dictionary, FILES, NULL, NAME, DESCRIPTION, encoding, postprocess);
+    priv = dictionary->priv;
+
+    lw_dictionary_set_installer (dictionary, FILES, "TODO", NAME, DESCRIPTION, encoding, postprocess);
+    lw_preferences_add_change_listener_by_schema (preferences, LW_SCHEMA_DICTIONARY, LW_KEY_ENGLISH_SOURCE, lw_dictionary_sync_downloadlist_cb, dictionary);
+    
     if (priv->install == NULL) return;
     install = priv->install;
 
     install->preferences = preferences;
     install->key = KEY;
+    install->builtin = TRUE;
 }
 
 
@@ -175,9 +179,9 @@ lw_dictionary_set_property (GObject      *object,
 
 static void 
 lw_dictionary_get_property (GObject      *object,
-                        guint         property_id,
-                        GValue       *value,
-                        GParamSpec   *pspec)
+                            guint         property_id,
+                            GValue       *value,
+                            GParamSpec   *pspec)
 {
     //Declarations
     LwDictionary *dictionary;
@@ -680,7 +684,6 @@ lw_dictionary_get_installed_idlist (GType type_filter)
     while (*childiter != 0)
     {
       directorypath = lw_dictionary_get_directory (*childiter);
-printf("directorypath: %s\n", directorypath);
       directory = g_dir_open (directorypath, 0, NULL);
       if (directory != NULL)
       {
@@ -693,7 +696,6 @@ printf("directorypath: %s\n", directorypath);
       g_free (directorypath); directorypath = NULL;
       childiter++;
     }
-printf("length %d\n", length);
 
     iditer = idlist = g_new0 (gchar*, length + 1);
     childiter = childlist;

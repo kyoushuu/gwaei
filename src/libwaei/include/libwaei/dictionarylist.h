@@ -38,7 +38,7 @@ void lw_dictionarylist_load_order (LwDictionaryList*, LwPreferences*);
 void lw_dictionarylist_save_order (LwDictionaryList*, LwPreferences*);
 
 void lw_dictionarylist_load_installed (LwDictionaryList*);
-void lw_dictionarylist_load_installable (LwDictionaryList*);
+void lw_dictionarylist_load_installable (LwDictionaryList*, LwPreferences*);
 void lw_dictionarylist_clear (LwDictionaryList*);
 
 
