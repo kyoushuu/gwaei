@@ -306,7 +306,7 @@ w_console_search (WApplication *application, GError **error)
     dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, dictionary_switch_data);
     if (exact_switch) flags = flags | LW_SEARCH_FLAG_EXACT;
     if (dictionary == NULL) printf("dictionary equals zero! %s\n", dictionary_switch_data);
-    search = lw_search_new (query_text_data, dictionary, flags, error);
+    search = lw_search_new (dictionary, query_text_data, flags, error);
     resolution = 0;
 
     //Sanity checks

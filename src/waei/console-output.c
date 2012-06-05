@@ -37,9 +37,6 @@
 #include <waei/gettext.h>
 #include <waei/waei.h>
 
-static gboolean _group_index_changed = FALSE;
-static gint _previous_percent = -1;
-
 
 static void w_console_append_edict_result (WApplication*, LwSearch*);
 static void w_console_append_kanjidict_result (WApplication*, LwSearch*);

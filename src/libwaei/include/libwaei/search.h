@@ -9,10 +9,6 @@
 
 G_BEGIN_DECLS
 
-#define LW_MAX_HIGH_RELEVENT_RESULTS 1000
-#define LW_MAX_MEDIUM_IRRELEVENT_RESULTS 1000
-#define LW_MAX_LOW_IRRELEVENT_RESULTS    1000
-
 #define LW_SEARCH(object) (LwSearch*) object
 #define LW_SEARCH_DATA_FREE_FUNC(object) (LwSearchDataFreeFunc)object
 #define LW_HISTORY_TIME_TO_RELEVANCE 20
@@ -59,6 +55,8 @@ struct _LwSearch {
     long current;                           //!< Current line in the dictionary file
     gint history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
 
+    gint max;
+
     gint total_results[TOTAL_LW_RELEVANCE];
 
     gboolean cancel;
@@ -76,7 +74,7 @@ struct _LwSearch {
 typedef struct _LwSearch LwSearch;
 
 //Methods
-LwSearch* lw_search_new (const gchar*, LwDictionary*, LwSearchFlags, GError**);
+LwSearch* lw_search_new (LwDictionary*, const gchar*, LwSearchFlags, GError**);
 void lw_search_free (LwSearch*);
 
 void lw_search_cleanup_search (LwSearch*);

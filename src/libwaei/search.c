@@ -44,7 +44,7 @@ static void lw_search_deinit (LwSearch*);
 //! @return Returns an allocated LwSearch object that should be freed with lw_search_free or NULL on error
 //!
 LwSearch* 
-lw_search_new (const gchar* QUERY, LwDictionary* dictionary, LwSearchFlags flags, GError **error)
+lw_search_new (LwDictionary* dictionary, const gchar* QUERY, LwSearchFlags flags, GError **error)
 {
     g_return_val_if_fail (dictionary != NULL, NULL);
     g_return_val_if_fail (QUERY != NULL, NULL);
@@ -107,8 +107,8 @@ lw_search_init (LwSearch *search, LwDictionary* dictionary, const gchar* TEXT, L
     search->dictionary = dictionary;
     search->query = lw_query_new ();
     search->flags = flags;
+    search->max = 500;
 
-    printf("%d %d\n", dictionary, TEXT);
     lw_dictionary_parse_query (search->dictionary, search->query, TEXT, error);
 }
 
@@ -149,6 +149,13 @@ lw_search_clear_results (LwSearch *search)
       g_list_foreach (search->results[i], (GFunc) lw_result_free, NULL);
       g_list_free (search->results[i]); search->results[i] = NULL;
     }
+}
+
+
+void
+lw_search_set_max_results (LwSearch *search, gint max)
+{
+    search->max = max;
 }
 
 
@@ -499,7 +506,7 @@ lw_search_stream_results_thread (gpointer data)
       if (lw_search_compare (search, LW_RELEVANCE_LOW))
       {
         relevance = lw_search_get_relevance (search);
-        if (search->total_results[relevance] < LW_MAX_HIGH_RELEVENT_RESULTS)
+        if (search->total_results[relevance] < search->max)
         {
           if (!exact || (relevance == LW_RELEVANCE_HIGH && exact))
           {
