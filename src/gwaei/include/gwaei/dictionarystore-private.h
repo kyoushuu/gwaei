@@ -4,7 +4,7 @@
 G_BEGIN_DECLS
 
 struct _GwDictionaryStorePrivate {
-  LwDictInfoList *dictinfolist;
+  LwDictionaryList *dictionarylist;
   gulong list_update_handler_id;
   guint signalids[TOTAL_GW_DICTIONARYSTORE_SIGNALIDS];
 };

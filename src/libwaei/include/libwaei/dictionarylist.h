@@ -29,7 +29,7 @@ LwDictionary* lw_dictionarylist_get_dictionary_by_id (LwDictionaryList*, const g
 LwDictionary* lw_dictionarylist_get_dictionary_fuzzy (LwDictionaryList*, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_by_position (LwDictionaryList*, gint);
 
-gint lw_dictionarylist_get_dictionary_position (LwDictionaryList*, LwDictionary*);
+gint lw_dictionarylist_get_position (LwDictionaryList*, LwDictionary*);
 gboolean lw_dictionarylist_dictionary_exists (LwDictionaryList*, LwDictionary*);
 
 int lw_dictionarylist_get_total (LwDictionaryList*);

@@ -130,7 +130,7 @@ gw_application_finalize (GObject *object)
 
     if (priv->error != NULL) g_error_free (priv->error); priv->error = NULL;
 
-    if (priv->dictinstlist != NULL) lw_dictinstlist_free (priv->dictinstlist); priv->dictinstlist = NULL;
+    if (priv->dictionarylist != NULL) lw_dictionarylist_free (priv->dictionarylist); priv->dictionarylist = NULL;
 
     if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); 
 
@@ -570,16 +570,19 @@ gw_application_get_dictionarystore (GwApplication *application)
 }
 
 
-LwDictInstList* 
-gw_application_get_dictinstlist (GwApplication *application)
+LwDictionaryList* 
+gw_application_get_dictionarylist (GwApplication *application)
 {
     GwApplicationPrivate *priv;
     priv = application->priv;
 
-    if (priv->dictinstlist == NULL)
-      priv->dictinstlist = lw_dictinstlist_new (priv->preferences);
+    if (priv->dictionarylist == NULL)
+    {
+      priv->dictionarylist = lw_dictionarylist_new ();
+      lw_dictionarylist_load_installable (priv->dictionarylist, priv->preferences);
+    }
 
-    return priv->dictinstlist;
+    return priv->dictionarylist;
 }
 
 
@@ -613,12 +616,12 @@ gw_application_activate (GApplication *application)
     GwVocabularyWindow *vocabularywindow;
     GwSettingsWindow *settingswindow;
     GwDictionaryStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
 
     priv = GW_APPLICATION (application)->priv;
     searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
-    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
+    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
 
     if (priv->arg_new_vocabulary_window_switch)
     {
@@ -632,7 +635,7 @@ gw_application_activate (GApplication *application)
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
 
-      if (lw_dictinfolist_get_total (dictinfolist) == 0)
+      if (lw_dictionarylist_get_total (dictionarylist) == 0)
       {
         settingswindow = GW_SETTINGSWINDOW (gw_settingswindow_new (GTK_APPLICATION (application)));
         gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
@@ -652,18 +655,19 @@ static int
 gw_application_command_line (GApplication *application, GApplicationCommandLine *command_line)
 {
     //Declarations
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     GwSearchWindow *window;
     GwDictionaryStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     GwApplicationPrivate *priv;
-    int argc;
-    char **argv;
+    gint argc;
+    gchar **argv;
+    gint position;
 
     //Initializations
     priv = GW_APPLICATION (application)->priv;
     dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
-    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
+    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
     argv = NULL;
 
     if (command_line != NULL)
@@ -676,12 +680,13 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     if (window == NULL) 
       return 0;
-    di = lw_dictinfolist_get_dictinfo_fuzzy (dictinfolist, priv->arg_dictionary);
+    dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, priv->arg_dictionary);
+    position = lw_dictionarylist_get_position (dictionarylist, dictionary);
 
     //Set the initial dictionary
-    if (di != NULL)
+    if (dictionary != NULL)
     {
-      gw_searchwindow_set_dictionary (window, di->load_position);
+      gw_searchwindow_set_dictionary (window, position);
     }
 
     //Set the initial query text if it was passed as an argument to the program

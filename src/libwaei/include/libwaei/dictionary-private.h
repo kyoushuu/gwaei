@@ -5,8 +5,7 @@ G_BEGIN_DECLS
 
 struct _LwDictionaryPrivate {
     gchar *filename;
-    gchar *shortname;
-    gchar *longname;
+    gchar *name;
     gdouble progress;
     size_t length;       //!< Length of the file
     GMutex mutex;

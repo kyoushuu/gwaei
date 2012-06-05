@@ -21,7 +21,7 @@ struct _GwApplicationPrivate {
   GError *error;
 
   LwPreferences *preferences;
-  LwDictInstList *dictinstlist;
+  LwDictionaryList *dictionarylist;
   GwSearchWindow *last_focused;
 
   guint signalid[TOTAL_GW_APPLICATION_SIGNALIDS];

@@ -173,6 +173,13 @@ lw_dictionarylist_get_dictionary_by_position (LwDictionaryList* dictionarylist, 
 }
 
 
+gint
+lw_dictionarylist_get_position (LwDictionaryList *dictionarylist, LwDictionary *dictionary)
+{
+    return g_list_index (dictionarylist->list, dictionary);
+}
+
+
 //!
 //! @brief Adds a dictionary to the LwDictionaryList with sanity checks
 //! @param TYPE Engine of the dictionary to add

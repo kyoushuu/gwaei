@@ -689,7 +689,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
 //! @param request Sets the current dictionary by the number here
 //!
 void 
-gw_searchwindow_set_dictionary (GwSearchWindow *window, int request)
+gw_searchwindow_set_dictionary (GwSearchWindow *window, gint request)
 {
     GwApplication *application;
     GwSearchWindowPrivate *priv;

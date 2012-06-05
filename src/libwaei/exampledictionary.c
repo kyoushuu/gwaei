@@ -82,13 +82,10 @@ lw_exampledictionary_constructed (GObject *object)
     dictionary = LW_DICTIONARY (object);
     priv = dictionary->priv;
 
-    if (priv->filename != NULL && strncmp(priv->filename, "Example", strlen("Example")) == 0)
+    if (strcmp(priv->filename, "Examples") == 0)
     {
-      if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
-      if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;
-
-      priv->longname = g_strdup (gettext("Example Dictionary"));
-      priv->shortname = g_strdup (gettext("Example"));
+      if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
+      priv->name = g_strdup (gettext("Examples"));
     }
 }
 

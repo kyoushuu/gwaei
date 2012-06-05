@@ -83,13 +83,25 @@ lw_edictionary_constructed (GObject *object)
     dictionary = LW_DICTIONARY (object);
     priv = dictionary->priv;
 
-    if (priv->filename != NULL && strncmp(priv->filename, "English", strlen("English")) == 0)
+    if (strcmp(priv->filename, "English") == 0)
     {
-      if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
-      if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;
-
-      priv->longname = g_strdup (gettext("English Dictionary"));
-      priv->shortname = g_strdup (gettext("English"));
+      if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
+      priv->name = g_strdup (gettext("English"));
+    }
+    else if (strcmp(priv->filename, "Names") == 0)
+    {
+      if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
+      priv->name = g_strdup (gettext("Names"));
+    }
+    else if (strcmp(priv->filename, "Places") == 0)
+    {
+      if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
+      priv->name = g_strdup (gettext("Places"));
+    }
+    else if (strcmp(priv->filename, "Names and Places") == 0)
+    {
+      if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
+      priv->name = g_strdup (gettext("Names and Places"));
     }
 }
 

@@ -49,7 +49,7 @@ GtkListStore* gw_dictionarystore_new (void);
 GType gw_dictionarystore_get_type (void) G_GNUC_CONST;
 
 void gw_dictionarystore_reload (GwDictionaryStore*, LwPreferences*);
-LwDictInfoList* gw_dictionarystore_get_dictinfolist (GwDictionaryStore*);
+LwDictionaryList* gw_dictionarystore_get_dictionarylist (GwDictionaryStore*);
 void gw_dictionarystore_save_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_load_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_update (GwDictionaryStore*);

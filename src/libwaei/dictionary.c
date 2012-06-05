@@ -140,8 +140,7 @@ lw_dictionary_finalize (GObject *object)
     priv = dictionary->priv;
 
     if (priv->filename != NULL) g_free (priv->filename); priv->filename = NULL;
-    if (priv->shortname != NULL) g_free (priv->shortname); priv->shortname = NULL;
-    if (priv->longname != NULL) g_free (priv->longname); priv->longname = NULL;
+    if (priv->name != NULL) g_free (priv->name); priv->name = NULL;
 
     if (priv->install != NULL) lw_dictionaryinstall_free (priv->install); priv->install = NULL;
 
@@ -168,10 +167,8 @@ lw_dictionary_set_property (GObject      *object,
       case PROP_FILENAME:
         if (priv->filename != NULL) g_free (priv->filename);
         priv->filename = g_value_dup_string (value);
-        if (priv->shortname != NULL) g_free (priv->shortname);
-        priv->shortname = g_strdup (priv->filename);
-        if (priv->longname != NULL) g_free (priv->longname);
-        priv->longname = g_strdup_printf (gettext("%s Dictionary"), priv->shortname);
+        if (priv->name != NULL) g_free (priv->name);
+        priv->name = g_strdup (priv->filename);
         break;
       default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -443,13 +440,18 @@ lw_dictionary_parse_result (LwDictionary *dictionary, LwResult *result, FILE *fd
 
 
 const gchar*
-lw_dictionary_get_longname (LwDictionary *dictionary)
+lw_dictionary_get_name (LwDictionary *dictionary)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
     LwDictionaryPrivate *priv;
 
+    //Initializations
     priv = dictionary->priv;
 
-    return priv->longname;
+    return priv->name;
 }
 
 

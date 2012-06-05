@@ -772,11 +772,11 @@ lw_dictionary_installer_get_status_message (LwDictionary *dictionary, gboolean l
     //Declarations
 		LwDictionaryPrivate *priv;
     gchar *text;
-    const gchar *longname;
+    const gchar *name;
     LwDictionaryInstallerStatus status;
 
 		priv = dictionary->priv;
-    longname = lw_dictionary_get_longname (dictionary);
+    name = lw_dictionary_get_name (dictionary);
     status = lw_dictionary_installer_get_status (dictionary);
 
     switch (status) {
@@ -785,32 +785,32 @@ lw_dictionary_installer_get_status_message (LwDictionary *dictionary, gboolean l
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING:
         if (long_form)
-          text = g_strdup_printf (gettext("Downloading %s..."), longname);
+          text = g_strdup_printf (gettext("Downloading %s Dictionary..."), name);
         else
           text = g_strdup_printf (gettext("Downloading..."));
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_DECOMPRESSING:
         if (long_form)
-          text = g_strdup_printf (gettext("Converting the encoding of %s from %s to UTF-8..."), longname, lw_util_get_encodingname (priv->install->encoding));
+          text = g_strdup_printf (gettext("Converting the encoding of %s Dictionary from %s to UTF-8..."), name, lw_util_get_encodingname (priv->install->encoding));
         else
           text = g_strdup_printf (gettext("Converting the encoding to UTF-8..."));
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_ENCODING:
 /*
         if (long_form)
-          text = g_strdup_printf (gettext("Decompressing %s from %s file..."), longname, lw_util_get_compressionname (priv->install->compression));
+          text = g_strdup_printf (gettext("Decompressing %s from %s file..."), name, lw_util_get_compressionname (priv->install->compression));
         else
 */
           text = g_strdup_printf (gettext("Decompressing..."));
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_POSTPROCESSING:
         if (long_form)
-          text = g_strdup_printf (gettext("Doing postprocessing on %s..."), longname);
+          text = g_strdup_printf (gettext("Doing postprocessing on %s Dictionary..."), name);
         else
           text = g_strdup_printf (gettext("Postprocessing..."));
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_FINISHING:
-        text = g_strdup_printf (gettext("Finalizing installation of %s..."), longname);
+        text = g_strdup_printf (gettext("Finalizing installation of %s Dictionary..."), name);
         break;
       case LW_DICTIONARY_INSTALLER_STATUS_INSTALLED:
         text = g_strdup_printf (gettext("Installed."));
