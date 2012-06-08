@@ -31,6 +31,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include <gwaei/gettext.h>
 #include <gwaei/gwaei.h>
 #include <gwaei/dictionarystore-private.h>
 
@@ -148,10 +149,14 @@ gw_dictionarystore_update (GwDictionaryStore *store)
     gchar ordernumber[10];
     const gchar *iconname;
     const gchar *favoriteicon;
+    const gchar *shortname;
+    gchar *longname;
+    gchar *directoryname;
     GList *link;
     gint i;
 
     priv = store->priv;
+    shortname = lw_dictionary_get_name (dictionary);
     i = 0;
 
     if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
@@ -179,18 +184,22 @@ gw_dictionarystore_update (GwDictionaryStore *store)
       else
         strcpy(ordernumber, "");
 
+      longname = g_strdup_printf(gettext("%s Dictionary"), shortname);
+      directoryname = lw_dictionary_get_directoryname (G_OBJECT_TYPE (dictionary));
+
       gtk_list_store_append (GTK_LIST_STORE (store), &iter);
       gtk_list_store_set (
           GTK_LIST_STORE (store), &iter,
           GW_DICTIONARYSTORE_COLUMN_IMAGE,        iconname,
           GW_DICTIONARYSTORE_COLUMN_POSITION,     ordernumber,
-          GW_DICTIONARYSTORE_COLUMN_NAME,         lw_dictionary_get_name (dictionary),
-          GW_DICTIONARYSTORE_COLUMN_LONG_NAME,    lw_dictionray_get_name (dictionary) + "Dictionary",
-          GW_DICTIONARYSTORE_COLUMN_ENGINE,       lw_util_dicttype_to_string (dictionary->type),
+          GW_DICTIONARYSTORE_COLUMN_NAME,         shortname,
+          GW_DICTIONARYSTORE_COLUMN_LONG_NAME,    longname,
+          GW_DICTIONARYSTORE_COLUMN_ENGINE,       directoryname,
           GW_DICTIONARYSTORE_COLUMN_SHORTCUT,     shortcutname,
           GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, dictionary,
           -1
       );
+      if (longname != NULL) g_free (longname); longname = NULL;
       i++;
     }
 
@@ -222,6 +231,8 @@ gw_dictionarystore_load_order (GwDictionaryStore *store, LwPreferences *preferen
 void
 gw_dictionarystore_normalize (GwDictionaryStore *store)
 {
+//TODO
+/*
     //Declarations
     GwDictionaryStorePrivate *priv;
     GtkTreeModel *model;
@@ -246,7 +257,7 @@ gw_dictionarystore_normalize (GwDictionaryStore *store)
       gtk_tree_model_get (model, &iter, GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, &ptr, -1);
       if (ptr != NULL)
       {
-        dictionary = LW_DICTINFO (ptr);
+        dictionary = LW_DICTIONARY (ptr);
         dictionary->load_position = position;
         position++;
       }
@@ -256,12 +267,15 @@ gw_dictionarystore_normalize (GwDictionaryStore *store)
     g_signal_handler_unblock (model, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
 
     lw_dictionarylist_sort_and_normalize_order (dictionarylist);
+*/
 }
 
 
 void
 gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferences)
 {
+    //TODO
+/*
     //Declarations
     GwDictionaryStorePrivate *priv;
     GtkTreeModel *model;
@@ -286,7 +300,7 @@ gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferen
       gtk_tree_model_get (model, &iter, GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, &ptr, -1);
       if (ptr != NULL)
       {
-        dictionary = LW_DICTINFO (ptr);
+        dictionary = LW_DICTIONARY (ptr);
         dictionary->load_position = position;
         position++;
       }
@@ -298,6 +312,7 @@ gw_dictionarystore_save_order (GwDictionaryStore *store, LwPreferences *preferen
     gw_dictionarystore_normalize (store);
     lw_dictionarylist_save_order (dictionarylist, preferences);
     gw_dictionarystore_update (store);
+*/
 }
 
 
