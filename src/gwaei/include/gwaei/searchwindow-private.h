@@ -70,7 +70,7 @@ struct _GwSearchWindowPrivate {
   GtkToggleAction *show_radicals_toggleaction;
   GtkToggleAction *show_kanjipad_toggleaction;
 
-  LwDictInfo *dictinfo;
+  LwDictionary *dictionary;
 
   //History
   LwHistory *history;
@@ -79,30 +79,30 @@ struct _GwSearchWindowPrivate {
   guint timeoutid[TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS];
   guint signalid[TOTAL_GW_SEARCHWINDOW_SIGNALIDS];
 
-  int previous_tip;
-  int font_size;
+  gint previous_tip;
+  gint font_size;
 
   gboolean new_tab; 
 
   GwSpellcheck *spellcheck;
 
   //Feedback variables
-  LwSearchItem *feedback_item;
+  LwSearch *feedback_item;
   long feedback;
   LwSearchStatus feedback_status;
 
   //Mouse variables
-  LwSearchItem *mouse_item;
+  LwSearch *mouse_item;
   gint mouse_button_press_x;
   gint mouse_button_press_y;
   gint mouse_button_press_root_x;
   gint mouse_button_press_root_y;
   gunichar mouse_button_character;
-  char* mouse_hovered_word; 
+  gchar* mouse_hovered_word; 
 
   //Keep searching variables
-  int keep_searching_delay;
-  char *keep_searching_query;
+  gint keep_searching_delay;
+  gchar *keep_searching_query;
   gboolean keep_searching_enabled;
 
   gboolean text_selected;

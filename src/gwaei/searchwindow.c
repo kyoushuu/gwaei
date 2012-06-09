@@ -367,8 +367,8 @@ gw_searchwindow_init_accelerators (GwSearchWindow *window)
 
 
 //!
-//! @brief Updates the progress information based on the LwSearchItem info
-//! @param item A LwSearchItem pointer to gleam information from.
+//! @brief Updates the progress information based on the LwSearch info
+//! @param search A LwSearch pointer to gleam information from.
 //! @returns Currently always returns TRUE
 //!
 gboolean 
@@ -379,33 +379,33 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
 
     //Declarations
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
     gint index;
 
     //Initializations
     priv = window->priv;
     index = gw_searchwindow_get_current_tab_index (window);
-    item = gw_searchwindow_get_searchitem_by_index (window, index);
+    search = gw_searchwindow_get_searchitem_by_index (window, index);
 
-    if (item != NULL) 
+    if (search != NULL) 
     {
-      lw_searchitem_lock (item);
+      lw_search_lock (search);
         if (
-            item->status != LW_SEARCHSTATUS_FINISHING &&
-            (item != priv->feedback_item ||
-             item->current != priv->feedback ||
-             item->status != priv->feedback_status       )
+            search->status != LW_SEARCHSTATUS_FINISHING &&
+            (search != priv->feedback_item ||
+             search->current != priv->feedback ||
+             search->status != priv->feedback_status       )
             )
         {
-          gw_searchwindow_set_search_progressbar_by_searchitem (window, item);
-          gw_searchwindow_set_total_results_label_by_searchitem (window, item);
-          gw_searchwindow_set_title_by_searchitem (window, item);
+          gw_searchwindow_set_search_progressbar_by_searchitem (window, search);
+          gw_searchwindow_set_total_results_label_by_searchitem (window, search);
+          gw_searchwindow_set_title_by_searchitem (window, search);
 
-          priv->feedback_item = item;
-          priv->feedback = item->current;
-          priv->feedback_status = item->status;
+          priv->feedback_item = search;
+          priv->feedback = search->current;
+          priv->feedback_status = search->status;
         }
-      lw_searchitem_unlock (item);
+      lw_search_unlock (search);
     }
 
     return TRUE;
@@ -420,7 +420,7 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
 
     //Declarations
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
     gint index;
     gint chunk;
     gint max_chunk;
@@ -428,21 +428,21 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
     //Initializations
     priv = window->priv;
     index = gw_searchwindow_get_current_tab_index (window);
-    item = gw_searchwindow_get_searchitem_by_index (window, index);
+    search = gw_searchwindow_get_searchitem_by_index (window, index);
     chunk = 0;
     max_chunk = 10;
     
-    if (item != NULL && lw_searchitem_should_check_results (item))
+    if (search != NULL && lw_search_should_check_results (search))
     {
-      while (item != NULL && lw_searchitem_should_check_results (item) && chunk < max_chunk)
+      while (search != NULL && lw_search_should_check_results (search) && chunk < max_chunk)
       {
-        gw_searchwindow_append_result (window, item);
+        gw_searchwindow_append_result (window, search);
         chunk++;
       }
     }
     else
     {
-        gw_searchwindow_display_no_results_found_page (window, item);
+        gw_searchwindow_display_no_results_found_page (window, search);
     }
 
     
@@ -492,82 +492,62 @@ gw_searchwindow_entry_insert_text (GwSearchWindow *window, const gchar *TEXT)
 //!
 //! @brief Sets the query text of the program using the informtion from the searchitem
 //!
-//! @param item a LwSearchItem argument.
+//! @param search a LwSearch argument.
 //!
 void 
-gw_searchwindow_set_entry_text_by_searchitem (GwSearchWindow* window, LwSearchItem *item)
+gw_searchwindow_set_entry_text_by_searchitem (GwSearchWindow* window, LwSearch *search)
 {
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
     //Declarations
-    GwApplication *application;
     GwSearchWindowPrivate *priv;
-    char hex_color_string[100];
-    GdkRGBA color;
-    LwPreferences *preferences;
+    LwQuery *query;
+    const gchar *text;
 
-    application = gw_window_get_application (GW_WINDOW (window));
+    //Initializations
     priv = window->priv;
-    preferences = gw_application_get_preferences (application);
 
-    //If there is no window, set the default colors
-    if (item == NULL)
+    if (search == NULL || search->query == NULL)
     {
-      gtk_entry_set_text (priv->entry, "");
+      text = "";
     }
-    //There was previously a window, set the match colors from the prefs
     else
     {
-      if (item->queryline != NULL && item->queryline->string != NULL && item->queryline->string[0] != '\0')
-      {
-        if (strcmp(gtk_entry_get_text (priv->entry), item->queryline->string) != 0)
-        {
-          gtk_entry_set_text (priv->entry, item->queryline->string);
-          gtk_editable_set_position (GTK_EDITABLE (priv->entry), -1);
-        }
-      }
-      else
-      {
-        gtk_entry_set_text (priv->entry, "");
-      }
-
-      //Set the foreground color
-      lw_preferences_get_string_by_schema (preferences, hex_color_string, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_FG, 100);
-      if (gdk_rgba_parse (&color, hex_color_string) == FALSE)
-      {
-        lw_preferences_reset_value_by_schema (preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_FG);
-        return;
-      }
-      //gtk_widget_override_color (GTK_WIDGET (priv->entry), GTK_STATE_NORMAL, &color);
-
-      //Set the background color
-      lw_preferences_get_string_by_schema (preferences, hex_color_string, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_BG, 100);
-      if (gdk_rgba_parse (&color, hex_color_string) == FALSE)
-      {
-        lw_preferences_reset_value_by_schema (preferences, LW_SCHEMA_HIGHLIGHT, LW_KEY_MATCH_BG);
-        return;
-      }
-      //gtk_widget_override_background_color (GTK_WIDGET (priv->entry), GTK_STATE_NORMAL, &color);
+      query = search->query;
+      text = lw_query_get_text (query);
+      if (text == NULL) text = "";
     }
+
+    gtk_entry_set_text (priv->entry, text);
+    gtk_editable_set_position (GTK_EDITABLE (priv->entry), -1);
 }
 
 
 //!
 //! @brief Sets the main window title text of the program using the informtion from the searchitem
 //!
-//! @param item a LwSearchItem argument.
+//! @param search a LwSearch argument.
 //!
-char* 
-gw_searchwindow_get_title_by_searchitem (GwSearchWindow* window, LwSearchItem *item)
+gchar* 
+gw_searchwindow_get_title_by_searchitem (GwSearchWindow* window, LwSearch *search)
 {
+    //Sanity checks
+    g_return_val_if_fail (window != NULL, NULL);
+
     //Declarations
     GwApplication *application;
-    char *title;
-    const char *program_name;
-    int num_relevant, num_total;
-    char *query;
+    gchar *title;
+    const gchar *program_name;
+    gint num_relevant, num_total;
+    LwQuery *query;
+    const gchar *text;
 
+    //Declarations
     application = gw_window_get_application (GW_WINDOW (window));
+    query = NULL;
 
-    if (item == NULL || item->queryline == NULL)
+    if (search == NULL || search->query == NULL)
     {
       //Initializations
       title = g_strdup (gw_application_get_program_name (application));
@@ -575,11 +555,12 @@ gw_searchwindow_get_title_by_searchitem (GwSearchWindow* window, LwSearchItem *i
     else
     {
       //Initializations
-      program_name = gw_application_get_program_name(application);
-      query = item->queryline->string;
-      num_relevant = item->total_relevant_results;
-      num_total = item->total_results;
-      title = g_strdup_printf ("%s [%d/%d] - %s", query, num_relevant, num_total, program_name);
+      query = search->query;
+      program_name = gw_application_get_program_name (application);
+      text = lw_query_get_text (query);
+      num_relevant = lw_search_get_total_relevant_results (search);
+      num_total = lw_search_get_total_results (search);
+      title = g_strdup_printf ("%s [%d/%d] - %s", text, num_relevant, num_total, program_name);
     }
 
     return title;
@@ -588,16 +569,16 @@ gw_searchwindow_get_title_by_searchitem (GwSearchWindow* window, LwSearchItem *i
 //!
 //! @brief Sets the main window title text of the program using the informtion from the searchitem
 //!
-//! @param item a LwSearchItem argument.
+//! @param search a LwSearch argument.
 //!
 void 
-gw_searchwindow_set_title_by_searchitem (GwSearchWindow* window, LwSearchItem *item)
+gw_searchwindow_set_title_by_searchitem (GwSearchWindow* window, LwSearch *search)
 {
     //Declarations
     char *title;
 
     //Initializations
-    title = gw_searchwindow_get_title_by_searchitem (window, item);
+    title = gw_searchwindow_get_title_by_searchitem (window, search);
 
     gtk_window_set_title (GTK_WINDOW (window), title);
 
@@ -609,42 +590,49 @@ gw_searchwindow_set_title_by_searchitem (GwSearchWindow* window, LwSearchItem *i
 //!
 //! @brief Set's the progress label of the program using the inforamtion from the searchitem
 //!
-//! @param item A LwSearchItem pointer to gleam information from
+//! @param search A LwSearch pointer to gleam information from
 //!
 void 
-gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, LwSearchItem* item)
+gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, LwSearch* search)
 {
-    GwSearchWindowPrivate *priv;
+    //Sanity checks
+    g_return_if_fail (window != NULL);
 
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    gint total;
+    gint relevant;
+
+    //Initializations
     priv = window->priv;
 
-    if (item == NULL)
+    if (search == NULL)
     {
-      gtk_label_set_text(priv->statusbar_label, "");
+      gtk_label_set_text (priv->statusbar_label, "");
     }
     else
     {
       //Declarations
-      int relevant = item->total_relevant_results;
-      int total = item->total_results;
+      relevant = lw_search_get_total_relevant_results (search);
+      total = lw_search_get_total_results (search);
 
-      char *idle_message_none = "";
-      const char *searching_message_none = gettext("Searching...");
+      gchar *idle_message_none = "";
+      const gchar *searching_message_none = gettext("Searching...");
 
-      const char *idle_message_total = ngettext("Found %d result", "Found %d results", total);
-      const char *searching_message_total = ngettext("Searching... %d result", "Searching... %d results", total);
+      const gchar *idle_message_total = ngettext("Found %d result", "Found %d results", total);
+      const gchar *searching_message_total = ngettext("Searching... %d result", "Searching... %d results", total);
 
       // TRANSLATORS: relevant what ? It's the number of "relevant" result(s) displayed while or after searching.
-      const char *message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", relevant);
+      const gchar *message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", relevant);
 
-      char *base_message = NULL;
-      char *final_message = NULL;
+      gchar *base_message = NULL;
+      gchar *final_message = NULL;
 
       //Initializations
-      switch (item->status)
+      switch (search->status)
       {
         case LW_SEARCHSTATUS_IDLE:
-            if (item->current == 0L)
+            if (search->current == 0L)
               gtk_label_set_text (priv->statusbar_label, idle_message_none);
             else if (relevant == total)
               final_message = g_strdup_printf (idle_message_total, total);
@@ -656,7 +644,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
             }
             break;
         case LW_SEARCHSTATUS_SEARCHING:
-            if (item->total_results == 0)
+            if (search->total_results == 0)
               gtk_label_set_text(priv->statusbar_label, searching_message_none);
             else if (relevant == total)
               final_message = g_strdup_printf (searching_message_total, total);
@@ -668,6 +656,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
             }
             break;
         case LW_SEARCHSTATUS_FINISHING:
+        case LW_SEARCHSTATUS_CANCELING:
             break;
       }
 
@@ -689,32 +678,32 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
 //! @param request Sets the current dictionary by the number here
 //!
 void 
-gw_searchwindow_set_dictionary (GwSearchWindow *window, gint request)
+gw_searchwindow_set_dictionary (GwSearchWindow *window, gint position)
 {
     GwApplication *application;
     GwSearchWindowPrivate *priv;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     GtkMenuShell *shell;
     GList *list;
     GtkWidget *radioitem;
     GwDictionaryStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
     dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
-    dictinfolist = gw_dictionarystore_get_dictinfolist (dictionarystore);
-    di = lw_dictinfolist_get_dictinfo_by_load_position (dictinfolist, request);
-    if (di == NULL) return;
+    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
+    dictionary = lw_dictionarylist_get_dictionary_by_position (dictionarylist, position);
+    if (dictionary == NULL) return;
 
-    priv->dictinfo = di;
+    priv->dictionary = dictionary;
 
     //Make sure the correct radio menuitem is selected
     shell = GTK_MENU_SHELL (priv->dictionary_popup);
     if (shell != NULL)
     {
       list = gtk_container_get_children (GTK_CONTAINER (shell));
-      radioitem = GTK_WIDGET (g_list_nth_data (list, request));
+      radioitem = GTK_WIDGET (g_list_nth_data (list, position));
       G_GNUC_EXTENSION g_signal_handlers_block_by_func (radioitem, gw_searchwindow_dictionary_radio_changed_cb, window);
       if (g_list_length (list) > 3 && radioitem != NULL)
       {
@@ -724,48 +713,65 @@ gw_searchwindow_set_dictionary (GwSearchWindow *window, gint request)
       g_list_free (list);
     }
 
-    //Make sure the correct combobox item is selected
+    //Make sure the correct combobox search is selected
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (priv->combobox, gw_searchwindow_dictionary_combobox_changed_cb, NULL);
-    gtk_combo_box_set_active (priv->combobox, request);
+    gtk_combo_box_set_active (priv->combobox, position);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (priv->combobox, gw_searchwindow_dictionary_combobox_changed_cb, NULL);
 }
 
 
 //!
-//! @brief Uses a LwSearchItem to set the currently active dictionary
+//! @brief Uses a LwSearch to set the currently active dictionary
 //!
 //! This function is greatly useful for doing searches from the history.
 //!
-//! @param item A lnSearchItem to gleam information from
+//! @param search A lnSearchItem to gleam information from
 //!
 void 
-gw_searchwindow_set_dictionary_by_searchitem (GwSearchWindow *window, LwSearchItem *item)
+gw_searchwindow_set_dictionary_by_searchitem (GwSearchWindow *window, LwSearch *search)
 {
-    if (item == NULL)
-      gw_searchwindow_set_dictionary (window, 0);
-    else if (item->dictionary != NULL)
-      gw_searchwindow_set_dictionary (window, item->dictionary->load_position);
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwApplication *application;
+    LwDictionaryList *dictionarylist;
+    LwDictionary *dictionary;
+    gint position;
+
+    //Initializations
+    application = gw_window_get_application (GW_WINDOW (window));
+    dictionarylist = gw_application_get_dictionarylist (application);
+    position = 0;
+
+    if (search != NULL)
+    {
+      dictionary = search->dictionary;
+      position = lw_dictionarylist_get_position (dictionarylist, dictionary);
+    }
+
+    gw_searchwindow_set_dictionary (window, position);
 }
 
 
-LwDictInfo* 
+LwDictionary* 
 gw_searchwindow_get_dictionary (GwSearchWindow* window)
 {
     GwSearchWindowPrivate *priv;
 
     priv = window->priv;
 
-    return priv->dictinfo;
+    return priv->dictionary;
 }
 
 
 //!
 //! @brief Updates the status of the window progressbar
 //!
-//! @param item A LwSearchItem to gleam information from
+//! @param search A LwSearch to gleam information from
 //!
 void 
-gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, LwSearchItem *item)
+gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, LwSearch *search)
 {
     //Declarations
     GwSearchWindowPrivate *priv;
@@ -773,7 +779,7 @@ gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, Lw
 
     //Initializations
     priv = window->priv;
-    fraction = lw_searchitem_get_progress (item);
+    fraction = lw_search_get_progress (search);
 
     if (gtk_widget_get_visible (GTK_WIDGET (priv->statusbar)))
     {
@@ -799,7 +805,7 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
     GList *children;
     GList *list;
     GList *link;
-    LwSearchItem *item;
+    LwSearch *search;
     GtkWidget *menuitem;
 
     //Initializations
@@ -834,13 +840,20 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
     //Fill the history items
     for (link = list; link != NULL; link = link->next)
     {
-      item = LW_SEARCHITEM (link->data);
+      search = LW_SEARCH (link->data);
 
       GtkWidget *menu_item, *accel_label, *label;
+      const gchar *shortname;
+      gchar *longname;
+      LwDictionary *dictionary;
 
-      accel_label = gtk_label_new (item->dictionary->longname);
+      dictionary = search->dictionary;
+      shortname = lw_dictionary_get_name (dictionary);
+      longname = g_strdup_printf (gettext("%s Dictionary"), shortname);
+      accel_label = gtk_label_new (longname);
+      if (longname != NULL) g_free (longname); longname = NULL;
       gtk_widget_set_sensitive (GTK_WIDGET (accel_label), FALSE);
-      label = gtk_label_new (item->queryline->string);
+      label = gtk_label_new (lw_query_get_text (search->query));
 
       GtkWidget *box;
       box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
@@ -866,7 +879,7 @@ gw_searchwindow_update_history_menu_popup (GwSearchWindow *window)
 
 
 //!
-//! @brief PRIVATE FUNCTION. Populate the menu item lists for the back and forward buttons
+//! @brief PRIVATE FUNCTION. Populate the menu search lists for the back and forward buttons
 //!
 //! @param id Id of the popuplist
 //! @param list history list to compair against
@@ -894,25 +907,27 @@ static void _rebuild_history_button_popup (GwSearchWindow *window, GtkMenu *menu
     gtk_widget_show (menuitem);
 
     //Declarations
-    LwSearchItem *item;
+    LwSearch *search;
+    const gchar *text;
 
     children = list;
     while (children != NULL)
     {
-      item = children->data;
+      search = children->data;
 
       //Ensure a minimuim width of the menu
-      int leftover = 200;
-      char label[leftover];
-      strncpy (label, item->queryline->string, leftover);
-      leftover -= strlen (item->queryline->string);
+      gint leftover = 200;
+      gchar label[leftover];
+      text = lw_query_get_text (search->query);
+      strncpy (label, text, leftover);
+      leftover -= strlen (text);
       while (leftover > 180)
       {
         strncat (label, " ", leftover);
         leftover -= 1;
       }
 
-      menuitem = GTK_WIDGET (gtk_menu_item_new_with_label(label));
+      menuitem = GTK_WIDGET (gtk_menu_item_new_with_label (label));
 
       //Create the new menuitem
       gtk_menu_shell_append(GTK_MENU_SHELL (popup), menuitem);
@@ -981,7 +996,7 @@ gw_searchwindow_set_toolbar_style (GwSearchWindow *window, const char *request)
 //!
 //! @brief Appends some text to the text buffer
 //!
-//! @param item A LwSearchItem to gleam information from
+//! @param search A LwSearch to gleam information from
 //! @param text The text to append to the buffer
 //! @param tag1 A tag to apply to the text or NULL
 //! @param tag2 A tag to apply to the text or NULL
@@ -989,17 +1004,17 @@ gw_searchwindow_set_toolbar_style (GwSearchWindow *window, const char *request)
 //! @param end_line Returns the end line of the text inserted
 //!
 void 
-gw_searchwindow_append_to_buffer (GwSearchWindow *window, LwSearchItem *item, const char *text, char *tag1,
+gw_searchwindow_append_to_buffer (GwSearchWindow *window, LwSearch *search, const char *text, char *tag1,
                                        char *tag2, int *start_line, int *end_line)
 {
-    if (item == NULL) return;
+    if (search == NULL) return;
 
     //Assertain the target text buffer
     GwSearchData *sd;
     GtkTextView *view;
     GtkTextBuffer *buffer;
 
-    sd = (GwSearchData*) lw_searchitem_get_data (item);
+    sd = (GwSearchData*) lw_search_get_data (search);
     view = GTK_TEXT_VIEW (sd->view);
     if (view == NULL) return;
     buffer = gtk_text_view_get_buffer (view);
@@ -1050,22 +1065,22 @@ gw_searchwindow_remove_anonymous_tags (GtkTextTag *tag, gpointer data)
 //!
 //! @brief Performs initializations absolutely necessary before a window can take place
 //!
-//! Correctly the pointer in the LwSearchItem to the correct textbuffer and moves marks
+//! Correctly the pointer in the LwSearch to the correct textbuffer and moves marks
 //!
-//! @param item A LwSearchItem to gleam information from
+//! @param search A LwSearch to gleam information from
 //!
 void 
-gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearchItem *item)
+gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearch *search)
 {
     //Sanity check
-    g_assert (lw_searchitem_has_data (item));
+    g_assert (lw_search_has_data (search));
 
     //Make sure searches done from the history are pointing at a valid target
     GwSearchData *data;
     GtkTextView *view;
     GtkTextBuffer *buffer;
 
-    data = GW_SEARCHDATA (lw_searchitem_get_data (item));
+    data = GW_SEARCHDATA (lw_search_get_data (search));
     view = GTK_TEXT_VIEW (data->view);
     buffer = gtk_text_view_get_buffer (view);
 
@@ -1102,7 +1117,7 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
     gtk_text_buffer_get_end_iter (buffer, &iter);
     gtk_text_buffer_create_mark (buffer, "footer_insertion_mark", &iter, FALSE);
 
-    gw_searchwindow_set_total_results_label_by_searchitem (window, item);
+    gw_searchwindow_set_total_results_label_by_searchitem (window, search);
 
     GtkTextTagTable *tagtable;
     tagtable = gtk_text_buffer_get_tag_table (buffer);
@@ -1449,7 +1464,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
     //Declarations
     GwSearchWindowPrivate *priv;
     GList *children, *link;
-    LwSearchItem *item;
+    LwSearch *search;
     GtkWidget *container;
 
     priv = window->priv;
@@ -1462,10 +1477,10 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
         container = GTK_WIDGET (link->data);
         if (container != NULL)
         {
-          item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
-          if (item != NULL) 
+          search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
+          if (search != NULL) 
           {
-            lw_searchitem_cancel_search (item);
+            lw_search_cancel_search (search);
           }
         }
         link = link->next;
@@ -1473,7 +1488,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
       g_list_free (children); children = NULL;
     }
 
-    lw_searchitem_cancel_search (priv->mouse_item);
+    lw_search_cancel_search (priv->mouse_item);
 }
 
 
@@ -1486,7 +1501,7 @@ gw_searchwindow_cancel_search_by_tab_number (GwSearchWindow *window, const int p
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
     GtkWidget *widget;
 
     //Initializations
@@ -1494,10 +1509,10 @@ gw_searchwindow_cancel_search_by_tab_number (GwSearchWindow *window, const int p
     widget = GTK_WIDGET (gtk_notebook_get_nth_page (priv->notebook, page_num));
     if (widget != NULL)
     {
-      item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (widget), "searchitem"));
-      if (item != NULL)
+      search = LW_SEARCH (g_object_get_data (G_OBJECT (widget), "searchitem"));
+      if (search != NULL)
       {
-        lw_searchitem_cancel_search (item);
+        lw_search_cancel_search (search);
       }
     }
 }
@@ -1636,15 +1651,19 @@ gw_searchwindow_update_tab_text_by_index (GwSearchWindow *window, gint index)
     GList *children;
     GtkWidget *label;
     const char *text;
-    LwSearchItem *item;
+    LwSearch *search;
+    LwQuery *query;
 
     priv = window->priv;
     container = GTK_WIDGET (gtk_notebook_get_nth_page (priv->notebook, index));
-    item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
-    if (item == NULL || item->queryline == NULL || item->queryline->string == NULL)
-      text = gettext("(Empty)");
-    else
-      text = item->queryline->string;
+    search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
+    query = NULL;
+    text = "(Empty)";
+
+    if (search != NULL) query = search->query;
+
+    if (query != NULL && lw_query_get_text (query) == NULL)
+      text = lw_query_get_text (query);
 
     box = GTK_WIDGET (gtk_notebook_get_tab_label (priv->notebook, GTK_WIDGET (container)));
 
@@ -1863,25 +1882,25 @@ gw_searchwindow_remove_tab_by_index (GwSearchWindow *window, gint index)
 
     //Declarations
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
 
     //Initializations
     priv = window->priv;
-    item = gw_searchwindow_steal_searchitem_by_index (window, index);
+    search = gw_searchwindow_steal_searchitem_by_index (window, index);
 
     gw_searchwindow_cancel_search_by_tab_number (window, index);
 
-    if (item != NULL)
+    if (search != NULL)
     {
-      gw_searchwindow_initialize_buffer_by_searchitem (window, item);
-      if (lw_searchitem_has_history_relevance (item, priv->keep_searching_enabled))
+      gw_searchwindow_initialize_buffer_by_searchitem (window, search);
+      if (lw_search_has_history_relevance (search, priv->keep_searching_enabled))
       {
-        lw_history_add_searchitem (priv->history, item);
+        lw_history_add_search (priv->history, search);
         gw_searchwindow_update_history_popups (window);
       }
       else
       {
-        lw_searchitem_free (item); item = NULL;
+        lw_search_free (search); search = NULL;
       }
     }
 
@@ -1908,7 +1927,7 @@ gw_searchwindow_get_current_tab_index (GwSearchWindow *window)
 //!        using a newly made searchitem.
 //!
 void 
-gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwSearchItem *item)
+gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwSearch *search)
 {
     //Declarations
     GwSearchWindowPrivate *priv;
@@ -1922,30 +1941,30 @@ gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwS
       container = gtk_notebook_get_nth_page (priv->notebook, index);
       if (container != NULL)
       {
-        g_object_set_data_full (G_OBJECT (container), "searchitem", item, (GDestroyNotify) lw_searchitem_free);
+        g_object_set_data_full (G_OBJECT (container), "searchitem", search, (GDestroyNotify) lw_search_free);
 
         //Update the window to match the searchitem data
         gw_searchwindow_update_tab_text_by_index (window, index);
-        gw_searchwindow_set_dictionary_by_searchitem (window, item);
-        gw_searchwindow_set_entry_text_by_searchitem (window, item);
-        gw_searchwindow_set_title_by_searchitem (window, item);
-        gw_searchwindow_set_total_results_label_by_searchitem (window, item);
-        gw_searchwindow_set_search_progressbar_by_searchitem (window, item);
+        gw_searchwindow_set_dictionary_by_searchitem (window, search);
+        gw_searchwindow_set_entry_text_by_searchitem (window, search);
+        gw_searchwindow_set_title_by_searchitem (window, search);
+        gw_searchwindow_set_total_results_label_by_searchitem (window, search);
+        gw_searchwindow_set_search_progressbar_by_searchitem (window, search);
 
         //Update Save sensitivity state
-        enable = (item != NULL);
+        enable = (search != NULL);
         gtk_action_set_sensitive (priv->append_action, enable);
 
         //Update Save as sensitivity state
-        enable = (item != NULL);
+        enable = (search != NULL);
         gtk_action_set_sensitive (priv->save_as_action, enable);
 
         //Update Print sensitivity state
-        enable = (item != NULL);
+        enable = (search != NULL);
         gtk_action_set_sensitive (priv->print_action, enable);
 
         //Update Print preview sensitivity state
-        enable = (item != NULL);
+        enable = (search != NULL);
         gtk_action_set_sensitive (priv->print_preview_action, enable);
 
         //Set the label's mnemonic widget since glade doesn't seem to want to
@@ -1955,48 +1974,48 @@ gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwS
 }
 
 
-LwSearchItem*
+LwSearch*
 gw_searchwindow_get_searchitem_by_index (GwSearchWindow *window, gint index)
 {
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
     GtkWidget *container;
 
     priv = window->priv;
-    item = NULL;
+    search = NULL;
 
     container = gtk_notebook_get_nth_page (priv->notebook, index);
     if (container != NULL)
     {
-      item = LW_SEARCHITEM (g_object_get_data (G_OBJECT (container), "searchitem"));
+      search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
     }
 
-    return item;
+    return search;
 }
 
 
-LwSearchItem*
+LwSearch*
 gw_searchwindow_steal_searchitem_by_index (GwSearchWindow *window, gint index)
 {
     GwSearchWindowPrivate *priv;
-    LwSearchItem *item;
+    LwSearch *search;
     GtkWidget *container;
 
     priv = window->priv;
-    item = NULL;
+    search = NULL;
 
     container = gtk_notebook_get_nth_page (priv->notebook, index);
     if (container != NULL)
     {
-      item = LW_SEARCHITEM (g_object_steal_data (G_OBJECT (container), "searchitem"));
+      search = LW_SEARCH (g_object_steal_data (G_OBJECT (container), "searchitem"));
     }
 
-    return item;
+    return search;
 }
 
 
 void 
-gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* new_item)
+gw_searchwindow_start_search (GwSearchWindow *window, LwSearch* new_item)
 {
     //Sanity check
     g_assert (window != NULL && new_item != NULL);
@@ -2006,30 +2025,30 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearchItem* new_item)
     GwSearchData *sdata;
     GtkTextView *view;
     gint index;
-    LwSearchItem *item;
+    LwSearch *search;
 
     //Initializations
     index = gw_searchwindow_get_current_tab_index (window);
-    item = gw_searchwindow_get_searchitem_by_index (window, index);
+    search = gw_searchwindow_get_searchitem_by_index (window, index);
     application = gw_window_get_application (GW_WINDOW (window));
     if (!gw_application_can_start_search (application)) return;
-    g_assert (item == NULL || lw_searchitem_get_status (item) != LW_SEARCHSTATUS_FINISHING);
+    g_assert (search == NULL || lw_search_get_status (search) != LW_SEARCHSTATUS_FINISHING);
     view = gw_searchwindow_get_current_textview (window);
     sdata = GW_SEARCHDATA (gw_searchdata_new (view, window));
 
     gw_searchwindow_guarantee_first_tab (window);
-    lw_searchitem_set_data (new_item, sdata, LW_SEARCHITEM_DATA_FREE_FUNC (gw_searchdata_free));
+    lw_search_set_data (new_item, sdata, LW_SEARCH_DATA_FREE_FUNC (gw_searchdata_free));
     gw_searchwindow_set_searchitem_by_index (window, index, new_item);
     gw_searchwindow_initialize_buffer_by_searchitem (sdata->window, new_item);
 
-    lw_searchitem_start_search (new_item, TRUE, FALSE);
+    lw_search_start (new_item, TRUE);
     gw_searchwindow_update_history_popups (window);
 
 #if WITH_MECAB
-    if (new_item->queryline->morphology)
+    if (new_item->query->morphology)
     {
       gchar *message;
-      message = g_strdup_printf (gettext("Also showing results for: 「%s」"), new_item->queryline->morphology);
+      message = g_strdup_printf (gettext("Also showing results for: 「%s」"), new_item->query->morphology);
       gw_searchwindow_show_current_infobar (window, message);
       g_free(message); message = NULL;
     }
@@ -2377,14 +2396,14 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     GList *list, *link;
     GtkWidget *widget;
     GtkListStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     GtkAccelGroup *accelgroup;
 
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     shell = GTK_MENU_SHELL (priv->dictionary_popup);
     dictionarystore = gw_application_get_dictionarystore (application);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
     if (shell != NULL)
@@ -2402,25 +2421,33 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
     }
 
     GSList *group;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
+    gint position;
+    const gchar *shortname;
+    gchar *longname;
 
     group = NULL;
 
     //Refill the menu
-    for (link = dictinfolist->list; link != NULL; link = link->next)
+    for (link = dictionarylist->list; link != NULL; link = link->next)
     {
-      di = LW_DICTINFO (link->data);
-      if (di != NULL)
+      dictionary = LW_DICTIONARY (link->data);
+      if (dictionary != NULL)
       {
-        widget = GTK_WIDGET (gtk_radio_menu_item_new_with_label (group, di->longname));
+        shortname = lw_dictionary_get_name (dictionary);
+        longname = g_strdup_printf (gettext("%s Dictionary"), shortname);
+        widget = GTK_WIDGET (gtk_radio_menu_item_new_with_label (group, longname));
         group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (widget));
+        position = lw_dictionarylist_get_position (dictionarylist, dictionary);
+
         gtk_menu_shell_append (GTK_MENU_SHELL (shell),  GTK_WIDGET (widget));
-        if (di->load_position == 0)
+        if (position == 0)
           gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), TRUE);
         g_signal_connect(G_OBJECT (widget), "toggled", G_CALLBACK (gw_searchwindow_dictionary_radio_changed_cb), window);
-        if (di->load_position < 9)
-          gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", accelgroup, (GDK_KEY_0 + di->load_position + 1), GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
+        if (position < 9)
+          gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", accelgroup, (GDK_KEY_0 + position + 1), GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
         gtk_widget_show (widget);
+        if (longname != NULL) g_free (longname); longname = NULL;
       }
     }
 
