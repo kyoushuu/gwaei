@@ -1949,7 +1949,7 @@ gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer 
     if (request == TRUE)
     {
       context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
-      gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      //gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
       gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
 
       gtk_widget_show (GTK_WIDGET (primary_toolbar));
@@ -1957,7 +1957,7 @@ gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer 
     else
     {
       context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
-      gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      //gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
       gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
 
       gtk_widget_hide (GTK_WIDGET (primary_toolbar));
