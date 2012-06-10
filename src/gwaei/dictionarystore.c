@@ -130,7 +130,7 @@ gw_dictionarystore_get_dictionarylist (GwDictionaryStore *store)
 
     if (priv->dictionarylist == NULL)
     {
-      priv->dictionarylist = lw_dictionarylist_new (20);
+      priv->dictionarylist = lw_dictionarylist_new ();
     }
 
     return priv->dictionarylist;

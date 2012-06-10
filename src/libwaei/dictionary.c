@@ -123,8 +123,6 @@ lw_dictionary_init (LwDictionary *dictionary)
 {
     dictionary->priv = LW_DICTIONARY_GET_PRIVATE (dictionary);
     memset(dictionary->priv, 0, sizeof(LwDictionaryPrivate));
-
-    dictionary->priv->length = -1;
 }
 
 
@@ -215,7 +213,7 @@ lw_dictionary_get_length (LwDictionary *dictionary)
     //Initializations
     priv = dictionary->priv;
 
-    if (priv->length < 0)
+    if (priv->length == 0)
     {
       uri = lw_dictionary_get_path (dictionary);
       if (uri != NULL)

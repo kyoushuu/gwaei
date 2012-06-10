@@ -562,7 +562,7 @@ gw_application_get_dictionarystore (GwApplication *application)
       priv->dictionarystore = gw_dictionarystore_new ();
       pointer = (gpointer*) &(priv->dictionarystore);
       preferences = gw_application_get_preferences (application);
-      gw_dictionarystore_load_order (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
+      gw_dictionarystore_reload (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
       g_object_add_weak_pointer (G_OBJECT (priv->dictionarystore), pointer);
     }
 
@@ -573,6 +573,8 @@ gw_application_get_dictionarystore (GwApplication *application)
 LwDictionaryList* 
 gw_application_get_dictionarylist (GwApplication *application)
 {
+//TODO
+/*
     GwApplicationPrivate *priv;
     priv = application->priv;
 
@@ -583,6 +585,8 @@ gw_application_get_dictionarylist (GwApplication *application)
     }
 
     return priv->dictionarylist;
+*/
+    return NULL;
 }
 
 

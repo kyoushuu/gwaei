@@ -391,7 +391,7 @@ gw_searchwindow_update_progress_feedback_timeout (GwSearchWindow *window)
     {
       lw_search_lock (search);
         if (
-            search->status != LW_SEARCHSTATUS_FINISHING &&
+            search->status != LW_SEARCHSTATUS_IDLE &&
             (search != priv->feedback_item ||
              search->current != priv->feedback ||
              search->status != priv->feedback_status       )
@@ -739,13 +739,15 @@ gw_searchwindow_set_dictionary_by_searchitem (GwSearchWindow *window, LwSearch *
 
     //Declarations
     GwApplication *application;
+    GwDictionaryStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     gint position;
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_dictionarylist (application);
+    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
     position = 0;
 
     if (search != NULL)
@@ -779,7 +781,7 @@ gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, Lw
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    double fraction;
+    gdouble fraction;
 
     //Initializations
     priv = window->priv;

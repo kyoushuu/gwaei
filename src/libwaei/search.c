@@ -379,7 +379,7 @@ gdouble
 lw_search_get_progress (LwSearch *search)
 {
     //Sanity check
-    g_return_val_if_fail (search != NULL, 0.0);
+    if (search == NULL) return 0.0;
 
     //Declarations
     glong current;
@@ -387,8 +387,8 @@ lw_search_get_progress (LwSearch *search)
     gdouble fraction;
 
     //Initializations
-    current = 0L;
-    length = 0L;
+    current = 0;
+    length = 0;
     fraction = 0.0;
 
     if (search != NULL && search->dictionary != NULL && search->status == LW_SEARCHSTATUS_SEARCHING)
@@ -396,7 +396,7 @@ lw_search_get_progress (LwSearch *search)
       current = search->current;
       length = lw_dictionary_get_length (LW_DICTIONARY (search->dictionary));
 
-      if (current > 0L && length > 0L && current != length) 
+      if (current > 0 && length > 0 && current != length) 
         fraction = (gdouble) current / (gdouble) length;
     }
 
@@ -603,13 +603,17 @@ lw_search_get_result (LwSearch *search)
     //Declarations
     LwResult *result;
     gint relevance;
+    gint stop;
 
     //Initializations
     result = NULL; 
 
     lw_search_lock (search);
 
-    for (relevance = 0; relevance < TOTAL_LW_RELEVANCE && result == NULL; relevance++)
+    if (search->status == LW_SEARCHSTATUS_SEARCHING) stop = LW_RELEVANCE_HIGH;
+    else stop = LW_RELEVANCE_LOW;
+
+    for (relevance = LW_RELEVANCE_HIGH; relevance >= stop && result == NULL; relevance--)
     {
       if (search->results[relevance] != NULL)
       {
@@ -634,7 +638,7 @@ gboolean
 lw_search_has_results (LwSearch *search)
 {
     //Sanity checks
-    g_return_val_if_fail (search != NULL, FALSE);
+    if (search == NULL) return FALSE;
 
     //Declarations
     LwSearchStatus status;
@@ -644,9 +648,14 @@ lw_search_has_results (LwSearch *search)
     lw_search_lock (search);
 
     status = search->status;
-    has_results = (search->results[LW_RELEVANCE_HIGH] != NULL ||
-                   search->results[LW_RELEVANCE_MEDIUM] != NULL ||
-                   search->results[LW_RELEVANCE_LOW] != NULL);
+    has_results = FALSE;
+
+    if (status == LW_SEARCHSTATUS_SEARCHING && search->results[LW_RELEVANCE_HIGH] != NULL) 
+      has_results = TRUE;
+    else if (status != LW_SEARCHSTATUS_SEARCHING && (search->results[LW_RELEVANCE_HIGH] != NULL ||
+                                                     search->results[LW_RELEVANCE_MEDIUM] != NULL ||
+                                                     search->results[LW_RELEVANCE_LOW] != NULL))
+      has_results = TRUE;
   
     if (status == LW_SEARCHSTATUS_FINISHING && !has_results) search->status = LW_SEARCHSTATUS_IDLE;
 

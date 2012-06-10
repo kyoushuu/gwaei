@@ -240,7 +240,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
 
     //Look for kanji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_LOW);
-    if (g_regex_match (regex, text, 0, &match_info))
+    if (regex != NULL && g_regex_match (regex, text, 0, &match_info))
     { 
       while (g_match_info_matches (match_info))
       {
@@ -257,7 +257,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
 
     //Look for furigana atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_LOW);
-    if (g_regex_match (regex, text, 0, &match_info))
+    if (regex != NULL && g_regex_match (regex, text, 0, &match_info))
     { 
       while (g_match_info_matches (match_info))
       {
@@ -274,7 +274,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
 
     //Look for romaji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_LOW);
-    if (g_regex_match (regex, text, 0, &match_info))
+    if (regex != NULL && g_regex_match (regex, text, 0, &match_info))
     {
       while (g_match_info_matches (match_info))
       {
@@ -391,7 +391,7 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearch* sea
     if ((mark = gtk_text_buffer_get_mark (buffer, "previous_result")) != NULL)
     {
       GtkTextIter iter;
-      int line, start_offset, end_offset;
+      gint line, start_offset, end_offset;
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
       line = gtk_text_iter_get_line (&iter);
       start_offset = gtk_text_iter_get_line_offset (&iter);

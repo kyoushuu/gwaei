@@ -494,7 +494,7 @@
                             <property name="label" translatable="yes">Remove</property>
                             <property name="use_underline">True</property>
                             <property name="icon_name">list-remove-symbolic</property>
-                            <signal name="clicked" handler="gw_settingswindow_remove_dictinfo_cb" object="toplevel" swapped="no"/>
+                            <signal name="clicked" handler="gw_settingswindow_remove_dictionary_cb" object="toplevel" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>

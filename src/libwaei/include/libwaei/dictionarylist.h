@@ -18,7 +18,7 @@ struct _LwDictionaryList
 typedef struct _LwDictionaryList LwDictionaryList;
 
 
-LwDictionaryList* lw_dictionarylist_new ();
+LwDictionaryList* lw_dictionarylist_new (void);
 void lw_dictionarylist_free (LwDictionaryList*);
 
 void lw_dictionarylist_add_dictionary (LwDictionaryList*, LwDictionary*);
