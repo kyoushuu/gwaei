@@ -186,6 +186,7 @@ lw_search_prepare_search (LwSearch* search)
     search->thread = NULL;
     search->fd = lw_dictionary_open (LW_DICTIONARY (search->dictionary));
     search->status = LW_SEARCHSTATUS_SEARCHING;
+    search->timestamp = g_get_monotonic_time ();
 }
 
 
@@ -258,28 +259,29 @@ lw_search_is_equal (LwSearch *item1, LwSearch *item2)
 
 
 //!
-//! @brief a method for incrementing an internal integer for determining if a result set has worth
-//! @param search The LwSearch to increment the timer on
-//!
-void 
-lw_search_increment_history_relevance_timer (LwSearch *search)
-{
-  if (search != NULL && search->history_relevance_idle_timer < LW_HISTORY_TIME_TO_RELEVANCE)
-    search->history_relevance_idle_timer++;
-}
-
-
-//!
 //! @brief Checks if the relevant timer has passed a threshold
 //! @param search The LwSearch to check for history relevance
 //! @param use_idle_timer This variable shoud be set to true if the program does automatic searches so it checks the timer
 //!
 gboolean 
-lw_search_has_history_relevance (LwSearch *search, gboolean use_idle_timer)
+lw_search_has_history_relevance (LwSearch *search, gboolean check_timestamp)
 {
-  return (search != NULL && 
-          search->total_results > 0 && 
-          (!use_idle_timer || search->history_relevance_idle_timer >= LW_HISTORY_TIME_TO_RELEVANCE));
+    //Sanity checks
+    if (search == NULL) return FALSE;
+
+    //Declarations
+    gboolean has_results;
+    gboolean enough_time_since_last_search;
+    gint64 timestamp;
+    gint64 delta;
+
+    //Initializations
+    has_results = (lw_search_get_total_results (search) > 0);
+    timestamp = g_get_monotonic_time ();
+    delta = timestamp - search->timestamp;
+    enough_time_since_last_search = (delta > LW_HISTORY_TIME_TO_RELEVANCE);
+
+    return (has_results && (!check_timestamp || enough_time_since_last_search));
 }
 
 
@@ -683,5 +685,23 @@ lw_search_get_total_relevant_results (LwSearch *search)
     g_return_val_if_fail (search != NULL, 0);
 
     return search->total_results[LW_RELEVANCE_HIGH];
+}
+
+
+gint
+lw_search_get_total_irrelevant_results (LwSearch *search)
+{
+    //Sanity checks
+    g_return_val_if_fail (search != NULL, 0);
+
+    //Declarations
+    gint total;
+
+    //Initializations
+    total = 0;
+    total += search->total_results[LW_RELEVANCE_LOW];
+    total += search->total_results[LW_RELEVANCE_MEDIUM];
+
+    return total;
 }
 

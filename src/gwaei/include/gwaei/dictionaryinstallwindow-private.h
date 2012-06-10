@@ -35,7 +35,7 @@ struct _GwDictionaryInstallWindowPrivate {
   GtkListStore *compression_store;
   GtkListStore *engine_store;
   GtkListStore *dictionary_store;
-  LwDictInst *di;
+  LwDictionary *dictionary;
 
   GtkTreeView *view;
   GtkButton *add_button;

@@ -94,14 +94,17 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     GwDictionaryInstallWindow *window;
     GwDictionaryInstallWindowPrivate *priv;
     GwApplication *application;
-    LwDictInstList *dictinstlist;
+    LwDictionaryList *dictionarylist;
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
-    GList *iter;
-    LwDictInst *di;
+    GList *link;
+    LwDictionary *dictionary;
     GtkTreeIter treeiter;
-    int i;
+    gint i;
     GtkAccelGroup *accelgroup;
+    const gchar *shortname;
+    gchar *longname;
+    gchar *directoryname;
 
     //Chain the parent class
     {
@@ -112,7 +115,7 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     priv = window->priv;
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinstlist = gw_application_get_dictinstlist (application);
+    dictionarylist = gw_application_get_dictionarylist (application);
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("Select Dictionaries..."));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
@@ -136,44 +139,42 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     priv->details_hbox = GTK_BOX (gw_window_get_object (GW_WINDOW (window), "details_hbox"));
 
     //Set up the dictionary liststore
-    for (iter = dictinstlist->list; iter != NULL; iter = iter->next)
+    for (link = dictionarylist->list; link != NULL; link = link->next)
     {
-      di = LW_DICTINST (iter->data);
+      dictionary = LW_DICTIONARY (link->data);
+      shortname = lw_dictionary_get_name (dictionary);
+      longname = g_strdup_printf(gettext("%s Dictionary"), shortname);
       gtk_list_store_append (GTK_LIST_STORE (priv->dictionary_store), &treeiter);
       gtk_list_store_set (
         priv->dictionary_store, &treeiter,
-        GW_DICTINSTWINDOW_DICTSTOREFIELD_SHORT_NAME, di->shortname,
-        GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME, di->longname,
-        GW_DICTINSTWINDOW_DICTSTOREFIELD_DICTINST_PTR, di,
+        GW_DICTINSTWINDOW_DICTSTOREFIELD_SHORT_NAME, shortname,
+        GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME, longname,
+        GW_DICTINSTWINDOW_DICTSTOREFIELD_DICTINST_PTR, dictionary,
         GW_DICTINSTWINDOW_DICTSTOREFIELD_CHECKBOX_STATE, FALSE, 
         -1
       );
+      if (longname != NULL) g_free (longname); longname = NULL;
     }
 
     //Set up the Engine liststore
+    GType *types = g_type_children (LW_TYPE_DICTIONARY, NULL);
+    GType type;
     priv->engine_store = gtk_list_store_new (TOTAL_GW_DICTINSTWINDOW_ENGINESTOREFIELDS, G_TYPE_INT, G_TYPE_STRING);
-    for (i = 0; i < TOTAL_LW_DICTTYPES; i++)
+    if (types != NULL)
     {
-      gtk_list_store_append (GTK_LIST_STORE (priv->engine_store), &treeiter);
-      gtk_list_store_set (
-        priv->engine_store, &treeiter,
-        GW_DICTINSTWINDOW_ENGINESTOREFIELD_ID, i,
-        GW_DICTINSTWINDOW_ENGINESTOREFIELD_NAME, lw_util_dicttype_to_string (i),
-        -1
-      );
-    }
-
-    //Set up the Compression liststore
-    priv->compression_store = gtk_list_store_new (TOTAL_GW_DICTINSTWINDOW_COMPRESSIONSTOREFIELDS, G_TYPE_INT, G_TYPE_STRING);
-    for (i = 0; i < LW_COMPRESSION_TOTAL; i++)
-    {
-      gtk_list_store_append (GTK_LIST_STORE (priv->compression_store), &treeiter);
-      gtk_list_store_set (
-        priv->compression_store, &treeiter,
-        GW_DICTINSTWINDOW_COMPRESSIONSTOREFIELD_ID, i,
-        GW_DICTINSTWINDOW_COMPRESSIONSTOREFIELD_NAME, lw_util_get_compression_name (i),
-        -1
-      );
+      for (i = 0; types[i] != 0; i++)
+      {
+        type = types[i];
+        directoryname = lw_dictionary_get_directoryname (type);
+        gtk_list_store_append (GTK_LIST_STORE (priv->engine_store), &treeiter);
+        gtk_list_store_set (
+          priv->engine_store, &treeiter,
+          GW_DICTINSTWINDOW_ENGINESTOREFIELD_ID, type,
+          GW_DICTINSTWINDOW_ENGINESTOREFIELD_NAME, directoryname,
+          -1
+        );
+      }
+      if (directoryname != NULL) g_free (directoryname); directoryname = NULL;
     }
 
     //Set up the Encoding liststore
@@ -184,7 +185,7 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
       gtk_list_store_set (
         priv->encoding_store, &treeiter,
         GW_DICTINSTWINDOW_ENCODINGSTOREFIELD_ID, i,
-        GW_DICTINSTWINDOW_ENCODINGSTOREFIELD_NAME, lw_util_get_encoding_name(i),
+        GW_DICTINSTWINDOW_ENCODINGSTOREFIELD_NAME, lw_util_get_encodingname(i),
         -1
       );
     }

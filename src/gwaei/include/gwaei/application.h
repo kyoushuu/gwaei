@@ -70,7 +70,7 @@ struct _GwSearchWindow* gw_application_get_last_focused_searchwindow (GwApplicat
 
 LwPreferences* gw_application_get_preferences (GwApplication*);
 GtkListStore* gw_application_get_dictionarystore (GwApplication*);
-struct _LwDictInstList* gw_application_get_dictinstlist (GwApplication*);
+LwDictionaryList* gw_application_get_dictionarylist (GwApplication*);
 GtkTextTagTable* gw_application_get_tagtable (GwApplication*);
 GtkListStore* gw_application_get_vocabularyliststore (GwApplication*);
 

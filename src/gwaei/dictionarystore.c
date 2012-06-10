@@ -156,7 +156,6 @@ gw_dictionarystore_update (GwDictionaryStore *store)
     gint i;
 
     priv = store->priv;
-    shortname = lw_dictionary_get_name (dictionary);
     i = 0;
 
     if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
@@ -170,6 +169,7 @@ gw_dictionarystore_update (GwDictionaryStore *store)
     {
       dictionary = LW_DICTIONARY (link->data);
       if (dictionary == NULL) continue;
+      shortname = lw_dictionary_get_name (dictionary);
 
       if (i == 0)
          iconname = favoriteicon;
@@ -323,22 +323,14 @@ void
 gw_dictionarystore_reload (GwDictionaryStore *store, LwPreferences *preferences)
 {
     //Declarations
-    GwDictionaryStorePrivate *priv;
     LwDictionaryList *dictionarylist;
 
     //Initializations
-    priv = store->priv;
     dictionarylist = gw_dictionarystore_get_dictionarylist (store);
 
-    lw_dictionarylist_reload (dictionarylist);
-
-    if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
-      g_signal_handler_block (store, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
+    lw_dictionarylist_load_installed (dictionarylist);
 
     gw_dictionarystore_load_order (store, preferences);
-
-    if (priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED] > 0)
-      g_signal_handler_unblock (store, priv->signalids[GW_DICTIONARYSTORE_SIGNALID_ROW_CHANGED]);
 }
 
 

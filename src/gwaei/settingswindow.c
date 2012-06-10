@@ -112,7 +112,7 @@ gw_settingswindow_constructed (GObject *object)
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
     GtkListStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     GtkAccelGroup *accelgroup;
 
     //Chain the parent class
@@ -126,7 +126,7 @@ gw_settingswindow_constructed (GObject *object)
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
 
     priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "dictionary_treeview"));
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
@@ -166,7 +166,7 @@ gw_settingswindow_constructed (GObject *object)
     gw_settingswindow_init_styles (window);
     gw_settingswindow_init_dictionary_treeview (window);
 
-    if (lw_dictinfolist_get_total (LW_DICTINFOLIST (dictinfolist)) == 0)
+    if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) == 0)
       gtk_notebook_set_current_page (priv->notebook, 1);
     gw_settingswindow_check_for_dictionaries (window);
 
@@ -548,18 +548,18 @@ gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
     GtkListStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     GtkWidget *message;
 
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
     message = GTK_WIDGET (priv->please_install_dictionary_hbox);
 
     //Set the show state of the dictionaries required message
-    if (lw_dictinfolist_get_total (LW_DICTINFOLIST (dictinfolist)) > 0)
+    if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) > 0)
       gtk_widget_hide (message);
     else
       gtk_widget_show (message);

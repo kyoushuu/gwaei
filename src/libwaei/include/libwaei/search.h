@@ -52,8 +52,7 @@ struct _LwSearch {
     LwSearchStatus status;                  //!< Used to test if a search is in progress.
     LwSearchFlags flags;
     gchar *scratch_buffer;                   //!< Scratch space
-    long current;                           //!< Current line in the dictionary file
-    gint history_relevance_idle_timer;       //!< Helps determine if something is added to the history or not
+    glong current;                           //!< Current line in the dictionary file
 
     gint max;
 
@@ -68,6 +67,7 @@ struct _LwSearch {
     gpointer data;                 //!< Pointer to a buffer that stays constant unlike when the target attribute is used
 
     gint16 preferences;
+    gint64 timestamp;
 
     LwSearchDataFreeFunc free_data_func;
 };
@@ -109,6 +109,7 @@ void lw_search_start (LwSearch*, gboolean);
 
 gint lw_search_get_total_results (LwSearch*);
 gint lw_search_get_total_relevant_results (LwSearch*);
+gint lw_search_get_total_irrelevant_results (LwSearch*);
 
 
 G_END_DECLS

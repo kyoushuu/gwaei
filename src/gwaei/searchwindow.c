@@ -424,17 +424,21 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
     gint index;
     gint chunk;
     gint max_chunk;
+    //LwSearchStatus status;
+    gboolean has_results;
 
     //Initializations
     priv = window->priv;
     index = gw_searchwindow_get_current_tab_index (window);
     search = gw_searchwindow_get_searchitem_by_index (window, index);
+    //status = lw_search_get_status (search);
+    has_results = lw_search_has_results (search);
     chunk = 0;
     max_chunk = 10;
     
-    if (search != NULL && lw_search_should_check_results (search))
+    if (search != NULL && has_results)
     {
-      while (search != NULL && lw_search_should_check_results (search) && chunk < max_chunk)
+      while (search != NULL && has_results && chunk < max_chunk)
       {
         gw_searchwindow_append_result (window, search);
         chunk++;
@@ -1480,7 +1484,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
           search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
           if (search != NULL) 
           {
-            lw_search_cancel_search (search);
+            lw_search_cancel (search);
           }
         }
         link = link->next;
@@ -1488,7 +1492,7 @@ gw_searchwindow_cancel_all_searches (GwSearchWindow *window)
       g_list_free (children); children = NULL;
     }
 
-    lw_search_cancel_search (priv->mouse_item);
+    lw_search_cancel (priv->mouse_item);
 }
 
 
@@ -1512,7 +1516,7 @@ gw_searchwindow_cancel_search_by_tab_number (GwSearchWindow *window, const int p
       search = LW_SEARCH (g_object_get_data (G_OBJECT (widget), "searchitem"));
       if (search != NULL)
       {
-        lw_search_cancel_search (search);
+        lw_search_cancel (search);
       }
     }
 }

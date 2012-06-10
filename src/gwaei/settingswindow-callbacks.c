@@ -430,7 +430,7 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     GwSettingsWindow *window;
     GwApplication *application;
     GtkListStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     LwPreferences *preferences;
     
     //Initializations
@@ -439,11 +439,11 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     dictionarystore = gw_application_get_dictionarystore (application);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
 
     gtk_widget_destroy (GTK_WIDGET (window));
 
-    if (lw_dictinfolist_get_total (dictinfolist) == 0)
+    if (lw_dictionarylist_get_total (dictionarylist) == 0)
       gw_application_quit (application);
 
     gw_dictionarystore_save_order (GW_DICTIONARYSTORE (dictionarystore), preferences);
@@ -581,19 +581,19 @@ gw_settingswindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gp
 
 
 G_MODULE_EXPORT void 
-gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
+gw_settingswindow_remove_dictionary_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
     GtkListStore *dictionarystore;
-    LwDictInfoList *dictinfolist;
+    LwDictionaryList *dictionarylist;
     LwPreferences *preferences;
 
     GtkTreePath *path;
     GtkTreeIter iter;
-    LwDictInfo *di;
+    LwDictionary *dictionary;
     GError *error;
     GtkTreeSelection *selection;
     GtkTreeModel *model;
@@ -607,7 +607,7 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarystore = gw_application_get_dictionarystore (application);
-    dictinfolist = gw_dictionarystore_get_dictinfolist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
     view = priv->manage_dictionaries_treeview;
     selection = gtk_tree_view_get_selection (view);
     model = GTK_TREE_MODEL (dictionarystore);
@@ -620,11 +620,11 @@ gw_settingswindow_remove_dictinfo_cb (GtkWidget *widget, gpointer data)
 
     path = gtk_tree_model_get_path (model, &iter);
     indices = gtk_tree_path_get_indices (path);
-    di = lw_dictinfolist_get_dictinfo_by_load_position (dictinfolist, *indices);
+    dictionary = lw_dictionarylist_get_dictionary_by_position (dictionarylist, *indices);
 
-    if (di != NULL)
+    if (dictionary != NULL)
     {
-      lw_dictinfo_uninstall (di, NULL, &error);
+      lw_dictionary_uninstall (dictionary, NULL, &error);
       gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore), preferences);
     }
 

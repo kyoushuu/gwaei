@@ -48,10 +48,14 @@ static void w_console_append_less_relevant_header (WApplication*, LwSearch*);
 void 
 w_console_append_result (WApplication *application, LwSearch *search)
 {
-    if (application == NULL || search == NULL) return;
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+    g_return_if_fail (searh != NULL);
 
+    //Declarations
     GType type;
 
+    //Initializations
     type = G_OBJECT_TYPE (search->dictionary);
 
     if (g_type_is_a (type, LW_TYPE_EDICTIONARY))
