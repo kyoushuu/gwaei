@@ -50,7 +50,7 @@ w_console_append_result (WApplication *application, LwSearch *search)
 {
     //Sanity checks
     g_return_if_fail (application != NULL);
-    g_return_if_fail (searh != NULL);
+    g_return_if_fail (search != NULL);
 
     //Declarations
     GType type;

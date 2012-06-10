@@ -758,7 +758,7 @@ gw_vocabularywindow_set_word_tooltip_text_cb (GtkWidget  *widget,
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GwVocabularyWordStore *store;
-    LwVocabularyItem *item;
+    LwVocabulary *vocabulary;
     GtkTreeIter iter;
     gchar *text;
     GtkTreePath *path;
@@ -773,17 +773,17 @@ gw_vocabularywindow_set_word_tooltip_text_cb (GtkWidget  *widget,
     if (valid) 
     {
       text = gw_vocabularywordstore_iter_to_string (store, &iter);
-      item = lw_vocabularyitem_new_from_string (text);
+      vocabulary = lw_vocabulary_new_from_string (text);
       markup = g_markup_printf_escaped ("<b>%s [%s]</b>\n%s", 
-        lw_vocabularyitem_get_kanji (item), 
-        lw_vocabularyitem_get_furigana (item), 
-        lw_vocabularyitem_get_definitions (item));
+        lw_vocabulary_get_kanji (vocabulary), 
+        lw_vocabulary_get_furigana (vocabulary), 
+        lw_vocabulary_get_definitions (vocabulary));
       gtk_tree_view_set_tooltip_row (priv->word_treeview, tooltip, path);
       gtk_tooltip_set_markup (tooltip, markup);
       g_free (text);
       g_free (markup);
       gtk_tree_path_free (path);
-      lw_vocabularyitem_free (item);
+      lw_vocabulary_free (vocabulary);
     }
 
     return valid;

@@ -119,16 +119,16 @@ lw_result_clear (LwResult *result)
 
 
 gboolean 
-lw_resultline_is_similar (LwResult *rl1, LwResult *rl2)
+lw_result_is_similar (LwResult *result1, LwResult *result2)
 {
     //Declarations
     gboolean same_def_totals, same_first_def;
 
-    if (rl1 == NULL || rl2 == NULL) return FALSE;
+    if (result1 == NULL || result2 == NULL) return FALSE;
 
     //Initializations
-    same_def_totals = (rl1->def_total == rl2->def_total);
-    same_first_def = (strcmp(rl1->def_start[0], rl2->def_start[0]) == 0);
+    same_def_totals = (result1->def_total == result2->def_total);
+    same_first_def = (strcmp(result1->def_start[0], result2->def_start[0]) == 0);
 
     return (same_first_def && same_def_totals);
 }

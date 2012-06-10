@@ -177,13 +177,14 @@ gw_installprogresswindow_start (GwInstallProgressWindow *window)
 
 static gpointer _installprogresswindow_install_thread (gpointer data)
 {
+/*
     //Declarations
     GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
     GwApplication *application;
-    LwDictInstList *dictinstlist;
+    LwDictionaryList *dictinstlist;
     GList *iter;
-    LwDictInst *di;
+    LwDictionary *dictionary;
     GError *error;
 
     //Initializations
@@ -198,13 +199,13 @@ static gpointer _installprogresswindow_install_thread (gpointer data)
     g_timeout_add (100, gw_installprogresswindow_update_ui_timeout, window);
     for (iter = dictinstlist->list; iter != NULL && error == NULL; iter = iter->next)
     {
-      di = LW_DICTINST (iter->data);
-      if (di->selected)
+      dictionary = LW_DICTINST (iter->data);
+      if (dictionary->selected)
       {
         g_mutex_lock (&priv->mutex);
-        priv->di = di;
+        priv->dictionary = dictionary;
         g_mutex_unlock (&priv->mutex);
-        lw_dictinst_install (di, gw_installprogresswindow_update_dictinst_cb, window, &error);
+        lw_dictinst_install (dictionary, gw_installprogresswindow_update_dictinst_cb, window, &error);
       }
     }
 
@@ -213,8 +214,9 @@ static gpointer _installprogresswindow_install_thread (gpointer data)
 
     g_mutex_lock (&priv->mutex);
     //This will clue the progress window to close itself
-    priv->di = NULL;
+    priv->dictionary = NULL;
     g_mutex_unlock (&priv->mutex);
+*/
 
     return NULL;
 }

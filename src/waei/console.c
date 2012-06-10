@@ -67,7 +67,7 @@ w_console_uninstall_dictionary (WApplication* application, GError **error)
 
     if (dictionary != NULL)
     {
-      printf(gettext("Uninstalling %s...\n"), lw_dictionary_get_longname (dictionary));
+      printf(gettext("Uninstalling %s Dictionary...\n"), lw_dictionary_get_name (dictionary));
       lw_dictionary_uninstall (dictionary, w_console_uninstall_progress_cb, error);
     }
     else
@@ -111,7 +111,7 @@ w_console_install_dictionary (WApplication *application, GError **error)
 
     if (dictionary != NULL)
     {
-      printf(gettext("Installing %s...\n"), lw_dictionary_get_longname (dictionary));
+      printf(gettext("Installing %s Dictionary...\n"), lw_dictionary_get_name (dictionary));
       signalid = g_signal_connect (G_OBJECT (dictionary), "progress-changed", G_CALLBACK (w_console_update_progress_cb), application);
       lw_dictionary_install (dictionary, error);
       if (g_signal_handler_is_connected (G_OBJECT (dictionary), signalid))
@@ -187,7 +187,7 @@ w_console_print_installable_dictionaries (WApplication *application)
         filename = lw_dictionary_get_filename (dictionary);
         printf("  %s", filename);
         for (j = strlen(filename); j < 20; j++) printf(" ");
-        printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));
+        printf("(AKA: %s Dictionary)\n", lw_dictionary_get_name (dictionary));
         i++;
       }
       iter = iter->next;
@@ -228,7 +228,7 @@ w_console_print_available_dictionaries (WApplication *application)
 
       printf("  %s", filename);
       for (j = strlen(filename); j < 20; j++) printf(" ");
-      printf("(AKA: %s)\n", lw_dictionary_get_longname (dictionary));
+      printf("(AKA: %s Dictionary)\n", lw_dictionary_get_name (dictionary));
 
       i++;
       link = link->next;
@@ -327,7 +327,7 @@ w_console_search (WApplication *application, GError **error)
     if (!quiet_switch)
     {
       // TRANSLATORS: 'Searching for "${query}" in ${dictionary long name}'
-      printf(gettext("Searching for \"%s\" in %s...\n"), query_text_data, lw_dictionary_get_longname (dictionary));
+      printf(gettext("Searching for \"%s\" in %s Dictionary...\n"), query_text_data, lw_dictionary_get_name (dictionary));
       printf("\n");
     }
 

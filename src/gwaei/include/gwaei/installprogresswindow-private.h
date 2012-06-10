@@ -4,14 +4,14 @@
 G_BEGIN_DECLS
 
 struct _GwInstallProgressWindowPrivate {
-  LwDictInst *di;
+  LwDictionary *dictionary;
 
   GtkLabel *label;
   GtkLabel *sublabel;
   GtkProgressBar* progressbar;
   GtkButton *cancel_button;
 
-  double install_fraction;
+  gdouble install_fraction;
   GMutex mutex;
 };
 

@@ -1373,8 +1373,6 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
         lw_search_is_equal (search, new_item)
        )
     {
-      lw_search_increment_history_relevance_timer (search);
-
       if (new_item != NULL)
       {
         lw_search_free (new_item);
