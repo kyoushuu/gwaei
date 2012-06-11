@@ -644,14 +644,16 @@ gw_searchwindow_save_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_zoom_in_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_zoom_in_cb (GSimpleAction *action,
+                            GVariant      *parameter,
+                            gpointer       data)
 {
     GwApplication *application;
     GwSearchWindow *window;
     LwPreferences *preferences;
-    int size;
+    gint size;
 
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    window = GW_SEARCHWINDOW (data);
     g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -671,14 +673,16 @@ gw_searchwindow_zoom_in_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_zoom_out_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_zoom_out_cb (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       data)
 {
     GwApplication *application;
     GwSearchWindow *window;
     LwPreferences *preferences;
-    int size;
+    gint size;
 
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    window = GW_SEARCHWINDOW (data);
     g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
@@ -697,7 +701,9 @@ gw_searchwindow_zoom_out_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_zoom_100_cb (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       data)
 {
     //Declarations
     GwApplication *application;
@@ -705,8 +711,7 @@ gw_searchwindow_zoom_100_cb (GtkWidget *widget, gpointer data)
     LwPreferences *preferences;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
 
@@ -942,15 +947,10 @@ gw_searchwindow_homepage_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_show_help_cb (GSimpleAction *action,
+                              GVariant      *parameter,
+                              gpointer       data)
 {
-    //Declarations
-    GtkWindow *window;
-
-    //Initializations
-    window = GTK_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GTK_TYPE_WINDOW));
-    g_return_if_fail (window != NULL);
-
     gtk_show_uri (NULL, "ghelp:gwaei", gtk_get_current_event_time (), NULL);
 }
 
@@ -961,7 +961,9 @@ gw_searchwindow_show_help_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_glossary_cb (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       data)
 {
     //Declarations
     char *uri;
@@ -970,8 +972,7 @@ gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer data)
     GwApplication *application;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     application = gw_window_get_application (GW_WINDOW (window));
     uri = g_build_filename ("ghelp://", DATADIR2, "gnome", "help", "gwaei", "C", "glossary.xml", NULL);
     error = NULL;
@@ -981,51 +982,6 @@ gw_searchwindow_glossary_cb (GtkWidget *widget, gpointer data)
     //Cleanup
     gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
     g_free (uri);
-}
-
-
-//!
-//! @brief Opens the gWaei about dialog
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_about_cb (GtkWidget *widget, gpointer data)
-{
-    char *global_path = DATADIR2 G_DIR_SEPARATOR_S PACKAGE G_DIR_SEPARATOR_S "logo.png";
-    char *local_path = ".." G_DIR_SEPARATOR_S "share" G_DIR_SEPARATOR_S PACKAGE G_DIR_SEPARATOR_S "logo.png";
-
-    char *programmer_credits[] = 
-    {
-      "Zachary Dovel <pizzach@gmail.com>",
-      "Fabrizio Sabatini",
-      NULL
-    };
-
-    GdkPixbuf *logo;
-    if ( (logo = gdk_pixbuf_new_from_file (global_path,    NULL)) == NULL &&
-         (logo = gdk_pixbuf_new_from_file (local_path, NULL)) == NULL    )
-    {
-      printf ("Was unable to load the gwaei logo.\n");
-    }
-
-    GtkWidget *about = g_object_new (GTK_TYPE_ABOUT_DIALOG,
-               "program-name", "gWaei", 
-               "version", VERSION,
-               "copyright", "gWaei (C) 2008-2012 Zachary Dovel\n" 
-                            "Kanjipad backend (C) 2002 Owen Taylor\n"
-                            "JStroke backend (C) 1997 Robert Wells",
-               "comments", gettext("Program for Japanese translation and reference. The\ndictionaries are supplied by Jim Breen's WWWJDIC.\nSpecial thanks to the maker of GJITEN who served as an inspiration.\n Dedicated to Chuus"),
-               "license", "This software is GPL Licensed.\n\ngWaei is free software: you can redistribute it and/or modify\nit under the terms of the GNU General Public License as published by\n the Free Software Foundation, either version 3 of the License, or\n(at your option) any later version.\n\ngWaei is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License\nalong with gWaei.  If not, see <http://www.gnu.org/licenses/>.",
-               "logo", logo,
-               // TRANSLATORS: You can add your own name to the translation of this field, it will be displayed in the "about" box when gwaei is run in your language
-               "translator-credits", gettext("translator-credits"),
-               "authors", programmer_credits,
-               "website", "http://gwaei.sourceforge.net/",
-               NULL);
-    gtk_dialog_run (GTK_DIALOG (about));
-    g_object_unref (logo);
-    gtk_widget_destroy (about);
 }
 
 
@@ -1487,13 +1443,14 @@ gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_clear_search_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_clear_search_cb (GSimpleAction *action, 
+                                 GVariant      *parameter, 
+                                 gpointer       data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
 
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
 
     gtk_entry_set_text (priv->entry, "");
@@ -1619,8 +1576,8 @@ gw_searchwindow_search_drag_data_recieved_cb (GtkWidget        *widget,
 
     if (text != NULL && strlen(text) > 0)
     {
-      gw_searchwindow_clear_search_cb (widget, data);
       gtk_entry_set_text (priv->entry, text);
+      gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
       gw_searchwindow_search_cb (widget, data);
 
       gdk_drag_status (drag_context, GDK_ACTION_COPY, time);
@@ -1680,13 +1637,13 @@ gw_searchwindow_scroll_or_zoom_cb (GtkWidget *widget, GdkEventScroll *event, gpo
     {
       if(event->direction == GDK_SCROLL_UP)
       {
-        gw_searchwindow_zoom_out_cb (widget, data);
+        //gw_searchwindow_zoom_out_cb (widget, data);
         return TRUE; // dont propagate event, no scroll
       }
 
       if(event->direction == GDK_SCROLL_DOWN)
       {
-        gw_searchwindow_zoom_in_cb (widget, data);
+        //gw_searchwindow_zoom_in_cb (widget, data);
         return TRUE; // dont propagate event, no scroll
       }
     }
@@ -1705,12 +1662,14 @@ gw_searchwindow_new_tab_cb (GSimpleAction *action,
                             GVariant      *parameter,
                             gpointer       data)
 {
-    gw_searchwindow_new_tab (GW_WINDOW (data));
+    gw_searchwindow_new_tab (GW_SEARCHWINDOW (data));
 }
 
 
 G_MODULE_EXPORT void 
-gw_searchwindow_new_window_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_new_window_cb (GSimpleAction *action, 
+                               GVariant      *parameter, 
+                               gpointer       data)
 {
     //Declarations
     GwApplication *application;
@@ -1718,7 +1677,7 @@ gw_searchwindow_new_window_cb (GtkWidget *widget, gpointer data)
     GtkWindow *new_window;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    window = GW_SEARCHWINDOW (data);
     g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     new_window = gw_searchwindow_new (GTK_APPLICATION (application));
@@ -1818,13 +1777,14 @@ gw_searchwindow_switch_tab_cb (GtkNotebook *notebook,
 //! @param data Currently unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_next_tab_cb (GSimpleAction *action, 
+                             GVariant      *parameter,
+                             gpointer       data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
 
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
 
     gtk_notebook_next_page (priv->notebook);
@@ -1837,13 +1797,14 @@ gw_searchwindow_next_tab_cb (GtkWidget *widget, gpointer data)
 //! @param data Currently unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_previous_tab_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_previous_tab_cb (GSimpleAction *action,
+                                 GVariant      *parameter,
+                                 gpointer       data)
 {
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
 
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
 
     gtk_notebook_prev_page (priv->notebook);
@@ -2450,8 +2411,9 @@ gw_searchwindow_focus_in_event_cb (GtkWidget *widget,
 
 
 G_MODULE_EXPORT void 
-gw_searchwindow_open_vocabularywindow_cb (GtkWidget *widget, 
-                                          gpointer   data   )
+gw_searchwindow_open_vocabularywindow_cb (GSimpleAction *action, 
+                                          GVariant      *parameter,
+                                          gpointer       data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -2459,8 +2421,7 @@ gw_searchwindow_open_vocabularywindow_cb (GtkWidget *widget,
     GtkWindow *vocabularywindow;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     application = gw_window_get_application (GW_WINDOW (window));
 
     vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
@@ -2533,7 +2494,9 @@ gw_searchwindow_add_vocabulary_destroy_cb (GwAddVocabularyWindow *window, gpoint
 
 
 G_MODULE_EXPORT void
-gw_searchwindow_add_vocabulary_word_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_add_vocabulary_word_cb (GSimpleAction *action, 
+                                        GVariant      *parameter,
+                                        gpointer       data)
 {
     //Declarations
     GwSearchWindow *window;

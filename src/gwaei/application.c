@@ -57,9 +57,15 @@ static const gchar* _app_menu_xml =
 "  <menu id='app-menu'>"
 "    <section>"
 "      <item>"
+"        <attribute name='label' translatable='yes'>_About</attribute>"
+"        <attribute name='action'>app.about</attribute>"
+"      </item>"
+"    </section>"
+"    <section>"
+"      <item>"
 "        <attribute name='label' translatable='yes'>_Preferences</attribute>"
 "        <attribute name='action'>app.preferences</attribute>"
-"        <attribute name='accel'>&lt;Primary&gt;h</attribute>"
+"        <attribute name='accel'>&lt;Primary&gt;comma</attribute>"
 "      </item>"
 "    </section>"
 "    <section>"
@@ -803,6 +809,7 @@ gw_application_load_app_menu (GwApplication *application)
     GMenuModel *model;
 
     GActionEntry app_entries[] = {
+      { "about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
       { "preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
       { "quit", gw_application_quit_cb, NULL, NULL, NULL }
     };

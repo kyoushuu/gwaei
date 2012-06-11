@@ -470,7 +470,7 @@ gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
     menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (model));
 
     gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
-    //gtk_widget_show_all (menubar);
+    gtk_widget_show_all (menubar);
     gtk_application_set_menubar (GTK_APPLICATION (application), model);
     gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
     g_object_unref (builder);

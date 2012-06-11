@@ -17,9 +17,9 @@ struct _LwHistory {
 };
 typedef struct _LwHistory LwHistory;
 
-LwHistory* lw_history_new (const int);
+LwHistory* lw_history_new (const gint);
 void lw_history_free (LwHistory*);
-void lw_history_init (LwHistory*, const int);
+void lw_history_init (LwHistory*, const gint);
 void lw_history_deinit (LwHistory*);
 
 //Methods
