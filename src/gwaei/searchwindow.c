@@ -342,6 +342,19 @@ gw_searchwindow_finalize (GObject *object)
 }
 
 
+static void
+activate_toggle (GSimpleAction *action,
+                 GVariant      *parameter,
+                 gpointer       user_data)
+{
+  GVariant *state;
+
+  state = g_action_get_state (G_ACTION (action));
+  g_action_change_state (G_ACTION (action), g_variant_new_boolean (!g_variant_get_boolean (state)));
+  g_variant_unref (state);
+}
+
+
 static void 
 gw_searchwindow_constructed (GObject *object)
 {
@@ -370,10 +383,8 @@ gw_searchwindow_constructed (GObject *object)
       { "next-tab", gw_searchwindow_next_tab_cb, NULL, NULL, NULL },
       { "previous-tab", gw_searchwindow_previous_tab_cb, NULL, NULL, NULL },
       { "new-window", gw_searchwindow_new_window_cb, NULL, NULL, NULL },
-/*
-      { "toggle-toolbar-show", gw_searchwindow_toolbar_show_toggled_cb, NULL, NULL, NULL },
-      { "toggle-statusbar-show", gw_searchwindow_statusbar_show_toggled_cb, NULL, NULL, NULL },
-*/
+      { "toggle-toolbar-show", activate_toggle, NULL, "false", gw_searchwindow_toolbar_show_toggled_cb },
+      { "toggle-statusbar-show", activate_toggle, NULL, "false", gw_searchwindow_statusbar_show_toggled_cb },
       { "zoom-100", gw_searchwindow_zoom_100_cb, NULL, NULL, NULL },
       { "zoom-in", gw_searchwindow_zoom_in_cb, NULL, NULL, NULL },
       { "zoom-out", gw_searchwindow_zoom_out_cb, NULL, NULL, NULL },
