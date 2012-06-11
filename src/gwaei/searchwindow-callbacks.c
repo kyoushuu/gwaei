@@ -280,17 +280,16 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
 //! @param data Currently unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_close_cb (GSimpleAction *action, GVariant *variant, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
     GwApplication *application;
-    int pages;
+    gint pages;
     
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     pages = gtk_notebook_get_n_pages (priv->notebook);
@@ -298,7 +297,7 @@ gw_searchwindow_close_cb (GtkWidget *widget, gpointer data)
     if (pages == 1) 
       gtk_widget_destroy (GTK_WIDGET (window));
     else
-      gw_searchwindow_remove_current_tab_cb (widget, data);
+      gw_searchwindow_remove_current_tab_cb (window, data);
 
     if (gw_application_should_quit (application))
       gw_application_quit (application);
@@ -328,26 +327,6 @@ gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpoi
       gw_application_quit (application);
 
     return TRUE;
-}
-
-
-//!
-//! @brief Quits out of the application
-//! @see gw_application_quit ()
-//! @param widget GtkWidget pointer to the window to close
-//! @param data Currently unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_quit_cb (GtkWidget *widget, gpointer data)
-{
-    GwApplication *application;
-    GwSearchWindow *window;
-
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-
-    gw_application_quit (application);
 }
 
 
@@ -1722,16 +1701,11 @@ gw_searchwindow_scroll_or_zoom_cb (GtkWidget *widget, GdkEventScroll *event, gpo
 //! @param data Currently unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_new_tab_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_new_tab_cb (GSimpleAction *action,
+                            GVariant      *parameter,
+                            gpointer       data)
 {
-    //Declarations
-    GwSearchWindow *window;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    
-    gw_searchwindow_new_tab (window);
+    gw_searchwindow_new_tab (GW_WINDOW (data));
 }
 
 
@@ -2353,38 +2327,6 @@ gw_searchwindow_radicalswindow_destroy_cb (GtkWidget *widget, gpointer data)
 
 
 G_MODULE_EXPORT void 
-gw_searchwindow_open_settingswindow_cb (GtkWidget *widget, gpointer data)
-{
-    //Declarations
-    GwApplication *application;
-    GwSearchWindow *window;
-    GtkWindow *settingswindow;
-    GList *iter;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-    iter = gtk_application_get_windows (GTK_APPLICATION (application));
-
-    while (iter != NULL && !GW_IS_SETTINGSWINDOW (iter->data)) iter = iter->next;
-
-    if (iter != NULL)
-    {
-      settingswindow = GTK_WINDOW (iter->data);
-      gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (window));
-      gtk_window_present (GTK_WINDOW (settingswindow));
-    }
-    else
-    {
-      settingswindow = gw_settingswindow_new (GTK_APPLICATION (application));
-      gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (window));
-      gtk_widget_show (GTK_WIDGET (settingswindow));
-    }
-}
-
-
-G_MODULE_EXPORT void 
 gw_searchwindow_dictionaries_added_cb (GtkTreeModel *model, 
                                        GtkTreePath  *path, 
                                        GtkTreeIter  *iter, 
@@ -2472,6 +2414,7 @@ gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook,
       g_return_if_fail (window != NULL);
       priv = window->priv;
 
+/*
       gtk_action_set_sensitive (priv->previous_tab_action, (pages > 1));
       gtk_action_set_sensitive (priv->next_tab_action, (pages > 1));
 
@@ -2481,6 +2424,7 @@ gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook,
         label_text = gettext("_Close");
 
       gtk_action_set_label (priv->close_action, label_text);
+*/
     }
 
     gtk_notebook_set_show_tabs (notebook, (pages > 1));
@@ -2529,6 +2473,7 @@ gw_searchwindow_event_after_cb (GtkWidget *widget,
                                 GdkEvent  *event, 
                                 gpointer   data)
 {
+/*
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -2569,6 +2514,7 @@ gw_searchwindow_event_after_cb (GtkWidget *widget,
       gtk_action_set_sensitive (action_paste, FALSE);
       gtk_action_set_sensitive (action_select_all, FALSE);
     }
+*/
 }
 
 static void
@@ -2646,4 +2592,37 @@ gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer da
 
 }
 
+
+void
+_menu_popdown (GtkWidget *widget, gpointer data)
+{
+    gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON (data), FALSE);
+}
+
+
+G_MODULE_EXPORT void
+gw_searchwindow_show_popup_menu_cb (GtkWidget *widget, gpointer data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    GMenuModel *model;
+    GtkMenu* menu;
+    GList *attachlist;
+
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+
+    if (gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON (widget)) == FALSE) return;
+
+    while ((attachlist = gtk_menu_get_for_attach_widget (widget)) != NULL)
+      gtk_menu_detach (GTK_MENU (attachlist->data));
+
+    model = gw_window_get_menu_model (GW_WINDOW (window));
+    if (model == NULL) return;
+    menu = GTK_MENU (gtk_menu_new_from_model (model));
+    g_signal_connect (G_OBJECT (menu), "hide", G_CALLBACK (_menu_popdown), widget);
+    gtk_menu_attach_to_widget (menu, widget, NULL);
+
+    gtk_menu_popup (menu, NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
+}
 

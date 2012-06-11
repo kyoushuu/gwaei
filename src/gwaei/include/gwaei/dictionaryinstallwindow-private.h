@@ -50,9 +50,7 @@ struct _GwDictionaryInstallWindowPrivate {
   GtkButton* source_choose_button;
   GtkButton* source_reset_button;
   GtkComboBox* encoding_combobox;
-  GtkComboBox* compression_combobox;
-  GtkCheckButton* split_checkbutton;
-  GtkCheckButton* merge_checkbutton;
+  GtkCheckButton* postprocess_checkbutton;
 };
 
 #define GW_DICTIONARYINSTALLWINDOW_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_DICTIONARYINSTALLWINDOW, GwDictionaryInstallWindowPrivate))

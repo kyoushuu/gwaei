@@ -18,12 +18,12 @@ typedef struct _GwWindowPrivate GwWindowPrivate;
 #define GW_WINDOW_GET_CLASS(obj)    (G_TYPE_INSTANCE_GET_CLASS((obj), GW_TYPE_WINDOW, GwWindowClass))
 
 struct _GwWindow {
-  GtkWindow window;
+  GtkApplicationWindow window;
   GwWindowPrivate *priv;
 };
 
 struct _GwWindowClass {
-  GtkWindowClass parent_class;
+  GtkApplicationWindowClass parent_class;
 };
 
 //Methods
@@ -42,6 +42,9 @@ void gw_window_set_is_important (GwWindow*, gboolean);
 gboolean gw_window_is_important (GwWindow*);
 void gw_window_load_size (GwWindow*);
 void gw_window_save_size (GwWindow*);
+
+void gw_window_set_menu_model (GwWindow*, const gchar*, const gchar*);
+GMenuModel* gw_window_get_menu_model (GwWindow*);
 
 #include "window-callbacks.h"
 

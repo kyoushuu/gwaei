@@ -616,6 +616,22 @@ lw_dictionary_is_selected (LwDictionary *dictionary)
 }
 
 
+void
+lw_dictionary_set_selected (LwDictionary *dictionary, gboolean selected)
+{
+    //Sanity check
+    g_return_if_fail (dictionary != NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+
+    //Initializations
+    priv = dictionary->priv;
+
+    priv->selected = selected;
+}
+
+
 //!
 //! @brief Used to tell the LwDictionary installer to stop installation.
 //! @param dictionary The LwDictionary object to stop or prevent the install on.

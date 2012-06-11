@@ -47,6 +47,33 @@ static void gw_application_remove_signals (GwApplication*);
 static void gw_application_activate (GApplication*);
 static gboolean gw_application_local_command_line (GApplication*, gchar***, gint*);
 static int gw_application_command_line (GApplication*, GApplicationCommandLine*);
+static void gw_application_startup (GApplication*);
+static void gw_application_load_app_menu (GwApplication*);
+
+
+
+static const gchar* _app_menu_xml = 
+"<interface>"
+"  <menu id='app-menu'>"
+"    <section>"
+"      <item>"
+"        <attribute name='label' translatable='yes'>_Preferences</attribute>"
+"        <attribute name='action'>app.preferences</attribute>"
+"        <attribute name='accel'>&lt;Primary&gt;h</attribute>"
+"      </item>"
+"    </section>"
+"    <section>"
+"      <item>"
+"        <attribute name='label' translatable='yes'>_Quit</attribute>"
+"        <attribute name='action'>app.quit</attribute>"
+"        <attribute name='accel'>&lt;Primary&gt;q</attribute>"
+"      </item>"
+"    </section>"
+"  </menu>"
+"</interface>";
+
+
+
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
 
@@ -60,6 +87,8 @@ gw_application_new ()
     GwApplication *application;
     const gchar *id;
     GApplicationFlags flags;
+
+    g_set_application_name ("gWaei");
 
     //Initializations
     id = "gtk.org.gWaei";
@@ -168,6 +197,7 @@ gw_application_class_init (GwApplicationClass *klass)
 #endif
   application_class->command_line = gw_application_command_line;
   application_class->activate = gw_application_activate;
+  application_class->startup = gw_application_startup;
 
   g_type_class_add_private (object_class, sizeof (GwApplicationPrivate));
 }
@@ -740,6 +770,15 @@ gw_application_local_command_line (GApplication *application,
 } 
 
 
+static void
+gw_application_startup (GApplication *application)
+{
+    G_APPLICATION_CLASS (gw_application_parent_class)->startup (application);
+
+    gw_application_load_app_menu (GW_APPLICATION (application));
+}
+
+
 gboolean
 gw_application_should_quit (GwApplication *application)
 {
@@ -755,3 +794,27 @@ gw_application_should_quit (GwApplication *application)
 
     return should_quit;
 }
+
+
+static void
+gw_application_load_app_menu (GwApplication *application)
+{
+    GtkBuilder *builder;
+    GMenuModel *model;
+
+    GActionEntry app_entries[] = {
+      { "preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
+      { "quit", gw_application_quit_cb, NULL, NULL, NULL }
+    };
+
+    g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);
+
+    builder = gtk_builder_new ();
+    gtk_builder_add_from_string (builder, _app_menu_xml, -1, NULL);
+    model = G_MENU_MODEL (gtk_builder_get_object (builder, "app-menu"));
+    gtk_application_set_app_menu (GTK_APPLICATION (application), model);
+
+    g_object_unref (builder);
+}
+
+

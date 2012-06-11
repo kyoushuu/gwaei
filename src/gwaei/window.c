@@ -41,7 +41,7 @@
 #include <gwaei/gwaei.h>
 #include <gwaei/window-private.h>
 
-G_DEFINE_ABSTRACT_TYPE (GwWindow, gw_window, GTK_TYPE_WINDOW)
+G_DEFINE_ABSTRACT_TYPE (GwWindow, gw_window, GTK_TYPE_APPLICATION_WINDOW)
 
 typedef enum
 {
@@ -447,4 +447,39 @@ gw_window_save_size (GwWindow *window)
     }
 }
 
+
+void
+gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
+{
+    GwWindowPrivate *priv;
+    GtkBuilder *builder;
+    GtkApplication *application;
+    GMenuModel *model;
+    GtkWidget *menubar;
+    
+    priv = window->priv;
+    builder = gtk_builder_new ();
+    application = GTK_APPLICATION (gw_window_get_application (window));
+
+    gtk_builder_add_from_string (builder, xml, -1, NULL);
+    model = G_MENU_MODEL (gtk_builder_get_object (builder, id));
+
+    if (priv->menu != NULL) g_object_unref (priv->menu);
+    priv->menu = model;
+
+    menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (model));
+
+    gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
+    //gtk_widget_show_all (menubar);
+    gtk_application_set_menubar (GTK_APPLICATION (application), model);
+    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
+    g_object_unref (builder);
+}
+
+
+GMenuModel*
+gw_window_get_menu_model (GwWindow *window)
+{
+    return window->priv->menu;
+}
 

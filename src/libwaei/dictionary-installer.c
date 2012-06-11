@@ -1022,3 +1022,116 @@ lw_dictionary_installer_get_file_index (LwDictionary *dictionary)
     return install->index;
 }
 
+
+gboolean 
+lw_dictionary_installer_get_postprocessing (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->postprocess;
+}
+
+
+void
+lw_dictionary_installer_set_postprocessing (LwDictionary *dictionary, gboolean postprocess)
+{
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (dictionary->priv != NULL);
+    g_return_if_fail (dictionary->priv->install != NULL);
+
+    dictionary->priv->install->postprocess = postprocess;
+}
+
+
+LwEncoding 
+lw_dictionary_installer_get_encoding (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->encoding;
+}
+
+
+const gchar* 
+lw_dictionary_installer_get_downloads (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->downloads;
+}
+
+
+void
+lw_dictionary_installer_set_downloads (LwDictionary *dictionary, const gchar *downloads)
+{
+    //TODO
+}
+
+
+void
+lw_dictionary_installer_reset_downloads (LwDictionary *dictionary)
+{
+    //TODO
+}
+
+
+const gchar* 
+lw_dictionary_installer_get_files (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->files;
+}
+
+
+void
+lw_dictionary_installer_set_files (LwDictionary *dictionary, const gchar *files)
+{
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (dictionary->priv != NULL);
+    g_return_if_fail (dictionary->priv->install != NULL);
+
+    if (dictionary->priv->install->files != NULL)
+      g_free (dictionary->priv->install->files);
+    
+    dictionary->priv->install->files = g_strdup (files);
+}
+
+
+const gchar* 
+lw_dictionary_installer_get_description (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->description;
+}
+
+
+gboolean
+lw_dictionary_installer_is_builtin (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv->install != NULL, FALSE);
+
+    return dictionary->priv->install->builtin;
+}
+

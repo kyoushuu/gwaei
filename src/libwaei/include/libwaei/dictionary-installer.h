@@ -38,6 +38,21 @@ gdouble lw_dictionary_installer_get_stage_progress (LwDictionary*);
 gdouble lw_dictionary_installer_get_total_progress (LwDictionary*);
 gchar* lw_dictionary_installer_get_status_message (LwDictionary*, gboolean);
 
+gboolean lw_dictionary_installer_get_postprocessing (LwDictionary*);
+void lw_dictionary_installer_set_postprocessing (LwDictionary*, gboolean);
+LwEncoding lw_dictionary_installer_get_encoding (LwDictionary*);
+void lw_dictionary_installer_set_encoding (LwDictionary*, const LwEncoding);
+const gchar* lw_dictionary_installer_get_downloads (LwDictionary*);
+void lw_dictionary_installer_set_downloads (LwDictionary*, const gchar*);
+void lw_dictionary_installer_reset_downloads (LwDictionary*);
+
+void lw_dictionary_installer_set_files (LwDictionary *dictionary, const gchar*);
+const gchar* lw_dictionary_installer_get_files (LwDictionary *dictionary);
+
+const gchar* lw_dictionary_installer_get_description (LwDictionary*);
+
+gboolean lw_dictionary_installer_is_builtin (LwDictionary*);
+
 G_END_DECLS
 
 #endif

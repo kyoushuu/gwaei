@@ -59,6 +59,8 @@ void gw_searchwindow_remove_tab_cb (GtkWidget*, gpointer);
 void gw_searchwindow_remove_current_tab_cb (GtkWidget*, gpointer);
 
 void gw_searchwindow_new_window_cb (GtkWidget*, gpointer);
+void gw_searchwindow_new_tab_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_close_cb (GSimpleAction*, GVariant*, gpointer);
 
 //Update preference callbacks
 void gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data);
@@ -83,6 +85,8 @@ void gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget*, gpointer);
 
 void gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget*, gpointer);
 void gw_searchwindow_radicalswindow_destroy_cb (GtkWidget*, gpointer);
+
+void gw_searchwindow_show_popup_menu_cb (GtkWidget *, gpointer);
 
 #endif
 

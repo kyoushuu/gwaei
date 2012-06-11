@@ -6,6 +6,7 @@ G_BEGIN_DECLS
 struct _GwWindowPrivate {
   GtkBuilder *builder;
   GwApplication *application;
+  GMenuModel *menu;
   gchar* ui_xml;
   gboolean important;
   GtkWidget *toplevel;

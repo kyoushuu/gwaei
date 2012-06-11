@@ -29,3 +29,43 @@
 #include <gwaei/application-private.h>
 
 
+void 
+gw_application_quit_cb (GSimpleAction *action,
+                        GVariant      *parameter,
+                        gpointer       data)
+{
+    gw_application_quit (GW_APPLICATION (data));
+}
+
+
+void 
+gw_application_open_settingswindow_cb (GSimpleAction *action,
+                                       GVariant      *parameter,
+                                       gpointer       data)
+{
+    //Declarations
+    GwApplication *application;
+    GwSearchWindow *searchwindow;
+    GtkWindow *settingswindow;
+    GList *link;
+
+    //Initializations
+    searchwindow = GW_SEARCHWINDOW (gw_application_get_last_focused_searchwindow (GW_APPLICATION (data)));
+    application = gw_window_get_application (GW_WINDOW (searchwindow));
+    link = gtk_application_get_windows (GTK_APPLICATION (application));
+
+    while (link != NULL && !GW_IS_SETTINGSWINDOW (link->data)) link = link->next;
+
+    if (link != NULL)
+    {
+      settingswindow = GTK_WINDOW (link->data);
+      gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
+      gtk_window_present (GTK_WINDOW (settingswindow));
+    }
+    else
+    {
+      settingswindow = gw_settingswindow_new (GTK_APPLICATION (application));
+      gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
+      gtk_widget_show (GTK_WIDGET (settingswindow));
+    }
+}

@@ -41,6 +41,7 @@ void lw_dictionarylist_load_installed (LwDictionaryList*);
 void lw_dictionarylist_load_installable (LwDictionaryList*, LwPreferences*);
 void lw_dictionarylist_clear (LwDictionaryList*);
 
+gboolean lw_dictionarylist_installer_is_valid (LwDictionaryList*);
 
 G_END_DECLS
 
