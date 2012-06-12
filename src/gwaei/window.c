@@ -99,6 +99,7 @@ gw_window_constructed (GObject *object)
     priv->builder = gtk_builder_new ();
     gw_window_load_ui_xml (window, priv->ui_xml);
     priv->toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toplevel"));
+    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
 
     g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
 }
@@ -454,32 +455,61 @@ gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
     GwWindowPrivate *priv;
     GtkBuilder *builder;
     GtkApplication *application;
-    GMenuModel *model;
+    GMenuModel *menumodel;
     GtkWidget *menubar;
     
     priv = window->priv;
-    builder = gtk_builder_new ();
     application = GTK_APPLICATION (gw_window_get_application (window));
+    builder = gtk_builder_new ();
 
-    gtk_builder_add_from_string (builder, xml, -1, NULL);
-    model = G_MENU_MODEL (gtk_builder_get_object (builder, id));
+    if (builder != NULL)
+    {
+      gtk_builder_add_from_string (builder, xml, -1, NULL);
+      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, id));
+      if (menumodel == NULL) return;
 
-    if (priv->menu != NULL) g_object_unref (priv->menu);
-    priv->menu = model;
+      if (priv->menumodel != NULL) g_object_unref (priv->menumodel); priv->menumodel = NULL;
+      if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); priv->menubar = NULL;
 
-    menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (model));
+      menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
 
-    gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
-    gtk_widget_show_all (menubar);
-    gtk_application_set_menubar (GTK_APPLICATION (application), model);
-    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
-    g_object_unref (builder);
+      gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
+      gtk_widget_show_all (menubar);
+      gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+      g_object_unref (builder);
+    }
+
+    priv->menumodel = menumodel;
+    priv->menubar = GTK_MENU_BAR (menubar);
 }
 
 
 GMenuModel*
 gw_window_get_menu_model (GwWindow *window)
 {
-    return window->priv->menu;
+    //Sanity checks
+    g_return_val_if_fail (window != NULL, NULL);
+
+    return window->priv->menumodel;
+}
+
+
+void 
+gw_window_show_menubar (GwWindow *window, gboolean show)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+    g_return_if_fail (window->priv->menubar != NULL);
+
+    //Declarations
+    GwWindowPrivate *priv;
+
+    //Initializations
+    priv = window->priv;
+
+    if (show == TRUE)
+      gtk_widget_show (GTK_WIDGET (priv->menubar));
+    else
+      gtk_widget_hide (GTK_WIDGET (priv->menubar));
 }
 

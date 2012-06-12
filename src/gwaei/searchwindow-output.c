@@ -962,6 +962,7 @@ gw_searchwindow_append_more_relevant_header (GwSearchWindow *window, LwSearch *s
 void 
 gw_searchwindow_append_kanjidict_tooltip_result (GwSearchWindow *window, LwSearch *search)
 {
+    if (search == NULL) return;
     //Declarations
     GwSearchWindowPrivate *priv;
     LwResult *result;

@@ -58,6 +58,8 @@ void gw_searchwindow_cancel_search_for_current_tab (GwSearchWindow*);
 void gw_searchwindow_cancel_search_by_content (GwSearchWindow*, gpointer);
 void gw_searchwindow_cancel_all_searches (GwSearchWindow*);
 
+void gw_searchwindow_sync_tabbar_show (GwSearchWindow*);
+
 void gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow*, LwSearch*);
 
 void gw_searchwindow_entry_set_text (GwSearchWindow*, const gchar*);

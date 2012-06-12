@@ -128,19 +128,20 @@ static const gchar* _win_menubar_xml =
 "      <attribute name='label' translatable='yes'>_View</attribute>"
 "      <section>"
 "        <item>"
-"          <attribute name='label' translatable='yes'>Show Menubar</attribute>"
+"          <attribute name='label' translatable='yes'>Show _Menubar</attribute>"
 "          <attribute name='action'>win.toggle-menubar-show</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;a</attribute>"
 "        </item>"
 "        <item>"
-"          <attribute name='label' translatable='yes'>Show Toolbar</attribute>"
+"          <attribute name='label' translatable='yes'>Show _Toolbar</attribute>"
 "          <attribute name='action'>win.toggle-toolbar-show</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;a</attribute>"
 "        </item>"
 "        <item>"
-"          <attribute name='label' translatable='yes'>Show Statusbar</attribute>"
+"          <attribute name='label' translatable='yes'>Always Show T_ab Bar</attribute>"
+"          <attribute name='action'>win.toggle-tabbar-show</attribute>"
+"        </item>"
+"        <item>"
+"          <attribute name='label' translatable='yes'>Show _Statusbar</attribute>"
 "          <attribute name='action'>win.toggle-statusbar-show</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;a</attribute>"
 "        </item>"
 "      </section>"
 "      <section>"
@@ -342,19 +343,6 @@ gw_searchwindow_finalize (GObject *object)
 }
 
 
-static void
-activate_toggle (GSimpleAction *action,
-                 GVariant      *parameter,
-                 gpointer       user_data)
-{
-  GVariant *state;
-
-  state = g_action_get_state (G_ACTION (action));
-  g_action_change_state (G_ACTION (action), g_variant_new_boolean (!g_variant_get_boolean (state)));
-  g_variant_unref (state);
-}
-
-
 static void 
 gw_searchwindow_constructed (GObject *object)
 {
@@ -378,13 +366,14 @@ gw_searchwindow_constructed (GObject *object)
     GActionEntry win_entries[] = {
     //  { "copy", window_copy, NULL, NULL, NULL },
     //  { "paste", window_paste, NULL, NULL, NULL },
-    //  { "fullscreen", activate_toggle, NULL, NULL, NULL},
       { "new-tab", gw_searchwindow_new_tab_cb, NULL, NULL, NULL },
       { "next-tab", gw_searchwindow_next_tab_cb, NULL, NULL, NULL },
       { "previous-tab", gw_searchwindow_previous_tab_cb, NULL, NULL, NULL },
       { "new-window", gw_searchwindow_new_window_cb, NULL, NULL, NULL },
-      { "toggle-toolbar-show", activate_toggle, NULL, "false", gw_searchwindow_toolbar_show_toggled_cb },
-      { "toggle-statusbar-show", activate_toggle, NULL, "false", gw_searchwindow_statusbar_show_toggled_cb },
+      { "toggle-menubar-show", gw_searchwindow_menubar_show_toggled_cb, NULL, "false", NULL},
+      { "toggle-toolbar-show", gw_searchwindow_toolbar_show_toggled_cb, NULL, "false", NULL},
+      { "toggle-tabbar-show", gw_searchwindow_tabbar_show_toggled_cb, NULL, "false", NULL},
+      { "toggle-statusbar-show", gw_searchwindow_statusbar_show_toggled_cb, NULL, "false", NULL },
       { "zoom-100", gw_searchwindow_zoom_100_cb, NULL, NULL, NULL },
       { "zoom-in", gw_searchwindow_zoom_in_cb, NULL, NULL, NULL },
       { "zoom-out", gw_searchwindow_zoom_out_cb, NULL, NULL, NULL },
@@ -404,6 +393,7 @@ gw_searchwindow_constructed (GObject *object)
 
     priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));
     priv->spellcheck_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_toolbutton")); 
+    priv->menu_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "menu_toolbutton")); 
 
     priv->search_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "search_toolbar"));
     priv->entry = GTK_ENTRY (gw_window_get_object (GW_WINDOW (window), "search_entry"));
@@ -412,33 +402,6 @@ gw_searchwindow_constructed (GObject *object)
     priv->search_entry_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "search_entry_label"));
 
     priv->history = lw_history_new (20);
-
-/*
-    priv->cut_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "cut_action"));
-    priv->copy_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "copy_action"));
-    priv->paste_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "paste_action"));
-    priv->select_all_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "select_all_action"));
-    priv->previous_tab_action  = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "previous_tab_action"));
-    priv->next_tab_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "next_tab_action"));
-    priv->close_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "close_action"));
-    priv->back_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "back_action"));
-    priv->forward_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "forward_action"));
-    priv->append_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "append_action"));
-    priv->save_as_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "save_as_action"));
-    priv->print_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "print_action"));
-    priv->print_preview_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "print_preview_action"));
-    priv->zoom_in_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_in_action"));
-    priv->zoom_out_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_out_action"));
-    priv->zoom_100_action = GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "zoom_100_action"));
-*/
-    priv->show_toolbar_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_toolbar_toggleaction"));
-    priv->show_statusbar_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_statusbar_toggleaction"));
-    priv->show_radicals_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_radicals_toggleaction"));
-    priv->show_kanjipad_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_kanjipad_toggleaction"));
 
     priv->statusbar = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "statusbar"));
     priv->statusbar_label = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "statusbar_label"));
@@ -719,6 +682,7 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
       {
         gw_searchwindow_append_result (window, search);
         chunk++;
+        has_results = lw_search_has_results (search);
       }
     }
     else
@@ -726,10 +690,12 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
         gw_searchwindow_display_no_results_found_page (window, search);
     }
 
+    search = priv->mouse_item;
+    has_results = lw_search_has_results (search);
     
-    if (priv->mouse_item != NULL)
+    if (search != NULL && has_results);
     {
-      gw_searchwindow_append_kanjidict_tooltip_result (window, priv->mouse_item);
+      gw_searchwindow_append_kanjidict_tooltip_result (window, search);
     }
 
     return TRUE;
@@ -2459,11 +2425,27 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     g_signal_connect (G_OBJECT (window), "destroy",
                       G_CALLBACK (gw_searchwindow_remove_signals), NULL);
 
+    priv->signalid[GW_SEARCHWINDOW_SIGNALID_MENUBAR_SHOW] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        LW_KEY_MENUBAR_SHOW,
+        gw_searchwindow_sync_menubar_show_cb,
+        window
+    );
+
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_TOOLBAR_SHOW] = lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
         LW_KEY_TOOLBAR_SHOW,
         gw_searchwindow_sync_toolbar_show_cb,
+        window
+    );
+
+    priv->signalid[GW_SEARCHWINDOW_SIGNALID_TABBAR_SHOW] = lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        LW_KEY_TABBAR_SHOW,
+        gw_searchwindow_sync_tabbar_show_cb,
         window
     );
 
@@ -2915,5 +2897,48 @@ gw_searchwindow_hide_current_infobar (GwSearchWindow *window)
     gtk_widget_hide (GTK_WIDGET (infobar));
 }
 
+
+void
+gw_searchwindow_sync_tabbar_show (GwSearchWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GtkNotebook *notebook;
+    gint page_num, pages;
+    //const gchar *label_text;
+    gboolean always_show_tabbar;
+    gboolean show;
+
+    //Initializations
+    priv = window->priv;
+    notebook = priv->notebook;
+    always_show_tabbar = priv->always_show_tabbar;
+    pages = gtk_notebook_get_n_pages (notebook);
+    show = ((pages > 1) || always_show_tabbar);
+
+    if (page_num > 0)
+    {
+      //Initializations
+
+      //TODO
+/*
+      gtk_action_set_sensitive (priv->previous_tab_action, (pages > 1));
+      gtk_action_set_sensitive (priv->next_tab_action, (pages > 1));
+
+      if (pages > 1)
+        label_text = gettext("_Close Tab");
+      else
+        label_text = gettext("_Close");
+
+      gtk_action_set_label (priv->close_action, label_text);
+*/
+    }
+
+    
+    gtk_notebook_set_show_tabs (notebook, show);
+}
 
 

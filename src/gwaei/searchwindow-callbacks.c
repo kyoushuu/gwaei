@@ -240,6 +240,8 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
       gchar query[7];
       gint length = g_unichar_to_utf8 (character, query);
       query[length] = '\0'; 
+      LwSearch *search;
+      GError *error;
 
       //Start the search
       if (priv->mouse_item != NULL)
@@ -253,8 +255,14 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
       priv->mouse_button_press_root_x = event->x_root; //x position of the tooltip
       priv->mouse_button_press_root_y = event->y_root; //y position of the tooltip
       priv->mouse_button_character = character;
-      priv->mouse_item = lw_search_new (dictionary, query, 0, NULL);
-      lw_search_start (priv->mouse_item, TRUE);
+      error = NULL;
+      search = lw_search_new (dictionary, query, 0, &error);
+      if (search != NULL && error == NULL)
+      {
+        lw_search_start (search, TRUE);
+        priv->mouse_item = search;
+      }
+      gw_application_handle_error (application, NULL, FALSE, &error);
     }
     else if (vocabulary_data)
     {
@@ -297,7 +305,7 @@ gw_searchwindow_close_cb (GSimpleAction *action, GVariant *variant, gpointer dat
     if (pages == 1) 
       gtk_widget_destroy (GTK_WIDGET (window));
     else
-      gw_searchwindow_remove_current_tab_cb (window, data);
+      gw_searchwindow_remove_current_tab_cb (GTK_WIDGET (window), data);
 
     if (gw_application_should_quit (application))
       gw_application_quit (application);
@@ -1830,28 +1838,29 @@ gw_searchwindow_no_results_search_for_dictionary_cb (GtkWidget *widget, gpointer
 
 
 //!
-//! @brief Sets the show toolbar boolean to match the widget
-//! @see gw_searchwindow_set_toolbar_show ()
+//! @brief Sets the show menu boolean to match the widget
+//! @see gw_searchwindow_set_menu_show ()
 //! @param widget Unused GtkWidget pointer.
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_menubar_show_toggled_cb (GSimpleAction *action, 
+                                         GVariant      *parameter, 
+                                         gpointer       data)
 {
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
     LwPreferences *preferences;
-    gboolean request;
+    gboolean show;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TOOLBAR_SHOW);
+    show = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_MENUBAR_SHOW);
 
-    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TOOLBAR_SHOW, !request);
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_MENUBAR_SHOW, !show);
 }
 
 
@@ -1859,49 +1868,30 @@ gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data)
 //! @brief Syncs the gui to the preference settinging.  It should be attached to the gsettings object
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer data)
+gw_searchwindow_sync_menubar_show_cb (GSettings *settings, 
+                                      gchar     *key, 
+                                      gpointer   data)
 {
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    GtkWidget *toplevel;
-    GtkAction *action;
-    gboolean request;
-    GtkToolbar *primary_toolbar;
-    GtkToolbar *search_toolbar;
-    GtkStyleContext *context;
+    gboolean show;
+    GAction *action;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = GTK_ACTION (priv->show_toolbar_toggleaction);
-    request = lw_preferences_get_boolean (settings, key);
-    primary_toolbar = GTK_TOOLBAR (priv->primary_toolbar);
-    search_toolbar = GTK_TOOLBAR (priv->search_toolbar);
+    show = lw_preferences_get_boolean (settings, key);
+    action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-menubar-show");
 
-    if (request == TRUE)
-    {
-      context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
-      //gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-      gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
+    gw_window_show_menubar (GW_WINDOW (window), show);
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 
-      gtk_widget_show (GTK_WIDGET (primary_toolbar));
-    }
+    if (show == TRUE)
+      gtk_widget_hide (GTK_WIDGET (priv->menu_toolbutton));
     else
-    {
-      context = gtk_widget_get_style_context (GTK_WIDGET (search_toolbar));
-      //gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-      gtk_widget_reset_style (GTK_WIDGET (search_toolbar));
-
-      gtk_widget_hide (GTK_WIDGET (primary_toolbar));
-    }
-
-
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toolbar_show_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_toolbar_show_toggled_cb, toplevel);
+      gtk_widget_show (GTK_WIDGET (priv->menu_toolbutton));
 }
 
 
@@ -1912,55 +1902,166 @@ gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, gchar *key, gpointer 
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_statusbar_show_toggled_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_toolbar_show_toggled_cb (GSimpleAction *action, 
+                                         GVariant      *parameter, 
+                                         gpointer       data)
 {
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
     LwPreferences *preferences;
-    gboolean request;
+    gboolean show;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_STATUSBAR_SHOW);
+    show = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TOOLBAR_SHOW);
 
-    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_STATUSBAR_SHOW, !request);
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TOOLBAR_SHOW, !show);
 }
 
 
 //!
-//! @brief Sets the checkbox to show or hide the statusbar
-//! @param request How to set the statusbar
+//! @brief Syncs the gui to the preference settinging.  It should be attached to the gsettings object
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_sync_statusbar_show_cb (GSettings *settings, gchar *key, gpointer data)
+gw_searchwindow_sync_toolbar_show_cb (GSettings *settings, 
+                                      gchar     *key, 
+                                      gpointer   data)
 {
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    GtkWidget *toplevel;
-    GtkAction *action;
-    gboolean request;
+    gboolean show;
+    GtkToolbar *primary_toolbar;
+    GAction *action;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = GTK_ACTION (priv->show_statusbar_toggleaction);
-    request = lw_preferences_get_boolean (settings, key);
+    show = lw_preferences_get_boolean (settings, key);
+    primary_toolbar = GTK_TOOLBAR (priv->primary_toolbar);
+    action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-toolbar-show");
 
-    if (request == TRUE)
+    if (show == TRUE)
+      gtk_widget_show (GTK_WIDGET (primary_toolbar));
+    else
+      gtk_widget_hide (GTK_WIDGET (primary_toolbar));
+
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
+}
+
+
+//!
+//! @brief Sets the show menu boolean to match the widget
+//! @see gw_searchwindow_set_menu_show ()
+//! @param widget Unused GtkWidget pointer.
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_tabbar_show_toggled_cb (GSimpleAction *action, 
+                                        GVariant      *parameter, 
+                                        gpointer       data)
+{
+    //Declarations
+    GwApplication *application;
+    GwSearchWindow *window;
+    LwPreferences *preferences;
+    gboolean show;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (data);
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    show = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TABBAR_SHOW);
+
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_TABBAR_SHOW, !show);
+}
+
+
+//!
+//! @brief Syncs the gui to the preference settinging.  It should be attached to the gsettings object
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_tabbar_show_cb (GSettings *settings, 
+                                      gchar     *key, 
+                                      gpointer   data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    GwSearchWindowPrivate *priv;
+    gboolean show;
+    GAction *action;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+    priv = window->priv;
+    show = lw_preferences_get_boolean (settings, key);
+    action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-tabbar-show");
+    priv->always_show_tabbar = show;
+
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
+    gw_searchwindow_sync_tabbar_show (window);
+}
+
+//!
+//! @brief Sets the show toolbar boolean to match the widget
+//! @see gw_searchwindow_set_toolbar_show ()
+//! @param widget Unused GtkWidget pointer.
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_statusbar_show_toggled_cb (GSimpleAction *action, 
+                                           GVariant      *parameter, 
+                                           gpointer       data)
+{
+    //Declarations
+    GwApplication *application;
+    GwSearchWindow *window;
+    LwPreferences *preferences;
+    gboolean show;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (data);
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    show = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_STATUSBAR_SHOW);
+
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_STATUSBAR_SHOW, !show);
+}
+
+
+//!
+//! @brief Sets the checkbox to show or hide the statusbar
+//! @param show How to set the statusbar
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_statusbar_show_cb (GSettings *settings, 
+                                        gchar     *key, 
+                                        gpointer   data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    GwSearchWindowPrivate *priv;
+    gboolean show;
+    GAction *action;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+    priv = window->priv;
+    show = lw_preferences_get_boolean (settings, key);
+    action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-statusbar-show");
+
+    if (show == TRUE)
       gtk_widget_show (priv->statusbar);
     else
       gtk_widget_hide (priv->statusbar);
 
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_statusbar_show_toggled_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_statusbar_show_toggled_cb, toplevel);
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 }
 
 
@@ -1968,7 +2069,9 @@ gw_searchwindow_sync_statusbar_show_cb (GSettings *settings, gchar *key, gpointe
 //! @brief Sets the requested font with magnification applied
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_sync_font_cb (GSettings *settings, gchar *KEY, gpointer data)
+gw_searchwindow_sync_font_cb (GSettings *settings, 
+                              gchar     *KEY, 
+                              gpointer   data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -2141,6 +2244,8 @@ gw_searchwindow_toggle_kanjipadwindow_cb (GtkAction *action, gpointer data)
 void
 gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget *widget, gpointer data)
 {
+    //TODO
+/*
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -2157,6 +2262,7 @@ gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget *widget, gpointer data)
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toggle_kanjipadwindow_cb, toplevel);
     gtk_toggle_action_set_active (action, FALSE);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_toggle_kanjipadwindow_cb, toplevel);
+*/
 }
 
 
@@ -2268,6 +2374,8 @@ gw_searchwindow_toggle_radicalswindow_cb (GtkAction *action, gpointer data)
 void
 gw_searchwindow_radicalswindow_destroy_cb (GtkWidget *widget, gpointer data)
 {
+    //TODO
+/*
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -2284,6 +2392,7 @@ gw_searchwindow_radicalswindow_destroy_cb (GtkWidget *widget, gpointer data)
     G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toggle_radicalswindow_cb, toplevel);
     gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), FALSE);
     G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_toggle_radicalswindow_cb, toplevel);
+*/
 }
 
 
@@ -2306,6 +2415,8 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
                                          GtkTreePath  *path, 
                                          gpointer      data  )
 {
+    //TODO
+/*
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
@@ -2352,6 +2463,7 @@ gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model,
     }
 
     gw_searchwindow_update_history_popups (window);
+*/
 }
 
 
@@ -2363,32 +2475,10 @@ gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook,
 {
     //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    int pages;
-    const char *label_text;
 
-    pages = gtk_notebook_get_n_pages (notebook);
-    if (page_num > 0)
-    {
-      //Initializations
-      window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-      g_return_if_fail (window != NULL);
-      priv = window->priv;
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
 
-/*
-      gtk_action_set_sensitive (priv->previous_tab_action, (pages > 1));
-      gtk_action_set_sensitive (priv->next_tab_action, (pages > 1));
-
-      if (pages > 1)
-        label_text = gettext("_Close Tab");
-      else
-        label_text = gettext("_Close");
-
-      gtk_action_set_label (priv->close_action, label_text);
-*/
-    }
-
-    gtk_notebook_set_show_tabs (notebook, (pages > 1));
+    gw_searchwindow_sync_tabbar_show (window);
 }
 
 

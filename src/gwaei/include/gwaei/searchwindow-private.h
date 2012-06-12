@@ -15,6 +15,8 @@ typedef enum {
   GW_SEARCHWINDOW_SIGNALID_SPELLCHECK,
 #endif
   GW_SEARCHWINDOW_SIGNALID_KEEP_SEARCHING,
+  GW_SEARCHWINDOW_SIGNALID_TABBAR_SHOW,
+  GW_SEARCHWINDOW_SIGNALID_MENUBAR_SHOW,
   GW_SEARCHWINDOW_SIGNALID_TOOLBAR_SHOW,
   GW_SEARCHWINDOW_SIGNALID_STATUSBAR_SHOW,
   GW_SEARCHWINDOW_SIGNALID_USE_GLOBAL_FONT,
@@ -29,8 +31,11 @@ typedef enum {
 struct _GwSearchWindowPrivate {
   GtkNotebook *notebook;
 
+  GtkMenuBar *menubar;
+
   GtkToolbar *primary_toolbar;
   GtkToolButton *spellcheck_toolbutton;
+  GtkToolButton *menu_toolbutton;
 
   GtkToolbar *search_toolbar;
   GtkEntry *entry;
@@ -48,28 +53,6 @@ struct _GwSearchWindowPrivate {
   GtkMenu *forward_popup;
   GtkMenu *back_popup;
 
-  GtkAction *previous_tab_action;
-  GtkAction *next_tab_action;
-  GtkAction *close_action;
-  GtkAction *cut_action;
-  GtkAction *copy_action;
-  GtkAction *paste_action;
-  GtkAction *select_all_action;
-  GtkAction *back_action;
-  GtkAction *forward_action;
-  GtkAction *append_action;
-  GtkAction *save_as_action;
-  GtkAction *print_action;
-  GtkAction *print_preview_action;
-  GtkAction *zoom_in_action;
-  GtkAction *zoom_out_action;
-  GtkAction *zoom_100_action;
-
-  GtkToggleAction *show_toolbar_toggleaction;
-  GtkToggleAction *show_statusbar_toggleaction;
-  GtkToggleAction *show_radicals_toggleaction;
-  GtkToggleAction *show_kanjipad_toggleaction;
-
   LwDictionary *dictionary;
 
   //History
@@ -83,6 +66,7 @@ struct _GwSearchWindowPrivate {
   gint font_size;
 
   gboolean new_tab; 
+  gboolean always_show_tabbar;
 
   GwSpellcheck *spellcheck;
 

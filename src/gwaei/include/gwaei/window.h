@@ -46,6 +46,8 @@ void gw_window_save_size (GwWindow*);
 void gw_window_set_menu_model (GwWindow*, const gchar*, const gchar*);
 GMenuModel* gw_window_get_menu_model (GwWindow*);
 
+void gw_window_show_menubar (GwWindow*, gboolean);
+
 #include "window-callbacks.h"
 
 G_END_DECLS

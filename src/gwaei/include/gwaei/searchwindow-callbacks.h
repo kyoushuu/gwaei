@@ -64,11 +64,15 @@ void gw_searchwindow_previous_tab_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_close_cb (GSimpleAction*, GVariant*, gpointer);
 
 //Update preference callbacks
-void gw_searchwindow_toolbar_show_toggled_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_statusbar_show_toggled_cb (GtkWidget *widget, gpointer data);
+void gw_searchwindow_menubar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_toolbar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_tabbar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_statusbar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 
 //Sync to preference callbacks
+void gw_searchwindow_sync_menubar_show_cb (GSettings*, gchar*, gpointer);
 void gw_searchwindow_sync_toolbar_show_cb (GSettings*, gchar*, gpointer);
+void gw_searchwindow_sync_tabbar_show_cb (GSettings*, gchar*, gpointer);
 void gw_searchwindow_sync_statusbar_show_cb (GSettings*, gchar*, gpointer);
 void gw_searchwindow_sync_font_cb (GSettings*, gchar*, gpointer);
 void gw_searchwindow_sync_search_as_you_type_cb (GSettings*, gchar*, gpointer);

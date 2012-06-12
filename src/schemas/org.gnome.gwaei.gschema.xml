@@ -12,6 +12,18 @@
       <description>Stores the size of the window type when last closed.</description>
     </key>
 
+    <key name="tabbar-show" type="b">
+      <default>false</default>
+      <summary>Tabbar show status when there are no tabs</summary>
+      <description>Determines if the tabbar is hidden or not.</description>
+    </key>
+
+    <key name="menubar-show" type="b">
+      <default>false</default>
+      <summary>Menubar show status</summary>
+      <description>Determines if the menubar is hidden or not.</description>
+    </key>
+
     <key name="toolbar-show" type="b">
       <default>false</default>
       <summary>Toolbar show status</summary>
