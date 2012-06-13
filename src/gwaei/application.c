@@ -51,60 +51,6 @@ static void gw_application_startup (GApplication*);
 static void gw_application_load_app_menu (GwApplication*);
 
 
-
-static const gchar* _app_menu_xml = 
-"<interface>"
-"  <menu id='app-menu'>"
-"    <section>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>New _Window</attribute>"
-"        <attribute name='action'>app.new-window</attribute>"
-"        <attribute name='accel'>&lt;Primary&gt;n</attribute>"
-"      </item>"
-"    </section>"
-"    <section>"
-"        <item>"
-"          <attribute name='label' translatable='yes'>_Manage Vocabulary</attribute>"
-"          <attribute name='action'>app.vocabulary</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;m</attribute>"
-"        </item>"
-"    </section>"
-
-"    <section>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>_About</attribute>"
-"        <attribute name='action'>app.about</attribute>"
-"      </item>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>_Preferences</attribute>"
-"        <attribute name='action'>app.preferences</attribute>"
-"        <attribute name='accel'>&lt;Primary&gt;comma</attribute>"
-"      </item>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>_Contents</attribute>"
-"        <attribute name='action'>app.show-help</attribute>"
-"        <attribute name='accel'>F1</attribute>"
-"      </item>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>_Glossary</attribute>"
-"        <attribute name='action'>app.show-glossary</attribute>"
-"      </item>"
-"    </section>"
-
-"    <section>"
-"      <item>"
-"        <attribute name='label' translatable='yes'>_Quit</attribute>"
-"        <attribute name='action'>app.quit</attribute>"
-"        <attribute name='accel'>&lt;Primary&gt;q</attribute>"
-"      </item>"
-"    </section>"
-
-"  </menu>"
-"</interface>";
-
-
-
-
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
 
 //!
@@ -831,6 +777,9 @@ gw_application_load_app_menu (GwApplication *application)
 {
     GtkBuilder *builder;
     GMenuModel *model;
+
+TODO
+    if (g_file_test (path, G_FILE_TEST_IS_REGULAR) && gtk_builder_add_from_file (priv->builder, path,  NULL))
 
     GActionEntry app_entries[] = {
       { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
