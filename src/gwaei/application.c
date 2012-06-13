@@ -57,17 +57,40 @@ static const gchar* _app_menu_xml =
 "  <menu id='app-menu'>"
 "    <section>"
 "      <item>"
-"        <attribute name='label' translatable='yes'>_About</attribute>"
-"        <attribute name='action'>app.about</attribute>"
+"        <attribute name='label' translatable='yes'>New _Window</attribute>"
+"        <attribute name='action'>app.new-window</attribute>"
+"        <attribute name='accel'>&lt;Primary&gt;n</attribute>"
 "      </item>"
 "    </section>"
 "    <section>"
+"        <item>"
+"          <attribute name='label' translatable='yes'>_Manage Vocabulary</attribute>"
+"          <attribute name='action'>app.vocabulary</attribute>"
+"          <attribute name='accel'>&lt;Primary&gt;m</attribute>"
+"        </item>"
+"    </section>"
+
+"    <section>"
+"      <item>"
+"        <attribute name='label' translatable='yes'>_About</attribute>"
+"        <attribute name='action'>app.about</attribute>"
+"      </item>"
 "      <item>"
 "        <attribute name='label' translatable='yes'>_Preferences</attribute>"
 "        <attribute name='action'>app.preferences</attribute>"
 "        <attribute name='accel'>&lt;Primary&gt;comma</attribute>"
 "      </item>"
+"      <item>"
+"        <attribute name='label' translatable='yes'>_Contents</attribute>"
+"        <attribute name='action'>app.show-help</attribute>"
+"        <attribute name='accel'>F1</attribute>"
+"      </item>"
+"      <item>"
+"        <attribute name='label' translatable='yes'>_Glossary</attribute>"
+"        <attribute name='action'>app.show-glossary</attribute>"
+"      </item>"
 "    </section>"
+
 "    <section>"
 "      <item>"
 "        <attribute name='label' translatable='yes'>_Quit</attribute>"
@@ -75,6 +98,7 @@ static const gchar* _app_menu_xml =
 "        <attribute name='accel'>&lt;Primary&gt;q</attribute>"
 "      </item>"
 "    </section>"
+
 "  </menu>"
 "</interface>";
 
@@ -809,9 +833,13 @@ gw_application_load_app_menu (GwApplication *application)
     GMenuModel *model;
 
     GActionEntry app_entries[] = {
+      { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
       { "about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
       { "preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
-      { "quit", gw_application_quit_cb, NULL, NULL, NULL }
+      { "vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
+      { "quit", gw_application_quit_cb, NULL, NULL, NULL },
+      { "show-help", gw_application_show_help_cb, NULL, NULL, NULL },
+      { "show-glossary", gw_application_show_glossary_cb, NULL, NULL, NULL }
     };
 
     g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);

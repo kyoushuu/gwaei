@@ -898,102 +898,6 @@ gw_searchwindow_copy_cb (GtkAction *action, gpointer data)
  
 
 //!
-//! @brief Sends the user to the gWaei irc channel for help
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_irc_channel_cb (GtkWidget *widget, gpointer data)
-{
-    //Initializations
-    GError *error;
-    GwSearchWindow *window;
-    GwApplication *application;
-
-    //Declarations
-    error = NULL;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-
-    gtk_show_uri (NULL, "irc://irc.freenode.net/gWaei", gtk_get_current_event_time (), &error);
-
-    //Cleanup
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
-}
-
-
-//!
-//! @brief Sends the user to the gWaei homepage for whatever they need
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_homepage_cb (GtkWidget *widget, gpointer data)
-{
-    //Declarations
-    GError *error;
-    GwSearchWindow *window;
-    GwApplication *application;
-
-    //Initializations
-    error = NULL;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-
-    gtk_show_uri (NULL, "http://gwaei.sourceforge.net/", gtk_get_current_event_time (), &error);
-
-    //Cleanup
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
-}
-
-
-//!
-//! @brief Opens the gWaei help documentation
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_show_help_cb (GSimpleAction *action,
-                              GVariant      *parameter,
-                              gpointer       data)
-{
-    gtk_show_uri (NULL, "ghelp:gwaei", gtk_get_current_event_time (), NULL);
-}
-
-
-//!
-//! @brief Opens the gWaei dictionary glossary help documentation
-//! @param widget Unused GtkWidget pointer
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_glossary_cb (GSimpleAction *action,
-                             GVariant      *parameter,
-                             gpointer       data)
-{
-    //Declarations
-    char *uri;
-    GError *error;
-    GwSearchWindow *window;
-    GwApplication *application;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (data);
-    application = gw_window_get_application (GW_WINDOW (window));
-    uri = g_build_filename ("ghelp://", DATADIR2, "gnome", "help", "gwaei", "C", "glossary.xml", NULL);
-    error = NULL;
-
-    gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
-
-    //Cleanup
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
-    g_free (uri);
-}
-
-
-//!
 //! @brief Cycles the active dictionaries down the list
 //! @see gw_searchwindow_cycle_dictionaries_backward_cb ()
 //! @param widget Unused GtkWidget pointer
@@ -1674,26 +1578,6 @@ gw_searchwindow_new_tab_cb (GSimpleAction *action,
 }
 
 
-G_MODULE_EXPORT void 
-gw_searchwindow_new_window_cb (GSimpleAction *action, 
-                               GVariant      *parameter, 
-                               gpointer       data)
-{
-    //Declarations
-    GwApplication *application;
-    GwSearchWindow *window;
-    GtkWindow *new_window;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (data);
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-    new_window = gw_searchwindow_new (GTK_APPLICATION (application));
-
-    gtk_widget_show (GTK_WIDGET (new_window));
-}
-
-
 //!
 //! @brief Remove the tab where the close button is clicked
 //! @param widget Currently unused widget pointer
@@ -1877,18 +1761,23 @@ gw_searchwindow_sync_menubar_show_cb (GSettings *settings,
     GwSearchWindowPrivate *priv;
     gboolean show;
     GAction *action;
+    GtkSettings *gtk_settings;
+    gboolean shell_shows_menubar;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-    show = lw_preferences_get_boolean (settings, key);
+    gtk_settings = gtk_settings_get_default ();
+    g_object_get (G_OBJECT (gtk_settings), "gtk-shell-shows-menubar", &shell_shows_menubar, NULL);
+    show = (lw_preferences_get_boolean (settings, key));
     action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-menubar-show");
 
-    gw_window_show_menubar (GW_WINDOW (window), show);
+printf("BREAK shell shows menubar %d\n", shell_shows_menubar);
+    gw_window_show_menubar (GW_WINDOW (window), show && !shell_shows_menubar);
     g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 
-    if (show == TRUE)
+    if (show == TRUE || shell_shows_menubar)
       gtk_widget_hide (GTK_WIDGET (priv->menu_toolbutton));
     else
       gtk_widget_show (GTK_WIDGET (priv->menu_toolbutton));

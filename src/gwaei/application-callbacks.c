@@ -39,6 +39,24 @@
 #include <gwaei/application-private.h>
 
 
+G_MODULE_EXPORT void 
+gw_application_open_searchwindow_cb (GSimpleAction *action, 
+                                     GVariant      *parameter, 
+                                     gpointer       data)
+{
+    //Declarations
+    GwApplication *application;
+    GtkWindow *window;
+
+    //Initializations
+    application = GW_APPLICATION (data);
+    g_return_if_fail (application != NULL);
+    window = gw_searchwindow_new (GTK_APPLICATION (application));
+
+    gtk_widget_show (GTK_WIDGET (window));
+}
+
+
 void 
 gw_application_quit_cb (GSimpleAction *action,
                         GVariant      *parameter,
@@ -78,6 +96,22 @@ gw_application_open_settingswindow_cb (GSimpleAction *action,
       gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
       gtk_widget_show (GTK_WIDGET (settingswindow));
     }
+}
+
+
+G_MODULE_EXPORT void 
+gw_application_open_vocabularywindow_cb (GSimpleAction *action, 
+                                         GVariant      *parameter,
+                                         gpointer       data)
+{
+    //Declarations
+    GtkWindow *window;
+    GwApplication *application;
+
+    //Initializations
+    application = GW_APPLICATION (data);
+    window = gw_vocabularywindow_new (GTK_APPLICATION (application));
+    gtk_widget_show (GTK_WIDGET (window));
 }
 
 
@@ -140,3 +174,101 @@ gw_application_open_aboutdialog_cb (GSimpleAction *action,
 }
 
 
+//!
+//! @brief Sends the user to the gWaei irc channel for help
+//! @param widget Unused GtkWidget pointer
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_application_show_irc_channel_cb (GSimpleAction *action, 
+                                    GVariant      *parameter,
+                                    gpointer       data)
+{
+    //Initializations
+    GError *error;
+    GwSearchWindow *window;
+    GwApplication *application;
+
+    //Declarations
+    error = NULL;
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+    application = gw_window_get_application (GW_WINDOW (window));
+
+    gtk_show_uri (NULL, "irc://irc.freenode.net/gWaei", gtk_get_current_event_time (), &error);
+
+    //Cleanup
+    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
+}
+
+
+//!
+//! @brief Sends the user to the gWaei homepage for whatever they need
+//! @param widget Unused GtkWidget pointer
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_application_show_homepage_cb (GSimpleAction *action, 
+                                 GVariant      *parameter,
+                                 gpointer       data)
+{
+    //Declarations
+    GError *error;
+    GwSearchWindow *window;
+    GwApplication *application;
+
+    //Initializations
+    error = NULL;
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+    application = gw_window_get_application (GW_WINDOW (window));
+
+    gtk_show_uri (NULL, "http://gwaei.sourceforge.net/", gtk_get_current_event_time (), &error);
+
+    //Cleanup
+    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
+}
+
+
+//!
+//! @brief Opens the gWaei help documentation
+//! @param widget Unused GtkWidget pointer
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_application_show_help_cb (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       data)
+{
+    gtk_show_uri (NULL, "ghelp:gwaei", gtk_get_current_event_time (), NULL);
+}
+
+
+//!
+//! @brief Opens the gWaei dictionary glossary help documentation
+//! @param widget Unused GtkWidget pointer
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_application_show_glossary_cb (GSimpleAction *action,
+                                 GVariant      *parameter,
+                                 gpointer       data)
+{
+    //Declarations
+    char *uri;
+    GError *error;
+    GwSearchWindow *window;
+    GwApplication *application;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (data);
+    application = gw_window_get_application (GW_WINDOW (window));
+    uri = g_build_filename ("ghelp://", DATADIR2, "gnome", "help", "gwaei", "C", "glossary.xml", NULL);
+    error = NULL;
+
+    gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
+
+    //Cleanup
+    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
+    g_free (uri);
+}

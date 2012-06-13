@@ -55,11 +55,6 @@ static const gchar* _win_menubar_xml =
 "      <attribute name='label' translatable='yes'>_File</attribute>"
 "      <section>"
 "        <item>"
-"          <attribute name='label' translatable='yes'>New _Window</attribute>"
-"          <attribute name='action'>win.new-window</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;n</attribute>"
-"        </item>"
-"        <item>"
 "          <attribute name='label' translatable='yes'>New _Tab</attribute>"
 "          <attribute name='action'>win.new-tab</attribute>"
 "          <attribute name='accel'>&lt;Primary&gt;t</attribute>"
@@ -240,42 +235,6 @@ static const gchar* _win_menubar_xml =
 "        </item>"
 "      </section>"
 "    </submenu>"
-
-"    <submenu>"
-"      <attribute name='label' translatable='yes'>V_ocabulary</attribute>"
-"      <section>"
-"        <item>"
-"          <attribute name='label' translatable='yes'>_Add Word</attribute>"
-"          <attribute name='action'>win.add-word</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;Left</attribute>"
-"        </item>"
-"      </section>"
-"      <section>"
-"        <item>"
-"          <attribute name='label' translatable='yes'>_Manage Vocabulary</attribute>"
-"          <attribute name='action'>win.manage-vocabulary</attribute>"
-"          <attribute name='accel'>&lt;Primary&gt;m</attribute>"
-"        </item>"
-"      </section>"
-"    </submenu>"
-
-"    <submenu>"
-"      <attribute name='label' translatable='yes'>_Help</attribute>"
-"      <section>"
-"        <item>"
-"          <attribute name='label' translatable='yes'>_Contents</attribute>"
-"          <attribute name='action'>win.show-help</attribute>"
-"          <attribute name='accel'>F1</attribute>"
-"        </item>"
-"      </section>"
-"      <section>"
-"        <item>"
-"          <attribute name='label' translatable='yes'>_Glossary</attribute>"
-"          <attribute name='action'>win.show-glossary</attribute>"
-"        </item>"
-"      </section>"
-"    </submenu>"
-
 "  </menu>"
 "</interface>";
 
@@ -369,7 +328,6 @@ gw_searchwindow_constructed (GObject *object)
       { "new-tab", gw_searchwindow_new_tab_cb, NULL, NULL, NULL },
       { "next-tab", gw_searchwindow_next_tab_cb, NULL, NULL, NULL },
       { "previous-tab", gw_searchwindow_previous_tab_cb, NULL, NULL, NULL },
-      { "new-window", gw_searchwindow_new_window_cb, NULL, NULL, NULL },
       { "toggle-menubar-show", gw_searchwindow_menubar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-toolbar-show", gw_searchwindow_toolbar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-tabbar-show", gw_searchwindow_tabbar_show_toggled_cb, NULL, "false", NULL},
@@ -381,9 +339,7 @@ gw_searchwindow_constructed (GObject *object)
       { "add-word", gw_searchwindow_add_vocabulary_word_cb, NULL, NULL, NULL },
       { "manage-vocabulary", gw_searchwindow_open_vocabularywindow_cb, NULL, NULL, NULL},
       { "clear", gw_searchwindow_clear_search_cb, NULL, NULL, NULL },
-      { "close", gw_searchwindow_close_cb, NULL, NULL, NULL },
-      { "show-help", gw_searchwindow_show_help_cb, NULL, NULL, NULL },
-      { "show-glossary", gw_searchwindow_glossary_cb, NULL, NULL, NULL }
+      { "close", gw_searchwindow_close_cb, NULL, NULL, NULL }
     };
     g_action_map_add_action_entries (G_ACTION_MAP (window), win_entries, G_N_ELEMENTS (win_entries), window);
 
@@ -2580,7 +2536,17 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     lw_preferences_remove_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
+        priv->signalid[GW_SEARCHWINDOW_SIGNALID_MENUBAR_SHOW]
+    );
+    lw_preferences_remove_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_TOOLBAR_SHOW]
+    );
+    lw_preferences_remove_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        priv->signalid[GW_SEARCHWINDOW_SIGNALID_TABBAR_SHOW]
     );
     lw_preferences_remove_change_listener_by_schema (
         preferences,

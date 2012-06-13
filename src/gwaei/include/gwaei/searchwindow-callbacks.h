@@ -94,8 +94,6 @@ void gw_searchwindow_radicalswindow_destroy_cb (GtkWidget*, gpointer);
 void gw_searchwindow_show_popup_menu_cb (GtkWidget *, gpointer);
 void gw_searchwindow_add_vocabulary_word_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_open_vocabularywindow_cb (GSimpleAction*, GVariant*, gpointer);
-void gw_searchwindow_show_help_cb (GSimpleAction*, GVariant*, gpointer);
-void gw_searchwindow_glossary_cb (GSimpleAction*, GVariant*, gpointer);
 
 #endif
 

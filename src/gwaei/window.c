@@ -456,11 +456,15 @@ gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
     GtkBuilder *builder;
     GtkApplication *application;
     GMenuModel *menumodel;
+    GMenuModel *appmenumodel;
+    GtkWidget *appmenu;
     GtkWidget *menubar;
     
     priv = window->priv;
     application = GTK_APPLICATION (gw_window_get_application (window));
     builder = gtk_builder_new ();
+    menubar = NULL;
+    menumodel = NULL;
 
     if (builder != NULL)
     {
@@ -471,10 +475,12 @@ gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
       if (priv->menumodel != NULL) g_object_unref (priv->menumodel); priv->menumodel = NULL;
       if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); priv->menubar = NULL;
 
+/*
       menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
 
       gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
       gtk_widget_show_all (menubar);
+*/
       gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
       g_object_unref (builder);
     }
@@ -497,6 +503,8 @@ gw_window_get_menu_model (GwWindow *window)
 void 
 gw_window_show_menubar (GwWindow *window, gboolean show)
 {
+    gtk_application_window_set_show_menubar (window, show);
+/*
     //Sanity checks
     g_return_if_fail (window != NULL);
     g_return_if_fail (window->priv->menubar != NULL);
@@ -511,5 +519,6 @@ gw_window_show_menubar (GwWindow *window, gboolean show)
       gtk_widget_show (GTK_WIDGET (priv->menubar));
     else
       gtk_widget_hide (GTK_WIDGET (priv->menubar));
+*/
 }
 
