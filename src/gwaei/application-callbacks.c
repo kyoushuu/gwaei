@@ -180,7 +180,7 @@ gw_application_open_aboutdialog_cb (GSimpleAction *action,
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_application_show_irc_channel_cb (GSimpleAction *action, 
+gw_application_open_irc_channel_cb (GSimpleAction *action, 
                                     GVariant      *parameter,
                                     gpointer       data)
 {
@@ -208,7 +208,7 @@ gw_application_show_irc_channel_cb (GSimpleAction *action,
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_application_show_homepage_cb (GSimpleAction *action, 
+gw_application_open_homepage_cb (GSimpleAction *action, 
                                  GVariant      *parameter,
                                  gpointer       data)
 {
@@ -236,7 +236,7 @@ gw_application_show_homepage_cb (GSimpleAction *action,
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_application_show_help_cb (GSimpleAction *action,
+gw_application_open_help_cb (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       data)
 {
@@ -250,7 +250,7 @@ gw_application_show_help_cb (GSimpleAction *action,
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_application_show_glossary_cb (GSimpleAction *action,
+gw_application_open_glossary_cb (GSimpleAction *action,
                                  GVariant      *parameter,
                                  gpointer       data)
 {

@@ -15,8 +15,8 @@ typedef enum {
 } GwApplicationSignalId;
 
 struct _GwApplicationPrivate {
-  int* argc;
-  char*** argv;
+  gint* argc;
+  gchar*** argv;
 
   GError *error;
 

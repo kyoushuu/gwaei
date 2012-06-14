@@ -385,6 +385,7 @@ gw_application_get_window_by_type (GwApplication *application, const GType TYPE)
 GtkWindow* 
 gw_application_get_window_by_widget (GwApplication *application, GtkWidget *widget)
 {
+//TODO
     //Declarations
     GList *iter;
     GList *list;
@@ -775,30 +776,112 @@ gw_application_should_quit (GwApplication *application)
 static void
 gw_application_load_app_menu (GwApplication *application)
 {
+    //Declarations
     GtkBuilder *builder;
     GMenuModel *model;
+    GtkSettings *settings;
+    gboolean loaded;
+    gboolean os_shows_app_menu;
+    gboolean os_shows_win_menu;
+    const gchar *filename;
 
-TODO
-    if (g_file_test (path, G_FILE_TEST_IS_REGULAR) && gtk_builder_add_from_file (priv->builder, path,  NULL))
-
-    GActionEntry app_entries[] = {
+    static GActionEntry app_entries[] = {
       { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
-      { "about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
-      { "preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
-      { "vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
-      { "quit", gw_application_quit_cb, NULL, NULL, NULL },
-      { "show-help", gw_application_show_help_cb, NULL, NULL, NULL },
-      { "show-glossary", gw_application_show_glossary_cb, NULL, NULL, NULL }
+      { "open-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
+      { "open-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
+      { "open-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
+      { "open-help", gw_application_open_help_cb, NULL, NULL, NULL },
+      { "open-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
+      { "quit", gw_application_quit_cb, NULL, NULL, NULL }
     };
 
-    g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);
+    //Initializations
+    builder = NULL;
+    model = NULL;
+    loaded = FALSE;
+    settings = gtk_settings_get_default ();
+    g_object_set (settings, "gtk-enable-accels", TRUE, -1);
+    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu);
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu);
+
+    if (os_shows_app_menu && os_show_win_menu)
+    {
+      filename = "application-menumodel-macosx.ui";
+    }
+    else if (os_shows_app_menu != os_show_win_menu)
+    {
+    }
+    else
+    {
+    }
 
     builder = gtk_builder_new ();
-    gtk_builder_add_from_string (builder, _app_menu_xml, -1, NULL);
+    if (builder == NULL) goto errored;
+    
+    loaded = gw_application_load_xml (builder, filename)
+    if (loaded == FALSE) goto errored;
     model = G_MENU_MODEL (gtk_builder_get_object (builder, "app-menu"));
-    gtk_application_set_app_menu (GTK_APPLICATION (application), model);
+    if (model == NULL) goto errored;
 
+    gtk_application_set_app_menu (GTK_APPLICATION (application), model);
+    g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);
+
+errored:
     g_object_unref (builder);
+}
+
+
+gboolean
+gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
+{
+    //Declarations
+    gint i;
+    gchar *path;
+    const gint TOTAL_PATHS = 4;
+    gchar *paths[TOTAL_PATHS];
+    gboolean file_exists;
+    gboolean is_valid_xml;
+    GError *error;
+
+    //Initializations
+    loaded_file_xml = FALSE;
+    file_exists = FALSE;
+    paths[0] = g_build_filename (filename, NULL);
+    paths[1] = g_build_filename ("..", "share", PACKAGE, filename, NULL);
+    paths[2] = g_build_filename (DATADIR2, PACKAGE, filename, NULL);
+    paths[3] = NULL;
+    error = NULL;
+
+    //Search for the files
+    for (i = 0; i < TOTAL_PATHS; i++)
+    {
+      path = paths[i];
+
+      file_exists = g_file_test (path, G_FILE_TEST_IS_REGULAR);
+      if (file_exists == FALSE)
+        continue;
+
+      is_valid_xml = gtk_builder_add_from_file (builder, path,  NULL)
+      if (error != NULL) 
+      {
+        g_warning ("Problems loading xml from %s. %s\n", path, error->message);
+        g_error_free (error); error = NULL;
+        continue;
+      }
+      if (is_valid_xml == FALSE) 
+        continue;
+
+      gtk_builder_connect_signals (builder, NULL);
+      break;
+    }
+
+    //Cleanup
+    for (i = 0; i < TOTAL_PATHS; i++)
+    {
+      g_free (paths[i]); paths[i] = NULL;
+    }
+
+    return (file_exists && is_valid_xml);
 }
 
 

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=3.0
-_Name=gWaei Japanese-English Dictionary
+_Name=gWaei
 _Comment=Enter a Japanese or English word to easily get translations.
 Type=Application
 Exec=gwaei
