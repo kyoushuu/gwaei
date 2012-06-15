@@ -776,6 +776,9 @@ gw_application_should_quit (GwApplication *application)
 static void
 gw_application_load_app_menu (GwApplication *application)
 {
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+
     //Declarations
     GtkBuilder *builder;
     GMenuModel *model;
@@ -800,28 +803,22 @@ gw_application_load_app_menu (GwApplication *application)
     model = NULL;
     loaded = FALSE;
     settings = gtk_settings_get_default ();
-    g_object_set (settings, "gtk-enable-accels", TRUE, -1);
+    g_object_set (settings, "gtk-enable-accels", TRUE, -1); printf("BREAK setting gtk-enable-accels\n");
     g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu);
     g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu);
 
-    if (os_shows_app_menu && os_show_win_menu)
-    {
+    if (os_shows_app_menu && os_show_win_menu) //Mac OS X style
       filename = "application-menumodel-macosx.ui";
-    }
-    else if (os_shows_app_menu != os_show_win_menu)
-    {
-    }
-    else
-    {
-    }
+    else if (os_shows_app_menu != os_show_win_menu) //Gnome 3 style
+      filename = "application-menumodel-gnome.ui";
+    else //Windows style
+      filename = NULL;
 
-    builder = gtk_builder_new ();
-    if (builder == NULL) goto errored;
-    
-    loaded = gw_application_load_xml (builder, filename)
-    if (loaded == FALSE) goto errored;
-    model = G_MENU_MODEL (gtk_builder_get_object (builder, "app-menu"));
-    if (model == NULL) goto errored;
+    if(filename == NULL) goto errored;
+
+    builder = gtk_builder_new (); if (builder == NULL) goto errored;
+    loaded = gw_application_load_xml (builder, filename); if (loaded == FALSE) goto errored;
+    model = G_MENU_MODEL (gtk_builder_get_object (builder, "app-menu")); if (model == NULL) goto errored;
 
     gtk_application_set_app_menu (GTK_APPLICATION (application), model);
     g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);

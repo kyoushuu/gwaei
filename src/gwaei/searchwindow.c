@@ -205,7 +205,7 @@ gw_searchwindow_constructed (GObject *object)
     gtk_widget_show (GTK_WIDGET (priv->spellcheck_toolbutton));
     #else
     gtk_widget_hide (GTK_WIDGET (priv->spellcheck_toolbutton));
-    g_warning ("Enchant is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
+    g_warning ("Hunspell is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
     #endif
 
     gw_searchwindow_init_accelerators (window);

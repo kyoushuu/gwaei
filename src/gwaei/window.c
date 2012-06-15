@@ -450,8 +450,9 @@ gw_window_save_size (GwWindow *window)
 
 
 void
-gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
+gw_window_set_menu_model (GwWindow *window, const gchar* FILENAME, const gchar* ID)
 {
+    //Declarations
     GwWindowPrivate *priv;
     GtkBuilder *builder;
     GtkApplication *application;
@@ -459,34 +460,58 @@ gw_window_set_menu_model (GwWindow *window, const gchar* xml, const gchar* id)
     GMenuModel *appmenumodel;
     GtkWidget *appmenu;
     GtkWidget *menubar;
+    gboolean loaded;
+    GMenuModel *menu;
+    gboolean os_shows_app_menu;
+    gboolean os_shows_win_menu;
     
+    //Initializations
     priv = window->priv;
     application = GTK_APPLICATION (gw_window_get_application (window));
-    builder = gtk_builder_new ();
     menubar = NULL;
     menumodel = NULL;
+    loaded = FALSE;
+    builder = NULL;
+    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu);
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu);
+    menu = g_menu_new (); if (menu == NULL) goto errored;
 
-    if (builder != NULL)
+    builder = gtk_builder_new (); if (builder == NULL) goto errored;
+    loaded = gw_application_load_xml (builder, FILENAME); if (loaded == FALSE) goto errored;
+    menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, id)); if (menumodel == NULL) goto errored;
+
+    if (priv->menumodel != NULL) g_object_unref (priv->menumodel); priv->menumodel = NULL;
+    if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); priv->menubar = NULL;
+
+    if (os_shows_app_menu && os_show_win_menu) //Mac OS X style
     {
-      gtk_builder_add_from_string (builder, xml, -1, NULL);
-      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, id));
-      if (menumodel == NULL) return;
-
-      if (priv->menumodel != NULL) g_object_unref (priv->menumodel); priv->menumodel = NULL;
-      if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); priv->menubar = NULL;
-
-/*
+      applicationmodel = gtk_application_get_app_menu (application);
+      if (applicationmodel != NULL) g_menu_append_submenu (menu, "gWaei", G_MENU_MODEL (applicationmodel));
+      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
+    }
+    else if (os_shows_app_menu != os_show_win_menu) //Gnome 3 style
+    {
+      if (applicationmodel != NULL) g_menu_append_submenu (menu, "gWaei", G_MENU_MODEL (applicationmodel));
+      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
       menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
-
       gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
       gtk_widget_show_all (menubar);
-*/
-      gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
-      g_object_unref (builder);
     }
+    else //Windows style
+    {
+      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
+      menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
+      gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
+      gtk_widget_show_all (menubar);
+    }
+
+    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
 
     priv->menumodel = menumodel;
     priv->menubar = GTK_MENU_BAR (menubar);
+
+errored:
+    if (builder != NULL) g_object_unref (builder); builder == NULL;
 }
 
 
