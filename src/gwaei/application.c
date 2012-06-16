@@ -790,11 +790,11 @@ gw_application_load_app_menu (GwApplication *application)
 
     static GActionEntry app_entries[] = {
       { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
-      { "open-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
-      { "open-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
-      { "open-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
-      { "open-help", gw_application_open_help_cb, NULL, NULL, NULL },
-      { "open-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
+      { "show-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
+      { "show-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
+      { "show-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
+      { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
+      { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
       { "quit", gw_application_quit_cb, NULL, NULL, NULL }
     };
 
@@ -803,13 +803,12 @@ gw_application_load_app_menu (GwApplication *application)
     model = NULL;
     loaded = FALSE;
     settings = gtk_settings_get_default ();
-    g_object_set (settings, "gtk-enable-accels", TRUE, -1); printf("BREAK setting gtk-enable-accels\n");
-    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu);
-    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu);
+    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu, NULL);
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
 
-    if (os_shows_app_menu && os_show_win_menu) //Mac OS X style
+    if (os_shows_app_menu && os_shows_win_menu) //Mac OS X style
       filename = "application-menumodel-macosx.ui";
-    else if (os_shows_app_menu != os_show_win_menu) //Gnome 3 style
+    else if (os_shows_app_menu != os_shows_win_menu) //Gnome 3 style
       filename = "application-menumodel-gnome.ui";
     else //Windows style
       filename = NULL;
@@ -824,7 +823,7 @@ gw_application_load_app_menu (GwApplication *application)
     g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);
 
 errored:
-    g_object_unref (builder);
+    if (builder != NULL) g_object_unref (builder);
 }
 
 
@@ -841,11 +840,11 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
     GError *error;
 
     //Initializations
-    loaded_file_xml = FALSE;
+    is_valid_xml = FALSE;
     file_exists = FALSE;
-    paths[0] = g_build_filename (filename, NULL);
-    paths[1] = g_build_filename ("..", "share", PACKAGE, filename, NULL);
-    paths[2] = g_build_filename (DATADIR2, PACKAGE, filename, NULL);
+    paths[0] = g_build_filename (FILENAME, NULL);
+    paths[1] = g_build_filename ("..", "share", PACKAGE, FILENAME, NULL);
+    paths[2] = g_build_filename (DATADIR2, PACKAGE, FILENAME, NULL);
     paths[3] = NULL;
     error = NULL;
 
@@ -858,8 +857,8 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
       if (file_exists == FALSE)
         continue;
 
-      is_valid_xml = gtk_builder_add_from_file (builder, path,  NULL)
-      if (error != NULL) 
+      is_valid_xml = gtk_builder_add_from_file (builder, path,  NULL);
+      if (error != NULL || !is_valid_xml) 
       {
         g_warning ("Problems loading xml from %s. %s\n", path, error->message);
         g_error_free (error); error = NULL;

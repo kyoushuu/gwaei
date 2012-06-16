@@ -129,7 +129,7 @@ gw_searchwindow_constructed (GObject *object)
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
 
-    gw_window_set_menu_model (GW_WINDOW (window), _win_menubar_xml, "win-menu");
+    gw_window_load_menubar (GW_WINDOW (window), "searchwindow");
 
     GActionEntry win_entries[] = {
     //  { "copy", window_copy, NULL, NULL, NULL },
@@ -1947,7 +1947,7 @@ gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwS
 {
     //Declarations
     GwSearchWindowPrivate *priv;
-    gboolean enable;
+    //gboolean enable;
     GtkWidget *container;
 
     //Initializations
@@ -2091,12 +2091,12 @@ gw_searchwindow_set_font (GwSearchWindow *window)
 
     GtkTextView *view;
     gboolean use_global_font_setting;
-    int size;
-    int magnification;
-    char font[50];
+    gint size;
+    gint magnification;
+    gchar font[50];
     PangoFontDescription *desc;
-    int i;
-    gboolean enable;
+    gint i;
+    //gboolean enable;
 
 
     //Initializations

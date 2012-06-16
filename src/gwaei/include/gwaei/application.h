@@ -5,8 +5,6 @@
 
 G_BEGIN_DECLS
 
-typedef enum 
-
 //Boilerplate
 typedef struct _GwApplication GwApplication;
 typedef struct _GwApplicationClass GwApplicationClass;
@@ -79,8 +77,6 @@ GtkListStore* gw_application_get_vocabularyliststore (GwApplication*);
 gboolean gw_application_should_quit (GwApplication *application);
 
 gboolean gw_application_load_xml (GtkBuilder*, const gchar*);
-
-GwMenuStyle gw_application_get_menu_style (GwApplication*);
 
 #include "application-callbacks.h"
 

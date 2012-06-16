@@ -450,68 +450,80 @@ gw_window_save_size (GwWindow *window)
 
 
 void
-gw_window_set_menu_model (GwWindow *window, const gchar* FILENAME, const gchar* ID)
+gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
 {
     //Declarations
     GwWindowPrivate *priv;
     GtkBuilder *builder;
     GtkApplication *application;
-    GMenuModel *menumodel;
-    GMenuModel *appmenumodel;
-    GtkWidget *appmenu;
-    GtkWidget *menubar;
+    GMenuModel *win_menu_model;
     gboolean loaded;
-    GMenuModel *menu;
     gboolean os_shows_app_menu;
     gboolean os_shows_win_menu;
+    gchar *filename;
+    GtkWidget *menubar;
+    GtkSettings *settings;
     
     //Initializations
     priv = window->priv;
     application = GTK_APPLICATION (gw_window_get_application (window));
     menubar = NULL;
-    menumodel = NULL;
     loaded = FALSE;
     builder = NULL;
-    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu);
-    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu);
-    menu = g_menu_new (); if (menu == NULL) goto errored;
+    filename = NULL;
 
-    builder = gtk_builder_new (); if (builder == NULL) goto errored;
-    loaded = gw_application_load_xml (builder, FILENAME); if (loaded == FALSE) goto errored;
-    menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, id)); if (menumodel == NULL) goto errored;
+    settings = gtk_settings_get_default ();
+    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu, NULL);
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
 
-    if (priv->menumodel != NULL) g_object_unref (priv->menumodel); priv->menumodel = NULL;
-    if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); priv->menubar = NULL;
+    builder = gtk_builder_new (); 
+    if (builder == NULL) goto errored;
 
-    if (os_shows_app_menu && os_show_win_menu) //Mac OS X style
+    if (os_shows_app_menu && os_shows_win_menu) //Mac OS X style
     {
-      applicationmodel = gtk_application_get_app_menu (application);
-      if (applicationmodel != NULL) g_menu_append_submenu (menu, "gWaei", G_MENU_MODEL (applicationmodel));
-      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
+      filename = g_strjoin ("-", BASE_NAME, "menumodel", "macosx.ui", NULL);
+      if (filename == NULL) goto errored;
     }
-    else if (os_shows_app_menu != os_show_win_menu) //Gnome 3 style
+    else if (os_shows_app_menu != os_shows_win_menu) //Gnome 3 style
     {
-      if (applicationmodel != NULL) g_menu_append_submenu (menu, "gWaei", G_MENU_MODEL (applicationmodel));
-      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
-      menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
-      gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
-      gtk_widget_show_all (menubar);
+      filename = g_strjoin ("-", BASE_NAME, "menumodel", "gnome.ui", NULL);
+      if (filename == NULL) goto errored;
     }
     else //Windows style
     {
-      if (windowmodel != NULL) g_menu_append_section (menu, "Window", G_MENU_MODEL (windowmodel));
-      menubar = GTK_WIDGET (gtk_menu_bar_new_from_model (menumodel));
+      filename = g_strjoin ("-", BASE_NAME, "menumodel", "windows.ui", NULL);
+      if (filename == NULL) goto errored;
+    }
+
+    loaded = gw_application_load_xml (builder, filename); 
+    if (loaded == FALSE) goto errored;
+    win_menu_model = G_MENU_MODEL (gtk_builder_get_object (builder, "win-menu")); 
+    if (win_menu_model == NULL) goto errored;
+
+    //Set the whole menu to the window if appropriate
+    if (os_shows_win_menu == FALSE)
+    {
+      menubar = gtk_menu_bar_new_from_model (win_menu_model);
+      if (menubar == NULL) goto errored;
       gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
       gtk_widget_show_all (menubar);
     }
 
-    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+    //TODO this should be moved to a on-focus callback
+    //Set the menubar to the application
+    gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
 
-    priv->menumodel = menumodel;
-    priv->menubar = GTK_MENU_BAR (menubar);
+    //Save the menu objects in the window
+    if (priv->menu_model != NULL) g_object_unref (priv->menu_model);
+    priv->menu_model = win_menu_model; win_menu_model = NULL;
+    if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); 
+    priv->menubar = GTK_MENU_BAR (menubar); menubar = NULL;
 
 errored:
-    if (builder != NULL) g_object_unref (builder); builder == NULL;
+    if (builder != NULL) g_object_unref (builder); builder = NULL;
+    if (filename != NULL) g_free (filename); filename = NULL;
+    if (win_menu_model != NULL) g_object_unref (G_OBJECT (win_menu_model));
+    if (menubar != NULL) { g_object_ref_sink (menubar); gtk_widget_destroy (menubar); };
 }
 
 
@@ -521,15 +533,13 @@ gw_window_get_menu_model (GwWindow *window)
     //Sanity checks
     g_return_val_if_fail (window != NULL, NULL);
 
-    return window->priv->menumodel;
+    return window->priv->menu_model;
 }
 
 
 void 
 gw_window_show_menubar (GwWindow *window, gboolean show)
 {
-    gtk_application_window_set_show_menubar (window, show);
-/*
     //Sanity checks
     g_return_if_fail (window != NULL);
     g_return_if_fail (window->priv->menubar != NULL);
@@ -544,6 +554,5 @@ gw_window_show_menubar (GwWindow *window, gboolean show)
       gtk_widget_show (GTK_WIDGET (priv->menubar));
     else
       gtk_widget_hide (GTK_WIDGET (priv->menubar));
-*/
 }
 
