@@ -72,19 +72,19 @@
       <attribute name='label' translatable='yes'>_View</attribute>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Show _Menubar</attribute>
+          <attribute name='label' translatable='yes'>_Menubar</attribute>
           <attribute name='action'>win.toggle-menubar-show</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Show _Toolbar</attribute>
+          <attribute name='label' translatable='yes'>_Toolbar</attribute>
           <attribute name='action'>win.toggle-toolbar-show</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Always Show T_ab Bar</attribute>
+          <attribute name='label' translatable='yes'>T_ab Bar</attribute>
           <attribute name='action'>win.toggle-tabbar-show</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Show _Statusbar</attribute>
+          <attribute name='label' translatable='yes'>_Statusbar</attribute>
           <attribute name='action'>win.toggle-statusbar-show</attribute>
         </item>
       </section>
@@ -107,12 +107,12 @@
       </section>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Next Tab</attribute>
+          <attribute name='label' translatable='yes'>_Next Tab</attribute>
           <attribute name='action'>win.next-tab</attribute>
           <attribute name='accel'>&lt;Primary&gt;Page_Down</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Previous Tab</attribute>
+          <attribute name='label' translatable='yes'>_Previous Tab</attribute>
           <attribute name='action'>win.previous-tab</attribute>
           <attribute name='accel'>&lt;Primary&gt;Page_Up</attribute>
         </item>
@@ -129,18 +129,18 @@
         </item>
         <item>
           <attribute name='label' translatable='yes'>Using Radical Search Tool</attribute>
-          <attribute name='action'>win.toggle-radical-search-tool-show</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
+          <attribute name='action'>win.toggle-radicals-show</attribute>
+          <attribute name='accel'>&lt;Primary&gt;r</attribute>
         </item>
       </section>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Word Edge Character</attribute>
+          <attribute name='label' translatable='yes'>Word-Edge Character</attribute>
           <attribute name='action'>win.insert-word-edge-character</attribute>
           <attribute name='accel'>&lt;Primary&gt;k</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Not Word Edge Character</attribute>
+          <attribute name='label' translatable='yes'>Not-Word-Edge Character</attribute>
           <attribute name='action'>win.insert-not-word-edge-character</attribute>
           <attribute name='accel'>&lt;Primary&gt;k</attribute>
         </item>

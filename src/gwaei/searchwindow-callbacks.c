@@ -1265,11 +1265,12 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_insert_unknown_character_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_insert_unknown_character_cb (GSimpleAction *action,
+                                             GVariant      *parameter,
+                                             gpointer       data)
 {
     GwSearchWindow *window;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     gw_searchwindow_entry_insert_text (window, ".");
 }
 
@@ -1284,11 +1285,12 @@ gw_searchwindow_insert_unknown_character_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_insert_word_edge_cb (GSimpleAction *action, 
+                                     GVariant      *parameter,
+                                     gpointer       data)
 {
     GwSearchWindow *window;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     gw_searchwindow_entry_insert_text (window, "\\b");
 }
 
@@ -1303,11 +1305,12 @@ gw_searchwindow_insert_word_edge_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_insert_not_word_edge_cb (GSimpleAction *action, 
+                                         GVariant      *parameter, 
+                                         gpointer       data)
 {
     GwSearchWindow *window;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     gw_searchwindow_entry_insert_text (window, "\\B");
 }
 
@@ -1322,10 +1325,12 @@ gw_searchwindow_insert_not_word_edge_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_insert_and_cb (GSimpleAction *action,
+                               GVariant      *parameter,
+                               gpointer       data)
 {
     GwSearchWindow *window;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    window = GW_SEARCHWINDOW (data);
     gw_searchwindow_entry_insert_text (window, "&");
 }
 
@@ -1340,11 +1345,12 @@ gw_searchwindow_insert_and_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_insert_or_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_insert_or_cb (GSimpleAction *action, 
+                              GVariant      *parameter,
+                              gpointer       data)
 {
     GwSearchWindow *window;
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     gw_searchwindow_entry_insert_text (window, "|");
 }
 
@@ -1773,7 +1779,6 @@ gw_searchwindow_sync_menubar_show_cb (GSettings *settings,
     show = (lw_preferences_get_boolean (settings, key));
     action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-menubar-show");
 
-printf("BREAK shell shows menubar %d\n", shell_shows_menubar);
     gw_window_show_menubar (GW_WINDOW (window), show && !shell_shows_menubar);
     g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 
@@ -2079,7 +2084,9 @@ gw_searchwindow_kanjipadwindow_kanji_selected_cb (GwKanjipadWindow *window, cons
 
 
 G_MODULE_EXPORT void 
-gw_searchwindow_toggle_kanjipadwindow_cb (GtkAction *action, gpointer data)
+gw_searchwindow_toggle_kanjipadwindow_cb (GSimpleAction *action, 
+                                          GVariant      *parameter, 
+                                          gpointer       data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -2088,11 +2095,10 @@ gw_searchwindow_toggle_kanjipadwindow_cb (GtkAction *action, gpointer data)
     gboolean show;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    show = g_variant_get_boolean (parameter);
 
     if (show)
     {
@@ -2127,31 +2133,28 @@ gw_searchwindow_toggle_kanjipadwindow_cb (GtkAction *action, gpointer data)
     {
       if (priv->kanjipadwindow != NULL) gtk_widget_hide (GTK_WIDGET (priv->kanjipadwindow));
     }
+
+    g_simple_action_set_state (action, parameter);
 }
 
 
 void
 gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget *widget, gpointer data)
 {
-    //TODO
-/*
+    //Sanity checks
+    g_return_if_fail (data != NULL);
+
     //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GtkWidget *toplevel;
-    GtkToggleAction *action;
+    GSimpleAction *action;
+    GActionMap *map;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    priv = window->priv;
-    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = priv->show_kanjipad_toggleaction;
+    window = GW_SEARCHWINDOW (data);
+    map = G_ACTION_MAP (window);
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "toggle-kanjipad-show"));
 
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toggle_kanjipadwindow_cb, toplevel);
-    gtk_toggle_action_set_active (action, FALSE);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_toggle_kanjipadwindow_cb, toplevel);
-*/
+    g_simple_action_set_state (action, g_variant_new_boolean (FALSE));
 }
 
 
@@ -2207,7 +2210,9 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
 
 
 G_MODULE_EXPORT void 
-gw_searchwindow_toggle_radicalswindow_cb (GtkAction *action, gpointer data)
+gw_searchwindow_toggle_radicalswindow_cb (GSimpleAction *action, 
+                                          GVariant      *parameter,
+                                          gpointer       data)
 {
     //Declarations
     GwSearchWindow *window;
@@ -2216,11 +2221,10 @@ gw_searchwindow_toggle_radicalswindow_cb (GtkAction *action, gpointer data)
     gboolean show;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_SEARCHWINDOW (data);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    show = gtk_toggle_action_get_active (GTK_TOGGLE_ACTION (action));
+    show = g_variant_get_boolean (parameter);
 
     if (show)
     {
@@ -2257,31 +2261,28 @@ gw_searchwindow_toggle_radicalswindow_cb (GtkAction *action, gpointer data)
     {
       if (priv->radicalswindow != NULL) gtk_widget_hide (GTK_WIDGET (priv->radicalswindow));
     }
+
+    g_simple_action_set_state (action, parameter);
 }
 
 
 void
 gw_searchwindow_radicalswindow_destroy_cb (GtkWidget *widget, gpointer data)
 {
-    //TODO
-/*
+    //Sanity checks
+    g_return_if_fail (data != NULL);
+
     //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GtkWidget *toplevel;
-    GtkAction *action;
+    GSimpleAction *action;
+    GActionMap *map;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    priv = window->priv;
-    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    action = GTK_ACTION (priv->show_radicals_toggleaction);
+    window = GW_SEARCHWINDOW (data);
+    map = G_ACTION_MAP (window);
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "toggle-radicals-show"));
 
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (action, gw_searchwindow_toggle_radicalswindow_cb, toplevel);
-    gtk_toggle_action_set_active (GTK_TOGGLE_ACTION (action), FALSE);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (action, gw_searchwindow_toggle_radicalswindow_cb, toplevel);
-*/
+    g_simple_action_set_state (action, g_variant_new_boolean (FALSE));
 }
 
 
@@ -2366,6 +2367,7 @@ gw_searchwindow_total_tab_pages_changed_cb (GtkNotebook *notebook,
     GwSearchWindow *window;
 
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    if (window == NULL) return;
 
     gw_searchwindow_sync_tabbar_show (window);
 }

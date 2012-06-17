@@ -95,5 +95,15 @@ void gw_searchwindow_show_popup_menu_cb (GtkWidget *, gpointer);
 void gw_searchwindow_add_vocabulary_word_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_open_vocabularywindow_cb (GSimpleAction*, GVariant*, gpointer);
 
+void gw_searchwindow_toggle_kanjipadwindow_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_toggle_radicalswindow_cb (GSimpleAction*, GVariant*, gpointer);
+
+void gw_searchwindow_insert_unknown_character_cb (GSimpleAction *, GVariant*, gpointer);
+void gw_searchwindow_insert_not_word_edge_cb (GSimpleAction *, GVariant*, gpointer);
+void gw_searchwindow_insert_word_edge_cb (GSimpleAction *, GVariant*, gpointer);
+void gw_searchwindow_insert_and_cb (GSimpleAction *, GVariant*, gpointer);
+void gw_searchwindow_insert_or_cb (GSimpleAction *, GVariant*, gpointer);
+
+
 #endif
 

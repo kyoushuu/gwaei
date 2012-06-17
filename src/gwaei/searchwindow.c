@@ -111,6 +111,21 @@ gw_searchwindow_finalize (GObject *object)
 }
 
 
+static void
+_activate_toggle (GSimpleAction *action,
+                  GVariant      *parameter,
+                  gpointer       data)
+{
+  GVariant *state;
+
+  state = g_action_get_state (G_ACTION (action));
+
+  g_action_change_state (G_ACTION (action), g_variant_new_boolean (!g_variant_get_boolean (state)));
+
+  g_variant_unref (state);
+}
+
+
 static void 
 gw_searchwindow_constructed (GObject *object)
 {
@@ -141,9 +156,19 @@ gw_searchwindow_constructed (GObject *object)
       { "toggle-toolbar-show", gw_searchwindow_toolbar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-tabbar-show", gw_searchwindow_tabbar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-statusbar-show", gw_searchwindow_statusbar_show_toggled_cb, NULL, "false", NULL },
+      { "toggle-kanjipad-show", _activate_toggle, NULL, "false", gw_searchwindow_toggle_kanjipadwindow_cb },
+      { "toggle-radicals-show", _activate_toggle, NULL, "false", gw_searchwindow_toggle_radicalswindow_cb },
       { "zoom-100", gw_searchwindow_zoom_100_cb, NULL, NULL, NULL },
       { "zoom-in", gw_searchwindow_zoom_in_cb, NULL, NULL, NULL },
       { "zoom-out", gw_searchwindow_zoom_out_cb, NULL, NULL, NULL },
+
+      { "zoom-out", gw_searchwindow_zoom_out_cb, NULL, NULL, NULL },
+
+      { "insert-unknown-character", gw_searchwindow_insert_unknown_character_cb, NULL, NULL, NULL },
+      { "insert-word-edge-character", gw_searchwindow_insert_word_edge_cb, NULL, NULL, NULL },
+      { "insert-not-word-edge-character", gw_searchwindow_insert_not_word_edge_cb, NULL, NULL, NULL },
+      { "insert-and-character", gw_searchwindow_insert_and_cb, NULL, NULL, NULL },
+      { "insert-or-character", gw_searchwindow_insert_or_cb, NULL, NULL, NULL },
 
       { "add-word", gw_searchwindow_add_vocabulary_word_cb, NULL, NULL, NULL },
       { "manage-vocabulary", gw_searchwindow_open_vocabularywindow_cb, NULL, NULL, NULL},
@@ -962,6 +987,7 @@ static void _rebuild_history_button_popup (GwSearchWindow *window, GtkMenu *menu
 void 
 gw_searchwindow_update_history_popups (GwSearchWindow* window)
 {
+//TODO
 /*
     GwSearchWindowPrivate *priv;
     GList* list;
@@ -2436,6 +2462,7 @@ gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow *window)
 void 
 gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
 {
+//TODO
 /*
     GwSearchWindowPrivate *priv;
     GwApplication *application;
@@ -2521,6 +2548,7 @@ gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
 static void
 gw_searchwindow_clear_vocabularylist_menuitems (GwSearchWindow *window)
 {
+//TODO
 /*
     GwSearchWindowPrivate *priv;
     GtkMenuShell *shell;
@@ -2547,6 +2575,7 @@ gw_searchwindow_clear_vocabularylist_menuitems (GwSearchWindow *window)
 static void
 gw_searchwindow_append_vocabularylist_menuitems (GwSearchWindow *window)
 {
+//TODO
 /*
     GwSearchWindowPrivate *priv;
     GwApplication *application;
@@ -2589,6 +2618,7 @@ gw_searchwindow_append_vocabularylist_menuitems (GwSearchWindow *window)
 void
 gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow *window)
 {
+//TODO
 /*
   gw_searchwindow_clear_vocabularylist_menuitems (window);
   gw_searchwindow_append_vocabularylist_menuitems (window);
@@ -2682,10 +2712,12 @@ gw_searchwindow_sync_tabbar_show (GwSearchWindow *window)
     //Declarations
     GwSearchWindowPrivate *priv;
     GtkNotebook *notebook;
-    gint page_num, pages;
-    //const gchar *label_text;
+    gint pages;
     gboolean always_show_tabbar;
     gboolean show;
+    gboolean enabled;
+    GSimpleAction *action;
+    GActionMap *map;
 
     //Initializations
     priv = window->priv;
@@ -2693,25 +2725,13 @@ gw_searchwindow_sync_tabbar_show (GwSearchWindow *window)
     always_show_tabbar = priv->always_show_tabbar;
     pages = gtk_notebook_get_n_pages (notebook);
     show = ((pages > 1) || always_show_tabbar);
+    enabled = (pages > 1);
+    map = G_ACTION_MAP (window);
 
-    if (page_num > 0)
-    {
-      //Initializations
-
-      //TODO
-/*
-      gtk_action_set_sensitive (priv->previous_tab_action, (pages > 1));
-      gtk_action_set_sensitive (priv->next_tab_action, (pages > 1));
-
-      if (pages > 1)
-        label_text = gettext("_Close Tab");
-      else
-        label_text = gettext("_Close");
-
-      gtk_action_set_label (priv->close_action, label_text);
-*/
-    }
-
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "previous-tab"));
+    g_simple_action_set_enabled (action, enabled);
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "next-tab"));
+    g_simple_action_set_enabled (action, enabled);
     
     gtk_notebook_set_show_tabs (notebook, show);
 }
