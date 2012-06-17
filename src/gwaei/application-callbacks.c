@@ -255,20 +255,21 @@ gw_application_open_glossary_cb (GSimpleAction *action,
                                  gpointer       data)
 {
     //Declarations
-    char *uri;
+    gchar *uri;
     GError *error;
-    GwSearchWindow *window;
     GwApplication *application;
 
     //Initializations
-    window = GW_SEARCHWINDOW (data);
-    application = gw_window_get_application (GW_WINDOW (window));
+    application = GW_APPLICATION (data);
     uri = g_build_filename ("ghelp://", DATADIR2, "gnome", "help", "gwaei", "C", "glossary.xml", NULL);
     error = NULL;
+    
+    if (uri != NULL)
+    {
+      gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
+      g_free (uri); uri = NULL;
+    }
 
-    gtk_show_uri (NULL, uri, gtk_get_current_event_time (), &error);
-
-    //Cleanup
-    gw_application_handle_error (application, GTK_WINDOW (window), TRUE, &error);
-    g_free (uri);
+    gw_application_handle_error (application, NULL, FALSE, &error);
 }
+

@@ -1780,6 +1780,7 @@ gw_searchwindow_sync_menubar_show_cb (GSettings *settings,
     action = g_action_map_lookup_action (G_ACTION_MAP (window), "toggle-menubar-show");
 
     gw_window_show_menubar (GW_WINDOW (window), show && !shell_shows_menubar);
+    gtk_window_set_hide_titlebar_when_maximized (GTK_WINDOW (window), !show || shell_shows_menubar);
     g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 
     if (show == TRUE || shell_shows_menubar)
