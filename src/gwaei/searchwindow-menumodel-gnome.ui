@@ -31,12 +31,12 @@
           <item>
             <attribute name='label' translatable='yes'>_Next Dictionary</attribute>
             <attribute name='action'>win.next-dictionary</attribute>
-            <attribute name='accel'>&lt;Primary&gt;Down</attribute>
+            <attribute name='accel'>&lt;Alt&gt;Down</attribute>
           </item>
           <item>
             <attribute name='label' translatable='yes'>_Previous Dictionary</attribute>
             <attribute name='action'>win.previous-dictionary</attribute>
-            <attribute name='accel'>&lt;Primary&gt;Down</attribute>
+            <attribute name='accel'>&lt;Alt&gt;Up</attribute>
           </item>
         </section>
       </submenu>

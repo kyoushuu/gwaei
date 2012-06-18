@@ -430,7 +430,9 @@ void gw_print (const GtkPrintOperationAction ACTION, GwSearchWindow *window)
 //! to set up a print operation.  If a section of the search results are highlighted
 //! only those results are printed.
 //!
-G_MODULE_EXPORT void gw_print_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void gw_print_cb (GSimpleAction *action,
+                                  GVariant      *parameter,
+                                  gpointer       data)
 {
     GwSearchWindow *window;
     GwApplication *application;
@@ -448,7 +450,9 @@ G_MODULE_EXPORT void gw_print_cb (GtkWidget *widget, gpointer data)
 //!
 //! @brief Sets up a print preview for the results
 //!
-G_MODULE_EXPORT void gw_print_preview_cb (GtkWidget *widget, gpointer data)
+G_MODULE_EXPORT void gw_print_preview_cb (GSimpleAction *action,
+                                          GVariant      *parameter,
+                                          gpointer       data)
 {
     GwSearchWindow *window;
     GwApplication *application;

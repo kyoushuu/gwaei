@@ -47,6 +47,7 @@ G_MODULE_EXPORT void gw_dictionarystore_row_changed_cb (GtkTreeModel *model,
 
     gw_dictionarystore_normalize (store);
     gw_dictionarystore_update (store);
+    gw_dictionarystore_sync_menumodel (store);
 }
 
 

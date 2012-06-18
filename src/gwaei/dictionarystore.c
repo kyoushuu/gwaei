@@ -137,6 +137,77 @@ gw_dictionarystore_get_dictionarylist (GwDictionaryStore *store)
 }
 
 
+void
+gw_dictionarystore_sync_menumodel (GwDictionaryStore *store)
+{
+    //Declarations
+    GwDictionaryStorePrivate *priv;
+    GMenuModel *menumodel;
+    GtkTreeModel *treemodel;
+    GtkTreeIter treeiter;
+    gboolean valid;
+    gchar *namelabel;
+    gchar accellabel[] = "<Primary>0";
+    gchar *accelnumber;
+    const gchar *action;
+    gchar *detailed_action;
+    gchar *position;
+    gint acceliter;
+    GMenuItem *menuitem;
+
+    //Initializations
+    priv = store->priv;
+    menumodel = priv->menumodel;
+    treemodel = GTK_TREE_MODEL (store);
+    action = "win.set-dictionary";
+    accelnumber = accellabel + strlen("<Primary>");
+    namelabel = NULL;
+    menuitem = NULL;
+
+    if (menumodel == NULL) 
+      menumodel = G_MENU_MODEL (g_menu_new ());
+    if (menumodel == NULL) goto errored;
+
+    while (g_menu_model_get_n_items (menumodel) > 0)
+    {
+      g_menu_remove (G_MENU (menumodel), 0);
+    }
+
+    valid = gtk_tree_model_get_iter_first (treemodel, &treeiter);
+    acceliter = 1;
+    while (valid)
+    {
+      gtk_tree_model_get (treemodel, &treeiter, GW_DICTIONARYSTORE_COLUMN_LONG_NAME, &namelabel, -1);
+      if (namelabel == NULL) goto errored;
+      gtk_tree_model_get (treemodel, &treeiter, GW_DICTIONARYSTORE_COLUMN_POSITION, &position, -1);
+      detailed_action = g_strdup_printf("%s::%s", action, position);
+      if (detailed_action == NULL) goto errored;
+      menuitem = g_menu_item_new (namelabel, detailed_action);
+      if (menuitem == NULL) goto errored;
+
+      if (acceliter < 10) 
+      {
+        *accelnumber = '0' + (gchar) acceliter;
+        g_menu_item_set_attribute (menuitem, "accel", "s", accellabel);
+      }
+
+      g_menu_append_item (G_MENU (menumodel), menuitem);
+
+      if (namelabel != NULL) g_free (namelabel); namelabel = NULL;
+      menuitem = NULL;
+
+      valid = gtk_tree_model_iter_next (treemodel, &treeiter);
+      acceliter++;
+    }
+
+    priv->menumodel = menumodel;
+
+errored:
+    if (namelabel != NULL) g_free (namelabel); namelabel = NULL;
+    if (menuitem != NULL) g_object_unref (menuitem); menuitem = NULL;
+}
+
+
 void 
 gw_dictionarystore_update (GwDictionaryStore *store)
 {
@@ -331,7 +402,15 @@ gw_dictionarystore_reload (GwDictionaryStore *store, LwPreferences *preferences)
     lw_dictionarylist_load_installed (dictionarylist);
 
     gw_dictionarystore_load_order (store, preferences);
+
+    gw_dictionarystore_sync_menumodel (store);
 }
 
+
+GMenuModel*
+gw_dictionarystore_get_menumodel (GwDictionaryStore *store)
+{
+    return store->priv->menumodel;
+}
 
 

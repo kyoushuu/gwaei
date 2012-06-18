@@ -1,9 +1,10 @@
 #ifndef GW_SEARCHWINDOW_CALLBACKS_INCLUDED
 #define GW_SEARCHWINDOW_CALLBACKS_INCLUDED
 
-void gw_searchwindow_back_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_forward_cb (GtkWidget *widget, gpointer data);
-void gw_searchwindow_save_cb (GtkWidget *widget, gpointer data);
+void gw_searchwindow_back_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_forward_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_save_cb  (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_save_as_cb  (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_print_cb (GtkWidget *widget, gpointer data);
 void gw_searchwindow_zoom_in_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_zoom_out_cb (GSimpleAction*, GVariant*, gpointer);
@@ -23,8 +24,8 @@ void gw_searchwindow_go_menuitem_action_cb (GtkWidget*, gpointer);
 void gw_searchwindow_close_kanji_results_cb (GtkWidget*, gpointer);
 void gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget*, gpointer);
 void gw_searchwindow_dictionary_radio_changed_cb (GtkWidget*, gpointer);
-void gw_searchwindow_cycle_dictionaries_forward_cb (GtkWidget*, gpointer);
-void gw_searchwindow_cycle_dictionaries_backward_cb (GtkWidget*, gpointer);
+void gw_searchwindow_next_dictionary_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_previous_dictionary_cb (GSimpleAction*, GVariant*, gpointer);
 void search_drag_data_recieved (GtkWidget*, GdkDragContext*,
                                 gint, gint,
                                 GtkSelectionData*, guint,
@@ -104,6 +105,7 @@ void gw_searchwindow_insert_word_edge_cb (GSimpleAction *, GVariant*, gpointer);
 void gw_searchwindow_insert_and_cb (GSimpleAction *, GVariant*, gpointer);
 void gw_searchwindow_insert_or_cb (GSimpleAction *, GVariant*, gpointer);
 
+void gw_searchwindow_set_dictionary_cb (GSimpleAction*, GVariant*, gpointer);
 
 #endif
 

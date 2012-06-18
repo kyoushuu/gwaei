@@ -54,6 +54,8 @@ void gw_dictionarystore_save_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_load_order (GwDictionaryStore*, LwPreferences*);
 void gw_dictionarystore_update (GwDictionaryStore*);
 void gw_dictionarystore_normalize (GwDictionaryStore*);
+void gw_dictionarystore_sync_menumodel (GwDictionaryStore*);
+GMenuModel* gw_dictionarystore_get_menumodel (GwDictionaryStore*);
 
 #include <gwaei/dictionarystore-callbacks.h>
 

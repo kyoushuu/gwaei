@@ -7,6 +7,7 @@ struct _GwDictionaryStorePrivate {
   LwDictionaryList *dictionarylist;
   gulong list_update_handler_id;
   guint signalids[TOTAL_GW_DICTIONARYSTORE_SIGNALIDS];
+  GMenuModel *menumodel;
 };
 
 #define GW_DICTIONARYSTORE_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), GW_TYPE_DICTIONARYSTORE, GwDictionaryStorePrivate))
