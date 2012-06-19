@@ -1,8 +1,10 @@
 #ifndef GW_SEARCHWINDOW_CALLBACKS_INCLUDED
 #define GW_SEARCHWINDOW_CALLBACKS_INCLUDED
 
-void gw_searchwindow_back_cb (GSimpleAction*, GVariant*, gpointer);
-void gw_searchwindow_forward_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_go_back_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_go_forward_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_go_back_index_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_go_forward_index_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_save_cb  (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_save_as_cb  (GSimpleAction*, GVariant*, gpointer);
 void gw_searchwindow_print_cb (GtkWidget *widget, gpointer data);

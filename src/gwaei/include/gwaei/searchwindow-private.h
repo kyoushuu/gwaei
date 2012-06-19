@@ -47,15 +47,12 @@ struct _GwSearchWindowPrivate {
   GtkLabel *statusbar_label;
   GtkProgressBar *statusbar_progressbar;
 
-  GtkMenu *history_popup;
   GtkMenu *vocabulary_popup;
-  GtkMenu *forward_popup;
-  GtkMenu *back_popup;
 
   LwDictionary *dictionary;
 
   //History
-  LwHistory *history;
+  GwHistory *history;
 
   //Main variables
   guint timeoutid[TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS];

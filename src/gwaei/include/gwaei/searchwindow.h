@@ -140,6 +140,11 @@ void gw_searchwindow_append_to_buffer (GwSearchWindow*, LwSearch*, const char *,
 void gw_searchwindow_initialize_dictionary_menu (GwSearchWindow*);
 void gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow*);
 
+void gw_searchwindow_sync_history (GwSearchWindow*);
+
+void gw_searchwindow_go_back (GwSearchWindow*, gint);
+void gw_searchwindow_go_forward (GwSearchWindow*, gint);
+
 #include "searchwindow-callbacks.h"
 #include "searchwindow-output.h"
 #include "search-data.h"

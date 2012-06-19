@@ -7,6 +7,8 @@
 
 #include <gwaei/application.h>
 
+#include <gwaei/history.h>
+
 #include <gwaei/texttagtable.h>
 #include <gwaei/dictionarystore.h>
 #include <gwaei/spellcheck.h>

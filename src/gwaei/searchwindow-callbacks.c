@@ -341,102 +341,6 @@ gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpoi
 
 
 //!
-//! @brief Preforms a search from the history.
-//! @see gw_searchwindow_search_cb ()
-//! @param widget Should be a pointer to the GtkMenuItem to go back to
-//! @param data A pointer to the GwSearchWindow object
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
-{
-    //Declarations
-    GwApplication *application;
-    GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GwSearchData *sdata;
-    gboolean is_in_back_index;
-    gboolean is_in_forward_index;
-    LwSearch *current;
-    GtkMenuShell *shell;
-    GList *children;
-    GList *list;
-    gint pre_menu_items;
-    gint i;
-    LwSearch *search;
-    gint index;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    if (!gw_application_can_start_search (application)) return;
-    shell = GTK_MENU_SHELL (priv->history_popup);
-    pre_menu_items = 3;
-
-    children = gtk_container_get_children (GTK_CONTAINER (shell));
-    i = 0;
-    if (children != NULL)
-    {
-      i = g_list_index (children, widget) - pre_menu_items;
-      g_list_free (children); children = NULL;
-    }
-
-    list = lw_history_get_combined_list (priv->history);
-    search = NULL;
-    if (list != NULL)
-    {
-      search = LW_SEARCH (g_list_nth_data (list, i));
-      g_list_free (list); list = NULL;
-      if (search == NULL) return;
-    }
-
-    list = lw_history_get_back_list (priv->history);
-    is_in_back_index = (g_list_index (list, search) != -1);
-
-    list = lw_history_get_forward_list (priv->history);
-    is_in_forward_index = (g_list_index (list, search) != -1);
-
-    if (!is_in_back_index && !is_in_forward_index) return;
-
-    sdata = lw_search_get_data (search);
-    sdata->view = gw_searchwindow_get_current_textview (window);
-    
-    //Checks to make sure everything is sane
-    gw_searchwindow_cancel_search_for_current_tab (window);
-
-    index = gw_searchwindow_get_current_tab_index (window);
-    current = gw_searchwindow_steal_searchitem_by_index (window, index);
-    if (search != NULL && !lw_search_has_history_relevance (current, priv->keep_searching_enabled))
-    {
-      lw_search_free (current); current = NULL;
-    }
-
-    //Cycle the history
-    if (is_in_back_index)
-    {
-      while (current != search) current = lw_history_go_back (priv->history, current);
-    }
-    else if (is_in_forward_index)
-    {
-      while (current != search) current = lw_history_go_forward (priv->history, current);
-    }
-    else
-    {
-      g_assert_not_reached ();
-      return;
-    }
-
-    //Add tab reference to searchitem
-    gw_searchwindow_start_search (window, search);
-
-    //Set the search string in the GtkEntry
-    gtk_widget_grab_focus (GTK_WIDGET (priv->entry));
-    gw_searchwindow_select_all (window, GTK_WIDGET (priv->entry));
-}
-
-
-//!
 //! @brief Goes back one step in the search history
 //! @see gw_searchwindow_search_from_history_cb ()
 //! @see gw_searchwindow_forward_cb ()
@@ -444,41 +348,17 @@ gw_searchwindow_search_from_history_cb (GtkWidget *widget, gpointer data)
 //! @param data pointer to a specially attached LwSearch variable
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_back_cb (GSimpleAction *action,
-                         GVariant      *parameter,
-                         gpointer       data)
+gw_searchwindow_go_back_cb (GSimpleAction *action,
+                            GVariant      *parameter,
+                            gpointer       data)
 {
+    //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GtkWidget *menuitem;
-    GtkMenuShell *shell;
-    GList *link;
-    GList *list;
-    GList *children;
-    LwSearch *search;
-    gint pre_menu_items;
-    gint i;
     
+    //Initializations
     window = GW_SEARCHWINDOW (data);
-    priv = window->priv;
-    
-    pre_menu_items = 3;
-    shell = GTK_MENU_SHELL (priv->history_popup);
-    link = g_list_last (lw_history_get_back_list (priv->history));
-    search = LW_SEARCH (link->data);
 
-    list = lw_history_get_combined_list (priv->history);
-    i = g_list_index (list, search) + pre_menu_items;
-    g_list_free (list); list = NULL;
-
-    children = gtk_container_get_children (GTK_CONTAINER (shell));
-    menuitem = GTK_WIDGET (g_list_nth_data (children, i));
-    g_list_free (children); children = NULL;
-
-    if (lw_history_has_back (priv->history))
-    {
-      gw_searchwindow_search_from_history_cb (menuitem, data);
-    }
+    gw_searchwindow_go_back (window, 1);
 }
 
 
@@ -490,43 +370,69 @@ gw_searchwindow_back_cb (GSimpleAction *action,
 //! @param data pointer to a specially attached LwSearch variable
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_forward_cb (GSimpleAction *action,
-                            GVariant      *parameter,
-                            gpointer       data)
+gw_searchwindow_go_forward_cb (GSimpleAction *action,
+                               GVariant      *parameter,
+                               gpointer       data)
 {
+    //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GtkWidget *menuitem;
-    GtkMenuShell *shell;
-    GList *link;
-    GList *list;
-    GList *children;
-    LwSearch *search;
-    gint pre_menu_items;
-    gint i;
-     
+    
+    //Initializations
     window = GW_SEARCHWINDOW (data);
-    priv = window->priv;
 
-    pre_menu_items = 3;
-    shell = GTK_MENU_SHELL (priv->history_popup);
-    link = g_list_last (lw_history_get_forward_list (priv->history));
-    search = LW_SEARCH (link->data);
+    gw_searchwindow_go_forward (window, 1);
+}
 
-    list = lw_history_get_combined_list (priv->history);
-    i = g_list_index (list, search) + pre_menu_items;;
-    g_list_free (list);
-    list = NULL;
 
-    children = gtk_container_get_children (GTK_CONTAINER (shell));
-    menuitem = GTK_WIDGET (g_list_nth_data (children, i));
-    g_list_free (children);
-    children = NULL;
+//!
+//! @brief Goes back one step in the search history
+//! @see gw_searchwindow_search_from_history_cb ()
+//! @see gw_searchwindow_forward_cb ()
+//! @param widget Unused GtkWidget pointer.
+//! @param data pointer to a specially attached LwSearch variable
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_go_back_index_cb (GSimpleAction *action,
+                                  GVariant      *parameter,
+                                  gpointer       data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    const gchar *value;
+    gint i;
+    
+    //Initializations
+    window = GW_SEARCHWINDOW (data);
+    value = g_variant_get_string (parameter, NULL);
+    i = (gint) g_ascii_strtoll (value, NULL, 10);
 
-    if (lw_history_has_forward (priv->history))
-    {
-      gw_searchwindow_search_from_history_cb (menuitem, window);
-    }
+    gw_searchwindow_go_back (window, i);
+}
+
+
+//!
+//! @brief Goes forward one step in the search history
+//! @see gw_searchwindow_search_from_history_cb ()
+//! @see gw_searchwindow_back_cb ()
+//! @param widget Unused GtkWidget pointer.
+//! @param data pointer to a specially attached LwSearch variable
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_go_forward_index_cb (GSimpleAction *action,
+                                     GVariant      *parameter,
+                                     gpointer       data)
+{
+    //Declarations
+    GwSearchWindow *window;
+    const gchar *value;
+    gint i;
+    
+    //Initializations
+    window = GW_SEARCHWINDOW (data);
+    value = g_variant_get_string (parameter, NULL);
+    i = (gint) g_ascii_strtoll (value, NULL, 10);
+
+    gw_searchwindow_go_forward (window, i);
 }
 
 
@@ -1153,6 +1059,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     GwSearchData *sdata;
     GtkTextView *view;
     gint index;
+    LwHistory *history;
 
     //Initializations
     error = NULL;
@@ -1160,6 +1067,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     g_return_if_fail (window != NULL);
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
+    history = LW_HISTORY (priv->history);
 
     if (!gw_application_can_start_search (application)) return;
 
@@ -1220,7 +1128,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
       search = gw_searchwindow_steal_searchitem_by_index (window, index);
       if (search != NULL) 
       {
-        lw_history_add_search (priv->history, search);
+        lw_history_add_search (history, search);
       }
     }
 
@@ -2563,4 +2471,5 @@ gw_searchwindow_set_dictionary_cb (GSimpleAction *action,
 
     gw_searchwindow_set_dictionary (window, index);
 }
+
 

@@ -218,11 +218,13 @@ lw_history_clear_forward_list (LwHistory *history)
 {
     //Declarations
     LwHistoryPrivate *priv;
+    LwHistoryClass *klass;
     LwSearch *search;
     GList *iter;
 
     //Initializations
     priv = history->priv;
+    klass = LW_HISTORY_CLASS (G_OBJECT_GET_CLASS (history));
 
     //Free the data of the history
     for (iter = priv->forward; iter != NULL; iter = iter->next)
@@ -236,6 +238,11 @@ lw_history_clear_forward_list (LwHistory *history)
     //Free the history itself
     g_list_free (priv->forward);
     priv->forward = NULL;
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_CHANGED],
+      0
+    );
 }
 
 
@@ -247,11 +254,13 @@ lw_history_clear_back_list (LwHistory *history)
 {
     //Declarations
     LwHistoryPrivate *priv;
+    LwHistoryClass *klass;
     LwSearch *search;
     GList *iter;
 
     //Initializations
     priv = history->priv;
+    klass = LW_HISTORY_CLASS (G_OBJECT_GET_CLASS (history));
 
     //Free the data of the history
     for (iter = priv->back; iter != NULL; iter = iter->next)
@@ -265,6 +274,11 @@ lw_history_clear_back_list (LwHistory *history)
     //Free the history itself
     g_list_free (priv->back);
     priv->back = NULL;
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_CHANGED],
+      0
+    );
 }
 
 
@@ -326,10 +340,12 @@ lw_history_add_search (LwHistory *history, LwSearch *search)
 { 
     //Declarations
     LwHistoryPrivate *priv;
+    LwHistoryClass *klass;
     GList *link;
 
     //Initalizations
     priv = history->priv;
+    klass = LW_HISTORY_CLASS (G_OBJECT_GET_CLASS (history));
     
     priv->back = g_list_prepend (priv->back, search);
 
@@ -343,6 +359,11 @@ lw_history_add_search (LwHistory *history, LwSearch *search)
 
     //Clear the forward history
     lw_history_clear_forward_list (history);
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_ADDED],
+      0
+    );
 }
 
 
@@ -377,10 +398,12 @@ lw_history_go_back (LwHistory *history, LwSearch *pushed)
 
     //Declarations
     LwHistoryPrivate *priv;
+    LwHistoryClass *klass;
     GList *link;
     LwSearch *popped;
 
     priv = history->priv;
+    klass = LW_HISTORY_CLASS (G_OBJECT_GET_CLASS (history));
 
     if (pushed != NULL)
     {
@@ -390,6 +413,16 @@ lw_history_go_back (LwHistory *history, LwSearch *pushed)
     link = g_list_last (priv->back); 
     popped = LW_SEARCH (link->data);
     priv->back = g_list_delete_link (priv->back, link);
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_BACK],
+      0
+    );
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_CHANGED],
+      0
+    );
 
     return popped;
 }
@@ -406,10 +439,12 @@ lw_history_go_forward (LwHistory *history, LwSearch *pushed)
 
     //Declarations
     LwHistoryPrivate *priv;
+    LwHistoryClass *klass;
     GList *link;
     LwSearch *popped;
 
     priv = history->priv;
+    klass = LW_HISTORY_CLASS (G_OBJECT_GET_CLASS (history));
 
     if (pushed != NULL)
     {
@@ -419,6 +454,16 @@ lw_history_go_forward (LwHistory *history, LwSearch *pushed)
     link = g_list_last (priv->forward); 
     popped = LW_SEARCH (link->data);
     priv->forward = g_list_delete_link (priv->forward, link);
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_FORWARD],
+      0
+    );
+
+    g_signal_emit (history,
+      klass->signalid[LW_HISTORY_CLASS_SIGNALID_CHANGED],
+      0
+    );
 
     return popped;
 }

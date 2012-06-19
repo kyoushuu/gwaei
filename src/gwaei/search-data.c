@@ -56,7 +56,7 @@ gw_searchdata_new (GtkTextView *view, GwSearchWindow *window)
 void 
 gw_searchdata_free (GwSearchData *data)
 {
-    g_assert (data != NULL);
+    if (data == NULL) return;
 
     if (data->result != NULL) lw_result_free (data->result);
 
