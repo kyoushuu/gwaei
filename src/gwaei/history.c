@@ -189,7 +189,7 @@ gw_history_sync_menumodels (GwHistory *history)
         label = lw_query_get_text (search->query);
         detailed_action = g_strdup_printf ("win.go-back-index::%d", i);
 
-        g_menu_append (menu, g_strdup_printf("back %s:%d", label, i), detailed_action);
+        g_menu_append (menu, label, detailed_action);
 
         if (detailed_action != NULL) g_free (detailed_action); detailed_action = NULL;
 
@@ -223,7 +223,7 @@ gw_history_sync_menumodels (GwHistory *history)
         label = lw_query_get_text (search->query);
         detailed_action = g_strdup_printf ("win.go-forward-index::%d", i);
 
-        g_menu_append (menu, g_strdup_printf("forward %s:%d", label, i), detailed_action);
+        g_menu_append (menu, label, detailed_action);
 
         if (detailed_action != NULL) g_free (detailed_action); detailed_action = NULL;
 

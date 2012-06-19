@@ -195,7 +195,6 @@ gw_searchwindow_constructed (GObject *object)
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "notebook"));
 
     priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));
-    priv->spellcheck_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "spellcheck_toolbutton")); 
     priv->menu_toolbutton = GTK_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "menu_toolbutton")); 
 
     priv->search_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "search_toolbar"));
@@ -227,19 +226,13 @@ gw_searchwindow_constructed (GObject *object)
     gw_searchwindow_guarantee_first_tab (window);
 
     //This code should probably be moved to when the window is realized
+    gw_searchwindow_initialize_toolbar (window);
     gw_searchwindow_initialize_dictionary_combobox (window);
-    gw_searchwindow_initialize_dictionary_menu (window);
+    gw_searchwindow_initialize_menu_links (window);
 //TODO
 /*
     gw_searchwindow_update_vocabulary_menuitems (window);
 */
-
-    #ifdef WITH_HUNSPELL
-    gtk_widget_show (GTK_WIDGET (priv->spellcheck_toolbutton));
-    #else
-    gtk_widget_hide (GTK_WIDGET (priv->spellcheck_toolbutton));
-    g_warning ("Hunspell is not installed or support wasn't compiled in.  Spellcheck will be disabled.");
-    #endif
 
     gw_searchwindow_attach_signals (window);
     gw_searchwindow_sync_history (window);
@@ -2203,8 +2196,115 @@ gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow *window)
 }
 
 
+void
+gw_searchwindow_initialize_toolbar (GwSearchWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GtkToolbar *toolbar;
+    GtkToolItem *item;
+
+    priv = window->priv;
+    toolbar = priv->primary_toolbar;
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE_AS);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save-as");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_PRINT);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.print");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new (NULL, gettext("Edge"));
+    gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "word-boundary");
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.insert-word-edge-character");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new (NULL, gettext("Not-Edge"));
+    gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "non-word-boundary");
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.insert-not-word-edge-character");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new (NULL, gettext("Unknown"));
+    gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "unknown-character");
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.insert-unknown-character");
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+#ifdef WITH_HUNSPELL
+    item = gtk_toggle_tool_button_new ();
+    gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), GTK_STOCK_SPELL_CHECK);
+    gtk_toolbar_insert (toolbar, item, -1);
+    priv->spellcheck_toolbutton = GTK_TOOL_BUTTON (item);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.toggle-spellcheck");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+#endif
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_ZOOM_IN);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.zoom-in");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_ZOOM_OUT);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.zoom-out");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_ZOOM_100);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.zoom-100");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_toggle_tool_button_new ();
+    gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), GTK_STOCK_EDIT);
+    gtk_tool_button_set_label (GTK_TOOL_BUTTON (item), "Kanjipad");
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.toggle-kanjipad-show");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_toggle_tool_button_new ();
+    gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), GTK_STOCK_FIND);
+    gtk_tool_button_set_label (GTK_TOOL_BUTTON (item), "Radicals");
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.toggle-radicals-show");
+    gtk_widget_show (GTK_WIDGET (item));
+}
+
+
 void 
-gw_searchwindow_initialize_dictionary_menu (GwSearchWindow *window)
+gw_searchwindow_initialize_menu_links (GwSearchWindow *window)
 {
     //Sanity checks
     g_return_if_fail (window != NULL);

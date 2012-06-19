@@ -137,7 +137,10 @@ void gw_searchwindow_start_search (GwSearchWindow*, LwSearch*);
 void gw_searchwindow_insert_resultpopup_button (GwSearchWindow*, LwSearch*, LwResult*, GtkTextIter*);
 
 void gw_searchwindow_append_to_buffer (GwSearchWindow*, LwSearch*, const char *, char*, char*, int*, int*);
+
+void gw_searchwindow_initialize_toolbar (GwSearchWindow*);
 void gw_searchwindow_initialize_dictionary_menu (GwSearchWindow*);
+void gw_searchwindow_initialize_menu_links (GwSearchWindow*);
 void gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow*);
 
 void gw_searchwindow_sync_history (GwSearchWindow*);
