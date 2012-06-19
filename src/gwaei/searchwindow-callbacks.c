@@ -464,7 +464,7 @@ gw_searchwindow_back_cb (GSimpleAction *action,
     
     pre_menu_items = 3;
     shell = GTK_MENU_SHELL (priv->history_popup);
-    link = g_list_last (priv->history->back);
+    link = g_list_last (lw_history_get_back_list (priv->history));
     search = LW_SEARCH (link->data);
 
     list = lw_history_get_combined_list (priv->history);
@@ -510,7 +510,7 @@ gw_searchwindow_forward_cb (GSimpleAction *action,
 
     pre_menu_items = 3;
     shell = GTK_MENU_SHELL (priv->history_popup);
-    link = g_list_last (priv->history->forward);
+    link = g_list_last (lw_history_get_forward_list (priv->history));
     search = LW_SEARCH (link->data);
 
     list = lw_history_get_combined_list (priv->history);

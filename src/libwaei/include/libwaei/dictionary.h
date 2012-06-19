@@ -10,7 +10,7 @@ G_BEGIN_DECLS
 typedef enum {
   LW_DICTIONARY_CLASS_SIGNALID_PROGRESS_CHANGED,
   TOTAL_LW_DICTIONARY_CLASS_SIGNALIDS
-} GwDictionaryClassSignalId;
+} LwDictionaryClassSignalId;
 
 //Boilerplate
 typedef struct _LwDictionary LwDictionary;

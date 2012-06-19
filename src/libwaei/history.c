@@ -32,67 +32,181 @@
 
 #include <libwaei/libwaei.h>
 
+#include <libwaei/history-private.h>
+
+G_DEFINE_TYPE (LwHistory, lw_history, G_TYPE_OBJECT)
+
+typedef enum
+{
+  PROP_0,
+  PROP_MAX_SIZE
+} LwHistoryProps;
 
 //!
 //! @brief Creates a new LwHistory object
-//! @param MAX The maximum items you want in the list before old ones are deleted
+//! @param MAX The maximum items you want in the history before old ones are deleted
 //! @return An allocated LwHistory that will be needed to be freed by lw_history_free.
 //!
 LwHistory* 
-lw_history_new (const int MAX)
+lw_history_new (gint max_size)
 {
-    LwHistory *temp;
+    LwHistory *history;
 
-    temp = (LwHistory*) malloc(sizeof(LwHistory));
+    //Initializations
+    history = LW_HISTORY (g_object_new (LW_TYPE_HISTORY,
+                                       "max-size", max_size,
+                                       NULL));
+    return history;
+}
 
-    if (temp != NULL)
+
+static void 
+lw_history_init (LwHistory *history)
+{
+    history->priv = LW_HISTORY_GET_PRIVATE (history);
+    memset(history->priv, 0, sizeof(LwHistoryPrivate));
+}
+
+
+static void 
+lw_history_finalize (GObject *object)
+{
+    //Declarations
+    LwHistory *history;
+
+    //Initalizations
+    history = LW_HISTORY (object);
+
+    lw_history_clear_forward_list (history);
+    lw_history_clear_back_list (history);
+
+    G_OBJECT_CLASS (lw_history_parent_class)->finalize (object);
+}
+
+
+static void 
+lw_history_set_property (GObject      *object,
+                         guint         property_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
+{
+    //Declarations
+    LwHistory *history;
+    LwHistoryPrivate *priv;
+
+    //Initializations
+    history = LW_HISTORY (object);
+    priv = history->priv;
+
+    switch (property_id)
     {
-      lw_history_init (temp, MAX);
+      case PROP_MAX_SIZE:
+        priv->max = g_value_get_int (value);
+        break;
+      default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+        break;
     }
-
-    return temp;
 }
 
 
-//!
-//! @brief Releases a LwHistory object from memory.
-//! @param list A LwHistory object created by lw_history_new.
-//!
-void 
-lw_history_free (LwHistory *list)
+static void 
+lw_history_get_property (GObject      *object,
+                         guint         property_id,
+                         GValue       *value,
+                         GParamSpec   *pspec)
 {
-    lw_history_deinit (list);
-    free (list);
+    //Declarations
+    LwHistory *history;
+    LwHistoryPrivate *priv;
+
+    //Initializations
+    history = LW_HISTORY (object);
+    priv = history->priv;
+
+    switch (property_id)
+    {
+      case PROP_MAX_SIZE:
+        g_value_set_int (value, priv->max);
+        break;
+      default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+        break;
+    }
 }
 
 
-//!
-//! @brief Used to initialize the memory inside of a new LwHistory
-//!        object.  Usually lw_history_new calls this for you.  It is also 
-//!        used in class implimentations that extends LwHistory.
-//! @param list The LwHistory object to initialize the memory of.
-//! @param MAX The maximum items you want in the list before old ones are deleted
-//!
-void 
-lw_history_init (LwHistory *list, const int MAX)
+static void
+lw_history_class_init (LwHistoryClass *klass)
 {
-    list->back = NULL;
-    list->forward = NULL;
-    list->max = MAX;
-}
+    //Declarations
+    GParamSpec *pspec;
+    GObjectClass *object_class;
+    LwHistoryClass *history_class;
 
+    //Initializations
+    object_class = G_OBJECT_CLASS (klass);
+    object_class->set_property = lw_history_set_property;
+    object_class->get_property = lw_history_get_property;
+    object_class->finalize = lw_history_finalize;
 
-//!
-//! @brief Used to free the memory inside of a LwHistory object.
-//!         Usually lw_history_free calls this for you.  It is also used
-//!         in class implimentations that extends LwHistory.
-//! @param list The LwHistory object to have it's inner memory freed.
-//!
-void 
-lw_history_deinit (LwHistory *list)
-{
-    lw_history_clear_forward_list (list);
-    lw_history_clear_back_list (list);
+    history_class = LW_HISTORY_CLASS (klass);
+
+    history_class->signalid[LW_HISTORY_CLASS_SIGNALID_CHANGED] = g_signal_new (
+        "changed",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (LwHistoryClass, changed),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE,
+        1, G_TYPE_POINTER
+    );
+
+    history_class->signalid[LW_HISTORY_CLASS_SIGNALID_BACK] = g_signal_new (
+        "back",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (LwHistoryClass, back),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE,
+        1, G_TYPE_POINTER
+    );
+
+    history_class->signalid[LW_HISTORY_CLASS_SIGNALID_FORWARD] = g_signal_new (
+        "forward",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (LwHistoryClass, forward),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE,
+        1, G_TYPE_POINTER
+    );
+
+    history_class->signalid[LW_HISTORY_CLASS_SIGNALID_ADDED] = g_signal_new (
+        "added",
+        G_OBJECT_CLASS_TYPE (object_class),
+        G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
+        G_STRUCT_OFFSET (LwHistoryClass, added),
+        NULL, NULL,
+        g_cclosure_marshal_VOID__POINTER,
+        G_TYPE_NONE,
+        1, G_TYPE_POINTER
+    );
+
+    g_type_class_add_private (object_class, sizeof (LwHistoryPrivate));
+
+    pspec = g_param_spec_int ("max-size",
+                              "Max length of the back history.",
+                              "Set the maximum length of the back history",
+                              -1,
+                              10000,
+                              -1,
+                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE
+    );
+    g_object_class_install_property (object_class, PROP_MAX_SIZE, pspec);
 }
 
 
@@ -100,14 +214,18 @@ lw_history_deinit (LwHistory *list)
 //! @brief Clears the forward history of the desired target.
 //!
 void 
-lw_history_clear_forward_list (LwHistory *list)
+lw_history_clear_forward_list (LwHistory *history)
 {
     //Declarations
+    LwHistoryPrivate *priv;
     LwSearch *search;
     GList *iter;
 
-    //Free the data of the list
-    for (iter = list->forward; iter != NULL; iter = iter->next)
+    //Initializations
+    priv = history->priv;
+
+    //Free the data of the history
+    for (iter = priv->forward; iter != NULL; iter = iter->next)
     {
       search = (LwSearch*) iter->data;
       if (search != NULL)
@@ -115,9 +233,9 @@ lw_history_clear_forward_list (LwHistory *list)
       iter->data = NULL;
     }
 
-    //Free the list itself
-    g_list_free (list->forward);
-    list->forward = NULL;
+    //Free the history itself
+    g_list_free (priv->forward);
+    priv->forward = NULL;
 }
 
 
@@ -125,14 +243,18 @@ lw_history_clear_forward_list (LwHistory *list)
 //! @brief Clears the back history of the desired target.
 //!
 void 
-lw_history_clear_back_list (LwHistory *list)
+lw_history_clear_back_list (LwHistory *history)
 {
     //Declarations
+    LwHistoryPrivate *priv;
     LwSearch *search;
     GList *iter;
 
-    //Free the data of the list
-    for (iter = list->back; iter != NULL; iter = iter->next)
+    //Initializations
+    priv = history->priv;
+
+    //Free the data of the history
+    for (iter = priv->back; iter != NULL; iter = iter->next)
     {
       search = (LwSearch*) iter->data;
       if (search != NULL)
@@ -140,55 +262,57 @@ lw_history_clear_back_list (LwHistory *list)
       iter->data = NULL;
     }
 
-    //Free the list itself
-    g_list_free (list->back);
-    list->back = NULL;
+    //Free the history itself
+    g_list_free (priv->back);
+    priv->back = NULL;
 }
 
 
 //!
-//! @brief Gets the back history of the target history list
+//! @brief Gets the back history of the target history history
 //! @return Returns a GList containing the LwSearch back history
 //!
 GList* 
-lw_history_get_back_list (LwHistory *list)
+lw_history_get_back_list (LwHistory *history)
 {
-    return list->back;
+    return history->priv->back;
 }
 
 
 //!
-//! @brief Gets the forward history of the target history list
+//! @brief Gets the forward history of the target history history
 //! @return Returns a GList containing the LwSearch forward history
 //!
 GList* 
-lw_history_get_forward_list (LwHistory *list)
+lw_history_get_forward_list (LwHistory *history)
 {
-    return list->forward;
+    return history->priv->forward;
 }
 
 
 //!
 //! @brief Concatinates together a copy of the back and forward histories
 //!
-//! This function was made with the idea of easily preparing a history list
-//! for a history menu which doesn't care about separating each list.
+//! This function was made with the idea of easily preparing a history history
+//! for a history menu which doesn't care about separating each history.
 //!
 //! @see lw_history_get_back_list ()
 //! @see lw_history_get_forward_list ()
 //! @return Returns an allocated GList containing the back and forward history
 //!
 GList* 
-lw_history_get_combined_list (LwHistory *list)
+lw_history_get_combined_list (LwHistory *history)
 {
     //Declarations
+    LwHistoryPrivate *priv;
     GList *combined;
     
     //Initializations
+    priv = history->priv; 
     combined = NULL;
-    combined = g_list_copy (list->forward);
+    combined = g_list_copy (priv->forward);
     combined = g_list_reverse (combined);
-    combined = g_list_concat (combined, g_list_copy (list->back));
+    combined = g_list_concat (combined, g_list_copy (priv->back));
 
     return combined;
 }
@@ -198,43 +322,47 @@ lw_history_get_combined_list (LwHistory *list)
 //! @brief Moves an search to the back history
 //!
 void 
-lw_history_add_search (LwHistory *list, LwSearch *search)
+lw_history_add_search (LwHistory *history, LwSearch *search)
 { 
     //Declarations
+    LwHistoryPrivate *priv;
     GList *link;
 
-    //Clear the forward history
-    lw_history_clear_forward_list (list);
+    //Initalizations
+    priv = history->priv;
+    
+    priv->back = g_list_prepend (priv->back, search);
 
-    list->back = g_list_prepend (list->back, search);
-
-    //Make sure the list hasn't gotten too long
-    if (g_list_length (list->back) >= list->max)
+    //Make sure the history hasn't gotten too long
+    if (g_list_length (priv->back) >= priv->max)
     {
-      link = g_list_last (list->back); 
+      link = g_list_last (priv->back); 
       lw_search_free (LW_SEARCH (link->data));
-      list->back = g_list_delete_link (list->back, link);
+      priv->back = g_list_delete_link (priv->back, link);
     }
+
+    //Clear the forward history
+    lw_history_clear_forward_list (history);
 }
 
 
 //!
-//! @brief Returns true if it is possible to go forward on a history list
+//! @brief Returns true if it is possible to go forward on a history history
 //!
 gboolean 
-lw_history_has_forward (LwHistory *list)
+lw_history_has_forward (LwHistory *history)
 {
-    return (list->forward != NULL);
+    return (history->priv->forward != NULL);
 }
 
 
 //!
-//! @brief Returns true if it is possible to go back on a history list
+//! @brief Returns true if it is possible to go back on a history history
 //!
 gboolean 
-lw_history_has_back (LwHistory *list)
+lw_history_has_back (LwHistory *history)
 {
-    return (list->back != NULL);
+    return (history->priv->back != NULL);
 }
 
 
@@ -242,23 +370,26 @@ lw_history_has_back (LwHistory *list)
 //! @brief Go back 1 in history
 //!
 LwSearch* 
-lw_history_go_back (LwHistory *list, LwSearch *pushed)
+lw_history_go_back (LwHistory *history, LwSearch *pushed)
 { 
     //Sanity check
-    if (!lw_history_has_back (list)) return pushed;
+    if (!lw_history_has_back (history)) return pushed;
 
     //Declarations
+    LwHistoryPrivate *priv;
     GList *link;
     LwSearch *popped;
 
+    priv = history->priv;
+
     if (pushed != NULL)
     {
-      list->forward = g_list_append (list->forward, pushed);
+      priv->forward = g_list_append (priv->forward, pushed);
     }
 
-    link = g_list_last (list->back); 
+    link = g_list_last (priv->back); 
     popped = LW_SEARCH (link->data);
-    list->back = g_list_delete_link (list->back, link);
+    priv->back = g_list_delete_link (priv->back, link);
 
     return popped;
 }
@@ -268,23 +399,26 @@ lw_history_go_back (LwHistory *list, LwSearch *pushed)
 //! @brief Go forward 1 in history
 //!
 LwSearch* 
-lw_history_go_forward (LwHistory *list, LwSearch *pushed)
+lw_history_go_forward (LwHistory *history, LwSearch *pushed)
 { 
     //Sanity check
-    if (!lw_history_has_forward (list)) return pushed;
+    if (!lw_history_has_forward (history)) return pushed;
 
     //Declarations
+    LwHistoryPrivate *priv;
     GList *link;
     LwSearch *popped;
 
+    priv = history->priv;
+
     if (pushed != NULL)
     {
-      list->back = g_list_append (list->back, pushed);
+      priv->back = g_list_append (priv->back, pushed);
     }
 
-    link = g_list_last (list->forward); 
+    link = g_list_last (priv->forward); 
     popped = LW_SEARCH (link->data);
-    list->forward = g_list_delete_link (list->forward, link);
+    priv->forward = g_list_delete_link (priv->forward, link);
 
     return popped;
 }
