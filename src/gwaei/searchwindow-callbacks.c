@@ -2427,26 +2427,48 @@ _menu_popdown (GtkWidget *widget, gpointer data)
 }
 
 
+static GMenuModel *_menu_button = NULL;
+
+static void
+_load_button_xml (GwSearchWindow *window)
+{
+    if (_menu_button != NULL) return;
+
+    GtkBuilder *builder;
+    GMenuModel *menumodel;
+
+    builder = gtk_builder_new ();
+    if (builder != NULL)
+    {
+      gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
+      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "button-menu"));
+      gw_searchwindow_set_links (window, menumodel);
+
+      _menu_button = menumodel;
+
+      g_object_unref (builder); builder = NULL;
+    }
+}
+
 G_MODULE_EXPORT void
 gw_searchwindow_show_popup_menu_cb (GtkWidget *widget, gpointer data)
 {
     //Declarations
     GwSearchWindow *window;
-    GMenuModel *model;
     GtkMenu* menu;
     GList *attachlist;
 
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     g_return_if_fail (window != NULL);
 
+    _load_button_xml (window);   
+
     if (gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON (widget)) == FALSE) return;
 
     while ((attachlist = gtk_menu_get_for_attach_widget (widget)) != NULL)
       gtk_menu_detach (GTK_MENU (attachlist->data));
 
-    model = gw_window_get_menu_model (GW_WINDOW (window));
-    if (model == NULL) return;
-    menu = GTK_MENU (gtk_menu_new_from_model (model));
+    menu = GTK_MENU (gtk_menu_new_from_model (_menu_button));
     g_signal_connect (G_OBJECT (menu), "hide", G_CALLBACK (_menu_popdown), widget);
     gtk_menu_attach_to_widget (menu, widget, NULL);
 

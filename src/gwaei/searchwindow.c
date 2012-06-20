@@ -41,7 +41,6 @@
 static void gw_searchwindow_attach_signals (GwSearchWindow*);
 static void gw_searchwindow_remove_signals (GwSearchWindow*);
 
-static void gw_searchwindow_set_links (GwSearchWindow*, GMenuModel*);
 
 static GtkInfoBar* _construct_infobar ();
 
@@ -2319,7 +2318,7 @@ gw_searchwindow_initialize_menu_links (GwSearchWindow *window)
     gw_searchwindow_set_links (window, menumodel);
 }
 
-static void
+void
 gw_searchwindow_set_links (GwSearchWindow *window, GMenuModel *menumodel)
 {
     //Sanity checks

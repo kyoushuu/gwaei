@@ -148,6 +148,8 @@ void gw_searchwindow_sync_history (GwSearchWindow*);
 void gw_searchwindow_go_back (GwSearchWindow*, gint);
 void gw_searchwindow_go_forward (GwSearchWindow*, gint);
 
+void gw_searchwindow_set_links (GwSearchWindow*, GMenuModel*);
+
 #include "searchwindow-callbacks.h"
 #include "searchwindow-output.h"
 #include "search-data.h"
