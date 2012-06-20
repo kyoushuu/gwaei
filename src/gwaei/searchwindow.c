@@ -41,6 +41,7 @@
 static void gw_searchwindow_attach_signals (GwSearchWindow*);
 static void gw_searchwindow_remove_signals (GwSearchWindow*);
 
+GtkCssProvider* gw_searchwindowclass_get_tablabel_style_provider (GwSearchWindowClass*);
 
 static GtkInfoBar* _construct_infobar ();
 
@@ -120,6 +121,44 @@ _activate_toggle (GSimpleAction *action,
   g_action_change_state (G_ACTION (action), g_variant_new_boolean (!g_variant_get_boolean (state)));
 
   g_variant_unref (state);
+}
+
+
+static void
+gw_searchwindow_initialize_notebook (GwSearchWindow *window)
+{
+    //Sanity check
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GtkNotebook *notebook;
+    GtkWidget *widget;
+    GtkWidget *image;
+    GtkCssProvider *provider;
+    GtkStyleContext *context;
+    GwSearchWindowClass *klass;
+
+    //Initializations
+    priv = window->priv;
+    klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
+    notebook = priv->notebook;
+    widget = gtk_button_new ();
+    gtk_widget_show (widget);
+    image = gtk_image_new_from_icon_name ("tab-new", GTK_ICON_SIZE_MENU);
+    gtk_widget_show (image);
+    provider = gw_searchwindowclass_get_tablabel_style_provider (klass);
+    gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
+    gtk_button_set_focus_on_click (GTK_BUTTON (widget), FALSE);
+    gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+    gtk_misc_set_padding (GTK_MISC (image), 4, 0);
+    gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.5);
+    context = gtk_widget_get_style_context (widget);
+    gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (widget), "win.new-tab");
+
+    gtk_container_add (GTK_CONTAINER (widget), image);
+    gtk_notebook_set_action_widget (notebook, widget, GTK_PACK_START);
 }
 
 
@@ -226,6 +265,7 @@ gw_searchwindow_constructed (GObject *object)
 
     //This code should probably be moved to when the window is realized
     gw_searchwindow_initialize_toolbar (window);
+    gw_searchwindow_initialize_notebook (window);
     gw_searchwindow_initialize_dictionary_combobox (window);
     gw_searchwindow_initialize_menu_links (window);
 //TODO
@@ -1432,7 +1472,8 @@ gw_searchwindow_update_tab_text_by_index (GwSearchWindow *window, gint index)
 }
 
 
-GtkCssProvider* gw_searchwindowclass_get_tablabel_style_provider (GwSearchWindowClass *klass)
+GtkCssProvider* 
+gw_searchwindowclass_get_tablabel_style_provider (GwSearchWindowClass *klass)
 {
     const gchar *STYLE_DATA;
     if (klass->tablabel_cssprovider == NULL)
