@@ -146,11 +146,12 @@ gw_searchwindow_initialize_notebook (GwSearchWindow *window)
     widget = gtk_button_new ();
     gtk_widget_show (widget);
     image = gtk_image_new_from_icon_name ("tab-new", GTK_ICON_SIZE_MENU);
+//    image = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
     provider = gw_searchwindowclass_get_tablabel_style_provider (klass);
     gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
     gtk_button_set_focus_on_click (GTK_BUTTON (widget), FALSE);
-    gtk_container_set_border_width (GTK_CONTAINER (widget), 0);
+    gtk_container_set_border_width (GTK_CONTAINER (widget), 1);
     gtk_misc_set_padding (GTK_MISC (image), 4, 0);
     gtk_misc_set_alignment (GTK_MISC (image), 0.5, 0.5);
     context = gtk_widget_get_style_context (widget);
