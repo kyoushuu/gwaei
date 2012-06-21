@@ -198,11 +198,11 @@ gw_texttagtable_init_base_tags (GwTextTagTable *tagtable)
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
 
     tag = gtk_text_tag_new ("entry-lexicon");
-    g_object_set (tag, "scale", 0.8, "foreground", "#888888", "style", PANGO_STYLE_ITALIC, NULL);
+    g_object_set (tag, "scale", 1.0, "foreground", "#888888", "style", PANGO_STYLE_ITALIC, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
 
     tag = gtk_text_tag_new ("entry-popular");
-    g_object_set (tag, "scale", 0.8, NULL);
+    g_object_set (tag, "scale", 1.0, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
 
     tag = gtk_text_tag_new ("entry-example-definition");
