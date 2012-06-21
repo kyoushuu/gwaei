@@ -146,7 +146,6 @@ gw_searchwindow_initialize_notebook (GwSearchWindow *window)
     widget = gtk_button_new ();
     gtk_widget_show (widget);
     image = gtk_image_new_from_icon_name ("tab-new", GTK_ICON_SIZE_MENU);
-//    image = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
     provider = gw_searchwindowclass_get_tablabel_style_provider (klass);
     gtk_button_set_relief (GTK_BUTTON (widget), GTK_RELIEF_NONE);
@@ -742,7 +741,6 @@ gw_searchwindow_set_search_progressbar_by_searchitem (GwSearchWindow *window, Lw
 void 
 gw_searchwindow_sync_history (GwSearchWindow *window)
 {
-printf("BREAK sync sensitivity!\n");
     GwSearchWindowPrivate *priv;
     GActionMap *map;
     GSimpleAction *action;
@@ -755,12 +753,10 @@ printf("BREAK sync sensitivity!\n");
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "go-back"));
     enabled = lw_history_has_back (history);
-printf("BREAK has back! %d\n", enabled);
     g_simple_action_set_enabled (action, enabled);
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "go-forward"));
     enabled = lw_history_has_forward (history);
-printf("BREAK has forward! %d\n", enabled);
     g_simple_action_set_enabled (action, enabled);
 }
 
@@ -889,7 +885,7 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
     //Clear the target text buffer
     GtkTextIter iter;
     gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "\n", -1, "small", NULL);
+    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "\n", -1, "spacing", NULL);
 
     gtk_text_buffer_get_end_iter (buffer, &iter);
     gtk_text_buffer_create_mark (buffer, "more_relevant_header_mark", &iter, TRUE);

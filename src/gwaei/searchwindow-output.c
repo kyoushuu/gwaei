@@ -194,7 +194,7 @@ gw_searchwindow_set_header (LwSearch *search, char* text, char* mark_name)
       gtk_text_buffer_get_iter_at_line(buffer, &end_iter, line + 1);
       gtk_text_buffer_delete (buffer, &iter, &end_iter);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, new_text, -1, "header", "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, new_text, -1, "header", NULL);
       g_free (new_text);
       new_text = NULL;
     }
@@ -395,17 +395,17 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearch* sea
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
       line = gtk_text_iter_get_line (&iter);
       start_offset = gtk_text_iter_get_line_offset (&iter);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " /", -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " /", -1, "entry-header", NULL);
       gtk_text_buffer_insert (buffer, &iter, " ", -1);
       //Kanji
       if (result->kanji_start != NULL)
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, "important", NULL);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, "entry-header", NULL);
       //Furigana
       if (result->furigana_start != NULL)
       {
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " [", -1, "important", NULL);
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, "important", NULL);
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "]", -1, "important", NULL);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "【", -1, "entry-header", NULL);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, "entry-header", NULL);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "】", -1, "entry-header", NULL);
       }
       //Other info
       if (result->classification_start != NULL)
@@ -413,13 +413,13 @@ gw_searchwindow_append_def_same_to_buffer (GwSearchWindow *window, LwSearch* sea
         gtk_text_buffer_insert (buffer, &iter, " ", -1);
         GtkTextIter copy = iter;
         gtk_text_iter_backward_char (&copy);
-        gtk_text_buffer_remove_tag_by_name (buffer, "important", &copy, &iter);
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->classification_start, -1, "gray", "italic", NULL);
+        gtk_text_buffer_remove_tag_by_name (buffer, "entry-header", &copy, &iter);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->classification_start, -1, "entry-lexicon", NULL);
       }
       if (result->important == TRUE)
       {
         gtk_text_buffer_insert                   (buffer, &iter, " ", -1);
-        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Pop"), -1, "small", NULL);
+        gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Pop"), -1, "entry-popular", NULL);
       }
       end_offset = gtk_text_iter_get_line_offset (&iter);
       gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -514,26 +514,26 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearch *search)
     //Kanji
     if (result->kanji_start != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, "entry-header", NULL);
     }
 
     //Furigana
     if (result->furigana_start != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " [", -1, "important", NULL);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, "important", NULL);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "]", -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "【", -1, "entry-header", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, "entry-header", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "】", -1, "entry-header", NULL);
     }
     //Other info
     if (result->classification_start != NULL)
     {
       gtk_text_buffer_insert (buffer, &iter, " ", -1);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->classification_start, -1, "gray", "italic", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->classification_start, -1, "entry-lexicon", NULL);
     }
     if (result->important == TRUE)
     {
       gtk_text_buffer_insert (buffer, &iter, " ", -1);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Pop"), -1, "small", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Pop"), -1, "entry-popular", NULL);
     }
 
     gw_searchwindow_insert_edict_addlink (window, result, buffer, &iter);
@@ -656,8 +656,8 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
 
     //Kanji
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji, -1, "large", "center", NULL);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " ", -1, "large", "center", NULL);
+    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji, -1, "entry-grand-header", NULL);
+    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, " ", -1, "entry-grand-header", NULL);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
     gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -670,7 +670,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     //Radicals
     if (result->radicals != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Radicals:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Radicals:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_insert (buffer, &iter, result->radicals, -1);
       gtk_text_buffer_insert (buffer, &iter, " ", -1);
@@ -684,7 +684,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     //Readings
     if (result->readings[0] != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Readings:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Readings:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_insert (buffer, &iter, result->readings[0], -1);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
@@ -694,7 +694,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     }
     if (result->readings[1] != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Name:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Name:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_insert (buffer, &iter, result->readings[1], -1);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
@@ -704,7 +704,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     }
     if (result->readings[2] != NULL)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Radical Name:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Radical Name:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_insert (buffer, &iter, result->readings[2], -1);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
@@ -718,27 +718,27 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     gboolean line_started = FALSE;
     if (result->strokes)
     {
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Stroke:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Stroke:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_insert (buffer, &iter, result->strokes, -1);
       line_started = TRUE;
     }
     if (result->frequency)
     {
       if (line_started) gtk_text_buffer_insert (buffer, &iter, " ", -1);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Freq:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Freq:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_insert (buffer, &iter, result->frequency, -1);
       gtk_text_buffer_insert (buffer, &iter, " ", -1);
     }
     if (result->grade)
     {
       if (line_started) gtk_text_buffer_insert (buffer, &iter, " ", -1);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Grade:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Grade:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_insert (buffer, &iter, result->grade, -1);
     }
     if (result->jlpt)
     {
       if (line_started) gtk_text_buffer_insert (buffer, &iter, " ", -1);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("JLPT:"), -1, "important", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("JLPT:"), -1, "entry-bullet", NULL);
       gtk_text_buffer_insert (buffer, &iter, result->jlpt, -1);
     }
 
@@ -747,7 +747,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
 
     //Meanings
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Meanings:"), -1, "important", NULL);
+    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("Meanings:"), -1, "entry-bullet", NULL);
     gtk_text_buffer_insert (buffer, &iter, result->meanings, -1);
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
     gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -811,9 +811,9 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearch *se
     if (result->def_start[0] != NULL)
     {
       // TRANSLATORS: The "E" stands for "English"
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("E:\t"), -1, "important", "comment", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("E:\t"), -1, "entry-header", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->def_start[0], -1, "important", NULL, NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->def_start[0], -1, "entry-header", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
       gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -822,9 +822,9 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearch *se
     if (result->kanji_start != NULL)
     {
       // TRANSLATORS: The "J" stands for "Japanese"
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("\nJ:\t"), -1, "important", "comment", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("\nJ:\t"), -1, "entry-header", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, NULL, NULL, NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->kanji_start, -1, "entry-example-definition", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
       gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -833,9 +833,9 @@ gw_searchwindow_append_examplesdict_result (GwSearchWindow *window, LwSearch *se
     if (result->furigana_start != NULL)
     {
       // TRANSLATORS: The "D" stands for "Detail"
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("\nD:\t"), -1, "important", "comment", NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, gettext("\nD:\t"), -1, "entry-header", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); start_offset = gtk_text_iter_get_line_offset (&iter);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, NULL, NULL, NULL);
+      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, result->furigana_start, -1, "entry-example-definition", NULL);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); end_offset = gtk_text_iter_get_line_offset (&iter);
       gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark); line = gtk_text_iter_get_line (&iter);
       gw_add_match_highlights (line, start_offset, end_offset, search);
@@ -1199,7 +1199,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
     gtk_text_buffer_set_text (buffer, "", -1);
 
     //Add the title
-    gw_searchwindow_append_to_buffer (window, search, "\n", "small", NULL, NULL, NULL);
+    gw_searchwindow_append_to_buffer (window, search, "\n", "spacing", NULL, NULL, NULL);
 
     //Set the header message
     box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
