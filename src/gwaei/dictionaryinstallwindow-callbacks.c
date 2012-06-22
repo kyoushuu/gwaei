@@ -332,7 +332,7 @@ gw_dictionaryinstallwindow_update_add_button_sensitivity (GwDictionaryInstallWin
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_dictionarylist (application);
+    dictionarylist = gw_application_get_installable_dictionarylist (application);
     sensitivity = lw_dictionarylist_installer_is_valid (dictionarylist);
 
     //Finalize

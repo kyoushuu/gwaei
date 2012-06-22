@@ -189,42 +189,53 @@ gw_texttagtable_init_base_tags (GwTextTagTable *tagtable)
     tag = gtk_text_tag_new ("entry-grand-header");
     g_object_set (tag, "scale", 4.0, "weight", 600, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-header");
     g_object_set (tag, "scale", 1.5, "weight", 600, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-definition");
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-lexicon");
     g_object_set (tag, "scale", 1.0, "foreground", "#888888", "style", PANGO_STYLE_ITALIC, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-popular");
     g_object_set (tag, "scale", 1.0, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-example-definition");
     g_object_set (tag, "scale", 1.3, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-bullet");
     g_object_set (tag, "weight", PANGO_WEIGHT_BOLD, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("comment");
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("match");
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("header");
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 
     tag = gtk_text_tag_new ("spacing");
     g_object_set (tag, "scale", 0.5, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
+    g_object_unref (tag);
 }
 
 

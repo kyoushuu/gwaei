@@ -115,7 +115,7 @@ gw_dictionaryinstallwindow_constructed (GObject *object)
     priv = window->priv;
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_dictionarylist (application);
+    dictionarylist = gw_application_get_installable_dictionarylist (application);
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("Select Dictionaries..."));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);

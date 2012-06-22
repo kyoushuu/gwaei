@@ -146,6 +146,7 @@ lw_dictionarylist_load_installed (LwDictionaryList *dictionarylist)
           dictionary = LW_DICTIONARY (g_object_new (type, "filename", FILENAME, NULL));
           if (dictionary != NULL && LW_IS_DICTIONARY (dictionary))
             lw_dictionarylist_add_dictionary (dictionarylist, dictionary);
+          if (typename != NULL) g_free (typename); typename = NULL;
         }
         g_strfreev (pair); pair = NULL;
       }

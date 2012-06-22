@@ -163,6 +163,7 @@ gw_dictionarystore_sync_menumodel (GwDictionaryStore *store)
     accelnumber = accellabel + strlen("<Primary>");
     namelabel = NULL;
     menuitem = NULL;
+    position = NULL;
 
     if (menumodel == NULL) 
       menumodel = G_MENU_MODEL (g_menu_new ());
@@ -180,6 +181,7 @@ gw_dictionarystore_sync_menumodel (GwDictionaryStore *store)
       gtk_tree_model_get (treemodel, &treeiter, GW_DICTIONARYSTORE_COLUMN_LONG_NAME, &namelabel, -1);
       if (namelabel == NULL) goto errored;
       gtk_tree_model_get (treemodel, &treeiter, GW_DICTIONARYSTORE_COLUMN_POSITION, &position, -1);
+      if (position == NULL) goto errored;
       detailed_action = g_strdup_printf("%s::%s", action, position);
       if (detailed_action == NULL) goto errored;
       menuitem = g_menu_item_new (namelabel, detailed_action);
@@ -192,8 +194,11 @@ gw_dictionarystore_sync_menumodel (GwDictionaryStore *store)
       }
 
       g_menu_append_item (G_MENU (menumodel), menuitem);
+      if (menuitem != NULL) g_object_unref (menuitem); menuitem = NULL;
 
       if (namelabel != NULL) g_free (namelabel); namelabel = NULL;
+      if (position != NULL) g_free (position); position = NULL;
+      if (detailed_action != NULL) g_free (detailed_action); detailed_action = NULL;
       menuitem = NULL;
 
       valid = gtk_tree_model_iter_next (treemodel, &treeiter);
@@ -256,7 +261,9 @@ gw_dictionarystore_update (GwDictionaryStore *store)
         strcpy(ordernumber, "");
 
       longname = g_strdup_printf(gettext("%s Dictionary"), shortname);
+      if (longname == NULL) goto errored;
       directoryname = lw_dictionary_get_directoryname (G_OBJECT_TYPE (dictionary));
+      if (directoryname == NULL) goto errored;
 
       gtk_list_store_append (GTK_LIST_STORE (store), &iter);
       gtk_list_store_set (
@@ -270,7 +277,10 @@ gw_dictionarystore_update (GwDictionaryStore *store)
           GW_DICTIONARYSTORE_COLUMN_DICT_POINTER, dictionary,
           -1
       );
+
+errored:
       if (longname != NULL) g_free (longname); longname = NULL;
+      if (directoryname != NULL) g_free (directoryname); directoryname = NULL;
       i++;
     }
 

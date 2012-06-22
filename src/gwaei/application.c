@@ -578,7 +578,7 @@ gw_application_get_dictionarystore (GwApplication *application)
 
 
 LwDictionaryList* 
-gw_application_get_dictionarylist (GwApplication *application)
+gw_application_get_installable_dictionarylist (GwApplication *application)
 {
 //TODO
 /*

@@ -343,13 +343,10 @@ lw_dictionary_get_directoryname (GType dictionary_type)
 
     lowercase = g_ascii_strdown (name, -1);
 
-    return lowercase;
-    
 errored:
     if (name != NULL) g_free (name); name = NULL;
-    if (lowercase != NULL) g_free (lowercase); lowercase = NULL;
 
-    return NULL;
+    return lowercase;
 }
 
 
@@ -742,6 +739,8 @@ lw_dictionary_get_installed_idlist (GType type_filter)
       g_free (directorypath); directorypath = NULL;
       childiter++;
     }
+
+    if (childlist != NULL) g_free (childlist); childlist = NULL;
 
     return idlist;
 }

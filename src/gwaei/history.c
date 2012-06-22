@@ -113,10 +113,12 @@ gw_history_constructed (GObject *object)
       menuitem = g_menu_item_new (NULL, NULL);
       g_menu_item_set_link (menuitem, G_MENU_LINK_SECTION, priv->forward);
       g_menu_append_item (menu, menuitem);
+      g_object_unref (menuitem); menuitem = NULL;
 
       menuitem = g_menu_item_new (NULL, NULL);
       g_menu_item_set_link (menuitem, G_MENU_LINK_SECTION, priv->back);
       g_menu_append_item (menu, menuitem);
+      g_object_unref (menuitem); menuitem = NULL;
 
       priv->combined = G_MENU_MODEL (menu);
     }

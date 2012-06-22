@@ -2392,9 +2392,9 @@ gw_searchwindow_set_links (GwSearchWindow *window, GMenuModel *menumodel)
 
           menuitem = g_menu_item_new (NULL, NULL);
           g_menu_item_set_link (menuitem, G_MENU_LINK_SECTION, menumodellink);
-
           g_menu_remove (G_MENU (menumodel), index);
           g_menu_insert_item (G_MENU (menumodel), index, menuitem);
+          g_object_unref (menuitem); menuitem = NULL;
         }
         else if (strcmp (label, "history-list-link") == 0)
         {
@@ -2402,9 +2402,9 @@ gw_searchwindow_set_links (GwSearchWindow *window, GMenuModel *menumodel)
 
           menuitem = g_menu_item_new (NULL, NULL);
           g_menu_item_set_link (menuitem, G_MENU_LINK_SECTION, menumodellink);
-
           g_menu_remove (G_MENU (menumodel), index);
           g_menu_insert_item (G_MENU (menumodel), index, menuitem);
+          g_object_unref (menuitem); menuitem = NULL;
         }
         g_free (label); label = NULL;
       }
