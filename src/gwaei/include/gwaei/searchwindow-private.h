@@ -27,6 +27,13 @@ typedef enum {
   TOTAL_GW_SEARCHWINDOW_SIGNALIDS
 } GwSearchWindowSignalId;
 
+/*
+struct _GwSearchWindowPrivateGui {
+  
+}
+typedef struct _GwSearchWindowPrivateGui GwSearchWindowPrivateGui;
+*/
+
 struct _GwSearchWindowPrivate {
   GtkNotebook *notebook;
 
@@ -52,8 +59,8 @@ struct _GwSearchWindowPrivate {
   GwHistory *history;
 
   //Main variables
-  guint timeoutid[TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS];
-  guint signalid[TOTAL_GW_SEARCHWINDOW_SIGNALIDS];
+  guint *timeoutid;
+  guint *signalid;
 
   gint previous_tip;
   gint font_size;

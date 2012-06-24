@@ -80,6 +80,9 @@ gboolean gw_application_should_quit (GwApplication *application);
 
 gboolean gw_application_load_xml (GtkBuilder*, const gchar*);
 
+GActionEntry* gw_application_get_app_action_entries (void);
+gint gw_application_get_total_app_action_entries (void);
+
 #include "application-callbacks.h"
 
 G_END_DECLS

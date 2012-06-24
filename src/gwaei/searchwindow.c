@@ -229,6 +229,12 @@ gw_searchwindow_constructed (GObject *object)
     g_action_map_add_action_entries (G_ACTION_MAP (window), win_entries, G_N_ELEMENTS (win_entries), window);
 
 
+//Load the app entries just in case
+    GActionEntry* app_entries = gw_application_get_app_action_entries ();
+    gint total_app_entries = gw_application_get_total_app_action_entries ();
+    g_action_map_add_action_entries (G_ACTION_MAP (window), app_entries, total_app_entries, application);
+
+
     //Set up the gtkbuilder links
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "notebook"));
 
@@ -1964,6 +1970,10 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
+
+    priv->signalid = g_new0 (guint, TOTAL_GW_SEARCHWINDOW_SIGNALIDS);
+    priv->timeoutid = g_new0 (guint, TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS);
+
     dictionarylist = gw_application_get_installed_dictionarylist (application);
     vocabularyliststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
@@ -2182,6 +2192,9 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
         G_OBJECT (vocabularyliststore),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED]
     );
+
+    if (priv->signalid != NULL) g_free (priv->signalid); priv->signalid = NULL;
+    if (priv->timeoutid != NULL) g_free (priv->timeoutid); priv->timeoutid = NULL;
 }
 
 

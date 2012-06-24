@@ -50,6 +50,15 @@ static int gw_application_command_line (GApplication*, GApplicationCommandLine*)
 static void gw_application_startup (GApplication*);
 static void gw_application_load_app_menu (GwApplication*);
 
+static GActionEntry app_entries[] = {
+  { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
+  { "show-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
+  { "show-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
+  { "show-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
+  { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
+  { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
+  { "quit", gw_application_quit_cb, NULL, NULL, NULL }
+};
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
 
@@ -803,16 +812,6 @@ gw_application_load_app_menu (GwApplication *application)
     gboolean os_shows_win_menu;
     const gchar *filename;
 
-    static GActionEntry app_entries[] = {
-      { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
-      { "show-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
-      { "show-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
-      { "show-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
-      { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
-      { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
-      { "quit", gw_application_quit_cb, NULL, NULL, NULL }
-    };
-
     //Initializations
     builder = NULL;
     model = NULL;
@@ -895,4 +894,16 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
     return (file_exists && is_valid_xml);
 }
 
+
+GActionEntry*
+gw_application_get_app_action_entries ()
+{
+    return app_entries;
+}
+
+gint
+gw_application_get_total_app_action_entries ()
+{
+    return G_N_ELEMENTS (app_entries);
+}
 

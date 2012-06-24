@@ -491,7 +491,7 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     }
     else //Windows style
     {
-      filename = g_strjoin ("-", BASE_NAME, "menumodel", "windows.ui", NULL);
+      filename = g_strjoin ("-", BASE_NAME, "menumodel", "standard.ui", NULL);
       if (filename == NULL) goto errored;
     }
 
