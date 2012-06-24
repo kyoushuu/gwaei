@@ -151,10 +151,15 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     dictionary = priv->dictionary;
 
     text_progressbar =  g_markup_printf_escaped (gettext("Installing %s..."), lw_dictionary_get_name (dictionary));
+    if (text_progressbar == NULL) goto errored;
     text_left = g_strdup_printf (gettext("Installing dictionary %d of %d..."), current_to_install, total_to_install);
+    if (text_left == NULL) goto errored;
     text_left_markup = g_markup_printf_escaped ("<big><b>%s</b></big>", text_left);
+    if (text_left_markup == NULL) goto errored;
     text_installing = lw_dictionary_installer_get_status_message (dictionary, TRUE);
+    if (text_installing == NULL) goto errored;
     text_installing_markup = g_markup_printf_escaped ("<small>%s</small>", text_installing);
+    if (text_installing_markup == NULL) goto errored;
 
     gtk_label_set_markup (priv->label, text_left_markup);
     gtk_label_set_markup (priv->sublabel, text_installing_markup);

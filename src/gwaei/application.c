@@ -828,7 +828,7 @@ gw_application_load_app_menu (GwApplication *application)
     else //Windows style
       filename = NULL;
 
-    if(filename == NULL) goto errored;
+    if (filename == NULL) goto errored;
 
     builder = gtk_builder_new (); if (builder == NULL) goto errored;
     loaded = gw_application_load_xml (builder, filename); if (loaded == FALSE) goto errored;

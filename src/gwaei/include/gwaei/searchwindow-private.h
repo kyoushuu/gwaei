@@ -46,8 +46,6 @@ struct _GwSearchWindowPrivate {
   GtkLabel *statusbar_label;
   GtkProgressBar *statusbar_progressbar;
 
-  GtkMenu *vocabulary_popup;
-
   LwDictionary *dictionary;
 
   //History

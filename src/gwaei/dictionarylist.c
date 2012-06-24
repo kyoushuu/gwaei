@@ -121,18 +121,6 @@ gw_dictionarylist_attach_signals (GwDictionaryList *dictionarylist)
       G_CALLBACK (gw_dictionarylist_changed_cb),
       NULL
     );
-/*
-    GwDictionaryListPrivate *priv;
-
-    priv = dictionarylist->priv;
-
-    priv->signalids[GW_DICTIONARYLIST_SIGNALID_ROW_CHANGED] = g_signal_connect (
-      G_OBJECT (store),
-      "row-deleted", 
-      G_CALLBACK (gw_dictionarylist_row_changed_cb),
-      NULL
-    );
-*/
 }
 
 
@@ -301,6 +289,7 @@ gw_dictionarylist_sync_treestore (GwDictionaryList *dictionarylist)
 void
 gw_dictionarylist_save_order (GwDictionaryList *store, LwPreferences *preferences)
 {
+    printf("BREAK Saving order\n");
     //TODO
 /*
     //Declarations

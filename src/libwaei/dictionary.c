@@ -781,6 +781,7 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
           {
             regex = lw_regex_new (pattern[relevance], text, error);
             if (regex != NULL) regexgroup[relevance] = regex;
+            g_free (text); text = NULL;
           }
         }
 

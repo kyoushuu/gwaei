@@ -290,7 +290,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
     }
 
     //Cleanup
-    g_free (text);
+    g_free (text); text = NULL;
 }
 
 
@@ -624,7 +624,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     GtkTextBuffer *buffer;
     GtkTextIter iter;
     GtkTextMark *mark;
-    int line, start_offset, end_offset;
+    gint line, start_offset, end_offset;
 
     //Initializations
     klass = GW_SEARCHWINDOW_CLASS (G_OBJECT_GET_CLASS (window));

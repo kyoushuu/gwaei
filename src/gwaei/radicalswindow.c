@@ -423,8 +423,7 @@ gw_radicalswindow_class_init (GwRadicalsWindowClass *klass)
         G_STRUCT_OFFSET (GwRadicalsWindowClass, query_changed),
         NULL, NULL,
         g_cclosure_marshal_VOID__VOID,
-        G_TYPE_NONE, 
-        0
+        G_TYPE_NONE, 0
     );
 }
 

@@ -413,12 +413,12 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
         else if (lw_util_is_romaji_str (tokens[i]))
           lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else
-          g_free (tokens[i]); 
-        tokens[i] = NULL;
+        if (tokens[i] != NULL) g_free (tokens[i]); tokens[i] = NULL;
       }
       g_free (tokens); tokens = NULL;
     }
+
+    if (temp != NULL) g_free (temp); temp = NULL;
 }
 
 

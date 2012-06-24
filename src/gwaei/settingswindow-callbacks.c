@@ -430,22 +430,17 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     GwSettingsWindow *window;
     GwApplication *application;
     GwDictionaryList *dictionarylist;
-    LwPreferences *preferences;
     
     //Initializations
     window = GW_SETTINGSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SETTINGSWINDOW));
     g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
-    preferences = gw_application_get_preferences (application);
     dictionarylist = gw_application_get_installed_dictionarylist (application);
 
     gtk_widget_destroy (GTK_WIDGET (window));
 
     if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) == 0)
       gw_application_quit (application);
-
-    //TODO
-    //gw_dictionarystore_save_order (GW_DICTIONARYSTORE (dictionarystore), preferences);
 }
 
 
