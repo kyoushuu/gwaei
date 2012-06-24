@@ -177,7 +177,7 @@ w_console_print_installable_dictionaries (WApplication *application)
     //Initializations
     i = 0; 
     dictionarylist = w_application_get_installable_dictionarylist (application);
-    iter = dictionarylist->list;
+    iter = lw_dictionarylist_get_list (dictionarylist);
 
     while (iter != NULL)
     {
@@ -218,7 +218,7 @@ w_console_print_available_dictionaries (WApplication *application)
     i = 0;
     j = 0;
     dictionarylist = w_application_get_installed_dictionarylist (application);
-	  link = dictionarylist->list;
+	  link = lw_dictionarylist_get_list (dictionarylist);
 
     printf(gettext("Available dictionaries are:\n"));
 

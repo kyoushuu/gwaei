@@ -34,7 +34,7 @@
 #include <gwaei/gettext.h>
 #include <gwaei/installprogresswindow-private.h>
 
-static gpointer _installprogresswindow_install_thread (gpointer);
+static gpointer gw_installprogresswindow_install_thread (gpointer);
 
 G_DEFINE_TYPE (GwInstallProgressWindow, gw_installprogresswindow, GW_TYPE_WINDOW)
 
@@ -166,7 +166,7 @@ gw_installprogresswindow_start (GwInstallProgressWindow *window)
     //Set the new window
     g_thread_try_new (
       "gwaei-install-thread", 
-      _installprogresswindow_install_thread, 
+      gw_installprogresswindow_install_thread, 
       window, 
       &error
     );
@@ -175,38 +175,45 @@ gw_installprogresswindow_start (GwInstallProgressWindow *window)
 }
 
 
-static gpointer _installprogresswindow_install_thread (gpointer data)
+static gpointer 
+gw_installprogresswindow_install_thread (gpointer data)
 {
-/*
     //Declarations
     GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
     GwApplication *application;
-    LwDictionaryList *dictinstlist;
-    GList *iter;
+    GwDictionaryList *dictionarylist;
+    GList *link;
     LwDictionary *dictionary;
     GError *error;
+    gulong signalid;
 
     //Initializations
     window = GW_INSTALLPROGRESSWINDOW (data);
     if (window == NULL) return NULL;
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictinstlist = gw_application_get_dictinstlist (application);
+    dictionarylist = gw_application_get_installable_dictionarylist (application);
     error = NULL;
+    link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist));
 
     //Do the installation
     g_timeout_add (100, gw_installprogresswindow_update_ui_timeout, window);
-    for (iter = dictinstlist->list; iter != NULL && error == NULL; iter = iter->next)
+    while (link != NULL && error == NULL)
     {
-      dictionary = LW_DICTINST (iter->data);
-      if (dictionary->selected)
+      dictionary = LW_DICTIONARY (link->data);
+      if (dictionary != NULL && lw_dictionary_is_selected (dictionary))
       {
         g_mutex_lock (&priv->mutex);
         priv->dictionary = dictionary;
         g_mutex_unlock (&priv->mutex);
-        lw_dictinst_install (dictionary, gw_installprogresswindow_update_dictinst_cb, window, &error);
+        signalid = g_signal_connect (dictionary, "progress-changed", G_CALLBACK (gw_installprogresswindow_update_dictionary_cb), window);
+        lw_dictionary_install (dictionary, &error);
+        if (g_signal_handler_is_connected (dictionary, signalid))
+          g_signal_handler_disconnect (dictionary, signalid);
       }
+
+      link = link->next;
     }
 
     gw_application_set_error (application, error);
@@ -216,7 +223,6 @@ static gpointer _installprogresswindow_install_thread (gpointer data)
     //This will clue the progress window to close itself
     priv->dictionary = NULL;
     g_mutex_unlock (&priv->mutex);
-*/
 
     return NULL;
 }

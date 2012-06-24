@@ -4,14 +4,6 @@
 G_BEGIN_DECLS
 
 typedef enum {
-   GW_DICTINSTWINDOW_DICTSTOREFIELD_SHORT_NAME,
-   GW_DICTINSTWINDOW_DICTSTOREFIELD_LONG_NAME,
-   GW_DICTINSTWINDOW_DICTSTOREFIELD_DICTINST_PTR,
-   GW_DICTINSTWINDOW_DICTSTOREFIELD_CHECKBOX_STATE, 
-   TOTAL_GW_DICTINSTWINDOW_DICTSTOREFIELDS
-} GwDictionaryStoreField;
-
-typedef enum {
   GW_DICTINSTWINDOW_ENGINESTOREFIELD_ID,
   GW_DICTINSTWINDOW_ENGINESTOREFIELD_NAME,
   TOTAL_GW_DICTINSTWINDOW_ENGINESTOREFIELDS
@@ -34,7 +26,6 @@ struct _GwDictionaryInstallWindowPrivate {
   GtkListStore *encoding_store;
   GtkListStore *compression_store;
   GtkListStore *engine_store;
-  GtkListStore *dictionary_store;
   LwDictionary *dictionary;
 
   GtkTreeView *view;

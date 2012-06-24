@@ -135,9 +135,9 @@ gw_application_finalize (GObject *object)
 
     if (priv->error != NULL) g_error_free (priv->error); priv->error = NULL;
 
-    if (priv->dictionarylist != NULL) lw_dictionarylist_free (priv->dictionarylist); priv->dictionarylist = NULL;
+    if (priv->installable_dictionarylist != NULL) g_object_unref (priv->installable_dictionarylist); priv->installable_dictionarylist = NULL;
 
-    if (priv->dictionarystore != NULL) g_object_unref (priv->dictionarystore); 
+    if (priv->installed_dictionarylist != NULL) g_object_unref (priv->installed_dictionarylist); priv->installed_dictionarylist = NULL;
 
     if (priv->vocabularyliststore != NULL) g_object_unref (priv->vocabularyliststore); 
 
@@ -555,45 +555,64 @@ gw_application_get_preferences (GwApplication *application)
 }
 
 
-GtkListStore* 
-gw_application_get_dictionarystore (GwApplication *application)
+GwDictionaryList* 
+gw_application_get_installed_dictionarylist (GwApplication *application)
 {
+    //Sanity checks
+    g_return_val_if_fail (application != NULL, NULL);
+
+    //Declarations
     GwApplicationPrivate *priv;
     LwPreferences *preferences;
+    GwDictionaryList *dictionarylist;
     gpointer *pointer;
 
+    //Initializations;
     priv = application->priv;
 
-    if (priv->dictionarystore == NULL)
+    if (priv->installed_dictionarylist == NULL)
     {
-      priv->dictionarystore = gw_dictionarystore_new ();
-      pointer = (gpointer*) &(priv->dictionarystore);
+      dictionarylist = gw_dictionarylist_new ();
       preferences = gw_application_get_preferences (application);
-      gw_dictionarystore_reload (GW_DICTIONARYSTORE (priv->dictionarystore), preferences);
-      g_object_add_weak_pointer (G_OBJECT (priv->dictionarystore), pointer);
+      lw_dictionarylist_load_installed (LW_DICTIONARYLIST (dictionarylist));
+      lw_dictionarylist_load_order (LW_DICTIONARYLIST (dictionarylist), preferences);
+      
+      priv->installed_dictionarylist = dictionarylist;
+      pointer = (gpointer*) &(priv->installed_dictionarylist);
+      g_object_add_weak_pointer (G_OBJECT (priv->installed_dictionarylist), pointer);
     }
 
-    return priv->dictionarystore;
+    return priv->installed_dictionarylist;
 }
 
 
-LwDictionaryList* 
+GwDictionaryList* 
 gw_application_get_installable_dictionarylist (GwApplication *application)
 {
-//TODO
-/*
+    //Sanity checks
+    g_return_val_if_fail (application != NULL, NULL);
+
+    //Declarations
     GwApplicationPrivate *priv;
+    LwPreferences *preferences;
+    GwDictionaryList *dictionarylist;
+    gpointer *pointer;
+
+    //Initializations
     priv = application->priv;
 
-    if (priv->dictionarylist == NULL)
+    if (priv->installable_dictionarylist == NULL)
     {
-      priv->dictionarylist = lw_dictionarylist_new ();
-      lw_dictionarylist_load_installable (priv->dictionarylist, priv->preferences);
+      dictionarylist = gw_dictionarylist_new ();
+      preferences = gw_application_get_preferences (application);
+      lw_dictionarylist_load_installable (LW_DICTIONARYLIST (dictionarylist), preferences);
+
+      priv->installable_dictionarylist = dictionarylist;
+      pointer = (gpointer*) &(priv->installable_dictionarylist);
+      g_object_add_weak_pointer (G_OBJECT (priv->installable_dictionarylist), pointer);
     }
 
-    return priv->dictionarylist;
-*/
-    return NULL;
+    return priv->installable_dictionarylist;
 }
 
 
@@ -626,13 +645,11 @@ gw_application_activate (GApplication *application)
     GwSearchWindow *searchwindow;
     GwVocabularyWindow *vocabularywindow;
     GwSettingsWindow *settingswindow;
-    GwDictionaryStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
 
     priv = GW_APPLICATION (application)->priv;
     searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
-    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
-    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
+    dictionarylist = gw_application_get_installed_dictionarylist (GW_APPLICATION (application));
 
     if (priv->arg_new_vocabulary_window_switch)
     {
@@ -646,7 +663,7 @@ gw_application_activate (GApplication *application)
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
 
-      if (lw_dictionarylist_get_total (dictionarylist) == 0)
+      if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) == 0)
       {
         settingswindow = GW_SETTINGSWINDOW (gw_settingswindow_new (GTK_APPLICATION (application)));
         gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
@@ -668,8 +685,7 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     //Declarations
     LwDictionary *dictionary;
     GwSearchWindow *window;
-    GwDictionaryStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
     GwApplicationPrivate *priv;
     gint argc;
     gchar **argv;
@@ -677,8 +693,7 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
 
     //Initializations
     priv = GW_APPLICATION (application)->priv;
-    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (GW_APPLICATION (application)));
-    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
+    dictionarylist = gw_application_get_installed_dictionarylist (GW_APPLICATION (application));
     argv = NULL;
 
     if (command_line != NULL)
@@ -691,8 +706,8 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     window = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     if (window == NULL) 
       return 0;
-    dictionary = lw_dictionarylist_get_dictionary_fuzzy (dictionarylist, priv->arg_dictionary);
-    position = lw_dictionarylist_get_position (dictionarylist, dictionary);
+    dictionary = lw_dictionarylist_get_dictionary_fuzzy (LW_DICTIONARYLIST (dictionarylist), priv->arg_dictionary);
+    position = lw_dictionarylist_get_position (LW_DICTIONARYLIST (dictionarylist), dictionary);
 
     //Set the initial dictionary
     if (dictionary != NULL)
@@ -817,7 +832,7 @@ gw_application_load_app_menu (GwApplication *application)
 
     builder = gtk_builder_new (); if (builder == NULL) goto errored;
     loaded = gw_application_load_xml (builder, filename); if (loaded == FALSE) goto errored;
-    model = G_MENU_MODEL (gtk_builder_get_object (builder, "app-menu")); if (model == NULL) goto errored;
+    model = G_MENU_MODEL (gtk_builder_get_object (builder, "menu")); if (model == NULL) goto errored;
 
     gtk_application_set_app_menu (GTK_APPLICATION (application), model);
     g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);

@@ -1,6 +1,6 @@
 <interface>
 
-  <menu id='app-menu'>
+  <menu id='menu'>
 
     <section>
       <item>

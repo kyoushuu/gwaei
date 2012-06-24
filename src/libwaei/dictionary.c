@@ -251,9 +251,8 @@ lw_dictionary_class_init (LwDictionaryClass *klass)
         G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
         G_STRUCT_OFFSET (LwDictionaryClass, progress_changed),
         NULL, NULL,
-        g_cclosure_marshal_VOID__POINTER,
-        G_TYPE_NONE,
-        1, G_TYPE_POINTER
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0
     );
 
     g_type_class_add_private (object_class, sizeof (LwDictionaryPrivate));

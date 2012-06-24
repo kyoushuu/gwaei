@@ -497,7 +497,7 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
 
     loaded = gw_application_load_xml (builder, filename); 
     if (loaded == FALSE) goto errored;
-    win_menu_model = G_MENU_MODEL (gtk_builder_get_object (builder, "win-menu")); 
+    win_menu_model = G_MENU_MODEL (gtk_builder_get_object (builder, "menu")); 
     if (win_menu_model == NULL) goto errored;
 
     //Set the whole menu to the window if appropriate

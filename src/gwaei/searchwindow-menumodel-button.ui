@@ -1,5 +1,5 @@
 <interface>
-  <menu id='button-menu'>
+  <menu id='menu'>
       <section>
         <item>
           <attribute name='label' translatable='yes'>New _Tab</attribute>

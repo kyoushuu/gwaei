@@ -111,7 +111,6 @@ gw_settingswindow_constructed (GObject *object)
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GtkListStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     GtkAccelGroup *accelgroup;
 
@@ -125,8 +124,7 @@ gw_settingswindow_constructed (GObject *object)
     priv = window->priv;
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
 
     priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "dictionary_treeview"));
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
@@ -474,7 +472,9 @@ gw_settingswindow_init_dictionary_treeview (GwSettingsWindow *window)
     //Declarations
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GtkListStore *dictionarystore;
+    GwDictionaryList *dictionarylist;
+    GtkListStore *liststore;
+    GtkTreeModel *treemodel;
     GtkTreeView *view;
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
@@ -482,40 +482,42 @@ gw_settingswindow_init_dictionary_treeview (GwSettingsWindow *window)
 
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
+    liststore = gw_dictionarylist_get_liststore (dictionarylist);
+    treemodel = GTK_TREE_MODEL (liststore);
     view = priv->manage_dictionaries_treeview;
     selection = gtk_tree_view_get_selection (view);
 
-    gtk_tree_view_set_model (GTK_TREE_VIEW (view), GTK_TREE_MODEL (dictionarystore));
+    gtk_tree_view_set_model (view, treemodel);
 
     //Create the columns and renderer for each column
     renderer = gtk_cell_renderer_pixbuf_new();
-    gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
+    gtk_cell_renderer_set_padding (renderer, 6, 4);
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_title (column, " ");
     gtk_tree_view_column_pack_start (column, renderer, TRUE);
-    gtk_tree_view_column_set_attributes (column, renderer, "icon-name", GW_DICTIONARYSTORE_COLUMN_IMAGE, NULL);
+    gtk_tree_view_column_set_attributes (column, renderer, "icon-name", GW_DICTIONARYLIST_COLUMN_IMAGE, NULL);
     gtk_tree_view_append_column (view, column);
 
     renderer = gtk_cell_renderer_text_new();
-    gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-    column = gtk_tree_view_column_new_with_attributes ("#", renderer, "text", GW_DICTIONARYSTORE_COLUMN_POSITION, NULL);
+    gtk_cell_renderer_set_padding (renderer, 6, 4);
+    column = gtk_tree_view_column_new_with_attributes ("#", renderer, "text", GW_DICTIONARYLIST_COLUMN_POSITION, NULL);
     gtk_tree_view_append_column (view, column);
 
     renderer = gtk_cell_renderer_text_new();
-    gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-    column = gtk_tree_view_column_new_with_attributes (gettext("Name"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_LONG_NAME, NULL);
+    gtk_cell_renderer_set_padding (renderer, 6, 4);
+    column = gtk_tree_view_column_new_with_attributes (gettext("Name"), renderer, "text", GW_DICTIONARYLIST_COLUMN_LONG_NAME, NULL);
     gtk_tree_view_column_set_min_width (column, 100);
     gtk_tree_view_append_column (view, column);
 
     renderer = gtk_cell_renderer_text_new();
-    gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-    column = gtk_tree_view_column_new_with_attributes (gettext("Engine"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_ENGINE, NULL);
+    gtk_cell_renderer_set_padding (renderer, 6, 4);
+    column = gtk_tree_view_column_new_with_attributes (gettext("Engine"), renderer, "text", GW_DICTIONARYLIST_COLUMN_ENGINE, NULL);
     gtk_tree_view_append_column (view, column);
 
     renderer = gtk_cell_renderer_text_new();
-    gtk_cell_renderer_set_padding (GTK_CELL_RENDERER (renderer), 6, 4);
-    column = gtk_tree_view_column_new_with_attributes (gettext("Shortcut"), renderer, "text", GW_DICTIONARYSTORE_COLUMN_SHORTCUT, NULL);
+    gtk_cell_renderer_set_padding (renderer, 6, 4);
+    column = gtk_tree_view_column_new_with_attributes (gettext("Shortcut"), renderer, "text", GW_DICTIONARYLIST_COLUMN_SHORTCUT, NULL);
     gtk_tree_view_append_column (view, column);
 
     gtk_tree_selection_set_mode (selection, GTK_SELECTION_BROWSE);
@@ -547,19 +549,17 @@ gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
     //Declarations
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
-    GtkListStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     GtkWidget *message;
 
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
     message = GTK_WIDGET (priv->please_install_dictionary_hbox);
 
     //Set the show state of the dictionaries required message
-    if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) > 0)
+    if (lw_dictionarylist_get_total (dictionarylist) > 0)
       gtk_widget_hide (message);
     else
       gtk_widget_show (message);
@@ -567,10 +567,9 @@ gw_settingswindow_check_for_dictionaries (GwSettingsWindow *window)
 
 
 G_MODULE_EXPORT void
-gw_settingswindow_drag_begin_cb (
-  GtkWidget      *widget,
-  GdkDragContext *context,
-  gpointer        data)
+gw_settingswindow_drag_begin_cb (GtkWidget      *widget,
+                                 GdkDragContext *context,
+                                 gpointer        data)
 {
   cairo_surface_t *surface;
   GtkTreeView *view;
@@ -640,7 +639,7 @@ gw_settingswindow_dictionary_drag_reorder (
     else if (drop_position == GTK_TREE_VIEW_DROP_AFTER) 
       gtk_list_store_move_after (GTK_LIST_STORE (model), &iter, &position);
 
-    gw_dictionarystore_save_order (GW_DICTIONARYSTORE (model), preferences);
+    //gw_dictionarystore_save_order (GW_DICTIONARYLIST (model), preferences);
 
     return TRUE;
 }

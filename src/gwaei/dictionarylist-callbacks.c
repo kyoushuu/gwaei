@@ -32,13 +32,15 @@
 #include <gtk/gtk.h>
 
 #include <gwaei/gwaei.h>
-#include <gwaei/dictionarystore-private.h>
+#include <gwaei/dictionarylist-private.h>
 
 
-G_MODULE_EXPORT void gw_dictionarystore_row_changed_cb (GtkTreeModel *model,
-                                                        GtkTreePath  *path,
-                                                        gpointer      data)
+G_MODULE_EXPORT void 
+gw_dictionarystore_row_changed_cb (GtkTreeModel *model,
+                                   GtkTreePath  *path,
+                                   gpointer      data)
 {
+/*
     //Declarations
     GwDictionaryStore *store;
 
@@ -48,8 +50,16 @@ G_MODULE_EXPORT void gw_dictionarystore_row_changed_cb (GtkTreeModel *model,
     gw_dictionarystore_normalize (store);
     gw_dictionarystore_update (store);
     gw_dictionarystore_sync_menumodel (store);
+*/
 }
 
 
+G_MODULE_EXPORT void
+gw_dictionarylist_changed_cb (GwDictionaryList *dictionarylist, 
+                              gpointer          data)
+{
+    gw_dictionarylist_sync_treestore (dictionarylist);
+    gw_dictionarylist_sync_menumodel (dictionarylist);
+}
 
 

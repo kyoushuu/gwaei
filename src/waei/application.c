@@ -91,8 +91,8 @@ w_application_finalize (GObject *object)
     application = W_APPLICATION (object);
     priv = application->priv;
 
-    if (priv->installed_dictionarylist != NULL) lw_dictionarylist_free (priv->installed_dictionarylist); priv->installed_dictionarylist = NULL;
-    if (priv->installable_dictionarylist != NULL) lw_dictionarylist_free (priv->installable_dictionarylist); priv->installable_dictionarylist = NULL;
+    if (priv->installed_dictionarylist != NULL) g_object_unref (priv->installed_dictionarylist); priv->installed_dictionarylist = NULL;
+    if (priv->installable_dictionarylist != NULL) g_object_unref (priv->installable_dictionarylist); priv->installable_dictionarylist = NULL;
     if (priv->context != NULL) g_option_context_free (priv->context); priv->context = NULL;
     if (priv->arg_query_text_data != NULL) g_free(priv->arg_query_text_data); priv->arg_query_text_data = NULL;
     if (priv->preferences != NULL) lw_preferences_free (priv->preferences); priv->preferences = NULL;

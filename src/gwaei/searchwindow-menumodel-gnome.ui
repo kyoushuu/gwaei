@@ -1,5 +1,5 @@
 <interface>
-  <menu id='win-menu'>
+  <menu id='menu'>
     <submenu>
       <attribute name='label' translatable='yes'>_File</attribute>
       <section>
@@ -195,12 +195,12 @@
         <item>
           <attribute name='label' translatable='yes'>Back</attribute>
           <attribute name='action'>win.go-back</attribute>
-          <attribute name='accel'>&lt;Primary&gt;Left</attribute>
+          <attribute name='accel'>&lt;Alt&gt;Left</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>Forward</attribute>
           <attribute name='action'>win.go-forward</attribute>
-          <attribute name='accel'>&lt;Primary&gt;Left</attribute>
+          <attribute name='accel'>&lt;Alt&gt;Right</attribute>
         </item>
       </section>
       <section>

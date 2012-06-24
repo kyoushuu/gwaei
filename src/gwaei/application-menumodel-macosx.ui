@@ -1,5 +1,5 @@
 <interface>
-  <menu id='app-menu'>
+  <menu id='menu'>
     <section>
       <item>
         <attribute name='label' translatable='yes'>New _Window</attribute>

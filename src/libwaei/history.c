@@ -158,9 +158,8 @@ lw_history_class_init (LwHistoryClass *klass)
         G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
         G_STRUCT_OFFSET (LwHistoryClass, changed),
         NULL, NULL,
-        g_cclosure_marshal_VOID__POINTER,
-        G_TYPE_NONE,
-        1, G_TYPE_POINTER
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0
     );
 
     history_class->signalid[LW_HISTORY_CLASS_SIGNALID_BACK] = g_signal_new (
@@ -169,9 +168,8 @@ lw_history_class_init (LwHistoryClass *klass)
         G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
         G_STRUCT_OFFSET (LwHistoryClass, back),
         NULL, NULL,
-        g_cclosure_marshal_VOID__POINTER,
-        G_TYPE_NONE,
-        1, G_TYPE_POINTER
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0
     );
 
     history_class->signalid[LW_HISTORY_CLASS_SIGNALID_FORWARD] = g_signal_new (
@@ -180,9 +178,8 @@ lw_history_class_init (LwHistoryClass *klass)
         G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
         G_STRUCT_OFFSET (LwHistoryClass, forward),
         NULL, NULL,
-        g_cclosure_marshal_VOID__POINTER,
-        G_TYPE_NONE,
-        1, G_TYPE_POINTER
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0
     );
 
     history_class->signalid[LW_HISTORY_CLASS_SIGNALID_ADDED] = g_signal_new (
@@ -191,9 +188,8 @@ lw_history_class_init (LwHistoryClass *klass)
         G_SIGNAL_RUN_FIRST | G_SIGNAL_DETAILED,
         G_STRUCT_OFFSET (LwHistoryClass, added),
         NULL, NULL,
-        g_cclosure_marshal_VOID__POINTER,
-        G_TYPE_NONE,
-        1, G_TYPE_POINTER
+        g_cclosure_marshal_VOID__VOID,
+        G_TYPE_NONE, 0
     );
 
     g_type_class_add_private (object_class, sizeof (LwHistoryPrivate));

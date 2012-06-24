@@ -53,24 +53,22 @@ gw_installprogresswindow_cancel_cb (GtkWidget *widget, gpointer data)
 }
 
 
-G_MODULE_EXPORT int 
-gw_installprogresswindow_update_dictionary_cb (double fraction, gpointer data)
+void 
+gw_installprogresswindow_update_dictionary_cb (LwDictionary *dictionary, gpointer data)
 {
-/*
     //Declarations
     GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
+    gdouble fraction;
 
     //Initializations
-    window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
-    if (window == NULL) return 0;
+    window = GW_INSTALLPROGRESSWINDOW (data);
     priv = window->priv;
+    fraction = lw_dictionary_installer_get_stage_progress (LW_DICTIONARY (dictionary));
 
     g_mutex_lock (&priv->mutex); 
-    priv->install_fraction = lw_dictionary_get_total_progress (priv->dictionary, fraction);
+    priv->install_fraction = fraction;
     g_mutex_unlock (&priv->mutex);
-*/
-    return 0;
 }
 
 
@@ -81,17 +79,14 @@ gw_installprogresswindow_update_dictionary_cb (double fraction, gpointer data)
 G_MODULE_EXPORT gboolean 
 gw_installprogresswindow_update_ui_timeout (gpointer data)
 {
-/*
     //Sanity check
-    g_assert (data != NULL);
+    g_return_val_if_fail (data != NULL, FALSE);
 
     //Declarations
     GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
-    GtkWindow *settingswindow;
     GwApplication *application;
-    GtkListStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     LwPreferences *preferences;
     GList *link;
@@ -107,8 +102,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
     g_return_val_if_fail (window != NULL, FALSE);
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_application_get_dictionarylist (application);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
     preferences = gw_application_get_preferences (application);
     priv = window->priv;
     current_to_install = 0;
@@ -117,16 +111,16 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     //The install is complete close the window
     if (priv->dictionary == NULL)
     {
-      settingswindow = gtk_window_get_transient_for (GTK_WINDOW (window));
-
-      gw_dictionarystore_reload (GW_DICTIONARYSTORE (dictionarystore), preferences);
+      lw_dictionarylist_clear (LW_DICTIONARYLIST (dictionarylist));
+      lw_dictionarylist_load_installed (LW_DICTIONARYLIST (dictionarylist));
+      lw_dictionarylist_load_order (LW_DICTIONARYLIST (dictionarylist), preferences);
 
       gtk_widget_destroy (GTK_WIDGET (window));
 
-      gw_application_handle_error (application, GTK_WINDOW (settingswindow), TRUE, NULL);
+      gw_application_handle_error (application, NULL, FALSE, NULL);
 
-      lw_dictionarylist_set_cancel_operations (dictionarylist, FALSE);
-      gw_settingswindow_check_for_dictionaries (GW_SETTINGSWINDOW (settingswindow));
+      //TODO
+      //lw_dictionarylist_set_cancel_operations (dictionarylist, FALSE);
 
       return FALSE;
     }
@@ -134,10 +128,10 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     g_mutex_lock (&priv->mutex);
 
     //Calculate the number of dictionaries left to install
-    for (link = dictionarylist->list; link != NULL; link = link->next)
+    for (link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist)); link != NULL; link = link->next)
     {
       dictionary = LW_DICTIONARY (link->data);
-      if (dictionary != NULL && dictionary->selected)
+      if (dictionary != NULL && lw_dictionary_is_selected (dictionary))
       {
         current_to_install++;
       }
@@ -145,10 +139,10 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     }
 
     //Calculate the number of dictionaries left to install
-    for (link = dictionarylist->list; link != NULL; link = link->next)
+    for (link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist)); link != NULL; link = link->next)
     {
       dictionary = LW_DICTIONARY (link->data);
-      if (dictionary->selected)
+      if (lw_dictionary_is_selected (dictionary))
       {
         total_to_install++;
       }
@@ -156,10 +150,10 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     
     dictionary = priv->dictionary;
 
-    text_progressbar =  g_markup_printf_escaped (gettext("Installing %s..."), dictionary->filename);
+    text_progressbar =  g_markup_printf_escaped (gettext("Installing %s..."), lw_dictionary_get_name (dictionary));
     text_left = g_strdup_printf (gettext("Installing dictionary %d of %d..."), current_to_install, total_to_install);
     text_left_markup = g_markup_printf_escaped ("<big><b>%s</b></big>", text_left);
-    text_installing = lw_dictionary_get_status_string (dictionary, TRUE);
+    text_installing = lw_dictionary_installer_get_status_message (dictionary, TRUE);
     text_installing_markup = g_markup_printf_escaped ("<small>%s</small>", text_installing);
 
     gtk_label_set_markup (priv->label, text_left_markup);
@@ -169,13 +163,14 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
 
     g_mutex_unlock (&priv->mutex);
 
+errored:
     //Cleanup
-    g_free (text_progressbar);
-    g_free (text_left);
-    g_free (text_left_markup);
-    g_free (text_installing);
-    g_free (text_installing_markup);
-*/
+    if (text_progressbar != NULL) g_free (text_progressbar); text_progressbar = NULL;
+    if (text_left != NULL) g_free (text_left); text_left = NULL;
+    if (text_left_markup != NULL) g_free (text_left_markup); text_left_markup = NULL;
+    if (text_installing != NULL) g_free (text_installing); text_installing = NULL;
+    if (text_installing_markup != NULL) g_free (text_installing_markup); text_installing_markup = NULL;
+
     return TRUE;
 }
 

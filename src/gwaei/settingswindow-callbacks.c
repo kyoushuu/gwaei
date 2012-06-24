@@ -429,8 +429,7 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwSettingsWindow *window;
     GwApplication *application;
-    GtkListStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
     LwPreferences *preferences;
     
     //Initializations
@@ -438,15 +437,15 @@ gw_settingswindow_close_cb (GtkWidget *widget, gpointer data)
     g_return_if_fail (window != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
 
     gtk_widget_destroy (GTK_WIDGET (window));
 
-    if (lw_dictionarylist_get_total (dictionarylist) == 0)
+    if (lw_dictionarylist_get_total (LW_DICTIONARYLIST (dictionarylist)) == 0)
       gw_application_quit (application);
 
-    gw_dictionarystore_save_order (GW_DICTIONARYSTORE (dictionarystore), preferences);
+    //TODO
+    //gw_dictionarystore_save_order (GW_DICTIONARYSTORE (dictionarystore), preferences);
 }
 
 
@@ -583,6 +582,7 @@ gw_settingswindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gp
 G_MODULE_EXPORT void 
 gw_settingswindow_remove_dictionary_cb (GtkWidget *widget, gpointer data)
 {
+/*
     //Declarations
     GwSettingsWindow *window;
     GwSettingsWindowPrivate *priv;
@@ -632,6 +632,7 @@ gw_settingswindow_remove_dictionary_cb (GtkWidget *widget, gpointer data)
     gtk_tree_path_free (path); path = NULL;
 
     gw_settingswindow_check_for_dictionaries (window);
+*/
 }
 
 

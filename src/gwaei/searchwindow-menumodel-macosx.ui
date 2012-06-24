@@ -1,5 +1,5 @@
 <interface>
-  <menu id='win-menu'>
+  <menu id='menu'>
     <submenu>
       <attribute name='label' translatable='yes'>_File</attribute>
       <section>

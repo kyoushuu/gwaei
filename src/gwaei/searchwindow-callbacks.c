@@ -102,7 +102,6 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
     gint x;
     gint y;
     const gchar *vocabulary_data;
-    GtkListStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     GtkWidget *tooltip_window;
@@ -117,8 +116,7 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
     dictionary = lw_dictionarylist_get_dictionary (dictionarylist, LW_TYPE_KANJIDICTIONARY, "Kanji");
     tooltip_window = GTK_WIDGET (gtk_widget_get_tooltip_window (GTK_WIDGET (view)));
 
@@ -207,7 +205,6 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     gint x;
     gint y;
     const gchar *vocabulary_data;
-    GtkListStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     GtkTextWindowType type;
@@ -223,8 +220,7 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
     dictionary = lw_dictionarylist_get_dictionary (dictionarylist, LW_TYPE_KANJIDICTIONARY, "Kanji");
     within_movement_threshold = (abs (priv->mouse_button_press_x - x) < 3 && abs (priv->mouse_button_press_y - y) < 3);
 
@@ -2053,7 +2049,6 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
     //Declarations
     GwSearchWindow *searchwindow;
     GwApplication *application;
-    GtkListStore *dictionarystore;
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     gchar *text_query;
@@ -2065,8 +2060,7 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
     searchwindow = GW_SEARCHWINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
     g_assert (searchwindow != NULL);
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
     dictionary = lw_dictionarylist_get_dictionary (dictionarylist, LW_TYPE_KANJIDICTIONARY, "Kanji");
     position = lw_dictionarylist_get_position (dictionarylist, dictionary);
     if (dictionary == NULL) return;
@@ -2168,24 +2162,12 @@ gw_searchwindow_radicalswindow_destroy_cb (GtkWidget *widget, gpointer data)
 }
 
 
-G_MODULE_EXPORT void 
-gw_searchwindow_dictionaries_added_cb (GtkTreeModel *model, 
-                                       GtkTreePath  *path, 
-                                       GtkTreeIter  *iter, 
-                                       gpointer      data  )
-{
-    //Lazy implimenation
-    gw_searchwindow_dictionaries_deleted_cb (model, path, data);
-}
-
-
 //!
 //! @brief Disables portions of the interface depending on the currently queued jobs.
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_dictionaries_deleted_cb (GtkTreeModel *model, 
-                                         GtkTreePath  *path, 
-                                         gpointer      data  )
+gw_searchwindow_dictionaries_changed_cb (GwSearchWindow   *window,
+                                         LwDictionaryList *dictionarylist)
 {
     //TODO
 /*
@@ -2441,7 +2423,7 @@ _load_button_xml (GwSearchWindow *window)
     if (builder != NULL)
     {
       gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
-      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "button-menu"));
+      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
       gw_searchwindow_set_links (window, menumodel);
 
       _menu_button = menumodel;

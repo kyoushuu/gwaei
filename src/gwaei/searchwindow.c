@@ -586,6 +586,8 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
       switch (search->status)
       {
         case LW_SEARCHSTATUS_IDLE:
+        case LW_SEARCHSTATUS_FINISHING:
+        case LW_SEARCHSTATUS_CANCELING:
             if (search->current == 0L)
               gtk_label_set_text (priv->statusbar_label, idle_message_none);
             else if (relevant == total)
@@ -608,9 +610,6 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
               if (base_message != NULL)
                 final_message = g_strdup_printf (base_message, total, relevant);
             }
-            break;
-        case LW_SEARCHSTATUS_FINISHING:
-        case LW_SEARCHSTATUS_CANCELING:
             break;
       }
 
@@ -637,8 +636,7 @@ gw_searchwindow_set_dictionary (GwSearchWindow *window, gint position)
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     LwDictionary *dictionary;
-    GwDictionaryStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
     GSimpleAction *action;
     gchar position_string[10];
     GActionMap *map;
@@ -646,9 +644,8 @@ gw_searchwindow_set_dictionary (GwSearchWindow *window, gint position)
     map = G_ACTION_MAP (window);
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
-    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
-    dictionary = lw_dictionarylist_get_dictionary_by_position (dictionarylist, position);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
+    dictionary = lw_dictionarylist_get_dictionary_by_position (LW_DICTIONARYLIST (dictionarylist), position);
     if (dictionary == NULL) return;
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "set-dictionary"));
     g_snprintf (position_string, 10, "%d", position + 1);
@@ -678,21 +675,19 @@ gw_searchwindow_set_dictionary_by_searchitem (GwSearchWindow *window, LwSearch *
 
     //Declarations
     GwApplication *application;
-    GwDictionaryStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
+    GwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     gint position;
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
-    dictionarylist = gw_dictionarystore_get_dictionarylist (dictionarystore);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
     position = 0;
 
     if (search != NULL)
     {
       dictionary = search->dictionary;
-      position = lw_dictionarylist_get_position (dictionarylist, dictionary);
+      position = lw_dictionarylist_get_position (LW_DICTIONARYLIST (dictionarylist), dictionary);
     }
 
     gw_searchwindow_set_dictionary (window, position);
@@ -1896,9 +1891,14 @@ gw_searchwindow_set_font (GwSearchWindow *window)
     magnification = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_FONT, LW_KEY_FONT_MAGNIFICATION);
 
     if (use_global_font_setting)
+    {
       lw_preferences_get_string_by_schema (preferences, font, LW_SCHEMA_GNOME_INTERFACE, LW_KEY_DOCUMENT_FONT_NAME, 50);
+      printf("BREAK FONT: %s\n", font);
+    }
     else
+    {
       lw_preferences_get_string_by_schema (preferences, font, LW_SCHEMA_FONT, LW_KEY_FONT_CUSTOM_FONT, 50);
+    }
 
     desc = pango_font_description_from_string (font);
     if (desc != NULL)
@@ -1963,13 +1963,13 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
-    GtkListStore *dictionarystore;
+    GwDictionaryList *dictionarylist;
     GtkListStore *vocabularyliststore;
     LwPreferences *preferences;
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictionarystore = gw_application_get_dictionarystore (application);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
     vocabularyliststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
@@ -2060,19 +2060,13 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
     );
 #endif
 
-    priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED] = g_signal_connect (
-        G_OBJECT (dictionarystore),
-        "row-inserted",
-        G_CALLBACK (gw_searchwindow_dictionaries_added_cb),
+    priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_CHANGED] = g_signal_connect_swapped (
+        G_OBJECT (dictionarylist),
+        "changed",
+        G_CALLBACK (gw_searchwindow_dictionaries_changed_cb),
         window 
     );
 
-    priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED] = g_signal_connect (
-        G_OBJECT (dictionarystore),
-        "row-deleted",
-        G_CALLBACK (gw_searchwindow_dictionaries_deleted_cb),
-        window 
-    );
     priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED] = g_signal_connect (
         G_OBJECT (vocabularyliststore),
         "changed",
@@ -2114,7 +2108,6 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
-    GtkListStore *dictionarystore;
     GtkListStore *vocabularyliststore;
     LwPreferences *preferences;
     GSource *source;
@@ -2122,7 +2115,6 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
 
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
-    dictionarystore = gw_application_get_dictionarystore (application);
     vocabularyliststore = gw_application_get_vocabularyliststore (application);
     preferences = gw_application_get_preferences (application);
 
@@ -2192,16 +2184,6 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
 #endif
 
     g_signal_handler_disconnect (
-        G_OBJECT (dictionarystore),
-        priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_ADDED]
-    );
-
-    g_signal_handler_disconnect (
-        G_OBJECT (dictionarystore),
-        priv->signalid[GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_DELETED]
-    );
-
-    g_signal_handler_disconnect (
         G_OBJECT (vocabularyliststore),
         priv->signalid[GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED]
     );
@@ -2214,22 +2196,28 @@ gw_searchwindow_initialize_dictionary_combobox (GwSearchWindow *window)
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
+    GtkComboBox *combobox;
     GtkCellRenderer *renderer;
-    GtkListStore *dictionarystore;
+    GwDictionaryList *dictionarylist;
+    GtkListStore *liststore;
+    GtkTreeModel *treemodel;
 
     //Initializations
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
+    combobox = priv->combobox;
     renderer = gtk_cell_renderer_text_new ();
-    dictionarystore = gw_application_get_dictionarystore (application);
+    dictionarylist = gw_application_get_installed_dictionarylist (application);
+    liststore = gw_dictionarylist_get_liststore (dictionarylist);
+    treemodel = GTK_TREE_MODEL (liststore);
 
-    gtk_combo_box_set_model (priv->combobox, NULL);
-    gtk_cell_layout_clear (GTK_CELL_LAYOUT (priv->combobox));
+    gtk_combo_box_set_model (combobox, NULL);
+    gtk_cell_layout_clear (GTK_CELL_LAYOUT (combobox));
 
-    gtk_combo_box_set_model (priv->combobox, GTK_TREE_MODEL (dictionarystore));
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (priv->combobox), renderer, TRUE);
-    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (priv->combobox), renderer, "text", GW_DICTIONARYSTORE_COLUMN_LONG_NAME, NULL);
-    gtk_combo_box_set_active (priv->combobox, 0);
+    gtk_combo_box_set_model (combobox, treemodel);
+    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (combobox), renderer, TRUE);
+    gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (combobox), renderer, "text", GW_DICTIONARYLIST_COLUMN_LONG_NAME, NULL);
+    gtk_combo_box_set_active (combobox, 0);
 }
 
 
@@ -2385,10 +2373,10 @@ gw_searchwindow_set_links (GwSearchWindow *window, GMenuModel *menumodel)
       {
         if (strcmp (label, "dictionary-list-link") == 0)
         {
-          GwDictionaryStore *dictionarystore;
+          GwDictionaryList *dictionarylist;
 
-          dictionarystore = GW_DICTIONARYSTORE (gw_application_get_dictionarystore (application));
-          menumodellink = gw_dictionarystore_get_menumodel (dictionarystore);
+          dictionarylist = GW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
+          menumodellink = gw_dictionarylist_get_menumodel (dictionarylist);
 
           menuitem = g_menu_item_new (NULL, NULL);
           g_menu_item_set_link (menuitem, G_MENU_LINK_SECTION, menumodellink);
