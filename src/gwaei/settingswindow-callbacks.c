@@ -333,8 +333,10 @@ gw_settingswindow_sync_global_document_font_cb (GSettings *settings, gchar *KEY,
     GwSettingsWindowPrivate *priv;
     GwApplication *application;
     LwPreferences *preferences;
-    char font[50];
-    char *text;
+    gchar font[50];
+    gchar *font2;
+    gchar *text;
+    PangoFontDescription *desc;
 
     //Initializations
     window = GW_SETTINGSWINDOW (data);
@@ -343,7 +345,12 @@ gw_settingswindow_sync_global_document_font_cb (GSettings *settings, gchar *KEY,
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     lw_preferences_get_string_by_schema (preferences, font, LW_SCHEMA_GNOME_INTERFACE, LW_KEY_DOCUMENT_FONT_NAME, 50);
-    text = g_strdup_printf (gettext("_Use the System Document Font (%s)"), font);
+    desc = pango_font_description_from_string (font);
+    pango_font_description_set_family (desc, "Serif");
+    font2 = pango_font_description_to_string (desc);
+    if (font2) text = g_strdup_printf (gettext("_Use the System Document Font (%s)"), font2);
+    g_free (font2); font2 = NULL;
+    pango_font_description_free (desc); desc = NULL;
 
     if (text != NULL) 
     {

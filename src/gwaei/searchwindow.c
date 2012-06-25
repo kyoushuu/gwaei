@@ -1894,7 +1894,6 @@ gw_searchwindow_set_font (GwSearchWindow *window)
     if (use_global_font_setting)
     {
       lw_preferences_get_string_by_schema (preferences, font, LW_SCHEMA_GNOME_INTERFACE, LW_KEY_DOCUMENT_FONT_NAME, 50);
-      printf("BREAK FONT: %s\n", font);
     }
     else
     {
@@ -1918,6 +1917,7 @@ gw_searchwindow_set_font (GwSearchWindow *window)
       priv->font_size = size;
 
       pango_font_description_set_size (desc, size * PANGO_SCALE);
+      if (use_global_font_setting) pango_font_description_set_family (desc, "Serif");
 
       //Set it
       i = 0;
