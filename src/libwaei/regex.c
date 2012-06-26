@@ -36,42 +36,6 @@
 static int _regex_expressions_reference_count = 0; //!< Internal reference count for the regexes
 GRegex *lw_re[LW_RE_TOTAL + 1]; //!< Globally accessable pre-compiled regexes
 
-/*
-
-
-  { LW_RE_FILENAME_GZ, "\\.gz$", LW_REGEX_EFLAGS_EXIST },
-
-  { LW_RE_WORD_I_ADJ_PASTFORM,    "\\B((かった))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_I_ADJ_NEGATIVE,    "\\B((くない))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_I_ADJ_TE_FORM,     "\\B((くて))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_I_ADJ_CAUSATIVE,   "\\B((くさせる))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_I_ADJ_CONDITIONAL, "\\B((ければ))$", LW_REGEX_EFLAGS_LOCATE },
-
-
-  { LW_RE_WORD_NA_ADJ_PASTFORM,    "\\B((だった))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_NA_ADJ_NEGATIVE,    "\\B((ではない)|(じゃない))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_NA_ADJ_TE_FORM,     "\\B((で))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_NA_ADJ_CAUSATIVE,   "\\B((にさせる))$", LW_REGEX_EFLAGS_LOCATE },
-  { LW_RE_WORD_NA_ADJ_CONDITIONAL, "\\B((であれば))$", LW_REGEX_EFLAGS_LOCATE },
-
-    //Verb forms
-    regcomp (re_verb_presentform, "\\B((ます))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_politepast, "\\B((ました))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_pastform_negative, "\\B((なかった))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_pastform, "\\B((った)|(いた)|(いだ)|(した)|(んだ)|(えた))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_negative, "\\B((わない)|(かない)|(がない)|(さない)|(たない)|(なない)|(まない)|(いない))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_te_form, "\\B((って)|(いて)|(いで)|(して)|(んで))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_potention, "\\B((える)|(ける)|(げる)|(せる)|(てる)|(ねる)|(べる)|(める)|(れる)|(いられる)|(えられる)|(いれる))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_causative, "\\B((させる)|(わせる)|(かせる)|(がせる)|(なせる)|(たせる)|(ばせる)|ませる(らせる)|(いさせる)|())$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_conditional, "\\B((すれば)|(くれば)|(であれば)|(えば)|(けば)|(げば)|(せば)|(てば)|(ねば)|(べば)|(めば)|(れば)|(いれば)|(れば))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_negative_conditional, "\\B((なければ))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_imperative, "\\B((しろ)|(せよ)|(こい)|(くれ)|(ませ)|(であれ)|(え)|(け)|(せ)|(て)|(ね)|(べ)|(め)|(れ)|(いろ)|(えろ))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_passive, "\\B((される)|(こられる)|(われる)|(かれる)|(がれる)|(される)|(たれる)|(なれる)|(ばれる)|(まれる)|(られる)|(いられる)|(えられる))$", LW_REGEX_EFLAGS_EXIST);
-    regcomp (re_verb_volitional, "\\B((しよう)|(せよう)|(こよう)|(だろう)|(ましょう)|(おう)|(こう)|(ごう)|(そう)|(とう)|(のう)|(ぼう)|(もう)|(ろう)|(いよう)|(よう))$", LW_REGEX_EFLAGS_EXIST);
-*/
-
-
-
 //!
 //! @brief Initializes often used prebuilt regex expressions
 //!

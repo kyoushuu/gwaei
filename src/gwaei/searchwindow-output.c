@@ -51,12 +51,12 @@ static void
 gw_searchwindow_insert_addlink (GwSearchWindow   *window,
                                 GtkTextBuffer    *buffer,
                                 GtkTextIter      *iter,
-                                LwVocabulary     *vocabulary   )
+                                LwWord     *word   )
 {
     //Sanity checks
     g_return_if_fail (window != NULL);
     g_return_if_fail (buffer != NULL);
-    g_return_if_fail (vocabulary != NULL);
+    g_return_if_fail (word != NULL);
 
     //Declarations
     GtkTextTag *tag;
@@ -68,8 +68,8 @@ gw_searchwindow_insert_addlink (GwSearchWindow   *window,
         "scale",  0.75, 
         "weight", PANGO_WEIGHT_BOLD,
         NULL);
-    data = lw_vocabulary_to_string (vocabulary);
-    g_object_set_data_full (G_OBJECT (tag), "vocabulary-data", data, g_free);
+    data = lw_word_to_string (word);
+    g_object_set_data_full (G_OBJECT (tag), "word-data", data, g_free);
     g_object_set_data (G_OBJECT (tag), "buffer", (gpointer) buffer);
 
     gtk_text_buffer_insert (buffer, iter, " ", -1);
@@ -86,7 +86,7 @@ gw_searchwindow_insert_edict_addlink (GwSearchWindow *window,
 {
     //Declarations
     gchar *kanji, *furigana, *definitions;
-    LwVocabulary *vocabulary;
+    LwWord *word;
 
     //Initializations
     kanji = result->kanji_start;
@@ -97,16 +97,16 @@ gw_searchwindow_insert_edict_addlink (GwSearchWindow *window,
 
     if (definitions != NULL)
     {
-      vocabulary = lw_vocabulary_new ();
-      if (vocabulary != NULL)
+      word = lw_word_new ();
+      if (word != NULL)
       {
-        lw_vocabulary_set_kanji (vocabulary, kanji);
-        lw_vocabulary_set_furigana (vocabulary, furigana);
-        lw_vocabulary_set_definitions (vocabulary, definitions);
+        lw_word_set_kanji (word, kanji);
+        lw_word_set_furigana (word, furigana);
+        lw_word_set_definitions (word, definitions);
 
-        gw_searchwindow_insert_addlink (window, buffer, iter, vocabulary);
+        gw_searchwindow_insert_addlink (window, buffer, iter, word);
 
-        lw_vocabulary_free (vocabulary);
+        lw_word_free (word);
       }
       g_free (definitions);
     }
@@ -575,7 +575,7 @@ gw_searchwindow_insert_kanjidict_addlink (GwSearchWindow *window, LwResult *resu
 {
     //Declarations
     gchar *kanji, *furigana, *definitions;
-    LwVocabulary *vocabulary;
+    LwWord *word;
 
     //Initializations
     kanji = result->kanji;
@@ -584,16 +584,16 @@ gw_searchwindow_insert_kanjidict_addlink (GwSearchWindow *window, LwResult *resu
 
     if (furigana != NULL)
     {
-      vocabulary = lw_vocabulary_new ();
-      if (vocabulary != NULL)
+      word = lw_word_new ();
+      if (word != NULL)
       {
-        lw_vocabulary_set_kanji (vocabulary, kanji);
-        lw_vocabulary_set_furigana (vocabulary, furigana);
-        lw_vocabulary_set_definitions (vocabulary, definitions);
+        lw_word_set_kanji (word, kanji);
+        lw_word_set_furigana (word, furigana);
+        lw_word_set_definitions (word, definitions);
 
-        gw_searchwindow_insert_addlink (window, buffer, iter, vocabulary);
+        gw_searchwindow_insert_addlink (window, buffer, iter, word);
 
-        lw_vocabulary_free (vocabulary);
+        lw_word_free (word);
       }
       g_free (furigana);
     }
@@ -1419,7 +1419,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
                                 gettext("Specific sections of results can be printed or saved by "
                                 "dragging the mouse to highlight them.  Using this in combination "
                                 "with the Append command from the File menu or toolbar, quick and "
-                                "easy creation of a vocabulary lists is possible."),
+                                "easy creation of a word lists is possible."),
                                 NULL, NULL, NULL, NULL);
         break;
 

@@ -61,6 +61,8 @@ gboolean lw_history_has_forward (LwHistory*);
 LwSearch* lw_history_go_back (LwHistory*, LwSearch*);
 LwSearch* lw_history_go_forward (LwHistory*, LwSearch*);
 
+gboolean lw_history_has_relevance (LwHistory*, LwSearch*, gboolean);
+
 G_END_DECLS
 
 #endif

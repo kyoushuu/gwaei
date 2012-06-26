@@ -21,7 +21,7 @@ void gw_searchwindow_destroy_cb (GObject*, gpointer);
 void gw_searchwindow_search_cb (GtkWidget *widget, gpointer data);
 void gw_searchwindow_search_from_history_cb (GtkWidget*, gpointer);
 void gw_searchwindow_clear_search_cb (GSimpleAction*, GVariant*, gpointer);
-void gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget*, gpointer);
+void gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkEditable*, gpointer);
 void gw_searchwindow_go_menuitem_action_cb (GtkWidget*, gpointer);
 void gw_searchwindow_close_kanji_results_cb (GtkWidget*, gpointer);
 void gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget*, gpointer);
@@ -87,7 +87,6 @@ void gw_searchwindow_event_after_cb (GtkWidget*, GdkEvent*, gpointer);
 
 gboolean gw_searchwindow_motion_notify_event_cb (GtkWidget*, GdkEventButton*, gpointer);
 void gw_searchwindow_vocabulary_changed_cb (GtkWidget*, gpointer);
-void gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget*, gpointer);
 
 void gw_searchwindow_kanjipadwindow_destroy_cb (GtkWidget*, gpointer);
 void gw_searchwindow_radicalswindow_destroy_cb (GtkWidget*, gpointer);
@@ -106,6 +105,7 @@ void gw_searchwindow_insert_and_cb (GSimpleAction *, GVariant*, gpointer);
 void gw_searchwindow_insert_or_cb (GSimpleAction *, GVariant*, gpointer);
 
 void gw_searchwindow_set_dictionary_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_searchwindow_clear_entry_button_pressed_cb (GtkEntry*, GtkEntryIconPosition, GdkEvent*, gpointer);
 
 #endif
 

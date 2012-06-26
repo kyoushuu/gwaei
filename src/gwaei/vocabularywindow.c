@@ -859,6 +859,28 @@ gw_vocabularywindow_set_selected_list (GwVocabularyWindow *window, GtkTreePath *
 }
 
 
+void
+gw_vocabularywindow_set_selected_list_by_index (GwVocabularyWindow *window, gint index)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+    
+    //Declarations
+    gchar *path_string;
+    GtkTreePath *path;
+
+    //Initializations
+    if (index < -1) index = -1;
+    path_string = g_strdup_printf ("%d", index);
+    path = gtk_tree_path_new_from_string (path_string);
+
+    gw_vocabularywindow_set_selected_list (window, path);
+
+    g_free (path_string); path_string = NULL;
+    gtk_tree_path_free (path); path = NULL;
+}
+
+
 GtkListStore*
 gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow *window)
 {
@@ -923,7 +945,7 @@ gw_vocabularywindow_show_save_dialog (GwVocabularyWindow *window)
     gtk_widget_show_all (box);
 
     header = gettext("Save Changes before Closing?");
-    description = gettext("Some of your vocabulary lists have changed since your last save.");
+    description = gettext("Some of your word lists have changed since your last save.");
     markup = g_markup_printf_escaped ("<big><b>%s</b></big>\n%s", header, description);
     gtk_label_set_markup (GTK_LABEL (label), markup);
     g_free (markup);

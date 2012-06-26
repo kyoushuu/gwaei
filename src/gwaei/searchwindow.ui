@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkMenu" id="back_popup">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-  </object>
-  <object class="GtkMenu" id="forward_popup">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-  </object>
   <object class="GtkEntryBuffer" id="search_entrybuffer"/>
   <object class="GtkWindow" id="unused">
     <property name="can_focus">False</property>
@@ -80,123 +72,9 @@
           <object class="GtkToolbar" id="search_toolbar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">4</property>
-            <property name="margin_right">4</property>
             <property name="toolbar_style">icons</property>
             <property name="icon_size">1</property>
-            <child>
-              <object class="GtkToolItem" id="entry_toolbutton">
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_top">2</property>
-                <property name="margin_bottom">2</property>
-                <property name="use_action_appearance">False</property>
-                <child>
-                  <object class="GtkBox" id="search_hbox">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">4</property>
-                    <child>
-                      <object class="GtkLabel" id="search_entry_label">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Sear_ch:</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkAlignment" id="search_entry_container">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkEntry" id="search_entry">
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="max_length">20</property>
-                            <property name="invisible_char">●</property>
-                            <property name="activates_default">True</property>
-                            <property name="invisible_char_set">True</property>
-                            <signal name="changed" handler="gw_searchwindow_update_button_states_based_on_entry_text_cb" object="toplevel" swapped="no"/>
-                            <signal name="activate" handler="gw_searchwindow_search_cb" object="toplevel" swapped="no"/>
-                            <signal name="key-press-event" handler="gw_searchwindow_focus_change_on_key_press_cb" object="toplevel" swapped="no"/>
-                            <signal name="icon-release" handler="gw_searchwindow_clear_entry_button_pressed_cb" object="toplevel" swapped="no"/>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="dictionary_combobox">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="has_tooltip">True</property>
-                        <property name="tooltip_markup" translatable="yes">Select the dictionary you want to use</property>
-                        <property name="tooltip_text" translatable="yes">Select the dictionary you want to use</property>
-                        <property name="focus_on_click">False</property>
-                        <signal name="changed" handler="gw_searchwindow_dictionary_combobox_changed_cb" object="toplevel" swapped="no"/>
-                        <signal name="key-press-event" handler="gw_searchwindow_focus_change_on_key_press_cb" object="toplevel" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolButton" id="submit_toolbutton">
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="margin_left">4</property>
-                <property name="margin_top">2</property>
-                <property name="margin_bottom">2</property>
-                <property name="use_action_appearance">False</property>
-                <property name="is_important">True</property>
-                <property name="label" translatable="yes">Search</property>
-                <property name="use_underline">True</property>
-                <property name="icon_name">edit-find-symbolic</property>
-                <signal name="key-press-event" handler="gw_searchwindow_focus_change_on_key_press_cb" object="toplevel" swapped="no"/>
-                <signal name="clicked" handler="gw_searchwindow_search_cb" object="toplevel" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToggleToolButton" id="menu_toolbutton">
-                <property name="use_action_appearance">False</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
-                <property name="label" translatable="yes">Menu</property>
-                <property name="use_underline">True</property>
-                <property name="icon_name">gtk-execute</property>
-                <signal name="clicked" handler="gw_searchwindow_show_popup_menu_cb" object="toplevel" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">True</property>
-              </packing>
-            </child>
+            <signal name="popup-context-menu" handler="gw_searchwindow_show_toolbar_popup_cb" object="toplevel" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -209,6 +87,7 @@
           <object class="GtkToolbar" id="primary_toolbar">
             <property name="can_focus">False</property>
             <property name="no_show_all">True</property>
+            <signal name="popup-context-menu" handler="gw_searchwindow_show_toolbar_popup_cb" object="toplevel" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
