@@ -671,7 +671,7 @@ gw_vocabularyliststore_sync_menumodel_cb (GtkTreeModel *treemodel,
     while (valid)
     {
       gtk_tree_model_get (treemodel, &treeiter, GW_VOCABULARYLISTSTORE_COLUMN_NAME, &label, -1);
-      action = g_strdup_printf ("app.show-vocabulary-index::%d", ++index);
+      action = g_strdup_printf ("win.show-vocabulary-index::%d", ++index);
 
       if (label && action) g_menu_append (menu, label, action);
 
