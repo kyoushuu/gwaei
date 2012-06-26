@@ -50,15 +50,6 @@ static int gw_application_command_line (GApplication*, GApplicationCommandLine*)
 static void gw_application_startup (GApplication*);
 static void gw_application_load_app_menu (GwApplication*);
 
-static GActionEntry app_entries[] = {
-  { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
-  { "show-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
-  { "show-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
-  { "show-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
-  { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
-  { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
-  { "quit", gw_application_quit_cb, NULL, NULL, NULL }
-};
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
 
@@ -72,8 +63,6 @@ gw_application_new ()
     GwApplication *application;
     const gchar *id;
     GApplicationFlags flags;
-
-    g_set_application_name ("gWaei");
 
     //Initializations
     id = "gtk.org.gWaei";
@@ -96,21 +85,15 @@ gw_application_init (GwApplication *application)
 static void 
 gw_application_constructed (GObject *object)
 {
-    //Declarations
-    GwApplication *application;
-
     //Chain the parent class
     {
       G_OBJECT_CLASS (gw_application_parent_class)->constructed (object);
     }
 
-    //Initialization
-    application = GW_APPLICATION (object);
-
     lw_regex_initialize ();
 
-#ifdef OS_MINGW
 /*
+#ifdef OS_MINGW
     GtkSettings *settings;
     settings = gtk_settings_get_default ();
     if (settings != NULL)
@@ -123,10 +106,8 @@ gw_application_constructed (GObject *object)
       g_object_unref (settings);
       settings = NULL;
     }
-*/
 #endif
-
-    gw_application_attach_signals (application);
+*/
 }
 
 
@@ -191,6 +172,24 @@ gw_application_class_init (GwApplicationClass *klass)
 static void 
 gw_application_attach_signals (GwApplication *application)
 {
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+
+    //Declarations
+    LwPreferences *preferences;
+
+    //Initializations
+    preferences = gw_application_get_preferences (application);
+
+#ifdef WITH_HUNSPELL
+    lw_preferences_add_change_listener_by_schema (
+        preferences,
+        LW_SCHEMA_BASE,
+        LW_KEY_SPELLCHECK,
+        gw_application_sync_spellcheck_cb,
+        application 
+    );
+#endif
 }
 
 
@@ -224,7 +223,7 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
     {
       { "new", 'n', 0, G_OPTION_ARG_NONE, &(priv->arg_new_window_switch), gettext("Force a new instance window"), NULL },
       { "dictionary", 'd', 0, G_OPTION_ARG_STRING, &(priv->arg_dictionary), gettext("Choose the dictionary to use"), "English" },
-      { "vocabulary", 'o', 0, G_OPTION_ARG_NONE, &(priv->arg_new_vocabulary_window_switch), gettext("Open the vocabulary manager window"), NULL },
+      { "word", 'o', 0, G_OPTION_ARG_NONE, &(priv->arg_new_vocabulary_window_switch), gettext("Open the vocabulary manager window"), NULL },
       { "version", 'v', 0, G_OPTION_ARG_NONE, &(priv->arg_version_switch), gettext("Check the gWaei version information"), NULL },
       { NULL }
     };
@@ -378,48 +377,6 @@ gw_application_get_window_by_type (GwApplication *application, const GType TYPE)
       if (G_OBJECT_TYPE (fuzzy) == TYPE)
       {
         window = fuzzy;
-      }
-    }
-
-    return window;
-}
-
-
-//!
-//! @brief Gets a GwWindow from the application's windowlist
-//! @param app A GwApplication instance to work on
-//! @param TYPE The window type to get
-//! @param widget A widget from the window so you can get a specific instance.  If NULL, you cet the first window to match the GwWindowType
-//!
-GtkWindow* 
-gw_application_get_window_by_widget (GwApplication *application, GtkWidget *widget)
-{
-//TODO
-    //Declarations
-    GList *iter;
-    GList *list;
-    GtkWindow *window;
-    GtkWindow *fuzzy;
-    GtkWindow *toplevel;
-
-    //Initializations
-    window = NULL;
-    fuzzy = NULL;
-    toplevel = GTK_WINDOW (gtk_widget_get_toplevel (widget));
-    list = gtk_application_get_windows (GTK_APPLICATION (application));
-
-    for (iter = list; iter != NULL; iter = iter->next)
-    {
-      fuzzy = GTK_WINDOW (iter->data);
-
-      if (fuzzy == NULL)
-      {
-        continue;
-      }
-      else if (fuzzy == toplevel)
-      {
-        window = fuzzy;
-        break;
       }
     }
 
@@ -777,6 +734,7 @@ gw_application_startup (GApplication *application)
     G_APPLICATION_CLASS (gw_application_parent_class)->startup (application);
 
     gw_application_load_app_menu (GW_APPLICATION (application));
+    gw_application_attach_signals (GW_APPLICATION (application));
 }
 
 
@@ -794,6 +752,27 @@ gw_application_should_quit (GwApplication *application)
       if (gw_window_is_important (GW_WINDOW (link->data))) should_quit = FALSE;
 
     return should_quit;
+}
+
+
+static void
+gw_application_initialize_menumodel_links (GwApplication *application)
+{
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+  
+    //Declarations
+    GwVocabularyListStore *store;
+    GMenuModel *menumodel;
+    GMenuModel *link;
+
+    //Initializations
+    menumodel = gtk_application_get_app_menu (GTK_APPLICATION (application));
+    g_return_if_fail (menumodel != NULL);
+
+    store = GW_VOCABULARYLISTSTORE (gw_application_get_vocabularyliststore (application));
+    link = gw_vocabularyliststore_get_menumodel (store);
+    gw_menumodel_set_links (menumodel, "vocabulary-list-link", G_MENU_LINK_SECTION, link);
 }
 
 
@@ -834,7 +813,8 @@ gw_application_load_app_menu (GwApplication *application)
     model = G_MENU_MODEL (gtk_builder_get_object (builder, "menu")); if (model == NULL) goto errored;
 
     gtk_application_set_app_menu (GTK_APPLICATION (application), model);
-    g_action_map_add_action_entries (G_ACTION_MAP (application), app_entries, G_N_ELEMENTS (app_entries), application);
+    gw_application_initialize_menumodel_links (application);
+    gw_application_map_actions (G_ACTION_MAP (application), application);
 
 errored:
     if (builder != NULL) g_object_unref (builder);
@@ -895,15 +875,91 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
 }
 
 
-GActionEntry*
-gw_application_get_app_action_entries ()
+void
+gw_application_map_actions (GActionMap *map, GwApplication *application)
 {
-    return app_entries;
+    //Sanity checks
+    g_return_if_fail (map != NULL);
+    g_return_if_fail (application != NULL);
+
+    static GActionEntry entries[] = {
+      { "new-window", gw_application_open_searchwindow_cb, NULL, NULL, NULL },
+      { "show-about", gw_application_open_aboutdialog_cb, NULL, NULL, NULL },
+      { "show-preferences", gw_application_open_settingswindow_cb, NULL, NULL, NULL },
+      { "show-vocabulary", gw_application_open_vocabularywindow_cb, NULL, NULL, NULL },
+      { "show-vocabulary-index", gw_application_open_vocabularywindow_index_cb, "s", NULL, NULL },
+      { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
+      { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
+      { "toggle-spellcheck", gw_application_spellcheck_toggled_cb, NULL, "false", NULL },
+      { "quit", gw_application_quit_cb, NULL, NULL, NULL }
+    };
+
+    g_action_map_add_action_entries (map, entries, G_N_ELEMENTS (entries), application);
 }
 
-gint
-gw_application_get_total_app_action_entries ()
+
+void
+gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *LINK_TYPE, GMenuModel *link)
 {
-    return G_N_ELEMENTS (app_entries);
+    //Sanity checks
+    g_return_if_fail (menumodel != NULL);
+    g_return_if_fail (LABEL != NULL);
+    g_return_if_fail (LINK_TYPE != NULL);
+
+    //Declarations
+    gint total_items;
+    gint index;
+    gchar *label;
+    gboolean valid;
+    GMenuItem *menuitem;
+    GMenuModel *sublink;
+
+    //Initializations
+    total_items = g_menu_model_get_n_items (menumodel);
+
+    for (index = 0; index < total_items; index++)
+    {
+      valid = g_menu_model_get_item_attribute (menumodel, index, G_MENU_ATTRIBUTE_LABEL, "s", &label, NULL);
+      if (valid == TRUE && label != NULL)
+      {
+        if (label != NULL && strcmp (label, LABEL) == 0)
+        {
+          menuitem = g_menu_item_new (NULL, NULL);
+          g_menu_item_set_link (menuitem, LINK_TYPE, link);
+          g_menu_remove (G_MENU (menumodel), index);
+          g_menu_insert_item (G_MENU (menumodel), index, menuitem);
+          g_object_unref (menuitem); menuitem = NULL;
+        }
+        g_free (label); label = NULL;
+      }
+
+      //Recursive work
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SUBMENU);
+      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, LINK_TYPE, link);
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SECTION);
+      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, LINK_TYPE, link);
+    }
 }
 
+
+void
+gw_application_show_vocabularywindow (GwApplication *application, gint index)
+{
+    //Declarations
+    GtkWindow *window;
+    GwVocabularyWindow *vocabularywindow;
+    GtkWidget *widget;
+
+    //Initializations
+    window = gw_vocabularywindow_new (GTK_APPLICATION (application));
+    vocabularywindow = GW_VOCABULARYWINDOW (window);
+    widget = GTK_WIDGET (window);
+
+    if (index >= 0)
+    {
+      gw_vocabularywindow_set_selected_list_by_index (vocabularywindow, index);
+      gw_vocabularywindow_show_vocabulary_list (vocabularywindow, FALSE);
+    }
+
+    gtk_widget_show (widget);
+}

@@ -61,7 +61,7 @@ gw_searchwindow_hovering_vocabulary_data_tag (GtkTextIter *iter)
         tag = GTK_TEXT_TAG (link->data);
         if (tag != NULL) 
         {
-          data = g_object_get_data (G_OBJECT (tag), "vocabulary-data");
+          data = g_object_get_data (G_OBJECT (tag), "word-data");
         }
       }
       g_slist_free (taglist); taglist = NULL;
@@ -263,12 +263,12 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     else if (vocabulary_data)
     {
       GtkWindow *avw = gw_addvocabularywindow_new (GTK_APPLICATION (application));
-      LwVocabulary *vi = lw_vocabulary_new_from_string (vocabulary_data);
+      LwWord *vi = lw_word_new_from_string (vocabulary_data);
       gtk_window_set_transient_for (avw, GTK_WINDOW (window));
-      gw_addvocabularywindow_set_kanji (GW_ADDVOCABULARYWINDOW (avw), lw_vocabulary_get_kanji (vi));
-      gw_addvocabularywindow_set_furigana (GW_ADDVOCABULARYWINDOW (avw), lw_vocabulary_get_furigana (vi));
-      gw_addvocabularywindow_set_definitions (GW_ADDVOCABULARYWINDOW (avw), lw_vocabulary_get_definitions (vi));
-      lw_vocabulary_free (vi); vi = NULL;
+      gw_addvocabularywindow_set_kanji (GW_ADDVOCABULARYWINDOW (avw), lw_word_get_kanji (vi));
+      gw_addvocabularywindow_set_furigana (GW_ADDVOCABULARYWINDOW (avw), lw_word_get_furigana (vi));
+      gw_addvocabularywindow_set_definitions (GW_ADDVOCABULARYWINDOW (avw), lw_word_get_definitions (vi));
+      lw_word_free (vi); vi = NULL;
       gtk_widget_show (GTK_WIDGET (avw));
       gw_addvocabularywindow_set_focus (GW_ADDVOCABULARYWINDOW (avw), GW_ADDVOCABULARYWINDOW_FOCUS_LIST);
       g_signal_connect (G_OBJECT (avw), "word-added", G_CALLBACK (gw_searchwindow_add_vocabulary_destroy_cb), NULL);
@@ -476,7 +476,7 @@ gw_searchwindow_save_as_cb (GSimpleAction *action,
     if (path == NULL)
     {
         gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), "");
-        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), gettext ("vocabulary.txt"));
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), gettext ("word.txt"));
     }
     //Otherwise use the already existing one
     else
@@ -1119,7 +1119,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     }
 
     //Push the previous searchitem or replace it with the new one
-    if (search != NULL && lw_search_has_history_relevance (search, priv->keep_searching_enabled))
+    if (lw_history_has_relevance (history, search, priv->keep_searching_enabled))
     {
       search = gw_searchwindow_steal_searchitem_by_index (window, index);
       if (search != NULL) 
@@ -1394,29 +1394,23 @@ gw_searchwindow_search_drag_data_recieved_cb (GtkWidget        *widget,
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkWidget *widget,
-                                                             gpointer   data   )
+gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkEditable *editable,
+                                                             gpointer     data   )
 {
     //Declarations
-    GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
+    GtkEntry *entry;
     const gchar* NAME;
     gint length;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-
-    priv = window->priv;
-    length = gtk_entry_get_text_length (GTK_ENTRY (priv->entry));
+    entry = GTK_ENTRY (editable);
+    length = gtk_entry_get_text_length (entry);
+    NAME = NULL;
 
     //Show the clear icon when approprate
-    if (length > 0)
-      NAME = "edit-clear-symbolic";
-    else
-      NAME = NULL;
+    if (length > 0) NAME = "edit-clear";
 
-    gtk_entry_set_icon_from_icon_name (GTK_ENTRY (priv->entry), GTK_ENTRY_ICON_SECONDARY, NAME);
+    gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, NAME);
 }
 
 
@@ -1496,7 +1490,7 @@ gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, gpointer data)
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    int page_num;
+    gint page_num;
 
     //Initializations
     window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
@@ -1517,7 +1511,7 @@ gw_searchwindow_remove_current_tab_cb (GtkWidget *widget, gpointer data)
 G_MODULE_EXPORT void 
 gw_searchwindow_switch_tab_cb (GtkNotebook *notebook, 
                                GtkWidget   *page, 
-                               int          page_num, 
+                               gint         page_num, 
                                gpointer     data)
 {
     //Declarations
@@ -1536,7 +1530,6 @@ gw_searchwindow_switch_tab_cb (GtkNotebook *notebook,
     if (container != NULL)
     {
       search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
-
       gw_searchwindow_set_dictionary_by_searchitem (window, search);
       gw_searchwindow_set_entry_text_by_searchitem (window, search);
       gw_searchwindow_set_title_by_searchitem (window, search);
@@ -1853,78 +1846,6 @@ gw_searchwindow_sync_font_cb (GSettings *settings,
     g_return_if_fail (window != NULL);
 
     gw_searchwindow_set_font (window);
-}
-
-
-//!
-//! @brief Callback to toggle spellcheck in the search entry
-//! @param widget Unused pointer to a GtkWidget
-//! @param data Unused gpointer
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_spellcheck_toggled_cb (GtkWidget *widget, gpointer data)
-{
-#ifdef WITH_HUNSPELL
-    //Declarations
-    GwApplication *application;
-    GwSearchWindow *window;
-    LwPreferences *preferences;
-    gboolean state;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-    preferences = gw_application_get_preferences (application);
-    state = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
-
-    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK, !state);
-#endif
-}
-
-
-//!
-//! @brief Sets the gui widgets consistently to the requested state
-//! @param request the requested state for spellchecking widgets
-//!
-G_MODULE_EXPORT void 
-gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
-{
-#ifdef WITH_HUNSPELL
-    //Declarations
-    GwApplication *application;
-    GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    LwPreferences *preferences;
-    GtkWidget *toplevel;
-    GtkToggleToolButton *toolbutton;
-    gboolean request;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    preferences = gw_application_get_preferences (application);
-    toplevel = gw_window_get_toplevel (GW_WINDOW (window));
-    toolbutton = GTK_TOGGLE_TOOL_BUTTON (priv->spellcheck_toolbutton);
-    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
-
-    G_GNUC_EXTENSION g_signal_handlers_block_by_func (toolbutton, gw_searchwindow_spellcheck_toggled_cb, toplevel);
-    gtk_toggle_tool_button_set_active (toolbutton, request);
-    G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (toolbutton, gw_searchwindow_spellcheck_toggled_cb, toplevel);
-
-    if (request == TRUE && priv->spellcheck == NULL)
-    {
-      priv->spellcheck =  gw_spellcheck_new_with_entry (application, priv->entry);
-      g_object_add_weak_pointer (G_OBJECT (priv->spellcheck), (gpointer*) &(priv->spellcheck));
-    }
-    else if (request == FALSE && priv->spellcheck != NULL)
-    {
-      if (priv->spellcheck != NULL)
-        g_object_unref (G_OBJECT (priv->spellcheck));
-    }
-#endif
 }
 
 
@@ -2361,47 +2282,6 @@ gw_searchwindow_add_vocabulary_word_cb (GSimpleAction *action,
 }
 
 
-G_MODULE_EXPORT void
-gw_searchwindow_vocabulary_changed_cb (GtkWidget *widget, gpointer data)
-{
-    //Declarations
-    GwSearchWindow *window;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-
-    gw_searchwindow_update_vocabulary_menuitems (window);
-}
-
-
-G_MODULE_EXPORT void
-gw_searchwindow_vocabulary_menuitem_activated_cb (GtkWidget *widget, gpointer data)
-{
-    //Declarations
-    GwSearchWindow *window;
-    GwApplication *application;
-    GtkWindow *vocabularywindow;
-    GtkMenuItem *menuitem;
-    GtkTreePath *path;
-
-    //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-    menuitem = GTK_MENU_ITEM (widget);
-    path = (GtkTreePath*) g_object_get_data (G_OBJECT (menuitem), "tree-path");
-
-    vocabularywindow = gw_vocabularywindow_new (GTK_APPLICATION (application));
-
-    gw_vocabularywindow_set_selected_list (GW_VOCABULARYWINDOW (vocabularywindow), path);
-    gw_vocabularywindow_show_vocabulary_list (GW_VOCABULARYWINDOW (vocabularywindow), FALSE);
-
-    gtk_widget_show (GTK_WIDGET (vocabularywindow));
-
-}
-
-
 static void
 _menu_popdown (GtkWidget *widget, gpointer data)
 {
@@ -2424,7 +2304,8 @@ _load_button_xml (GwSearchWindow *window)
     {
       gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
       menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
-      gw_searchwindow_set_links (window, menumodel);
+//TODO
+//      gw_searchwindow_set_links (window, menumodel);
 
       _menu_button = menumodel;
 
@@ -2476,4 +2357,78 @@ gw_searchwindow_set_dictionary_cb (GSimpleAction *action,
     gw_searchwindow_set_dictionary (window, index);
 }
 
+
+static GtkMenu *_toolbar_menu = NULL;
+static void
+gw_searchwindow_detach_popup (GtkWidget *attach_widget, GtkMenu *menu)
+{
+    g_return_if_fail (_toolbar_menu != NULL);
+    gtk_widget_destroy (GTK_WIDGET (_toolbar_menu));
+    _toolbar_menu = NULL;
+}
+
+G_MODULE_EXPORT gboolean
+gw_searchwindow_show_toolbar_popup_cb (GtkToolbar *toolbar, 
+                                       gint        x, 
+                                       gint        y,
+                                       gint        button, 
+                                       gpointer    data)
+{
+    if (_toolbar_menu == NULL)
+    {
+      GtkMenu *menu;
+      GtkBuilder *builder;
+      GMenuModel *menumodel;
+
+      builder = gtk_builder_new ();
+      gw_application_load_xml (builder, "searchwindow-menumodel-toolbar.ui");
+      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+      menu = GTK_MENU (gtk_menu_new_from_model (menumodel));
+      gtk_widget_show (GTK_WIDGET (menu));
+      
+      g_object_unref (builder); builder = NULL;
+
+      gtk_menu_attach_to_widget (menu, GTK_WIDGET (toolbar), gw_searchwindow_detach_popup);
+      _toolbar_menu = menu;
+    }
+
+    gtk_menu_popup (_toolbar_menu, NULL, NULL, NULL, NULL, button, gtk_get_current_event_time ());
+
+    return TRUE;
+}
+
+
+//!
+//! @brief Sets the gui widgets consistently to the requested state
+//! @param request the requested state for spellchecking widgets
+//!
+G_MODULE_EXPORT void 
+gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
+{
+    //Declarations
+    GwApplication *application;
+    GwSearchWindow *window;
+    GwSearchWindowPrivate *priv;
+    LwPreferences *preferences;
+    gboolean request;
+
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_if_fail (window != NULL);
+    priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
+    preferences = gw_application_get_preferences (application);
+    request = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
+
+    if (request == TRUE && priv->spellcheck == NULL)
+    {
+      priv->spellcheck =  gw_spellcheck_new_with_entry (application, priv->entry);
+      g_object_add_weak_pointer (G_OBJECT (priv->spellcheck), (gpointer*) &(priv->spellcheck));
+    }
+    else if (request == FALSE && priv->spellcheck != NULL)
+    {
+      if (priv->spellcheck != NULL)
+        g_object_unref (G_OBJECT (priv->spellcheck));
+    }
+}
 

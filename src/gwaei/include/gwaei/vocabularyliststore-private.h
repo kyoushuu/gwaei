@@ -4,6 +4,7 @@
 G_BEGIN_DECLS
 
 struct _GwVocabularyListStorePrivate {
+  GMenuModel *menumodel;
   gboolean has_changes;
   gint list_new_index;
   gboolean has_removed_lists;

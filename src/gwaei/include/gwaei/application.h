@@ -53,7 +53,6 @@ void gw_application_parse_args (GwApplication*, int*, char***);
 void gw_application_quit (GwApplication*);
 
 GtkWindow* gw_application_get_window_by_type (GwApplication *application, const GType TYPE);
-GtkWindow* gw_application_get_window_by_widget (GwApplication*, GtkWidget*);
 
 const char* gw_application_get_program_name (GwApplication*);
 void gw_application_cancel_all_searches (GwApplication*);
@@ -80,8 +79,11 @@ gboolean gw_application_should_quit (GwApplication *application);
 
 gboolean gw_application_load_xml (GtkBuilder*, const gchar*);
 
-GActionEntry* gw_application_get_app_action_entries (void);
-gint gw_application_get_total_app_action_entries (void);
+void gw_application_map_actions (GActionMap*, GwApplication*);
+void gw_menumodel_set_links (GMenuModel*, const gchar*, const gchar*, GMenuModel*);
+
+void gw_application_show_vocabularywindow (GwApplication*, gint);
+void gw_application_spellcheck_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 
 #include "application-callbacks.h"
 

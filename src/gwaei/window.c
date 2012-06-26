@@ -94,14 +94,15 @@ gw_window_constructed (GObject *object)
     priv = window->priv;
 
     priv->accelgroup = gtk_accel_group_new ();
-    gtk_window_add_accel_group (GTK_WINDOW (window), priv->accelgroup);
+    //gtk_window_add_accel_group (GTK_WINDOW (window), priv->accelgroup);
     gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (priv->application));
     priv->builder = gtk_builder_new ();
     gw_window_load_ui_xml (window, priv->ui_xml);
     priv->toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toplevel"));
-    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
 
     g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
+
+    gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
 }
 
 
@@ -520,6 +521,7 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     priv->menubar = GTK_MENU_BAR (menubar); menubar = NULL;
 
 errored:
+;
     if (builder != NULL) g_object_unref (builder); builder = NULL;
     if (filename != NULL) g_free (filename); filename = NULL;
     if (win_menu_model != NULL) g_object_unref (G_OBJECT (win_menu_model));

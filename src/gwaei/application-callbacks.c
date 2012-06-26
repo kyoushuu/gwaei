@@ -104,14 +104,28 @@ gw_application_open_vocabularywindow_cb (GSimpleAction *action,
                                          GVariant      *parameter,
                                          gpointer       data)
 {
-    //Declarations
-    GtkWindow *window;
     GwApplication *application;
 
-    //Initializations
     application = GW_APPLICATION (data);
-    window = gw_vocabularywindow_new (GTK_APPLICATION (application));
-    gtk_widget_show (GTK_WIDGET (window));
+
+    gw_application_show_vocabularywindow (application, -1);
+}
+
+
+G_MODULE_EXPORT void 
+gw_application_open_vocabularywindow_index_cb (GSimpleAction *action, 
+                                               GVariant      *parameter,
+                                               gpointer       data)
+{
+    GwApplication *application;
+    const gchar *value;
+    gint index;
+
+    application = GW_APPLICATION (data);
+    value = g_variant_get_string (parameter, NULL);
+    index = (gint) g_ascii_strtoll (value, NULL, 10);
+
+    gw_application_show_vocabularywindow (application, index);
 }
 
 
@@ -272,4 +286,48 @@ gw_application_open_glossary_cb (GSimpleAction *action,
 
     gw_application_handle_error (application, NULL, FALSE, &error);
 }
+
+
+#ifdef WITH_HUNSPELL
+//!
+//! @brief Callback to toggle spellcheck in the search entry
+//! @param widget Unused pointer to a GtkWidget
+//! @param data Unused gpointer
+//!
+G_MODULE_EXPORT void 
+gw_application_spellcheck_toggled_cb (GSimpleAction *action, 
+                                      GVariant      *parameter, 
+                                      gpointer       data)
+{
+    //Declarations
+    GwApplication *application;
+    LwPreferences *preferences;
+    gboolean state;
+
+    //Initializations
+    application = GW_APPLICATION (data);
+    preferences = gw_application_get_preferences (application);
+    state = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK);
+
+    lw_preferences_set_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_SPELLCHECK, !state);
+}
+
+void
+gw_application_sync_spellcheck_cb (GSettings *settings,
+                                   gchar     *key,
+                                   gpointer   data)
+{
+    //Declarations
+    GwApplication *application;
+    gboolean state;
+    GAction *action;
+
+    //Initializations
+    application = GW_APPLICATION (data);
+    state = lw_preferences_get_boolean (settings, key);
+    action = g_action_map_lookup_action (G_ACTION_MAP (application), "toggle-spellcheck");
+
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (state));
+}
+#endif
 

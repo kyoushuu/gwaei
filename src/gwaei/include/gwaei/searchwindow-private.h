@@ -23,7 +23,6 @@ typedef enum {
   GW_SEARCHWINDOW_SIGNALID_CUSTOM_FONT,
   GW_SEARCHWINDOW_SIGNALID_FONT_MAGNIFICATION,
   GW_SEARCHWINDOW_SIGNALID_DICTIONARIES_CHANGED,
-  GW_SEARCHWINDOW_SIGNALID_VOCABULARY_CHANGED,
   TOTAL_GW_SEARCHWINDOW_SIGNALIDS
 } GwSearchWindowSignalId;
 
@@ -41,13 +40,12 @@ struct _GwSearchWindowPrivate {
 
   GtkToolbar *primary_toolbar;
   GtkToolButton *spellcheck_toolbutton;
-  GtkToolButton *menu_toolbutton;
 
   GtkToolbar *search_toolbar;
   GtkEntry *entry;
   GtkComboBox *combobox;
   GtkToolButton *submit_toolbutton;
-  GtkLabel *search_entry_label;
+  GtkToolButton *menu_toolbutton;
 
   GtkWidget *statusbar;
   GtkLabel *statusbar_label;

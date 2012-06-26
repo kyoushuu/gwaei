@@ -65,6 +65,8 @@ lw_history_init (LwHistory *history)
 {
     history->priv = LW_HISTORY_GET_PRIVATE (history);
     memset(history->priv, 0, sizeof(LwHistoryPrivate));
+
+    history->priv->time_delta = 20;
 }
 
 
@@ -463,4 +465,36 @@ lw_history_go_forward (LwHistory *history, LwSearch *pushed)
 
     return popped;
 }
+
+
+
+//!
+//! @brief Checks if the relevant timer has passed a threshold
+//! @param search The LwSearch to check for history relevance
+//! @param use_idle_timer This variable shoud be set to true if the program does automatic searches so it checks the timer
+//!
+gboolean 
+lw_history_has_relevance (LwHistory *history, LwSearch *search, gboolean check_timestamp)
+{
+    //Sanity checks
+    if (search == NULL) return FALSE;
+    g_return_val_if_fail (history != NULL, FALSE);
+
+    //Declarations
+    LwHistoryPrivate *priv;
+    gboolean has_results;
+    gboolean enough_time_since_last_search;
+    gint64 timestamp;
+    gint64 delta;
+
+    //Initializations
+    priv = history->priv;
+    has_results = (lw_search_get_total_results (search) > 0);
+    timestamp = g_get_monotonic_time ();
+    delta = timestamp - search->timestamp;
+    enough_time_since_last_search = (delta > priv->time_delta);
+
+    return (has_results && (!check_timestamp || enough_time_since_last_search));
+}
+
 

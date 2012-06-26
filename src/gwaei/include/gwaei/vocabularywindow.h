@@ -48,6 +48,7 @@ void gw_vocabularywindow_start_flashcards (GwVocabularyWindow*, const gchar*, co
 GtkListStore* gw_vocabularywindow_get_selected_wordstore (GwVocabularyWindow*);
 void gw_searchwindow_update_vocabulary_menuitems (GwSearchWindow*);
 void gw_vocabularywindow_set_selected_list (GwVocabularyWindow*, GtkTreePath*);
+void gw_vocabularywindow_set_selected_list_by_index (GwVocabularyWindow*, gint);
 gboolean gw_vocabularywindow_show_save_dialog (GwVocabularyWindow*);
 void gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow*, gboolean);
 void gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window);

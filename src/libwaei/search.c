@@ -81,7 +81,7 @@ void
 lw_search_free (LwSearch* search)
 {
     //Sanity check
-    g_assert (search != NULL);
+    g_return_if_fail (search != NULL);
 
     lw_search_deinit (search);
 
@@ -255,33 +255,6 @@ lw_search_is_equal (LwSearch *item1, LwSearch *item2)
   dictionaries_are_equal = (item1->dictionary == item2->dictionary);
 
   return (queries_are_equal && dictionaries_are_equal);
-}
-
-
-//!
-//! @brief Checks if the relevant timer has passed a threshold
-//! @param search The LwSearch to check for history relevance
-//! @param use_idle_timer This variable shoud be set to true if the program does automatic searches so it checks the timer
-//!
-gboolean 
-lw_search_has_history_relevance (LwSearch *search, gboolean check_timestamp)
-{
-    //Sanity checks
-    if (search == NULL) return FALSE;
-
-    //Declarations
-    gboolean has_results;
-    gboolean enough_time_since_last_search;
-    gint64 timestamp;
-    gint64 delta;
-
-    //Initializations
-    has_results = (lw_search_get_total_results (search) > 0);
-    timestamp = g_get_monotonic_time ();
-    delta = timestamp - search->timestamp;
-    enough_time_since_last_search = (delta > LW_HISTORY_TIME_TO_RELEVANCE);
-
-    return (has_results && (!check_timestamp || enough_time_since_last_search));
 }
 
 

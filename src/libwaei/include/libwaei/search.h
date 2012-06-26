@@ -11,7 +11,6 @@ G_BEGIN_DECLS
 
 #define LW_SEARCH(object) (LwSearch*) object
 #define LW_SEARCH_DATA_FREE_FUNC(object) (LwSearchDataFreeFunc)object
-#define LW_HISTORY_TIME_TO_RELEVANCE 20
 
 //!
 //! @brief Search status types
@@ -83,8 +82,6 @@ void lw_search_prepare_search (LwSearch*);
 
 gboolean lw_search_compare (LwSearch *, const LwRelevance);
 gboolean lw_search_is_equal (LwSearch*, LwSearch*);
-gboolean lw_search_has_history_relevance (LwSearch*, gboolean);
-void lw_search_increment_history_relevance_timer (LwSearch*);
 
 void lw_search_set_data (LwSearch*, gpointer, LwSearchDataFreeFunc);
 gpointer lw_search_get_data (LwSearch*);

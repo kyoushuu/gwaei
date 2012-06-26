@@ -20,219 +20,75 @@
 *******************************************************************************/
 
 //!
-//!  @file vocabulary.c
+//!  @file vocabularylist.c
 //!
-
-#include <locale.h>
 
 #include <libwaei/gettext.h>
 #include <libwaei/libwaei.h>
 
-const gchar* lw_vocabulary_get_kanji (LwVocabulary *vocabulary)
-{
-  return vocabulary->fields[LW_VOCABULARY_FIELD_KANJI];
-}
 
-void lw_vocabulary_set_kanji (LwVocabulary *vocabulary, const gchar *text)
-{
-  if (vocabulary->fields[LW_VOCABULARY_FIELD_KANJI] != NULL)
-    g_free (vocabulary->fields[LW_VOCABULARY_FIELD_KANJI]);
-  vocabulary->fields[LW_VOCABULARY_FIELD_KANJI] = g_strdup (text);
-}
-
-const gchar* lw_vocabulary_get_furigana (LwVocabulary *vocabulary)
-{
-  return vocabulary->fields[LW_VOCABULARY_FIELD_FURIGANA];
-}
-
-void lw_vocabulary_set_furigana (LwVocabulary *vocabulary, const gchar *text)
-{
-  if (vocabulary->fields[LW_VOCABULARY_FIELD_FURIGANA] != NULL)
-    g_free (vocabulary->fields[LW_VOCABULARY_FIELD_FURIGANA]);
-  vocabulary->fields[LW_VOCABULARY_FIELD_FURIGANA] = g_strdup (text);
-}
-
-const gchar* lw_vocabulary_get_definitions (LwVocabulary *vocabulary)
-{
-  return vocabulary->fields[LW_VOCABULARY_FIELD_DEFINITIONS];
-}
-
-void lw_vocabulary_set_definitions (LwVocabulary *vocabulary, const gchar *text)
-{
-  if (vocabulary->fields[LW_VOCABULARY_FIELD_DEFINITIONS] != NULL)
-    g_free (vocabulary->fields[LW_VOCABULARY_FIELD_DEFINITIONS]);
-  vocabulary->fields[LW_VOCABULARY_FIELD_DEFINITIONS] = g_strdup (text);
-}
-
-gint lw_vocabulary_get_correct_guesses (LwVocabulary *vocabulary)
-{
-  return vocabulary->correct_guesses;
-}
-
-void lw_vocabulary_set_correct_guesses (LwVocabulary *vocabulary, gint number)
-{
-  if (vocabulary->fields[LW_VOCABULARY_FIELD_CORRECT_GUESSES] != NULL)
-    g_free (vocabulary->fields[LW_VOCABULARY_FIELD_CORRECT_GUESSES]);
-  vocabulary->fields[LW_VOCABULARY_FIELD_CORRECT_GUESSES] = g_strdup_printf ("%d", number);
-  vocabulary->correct_guesses = number;
-  if (vocabulary->score != NULL) g_free (vocabulary->score); vocabulary->score = NULL;
-}
-
-gint lw_vocabulary_get_incorrect_guesses (LwVocabulary *vocabulary)
-{
-  return vocabulary->incorrect_guesses;
-}
-
-void lw_vocabulary_set_incorrect_guesses (LwVocabulary *vocabulary, gint number)
-{
-  if (vocabulary->fields[LW_VOCABULARY_FIELD_INCORRECT_GUESSES] != NULL)
-    g_free (vocabulary->fields[LW_VOCABULARY_FIELD_INCORRECT_GUESSES]);
-  vocabulary->fields[LW_VOCABULARY_FIELD_INCORRECT_GUESSES] = g_strdup_printf ("%d", number);
-  vocabulary->incorrect_guesses = number;
-  if (vocabulary->score != NULL) g_free (vocabulary->score); vocabulary->score = NULL;
-}
-
-
-gint 
-lw_vocabulary_get_score (LwVocabulary *vocabulary)
-{
-    gint total = vocabulary->correct_guesses + vocabulary->incorrect_guesses;
-    if (total == 0) return 0.0;
-    else return (vocabulary->correct_guesses * 100 / total);
-}
-
-
-const gchar* 
-lw_vocabulary_get_score_as_string (LwVocabulary *vocabulary)
-{
-    gint total;
-    
-    if (vocabulary->score == NULL)
-    {
-      total = vocabulary->correct_guesses + vocabulary->incorrect_guesses;
-      if (total == 0)
-        vocabulary->score = g_strdup (gettext("Untested"));
-      else
-        vocabulary->score = g_strdup_printf ("%3d%%", lw_vocabulary_get_score (vocabulary));
-    }
-
-    return vocabulary->score;
-}
-
-guint32
-lw_vocabulary_timestamp_to_hours (gint64 timestamp)
-{
-    const gint MICROSECONDS = 1000000;
-    const gint SECONDS = 60;
-    const gint MINUTES = 60;
-    return (guint32) (timestamp / MICROSECONDS / SECONDS / MINUTES);
-}
-
-
-void
-lw_vocabulary_set_timestamp (LwVocabulary *vocabulary, gint64 timestamp)
-{
-    guint32 hours = lw_vocabulary_timestamp_to_hours (timestamp);
-    lw_vocabulary_set_hours (vocabulary, hours);
-}
-
-
-void
-lw_vocabulary_update_timestamp (LwVocabulary *vocabulary)
-{
-    lw_vocabulary_set_timestamp (vocabulary, g_get_real_time ());
-}
-
-
-void
-lw_vocabulary_set_hours (LwVocabulary *vocabulary, guint32 hours)
-{
-    vocabulary->timestamp = hours;
-
-    if (vocabulary->days != NULL) g_free (vocabulary->days); vocabulary->days = NULL;
-    if (vocabulary->fields[LW_VOCABULARY_FIELD_TIMESTAMP] != NULL)
-      g_free (vocabulary->fields[LW_VOCABULARY_FIELD_TIMESTAMP]);
-
-    vocabulary->fields[LW_VOCABULARY_FIELD_TIMESTAMP] = g_strdup_printf ("%" G_GUINT32_FORMAT, vocabulary->timestamp);
-}
-
-
-guint32
-lw_vocabulary_get_hours (LwVocabulary *vocabulary)
-{
-    return vocabulary->timestamp;
-}
-
-
-const gchar*
-lw_vocabulary_get_timestamp_as_string (LwVocabulary *vocabulary)
-{
-    if (vocabulary->days == NULL)
-    {
-      guint32 days = lw_vocabulary_get_hours (vocabulary) / 24;
-      guint32 today = lw_vocabulary_timestamp_to_hours ( g_get_real_time ()) / 24;
-      guint32 difference = today - days;
-      if (difference < 0) difference = 0;
-
-      if (days == 0) vocabulary->days = g_strdup (pgettext("noun", "Never"));
-      else if (difference == 0) vocabulary->days = g_strdup (gettext("Today"));
-      else if (difference == 1) vocabulary->days = g_strdup (gettext("Yesterday"));
-      else vocabulary->days = g_strdup_printf (ngettext("%d Day Ago", "%d Days Ago", difference), difference);
-    }
-
-    return vocabulary->days;
-}
-
-
-LwVocabulary*
-lw_vocabulary_new ()
-{
-    LwVocabulary *vocabulary;
-
-    vocabulary = g_new0 (LwVocabulary, 1);
-
-    return vocabulary;
-}
-
-
-LwVocabulary*
-lw_vocabulary_new_from_string (const gchar *text)
+gchar**
+lw_vocabulary_get_lists ()
 {
     //Declarations
-    LwVocabulary *vocabulary;
-    gchar *ptr;
-    gchar *endptr;
+    GDir *dir;
     gchar **atoms;
-    gint i;
+    gchar *buffer;
+    const gchar *name;
+    guint chars;
+    gchar *uri;
+
+    //Initializations
+    chars = 0;
+    atoms = NULL;
+
+    if ((uri = lw_util_build_filename (LW_PATH_VOCABULARY, NULL)) != NULL)
+    {
+      if ((dir = g_dir_open (uri, 0, NULL)) != NULL)
+      {
+        //Get the size needed for the buffer
+        while ((name = g_dir_read_name (dir)) != NULL)
+        {
+          chars += strlen(name) + 1;
+        }
+
+        if (chars > 1 && (buffer = g_new0 (gchar, chars + 1)) != NULL)
+        {
+          g_dir_rewind (dir);
+
+          //Set the buffer
+          while ((name = g_dir_read_name (dir)) != NULL)
+          {
+            strcat(buffer, name);
+            strcat(buffer, ";");
+          }
+          buffer[chars - 1] = '\0';
+
+          //Split it
+          atoms = g_strsplit (buffer, ";", -1);
+
+          g_free (buffer); buffer = NULL;
+        }
+        g_dir_close (dir); dir = NULL;
+      }
+      g_free (uri); uri = NULL;
+    }
+
+    return atoms;
+}
+
+LwVocabulary*
+lw_vocabulary_new (const gchar *NAME)
+{
+    g_assert (NAME != NULL && strlen (NAME) > 0);
+
+    LwVocabulary *vocabulary;
 
     vocabulary = g_new0 (LwVocabulary, 1);
     if (vocabulary != NULL)
     {
-
-      atoms = g_strsplit (text, ";", TOTAL_LW_VOCABULARY_FIELDS);
-      if (atoms != NULL)
-      {
-        //Set up the strings
-        for (i = 0; atoms[i] != NULL && i < TOTAL_LW_VOCABULARY_FIELDS; i++)
-        {
-          vocabulary->fields[i] = g_strdup (g_strstrip(atoms[i]));
-        }
-        for (i = 0; i < TOTAL_LW_VOCABULARY_FIELDS; i++)
-        {
-          if (vocabulary->fields[i] == NULL) vocabulary->fields[i] = g_strdup ("");
-        }
-
-        //Set up the integers
-        ptr = vocabulary->fields[LW_VOCABULARY_FIELD_CORRECT_GUESSES];
-        vocabulary->correct_guesses = (gint) g_ascii_strtoll (ptr, &endptr, 10);
-        ptr = vocabulary->fields[LW_VOCABULARY_FIELD_INCORRECT_GUESSES];
-        vocabulary->incorrect_guesses =  (gint) g_ascii_strtoll (ptr, &endptr, 10);
-        ptr = vocabulary->fields[LW_VOCABULARY_FIELD_TIMESTAMP];
-        vocabulary->timestamp =  (guint32) g_ascii_strtoll (ptr, &endptr, 10);
-      }
-      g_strfreev (atoms); atoms = NULL;
+      vocabulary->name = g_strdup (NAME);
     }
-
     return vocabulary;
 }
 
@@ -240,27 +96,128 @@ lw_vocabulary_new_from_string (const gchar *text)
 void
 lw_vocabulary_free (LwVocabulary *vocabulary)
 {
-  gint i;
-  for (i = 0; i < TOTAL_LW_VOCABULARY_FIELDS; i++)
-  {
-    if (vocabulary->fields[i] != NULL)
+    if (vocabulary->name != NULL) g_free (vocabulary->name);
+    if (vocabulary->items != NULL)
     {
-      g_free (vocabulary->fields[i]);
-      vocabulary->fields[i] = NULL;
+      g_list_foreach (vocabulary->items, (GFunc) lw_word_free, NULL);
+      g_list_free (vocabulary->items); vocabulary->items = NULL;
     }
-  }
-
-  g_free (vocabulary->score); vocabulary->score = NULL;
-  g_free (vocabulary->days); vocabulary->days = NULL;
-
-  g_free (vocabulary);
+    g_free (vocabulary);
 }
 
 
-gchar* 
-lw_vocabulary_to_string (LwVocabulary *vocabulary)
+void
+lw_vocabulary_load (LwVocabulary *vocabulary, const gchar *FILENAME, LwIoProgressCallback cb)
 {
-    gchar* text;
-    text = lw_strjoinv (';', vocabulary->fields, TOTAL_LW_VOCABULARY_FIELDS);
-    return text;
+    LwWord *word;
+    gchar *uri;
+    FILE *stream;
+    const gint MAX = 512;
+    gchar buffer[MAX + 1];
+
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, vocabulary->name);
+
+    if (uri != NULL)
+    {
+      stream = fopen (uri, "r");
+      if (stream != NULL)
+      {
+        while (feof(stream) == 0)
+        {
+          if (fgets (buffer, MAX, stream) != NULL)
+          {
+            buffer[MAX] = '\0';
+            word = lw_word_new_from_string (buffer);
+            if (word != NULL)
+            {
+              vocabulary->items = g_list_append (vocabulary->items, word);
+            }
+          }
+          if (strchr(buffer, '\n') == NULL && feof(stream) == 0)
+          {
+            while (fgetc(stream) != '\n' && feof(stream) == 0);
+          }
+        }
+        fclose(stream); stream = NULL;
+      }
+      g_free (uri); uri = NULL;
+    }
+}
+
+void
+lw_vocabulary_save (LwVocabulary *vocabulary, const gchar *FILENAME, LwIoProgressCallback cb)
+{
+    //Declarations
+    LwWord *word;
+    GList *iter;
+    gint i;
+    gchar *uri;
+    FILE *stream;
+
+    if (FILENAME != NULL)
+      uri = g_strdup (FILENAME);
+    else
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, vocabulary->name);
+
+    if (uri != NULL)
+    {
+      stream = fopen (uri, "w");
+      if (stream != NULL)
+      {
+        for (iter = vocabulary->items; iter != NULL; iter = iter->next)
+        {
+          word = LW_WORD (iter->data);
+          if (word != NULL)
+          {
+            for (i = 0; i < TOTAL_LW_WORD_FIELDS - 1 && feof (stream) == 0; i++)
+            {
+              if (word->fields[i] != NULL)
+              {
+                fputs(word->fields[i], stream);
+                fputc(';', stream);
+              }
+            }
+            if (word->fields[i] != NULL) fputs(word->fields[i], stream);
+            fputc('\n', stream);
+          }
+        }
+        fclose(stream);
+      }
+      g_free (uri);
+    }
+}
+
+void
+lw_vocabulary_set_name (LwVocabulary *vocabulary, const gchar *name)
+{
+    if (vocabulary->name != NULL)
+      g_free (vocabulary->name);
+    vocabulary->name = g_strdup (name);
+}
+
+const gchar*
+lw_vocabulary_get_name (LwVocabulary *vocabulary)
+{
+    return vocabulary->name;
+}
+
+GList *
+lw_vocabulary_get_items (LwVocabulary *vocabulary)
+{
+    return vocabulary->items;
+}
+
+void
+lw_vocabulary_set_changed (LwVocabulary *vocabulary, gboolean changed)
+{
+    vocabulary->changed = changed;
+}
+
+gboolean
+lw_vocabulary_changed (LwVocabulary *vocabulary)
+{
+  return vocabulary->changed;
 }
