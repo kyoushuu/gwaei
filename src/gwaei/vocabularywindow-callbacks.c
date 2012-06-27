@@ -244,11 +244,11 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 
       name = gw_vocabularywordstore_get_name (GW_VOCABULARYWORDSTORE (wordstore));
-      title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary Manager"));
+      title = g_strdup_printf ("%s - %s", name, gettext("gWaei Vocabulary"));
     }
     else
     {
-      title = g_strdup_printf (gettext("gWaei Vocabulary Manager"));
+      title = g_strdup_printf (gettext("gWaei Vocabulary"));
     }
 
     if (title != NULL)

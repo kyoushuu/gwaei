@@ -233,7 +233,7 @@
         <item>
           <attribute name='label' translatable='yes'>_Manage</attribute>
           <attribute name='action'>win.show-vocabulary</attribute>
-          <attribute name='accel'>&lt;Alt&gt;Left</attribute>
+          <attribute name='accel'>&lt;Primary&gt;m</attribute>
         </item>
       </section>
       <section>

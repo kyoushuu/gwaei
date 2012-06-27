@@ -521,7 +521,6 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     priv->menubar = GTK_MENU_BAR (menubar); menubar = NULL;
 
 errored:
-;
     if (builder != NULL) g_object_unref (builder); builder = NULL;
     if (filename != NULL) g_free (filename); filename = NULL;
     if (win_menu_model != NULL) g_object_unref (G_OBJECT (win_menu_model));

@@ -196,7 +196,7 @@
         <item>
           <attribute name='label' translatable='yes'>_Manage</attribute>
           <attribute name='action'>win.show-vocabulary</attribute>
-          <attribute name='accel'>&lt;Alt&gt;Left</attribute>
+          <attribute name='accel'>&lt;Primary&gt;m</attribute>
         </item>
       </section>
       <section>
@@ -208,10 +208,6 @@
 
     <submenu>
       <attribute name='label' translatable='yes'>_Help</attribute>
-      <item>
-        <attribute name='label' translatable='yes'>_About</attribute>
-        <attribute name='action'>win.show-about</attribute>
-      </item>
       <item>
         <attribute name='label' translatable='yes'>_Contents</attribute>
         <attribute name='action'>win.show-help</attribute>
