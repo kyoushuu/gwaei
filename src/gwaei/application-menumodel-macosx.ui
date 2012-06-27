@@ -1,18 +1,12 @@
 <interface>
+
   <menu id='menu'>
+
     <section>
       <item>
-        <attribute name='label' translatable='yes'>New _Window</attribute>
-        <attribute name='action'>app.new-window</attribute>
-        <attribute name='accel'>&lt;Primary&gt;n</attribute>
+        <attribute name='label' translatable='yes'>_About gWaei</attribute>
+        <attribute name='action'>app.show-about</attribute>
       </item>
-    </section>
-    <section>
-        <item>
-          <attribute name='label' translatable='yes'>Vocabulary</attribute>
-          <attribute name='action'>app.show-vocabulary</attribute>
-          <attribute name='accel'>&lt;Primary&gt;m</attribute>
-        </item>
     </section>
 
     <section>
@@ -25,23 +19,7 @@
 
     <section>
       <item>
-        <attribute name='label' translatable='yes'>_About</attribute>
-        <attribute name='action'>app.show-about</attribute>
-      </item>
-      <item>
-        <attribute name='label' translatable='yes'>_Contents</attribute>
-        <attribute name='action'>app.show-help</attribute>
-        <attribute name='accel'>F1</attribute>
-      </item>
-      <item>
-        <attribute name='label' translatable='yes'>_Glossary</attribute>
-        <attribute name='action'>app.show-glossary</attribute>
-      </item>
-    </section>
-
-    <section>
-      <item>
-        <attribute name='label' translatable='yes'>_Quit</attribute>
+        <attribute name='label' translatable='yes'>_Quit gWaei</attribute>
         <attribute name='action'>app.quit</attribute>
         <attribute name='accel'>&lt;Primary&gt;q</attribute>
       </item>
