@@ -623,6 +623,7 @@ lw_io_gunzip_file (const char *SOURCE_PATH, const char *TARGET_PATH,
     char buffer[MAX];
     gdouble fraction;
     size_t filesize, position;
+    position = 0;
 
     source = gzopen (SOURCE_PATH, "rb");
     if (source != NULL)
@@ -636,7 +637,8 @@ lw_io_gunzip_file (const char *SOURCE_PATH, const char *TARGET_PATH,
           read = gzread (source, buffer, MAX);
           if (read > 0) 
           {
-            position = gzoffset(source);
+            position += MAX;
+            if (position > filesize) position = filesize;
             fraction = (gdouble) position / (gdouble) filesize;
             if (cb != NULL) cb (fraction, data);
             fwrite(buffer, sizeof(char), read, target);
