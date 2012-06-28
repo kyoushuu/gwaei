@@ -6,7 +6,9 @@
 
 G_BEGIN_DECLS
 
-#define LW_QUERYLINE(object) (LwQuery*) object
+#define LW_QUERY(object) (LwQuery*) object
+#define LW_QUERY_DELIMITOR_CHARACTER '&'
+#define LW_QUERY_DELIMITOR_STRING "&"
 
 typedef enum {
   LW_QUERY_TYPE_MIX,

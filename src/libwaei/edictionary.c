@@ -381,7 +381,6 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
     gchar *temp;
     gchar *delimited;
     gchar **tokens;
-    static const gchar *DELIMITOR = "|";
     gboolean split_script_changes, split_whitespace;
     gint i;
     
@@ -391,17 +390,18 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 
     if (split_script_changes)
     {
-      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, FALSE);
+      temp = lw_util_delimit_script_changes (LW_QUERY_DELIMITOR_STRING, delimited, FALSE);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
     if (split_whitespace)
     {
-      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
+printf("BREAK delimited: %s\n", delimited);
 
-    tokens = g_strsplit (delimited, DELIMITOR, -1);
+    tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_STRING, -1);
 
     if (tokens != NULL)
     {

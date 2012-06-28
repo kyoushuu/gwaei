@@ -212,15 +212,12 @@ lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevan
 {
     //Sanity checks
     g_return_if_fail (query != NULL);
-    //g_return_if_fail (type > -1 && type < TOTAL_LW_QUERY_TYPES);
-    ///g_return_if_fail (relevance > -1 && relevance < TOTAL_LW_RELEVANCE);
     g_return_if_fail (token != NULL);
 
     //Declarations
     gchar number_character;
     gchar primary_character;
     gchar *combined;
-    static const gchar DELIMITOR = '|';
 
     //Initializations
     number_character = '0' + (gchar) relevance;
@@ -234,7 +231,12 @@ lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevan
     } 
     else
     {
-      combined = g_strdup_printf ("%s%c%c%c%s", query->tokenlist[type], DELIMITOR, number_character, primary_character, token);
+      combined = g_strdup_printf ("%s%c%c%c%s", 
+                                  query->tokenlist[type], 
+                                  LW_QUERY_DELIMITOR_CHARACTER, 
+                                  number_character, 
+                                  primary_character, 
+                                  token);
       if (combined == NULL) return;
       g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
     }
@@ -246,14 +248,13 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
 {
     gchar *buffer, *bufferptr;
     gchar **tokeniter, **tokenlist, *tokenptr;
-    const static gchar *DELIMITOR = "|";
     LwRelevance relevance;
     gboolean primary;
 
     if (query->tokenlist[type] == NULL) return NULL;
     bufferptr = buffer = g_new (gchar, strlen (query->tokenlist[type]) + 1);
     if (buffer == NULL) return NULL;
-    tokeniter = tokenlist = g_strsplit (query->tokenlist[type], DELIMITOR, -1);
+    tokeniter = tokenlist = g_strsplit (query->tokenlist[type], LW_QUERY_DELIMITOR_STRING, -1);
 
     if (tokenlist != NULL)
     {
@@ -266,7 +267,7 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
         tokenptr++;
         if (relevance >= relevance_filter && (!only_primary || primary))
         {   
-          if (bufferptr > buffer) *(bufferptr++) = '|';
+          if (bufferptr > buffer) *(bufferptr++) = LW_QUERY_DELIMITOR_CHARACTER;
           while (*tokenptr != '\0') *(bufferptr++) = *(tokenptr++);
         }
         tokeniter++;
@@ -275,6 +276,8 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
     *bufferptr = '\0';
     
     g_strfreev (tokenlist); tokenlist = tokeniter = NULL; tokenptr = NULL;
+
+printf("BREAK buffer %s\n", buffer);
     
     return buffer;
 }
@@ -312,4 +315,5 @@ lw_query_regexgroup_get (LwQuery *query, LwQueryType type, LwRelevance relevance
 
     return query->regexgroup[type][relevance];
 }
+
 
