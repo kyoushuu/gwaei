@@ -109,8 +109,8 @@ lw_query_clear_regexgroup (LwQuery *query)
         while (j++ < TOTAL_LW_RELEVANCE)
         {
           if (query->regexgroup[i][j] == NULL) continue;
-          g_list_foreach (query->regexgroup[i][j], (GFunc) g_regex_unref, NULL);
-          g_list_free (query->regexgroup[i][j]); query->regexgroup[i][j] = NULL;
+    //      g_list_foreach (query->regexgroup[i][j], (GFunc) g_regex_unref, NULL);
+        //  g_list_free (query->regexgroup[i][j]); query->regexgroup[i][j] = NULL;
         }
         g_free (query->regexgroup[i]); query->regexgroup[i] = NULL;
       }
