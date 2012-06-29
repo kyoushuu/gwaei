@@ -250,6 +250,7 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     gboolean found;
     GRegex *regex;
 
+/*
     //Compare kanji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
     if (result->kanji_start != NULL && regex != NULL)
@@ -276,6 +277,7 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
         return TRUE;
       }
     }
+*/
 
     return FALSE;
 }

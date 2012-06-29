@@ -338,6 +338,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     kanji_index = -1;
     radical_index = -1;
 
+/*
     //Calculate the strokes check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_STROKES);
     if (result->strokes != NULL && range != NULL)
@@ -425,6 +426,8 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
             romaji_check_passed &&
             furigana_check_passed &&
             (radical_check_passed || kanji_check_passed));
+*/
+    return FALSE;
 }
 
 

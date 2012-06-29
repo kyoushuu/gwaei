@@ -29,7 +29,7 @@ typedef enum {
 struct _LwQuery {
     gchar *text;
     gchar **tokenlist;
-    GRegex ***regexgroup;
+    GList ***regexgroup;
     LwRange **rangelist;
     gboolean parsed;
 };
@@ -55,7 +55,8 @@ gchar* lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
 void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);
 LwRange* lw_query_rangelist_get (LwQuery*, LwQueryRangeType);
 
-GRegex* lw_query_regexgroup_get (LwQuery*, LwQueryType, LwRelevance);
+GList* lw_query_regexgroup_get_list (LwQuery*, LwQueryType, LwRelevance);
+void lw_query_regexgroup_append (LwQuery*, LwQueryType, LwRelevance, GRegex*);
 
 G_END_DECLS
 

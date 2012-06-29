@@ -158,7 +158,6 @@ lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gcha
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, FALSE);
     g_return_val_if_fail (query != NULL, FALSE);
-    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
     g_return_val_if_fail (query->tokenlist != NULL, FALSE);
     g_return_val_if_fail (TEXT != NULL, FALSE);
     g_return_val_if_fail (error != NULL, FALSE);
@@ -299,35 +298,66 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     //Declarations
     gint j;
     gboolean found;
+    gboolean checked;
+    GList *link;
     GRegex *regex;
 
+    //Initializations
+    checked = FALSE;
+    found = TRUE;
+
     //Compare kanji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-    if (result->kanji_start != NULL && regex != NULL)
+    if (result->kanji_start != NULL)
     {
-      found = g_regex_match (regex, result->kanji_start, 0, NULL);
-      if (found) return TRUE;
-    }
-
-    //Compare furigana atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    if (result->furigana_start != NULL && regex != NULL)
-    {
-      found = g_regex_match (regex, result->furigana_start, 0, NULL);
-      if (found) return TRUE;
-    }
-
-    //Compare romaji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    for (j = 0; result->def_start[j] != NULL && regex != NULL; j++)
-    {
-      found = g_regex_match (regex, result->def_start[j], 0, NULL);
-      if (found == TRUE) {
-        return TRUE;
+      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          found = g_regex_match (regex, result->kanji_start, 0, NULL);
+          if (found == FALSE) return found;
+          checked = TRUE;
+        }
+        link = link->next;
       }
     }
 
-    return FALSE;
+    //Compare furigana atoms
+    if (result->furigana_start != NULL)
+    {
+      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          found = g_regex_match (regex, result->furigana_start, 0, NULL);
+          if (found == FALSE) return found;
+          checked = TRUE;
+        }
+        link = link->next;
+      }
+    }
+
+    //Compare romaji atoms
+    for (j = 0; result->def_start[j] != NULL; j++)
+    {
+      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          found = g_regex_match (regex, result->def_start[j], 0, NULL);
+          if (found == FALSE) return found;
+          checked = TRUE;
+        }
+        link = link->next;
+      }
+    }
+
+    return (checked && found);
 }
 
 

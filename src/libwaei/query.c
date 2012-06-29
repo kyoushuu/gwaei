@@ -97,30 +97,25 @@ lw_query_clear_regexgroup (LwQuery *query)
 
     //Declarations
     gint i;
+    gint j;
 
     if (query->regexgroup != NULL)
     {
-      for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
+      i = 0;
+      while (i++ < TOTAL_LW_QUERY_TYPES)
       {
-        if (query->regexgroup[i] != NULL)
+        if (query->regexgroup[i] == NULL) continue;
+        j = 0;
+        while (j++ < TOTAL_LW_RELEVANCE)
         {
-          lw_regexgroup_free (query->regexgroup[i]);
-          query->regexgroup[i] = NULL; 
+          if (query->regexgroup[i][j] == NULL) continue;
+          g_list_foreach (query->regexgroup[i][j], (GFunc) g_regex_unref, NULL);
+          g_list_free (query->regexgroup[i][j]); query->regexgroup[i][j] = NULL;
         }
+        g_free (query->regexgroup[i]); query->regexgroup[i] = NULL;
       }
       g_free (query->regexgroup); query->regexgroup = NULL;
     }
-}
-
-
-void
-lw_query_init_regexgroup (LwQuery *query)
-{
-    //Sanity check
-    g_return_if_fail (query != NULL);
-
-    lw_query_clear_regexgroup (query);
-    query->regexgroup = g_new0 (GRegex**, TOTAL_LW_QUERY_TYPES);
 }
 
 
@@ -307,13 +302,32 @@ lw_query_rangelist_get (LwQuery *query, LwQueryRangeType type)
 }
 
 
-GRegex*
-lw_query_regexgroup_get (LwQuery *query, LwQueryType type, LwRelevance relevance)
+GList*
+lw_query_regexgroup_get_list (LwQuery *query, LwQueryType type, LwRelevance relevance)
 {
     g_return_val_if_fail (query != NULL, NULL);
-    g_return_val_if_fail (query->regexgroup != NULL, NULL);
+
+    if (query->regexgroup == NULL) return NULL;
+    if (query->regexgroup[type] == NULL) return NULL;
 
     return query->regexgroup[type][relevance];
+}
+
+
+void
+lw_query_regexgroup_append (LwQuery     *query, 
+                            LwQueryType  type,
+                            LwRelevance  relevance, 
+                            GRegex      *regex)
+{
+    //Sanity checks
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (regex != NULL);
+
+    if (query->regexgroup == NULL) query->regexgroup = g_new0 (GList**, TOTAL_LW_QUERY_TYPES);
+    if (query->regexgroup[type] == NULL) query->regexgroup[type] = g_new0 (GList*, TOTAL_LW_RELEVANCE);
+
+    query->regexgroup[type][relevance] = g_list_append (query->regexgroup[type][relevance], regex);
 }
 
 

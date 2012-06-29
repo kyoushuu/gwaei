@@ -412,7 +412,6 @@ lw_dictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gchar
     query->text = g_strdup (TEXT);
 
     lw_query_init_tokens (query);
-    lw_query_init_regexgroup (query);
 
     return klass->parse_query (dictionary, query, TEXT, error);
 }
@@ -748,10 +747,10 @@ lw_dictionary_get_installed_idlist (GType type_filter)
 void
 lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **error)
 {
+printf("BREAK building regex0\n");
     //Sanity checks
     g_return_if_fail (dictionary != NULL);
     g_return_if_fail (query != NULL);
-    g_return_if_fail (query->regexgroup != NULL);
     g_return_if_fail (query->tokenlist != NULL);
     g_return_if_fail (error != NULL);
     if (error != NULL && *error != NULL) return;
@@ -760,32 +759,28 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
     LwDictionaryClass *klass;
     gchar *text;
     GRegex *regex;
-    GRegex **regexgroup;
     LwRelevance relevance;
     gchar **pattern;
     LwQueryType type;
 
+printf("BREAK building regex1\n");
     //Initializations
     for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
     {
+printf("BREAK building regex2\n");
       klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
-      regexgroup = lw_regexgroup_new ();
       pattern = klass->patterns[type];
-
-      if (regexgroup != NULL)
+      for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
       {
-        for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
+printf("BREAK building regex3\n");
+        text = lw_query_get_tokenlist (query, type, relevance, FALSE);
+        if (text != NULL)
         {
-          text = lw_query_get_tokenlist (query, type, relevance, FALSE);
-          if (text != NULL)
-          {
-            regex = lw_regex_new (pattern[relevance], text, error);
-            if (regex != NULL) regexgroup[relevance] = regex;
-            g_free (text); text = NULL;
-          }
+printf("BREAK building regex4%s\n", text);
+          regex = lw_regex_new (pattern[relevance], text, error);
+          if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
+          g_free (text); text = NULL;
         }
-
-        query->regexgroup[type] = regexgroup;
       }
     }
 }

@@ -192,6 +192,7 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     gboolean found;
     GRegex *regex;
 
+/*
     //Compare kanji atoms
     regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
     if (regex != NULL)
@@ -218,6 +219,7 @@ if (found) printf("Found %s\n", result->text);
 printf("romaji comparison\n");
       if (found == TRUE) return TRUE;
     }
+*/
 
     return FALSE;
 }
