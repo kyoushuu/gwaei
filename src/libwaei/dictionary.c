@@ -758,10 +758,12 @@ printf("BREAK building regex0\n");
     //Declarations
     LwDictionaryClass *klass;
     gchar *text;
+    gchar **tokenlist;
     GRegex *regex;
     LwRelevance relevance;
     gchar **pattern;
     LwQueryType type;
+    gint i;
 
 printf("BREAK building regex1\n");
     //Initializations
@@ -773,12 +775,17 @@ printf("BREAK building regex2\n");
       for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
       {
 printf("BREAK building regex3\n");
+//TODO lw_query_get_tokenlist should return a type gchar** most likely
         text = lw_query_get_tokenlist (query, type, relevance, FALSE);
-        if (text != NULL)
+        tokenlist = g_strsplit (text, "&", -1);
+        if (text != NULL && tokenlist != NULL)
         {
-printf("BREAK building regex4%s\n", text);
-          regex = lw_regex_new (pattern[relevance], text, error);
-          if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
+printf("BREAK building regex4 %s\n", text);
+          for (i = 0; tokenlist[i] != NULL; i++)
+          {
+            regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
+            if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
+          }
           g_free (text); text = NULL;
         }
       }

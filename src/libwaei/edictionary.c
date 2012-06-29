@@ -341,20 +341,21 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     }
 
     //Compare romaji atoms
-    for (j = 0; result->def_start[j] != NULL; j++)
+    link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    while (link != NULL)
     {
-      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-      while (link != NULL)
+      regex = link->data;
+      if (regex != NULL) 
       {
-        regex = link->data;
-        if (regex != NULL) 
+        for (j = 0; result->def_start[j] != NULL; j++)
         {
           found = g_regex_match (regex, result->def_start[j], 0, NULL);
-          if (found == FALSE) return found;
           checked = TRUE;
+          if (found == TRUE) break;
         }
-        link = link->next;
       }
+      if (found == FALSE) return found;
+      link = link->next;
     }
 
     return (checked && found);
