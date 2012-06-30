@@ -50,7 +50,7 @@ void lw_query_init_rangelist (LwQuery*);
 void lw_query_clear (LwQuery*);
 
 void lw_query_tokenlist_append (LwQuery*, LwQueryType, LwRelevance, gboolean, const gchar*);
-gchar* lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
+gchar** lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
 
 void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);
 LwRange* lw_query_rangelist_get (LwQuery*, LwQueryRangeType);

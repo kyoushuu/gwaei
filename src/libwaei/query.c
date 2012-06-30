@@ -238,7 +238,7 @@ lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevan
 }
 
 
-gchar*
+gchar**
 lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_filter, gboolean only_primary)
 {
     gchar *buffer, *bufferptr;
@@ -271,10 +271,10 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
     *bufferptr = '\0';
     
     g_strfreev (tokenlist); tokenlist = tokeniter = NULL; tokenptr = NULL;
+    tokenlist = g_strsplit (buffer, LW_QUERY_DELIMITOR_STRING, -1);
+    if (buffer != NULL) g_free (buffer); buffer = NULL;
 
-printf("BREAK buffer %s\n", buffer);
-    
-    return buffer;
+    return tokenlist;
 }
 
 

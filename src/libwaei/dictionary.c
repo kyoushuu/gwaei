@@ -747,7 +747,6 @@ lw_dictionary_get_installed_idlist (GType type_filter)
 void
 lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **error)
 {
-printf("BREAK building regex0\n");
     //Sanity checks
     g_return_if_fail (dictionary != NULL);
     g_return_if_fail (query != NULL);
@@ -757,7 +756,6 @@ printf("BREAK building regex0\n");
 
     //Declarations
     LwDictionaryClass *klass;
-    gchar *text;
     gchar **tokenlist;
     GRegex *regex;
     LwRelevance relevance;
@@ -765,28 +763,22 @@ printf("BREAK building regex0\n");
     LwQueryType type;
     gint i;
 
-printf("BREAK building regex1\n");
     //Initializations
     for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
     {
-printf("BREAK building regex2\n");
       klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
       pattern = klass->patterns[type];
       for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
       {
-printf("BREAK building regex3\n");
-//TODO lw_query_get_tokenlist should return a type gchar** most likely
-        text = lw_query_get_tokenlist (query, type, relevance, FALSE);
-        tokenlist = g_strsplit (text, "&", -1);
-        if (text != NULL && tokenlist != NULL)
+        tokenlist = lw_query_get_tokenlist (query, type, relevance, FALSE);
+        if (tokenlist != NULL)
         {
-printf("BREAK building regex4 %s\n", text);
           for (i = 0; tokenlist[i] != NULL; i++)
           {
             regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
             if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
           }
-          g_free (text); text = NULL;
+          g_strfreev (tokenlist); tokenlist = NULL;
         }
       }
     }
