@@ -228,6 +228,7 @@ printf("romaji comparison\n");
 static void
 lw_unknowndictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 {
+/*
     //Declarations
     gchar *temp;
     gchar *delimited;
@@ -270,6 +271,7 @@ lw_unknowndictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
       }
       g_free (tokens); tokens = NULL;
     }
+*/
 }
 
 

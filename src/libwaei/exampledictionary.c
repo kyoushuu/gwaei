@@ -286,6 +286,7 @@ lw_exampledictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
 static void
 lw_exampledictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 {
+/*
     //Declarations
     gchar *temp;
     gchar *delimited;
@@ -328,6 +329,7 @@ lw_exampledictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
       }
       g_free (tokens); tokens = NULL;
     }
+*/
 }
 
 

@@ -7,8 +7,10 @@
 G_BEGIN_DECLS
 
 #define LW_QUERY(object) (LwQuery*) object
-#define LW_QUERY_DELIMITOR_CHARACTER '&'
-#define LW_QUERY_DELIMITOR_STRING "&"
+#define LW_QUERY_DELIMITOR_PRIMARY_CHARACTER '&'
+#define LW_QUERY_DELIMITOR_PRIMARY_STRING "&"
+#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_CHARACTER '&'
+#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING "&"
 
 typedef enum {
   LW_QUERY_TYPE_MIX,
@@ -28,7 +30,7 @@ typedef enum {
 
 struct _LwQuery {
     gchar *text;
-    gchar **tokenlist;
+    gchar ***tokenlist;
     GList ***regexgroup;
     LwRange **rangelist;
     gboolean parsed;
@@ -49,13 +51,14 @@ void lw_query_init_rangelist (LwQuery*);
 
 void lw_query_clear (LwQuery*);
 
-void lw_query_tokenlist_append (LwQuery*, LwQueryType, LwRelevance, gboolean, const gchar*);
-gchar** lw_query_get_tokenlist (LwQuery*, LwQueryType, LwRelevance, gboolean);
+void lw_query_tokenlist_append_primary (LwQuery*, LwQueryType, const gchar*);
+void lw_query_tokenlist_append_supplimentary (LwQuery*, LwQueryType, gint, const gchar*);
+gchar** lw_query_tokenlist_get (LwQuery*, LwQueryType);
 
 void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);
 LwRange* lw_query_rangelist_get (LwQuery*, LwQueryRangeType);
 
-GList* lw_query_regexgroup_get_list (LwQuery*, LwQueryType, LwRelevance);
+GList* lw_query_regexgroup_get (LwQuery*, LwQueryType, LwRelevance);
 void lw_query_regexgroup_append (LwQuery*, LwQueryType, LwRelevance, GRegex*);
 
 G_END_DECLS

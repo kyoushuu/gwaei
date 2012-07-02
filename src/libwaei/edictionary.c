@@ -45,8 +45,8 @@ static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar
 static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 static gboolean lw_edictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
-static void lw_edictionary_tokenize_query (LwDictionary*, LwQuery*);
-static void lw_edictionary_add_supplimental_tokens (LwDictionary*, LwQuery*);
+static void lw_edictionary_create_primary_tokens (LwDictionary*, LwQuery*);
+static void lw_edictionary_add_supplimentary_tokens (LwDictionary*, LwQuery*);
 
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
@@ -165,9 +165,10 @@ lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gcha
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
- 
-    lw_edictionary_tokenize_query (dictionary, query);
-    lw_edictionary_add_supplimental_tokens (dictionary, query);
+    //fist&&second
+    lw_edictionary_create_primary_tokens (dictionary, query);  
+    //first||second
+    lw_edictionary_add_supplimentary_tokens (dictionary, query);  
     lw_dictionary_build_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
@@ -309,7 +310,7 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     //Compare kanji atoms
     if (result->kanji_start != NULL)
     {
-      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
       while (link != NULL)
       {
         regex = link->data;
@@ -326,7 +327,7 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     //Compare furigana atoms
     if (result->furigana_start != NULL)
     {
-      link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
       while (link != NULL)
       {
         regex = link->data;
@@ -341,7 +342,7 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     }
 
     //Compare romaji atoms
-    link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
     while (link != NULL)
     {
       regex = link->data;
@@ -404,16 +405,18 @@ lw_edictionary_installer_postprocess (LwDictionary *dictionary,
 }
 
 
-
+//!
+//! @brief Will change a query into a & delimited set of tokens (logical and)
+//!
 static void
-lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
 {
     //Declarations
     gchar *temp;
     gchar *delimited;
-    gchar **tokens;
     gboolean split_script_changes, split_whitespace;
-    gint i;
+    gchar **tokens;
+    gchar **tokeniter;
     
     //Initializations
     delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
@@ -421,17 +424,46 @@ lw_edictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 
     if (split_script_changes)
     {
-      temp = lw_util_delimit_script_changes (LW_QUERY_DELIMITOR_STRING, delimited, FALSE);
+      temp = lw_util_delimit_script_changes (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited, FALSE);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
     if (split_whitespace)
     {
-      temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_STRING, delimited);
+      temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
-printf("BREAK delimited: %s\n", delimited);
 
+    tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
+
+    if (tokens != NULL)
+    {
+      while (*tokeniter != NULL)
+      {
+        if (lw_util_is_furigana_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_FURIGANA, *tokeniter);
+        else if (lw_util_is_kanji_ish_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_KANJI, *tokeniter);
+        else if (lw_util_is_romaji_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_ROMAJI, *tokeniter);
+        tokeniter++;
+      }
+      g_strfreev (tokens); tokens = NULL;
+    }
+
+    printf("BREAK primary delimited %s\n", delimited);
+
+    if (temp != NULL) g_free (temp); temp = NULL;
+}
+
+
+//!
+//! @brief For each logical and delimited token (&), the appropriate supplimentary (logical or) tokens will be added.
+//!
+static void 
+lw_edictionary_add_supplimentary_tokens (LwDictionary *dictionary, LwQuery *query)
+{
+/*
     tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_STRING, -1);
 
     if (tokens != NULL)
@@ -448,14 +480,8 @@ printf("BREAK delimited: %s\n", delimited);
       }
       g_free (tokens); tokens = NULL;
     }
+*/
 
-    if (temp != NULL) g_free (temp); temp = NULL;
-}
-
-
-static void 
-lw_edictionary_add_supplimental_tokens (LwDictionary *dictionary, LwQuery *query)
-{
 /*
           if (get_japanese_morphology)
           {

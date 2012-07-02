@@ -770,7 +770,7 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
       pattern = klass->patterns[type];
       for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
       {
-        tokenlist = lw_query_get_tokenlist (query, type, relevance, FALSE);
+        tokenlist = lw_query_tokenlist_get (query, type);
         if (tokenlist != NULL)
         {
           for (i = 0; tokenlist[i] != NULL; i++)
@@ -778,7 +778,6 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
             regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
             if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
           }
-          g_strfreev (tokenlist); tokenlist = NULL;
         }
       }
     }

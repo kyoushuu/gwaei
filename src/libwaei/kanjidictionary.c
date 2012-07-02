@@ -45,7 +45,7 @@ static gint lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
 static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
 
-static void lw_kanjidictionary_tokenize_query (LwDictionary*, LwQuery*);
+static void lw_kanjidictionary_create_primary_tokens (LwDictionary*, LwQuery*);
 
 LwDictionary* lw_kanjidictionary_new (const gchar *FILENAME)
 {
@@ -142,7 +142,6 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, FALSE);
     g_return_val_if_fail (query != NULL, FALSE);
-    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
     g_return_val_if_fail (query->tokenlist != NULL, FALSE);
     g_return_val_if_fail (TEXT != NULL, FALSE);
     g_return_val_if_fail (error != NULL, FALSE);
@@ -152,7 +151,7 @@ lw_kanjidictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const 
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
 
     lw_query_init_rangelist (query);
-    lw_kanjidictionary_tokenize_query (dictionary, query);
+    lw_kanjidictionary_create_primary_tokens (dictionary, query);
     lw_dictionary_build_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
@@ -312,6 +311,7 @@ static gboolean
 lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance RELEVANCE)
 {
     //Declarations
+    GList *link;
     gboolean strokes_check_passed;
     gboolean frequency_check_passed;
     gboolean grade_check_passed;
@@ -320,6 +320,8 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     gboolean furigana_check_passed;
     gboolean kanji_check_passed;
     gboolean radical_check_passed;
+    gboolean found;
+    gboolean checked;
     gint kanji_index;
     gint radical_index;
     LwRange *range;
@@ -337,6 +339,7 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     radical_check_passed = TRUE;
     kanji_index = -1;
     radical_index = -1;
+    checked = FALSE;
 
 /*
     //Calculate the strokes check
@@ -370,64 +373,58 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
       if (lw_range_string_is_in_range (range, result->jlpt) == FALSE)
         jlpt_check_passed = FALSE;
     }
+*/
 
     //Compare romaji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    if (regex != NULL && result->meanings != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    while (link != NULL)
     {
-       if (g_regex_match (regex, result->meanings, 0, NULL) == FALSE)
-       {
-          romaji_check_passed = FALSE;
-        }
+      regex = link->data;
+      if (regex != NULL && result->meanings != NULL)
+      {
+        checked = TRUE;
+        found = g_regex_match (regex, result->meanings, 0, NULL);
+        if (found == FALSE) return found;
+      }
+      link = link->next;
     }
 
     //Compare furigana atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    if (result->furigana_start != NULL && regex != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    while (link != NULL)
     {
-      for (i = 0; i < 3 && result->readings[i] != NULL; i++)
+      regex = link->data;
+      if (regex != NULL && result->furigana_start != NULL)
       {
-        if (g_regex_match (regex, result->readings[i], 0, NULL) == FALSE)
-          furigana_check_passed =  FALSE;
+        checked = TRUE;
+        for (i = 0; i < 3 && result->readings[i] != NULL; i++)
+        {
+          found = g_regex_match (regex, result->readings[i], 0, NULL);
+printf("BREAK found %d %s\n", found, result->readings[i]);
+          if (found == TRUE) break;
+        }
+        if (found == FALSE) return found;
       }
+      link = link->next;
     }
 
     //Compare kanji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-    if (result->kanji != NULL && regex != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+    while (link != NULL)
     {
-      kanji_index = 0;
-      if (g_regex_match (regex, result->kanji, 0, NULL) == FALSE)
+      regex = link->data;
+      if (regex != NULL && result->kanji != NULL)
       {
-        kanji_check_passed = FALSE;
-        kanji_index = -1;
+        checked = TRUE;
+        found = g_regex_match (regex, result->kanji, 0, NULL);
+        if (found == FALSE) found = g_regex_match (regex, result->radicals, 0, NULL);
+        if (found == FALSE) return FALSE;
       }
-      if (kanji_check_passed == TRUE) kanji_index++;
-    }
-
-    //Compare kanji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-    if (result->radicals != NULL && regex != NULL)
-    {
-      radical_index = 0;
-      if (g_regex_match (regex, result->radicals, 0, NULL) == FALSE)
-      {
-        if (radical_index != kanji_index)
-          kanji_check_passed = FALSE;
-      }
-      radical_index++;
+      link = link->next;
     }
 
     //Return our results
-    return (strokes_check_passed &&
-            frequency_check_passed &&
-            grade_check_passed &&
-            jlpt_check_passed &&
-            romaji_check_passed &&
-            furigana_check_passed &&
-            (radical_check_passed || kanji_check_passed));
-*/
-    return FALSE;
+    return (checked && found);
 }
 
 
@@ -448,15 +445,15 @@ lw_kanjidictionary_installer_postprocess (LwDictionary *dictionary,
 
 
 static void
-lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+lw_kanjidictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
 {
     //Declarations
     gchar *temp;
     gchar *delimited;
     gchar **tokens;
-    static const gchar *DELIMITOR = "|";
+    gchar **tokeniter;
     gboolean split_script_changes, split_whitespace;
-    gint i;
+    LwRange *range;
     
     //Initializations
     delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
@@ -464,47 +461,46 @@ lw_kanjidictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 
     if (split_script_changes)
     {
-      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, TRUE);
+      temp = lw_util_delimit_script_changes (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited, TRUE);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
     if (split_whitespace)
     {
-      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
-    tokens = g_strsplit (delimited, DELIMITOR, -1);
+    tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
 
     if (tokens != NULL)
     {
-      for (i = 0; tokens[i] != NULL; i++)
+      while (*tokeniter != NULL)
       {
-        if (lw_range_pattern_is_valid (tokens[i]))
+        if (lw_range_pattern_is_valid (*tokeniter))
         {
-          LwRange* range = lw_range_new_from_pattern (tokens[i]);
-          if (*tokens[i] == 's' || *tokens[i] == 'S')
+          range = lw_range_new_from_pattern (*tokeniter);
+          if (**tokeniter == 's' || **tokeniter == 'S')
             lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_STROKES, range);
-          else if (*tokens[i] == 'g' || *tokens[i] == 'G')
+          else if (**tokeniter == 'g' || **tokeniter == 'G')
             lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_GRADE, range);
-          else if (*tokens[i] == 'f' || *tokens[i] == 'f')
+          else if (**tokeniter == 'f' || **tokeniter == 'f')
             lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_FREQUENCY, range);
-          else if (*tokens[i] == 'j' || *tokens[i] == 'J')
+          else if (**tokeniter == 'j' || **tokeniter == 'J')
             lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_JLPT, range);
           else
             lw_range_free (range);
         }
-        else if (lw_util_is_furigana_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_kanji_ish_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_romaji_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else
-          g_free (tokens[i]);
-        tokens[i] = NULL;
+        else if (lw_util_is_furigana_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_FURIGANA, *tokeniter);
+        else if (lw_util_is_kanji_ish_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_KANJI, *tokeniter);
+        else if (lw_util_is_romaji_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_ROMAJI, *tokeniter);
+
+        tokeniter++;
       }
-      g_free (tokens); tokens = NULL;
+      g_strfreev (tokens); tokens = NULL;
     }
 }
 

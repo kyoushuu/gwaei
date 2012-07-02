@@ -85,7 +85,7 @@ lw_query_init_tokens (LwQuery *query)
     g_return_if_fail (query != NULL);
 
     lw_query_clear_tokens (query);
-    query->tokenlist = g_new0 (gchar*, TOTAL_LW_QUERY_TYPES);
+    query->tokenlist = g_new0 (gchar**, TOTAL_LW_QUERY_TYPES);
 }
 
 
@@ -201,10 +201,64 @@ lw_query_is_sane (const char* query)
 }
 */
 
+/*
+QUERY
+fish cat
+
+TOKENIZED
+fish
+cat
+
+
+QUERY
+sakana
+
+TOKENIZED
+sakana|さかな|サカナ
+
+
+
+
+
+
+*/
 
 void
-lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevance, gboolean primary, const gchar *token)
+lw_query_tokenlist_append_primary (LwQuery     *query, 
+                                   LwQueryType  type, 
+                                   const gchar *TOKEN)
 {
+    //Sanity checks
+    g_return_if_fail (query != NULL);
+    g_return_if_fail (TOKEN != NULL);
+
+    gint length;
+    gint index;
+
+    if (query->tokenlist[type] == NULL) 
+      query->tokenlist[type] = g_malloc0 (1);
+    
+
+    length = g_strv_length (query->tokenlist[type]);
+    index = length;
+
+    query->tokenlist[type][index] = g_strdup (TOKEN);
+
+    length++;
+    index++;
+
+    query->tokenlist[type] = g_realloc (query->tokenlist[type], length);
+    query->tokenlist[type][index] = NULL;
+}
+
+
+void
+lw_query_tokenlist_append_secondary (LwQuery     *query, 
+                                     LwQueryType  type, 
+                                     gint         index, 
+                                     const gchar *TOKEN)
+{
+/*
     //Sanity checks
     g_return_if_fail (query != NULL);
     g_return_if_fail (token != NULL);
@@ -235,12 +289,18 @@ lw_query_tokenlist_append (LwQuery *query, LwQueryType type, LwRelevance relevan
       if (combined == NULL) return;
       g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
     }
+*/
 }
 
 
 gchar**
-lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_filter, gboolean only_primary)
+lw_query_tokenlist_get (LwQuery *query, LwQueryType type)
 {
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+
+    return (query->tokenlist[type]);
+/*
     gchar *buffer, *bufferptr;
     gchar **tokeniter, **tokenlist, *tokenptr;
     LwRelevance relevance;
@@ -275,11 +335,14 @@ lw_query_get_tokenlist (LwQuery *query, LwQueryType type, LwRelevance relevance_
     if (buffer != NULL) g_free (buffer); buffer = NULL;
 
     return tokenlist;
+*/
 }
 
 
 void
-lw_query_rangelist_set (LwQuery *query, LwQueryRangeType type, LwRange *range)
+lw_query_rangelist_set (LwQuery          *query, 
+                        LwQueryRangeType  type, 
+                        LwRange          *range)
 {
     //Sanity checks
     g_return_if_fail (query != NULL);
@@ -303,7 +366,9 @@ lw_query_rangelist_get (LwQuery *query, LwQueryRangeType type)
 
 
 GList*
-lw_query_regexgroup_get_list (LwQuery *query, LwQueryType type, LwRelevance relevance)
+lw_query_regexgroup_get (LwQuery     *query, 
+                         LwQueryType  type, 
+                         LwRelevance  relevance)
 {
     g_return_val_if_fail (query != NULL, NULL);
 
