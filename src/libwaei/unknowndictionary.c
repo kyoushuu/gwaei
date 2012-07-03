@@ -41,7 +41,7 @@
 static gboolean lw_unknowndictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gint lw_unknowndictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_unknowndictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
-static void lw_unknowndictionary_tokenize_query (LwDictionary*, LwQuery*);
+static void lw_unknowndictionary_create_primary_tokens (LwDictionary*, LwQuery*);
 static void lw_unknowndictionary_add_supplimental_tokens (LwDictionary*, LwQuery*);
 
 
@@ -161,7 +161,6 @@ lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, FALSE);
     g_return_val_if_fail (query != NULL, FALSE);
-    g_return_val_if_fail (query->regexgroup != NULL, FALSE);
     g_return_val_if_fail (query->tokenlist != NULL, FALSE);
     g_return_val_if_fail (TEXT != NULL, FALSE);
     g_return_val_if_fail (error != NULL, FALSE);
@@ -170,7 +169,7 @@ lw_unknowndictionary_parse_query (LwDictionary *dictionary, LwQuery *query, cons
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
  
-    lw_unknowndictionary_tokenize_query (dictionary, query);
+    lw_unknowndictionary_create_primary_tokens (dictionary, query);
     lw_unknowndictionary_add_supplimental_tokens (dictionary, query);
     lw_dictionary_build_regex (dictionary, query, error);
 
@@ -190,52 +189,78 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
 
     //Declarations
     gboolean found;
+    gboolean checked;
+    GList *link;
     GRegex *regex;
 
-/*
+    //Initializations
+    checked = FALSE;
+    found = TRUE;
+
     //Compare kanji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-    if (regex != NULL)
+    if (result->text != NULL)
     {
-      found = g_regex_match (regex, result->text, 0, NULL);
-printf("kanji comparison\n");
-      if (found) return TRUE;
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          checked = TRUE;
+          found = g_regex_match (regex, result->text, 0, NULL);
+          if (found == FALSE) return found;
+        }
+        link = link->next;
+      }
     }
 
     //Compare furigana atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    if (regex != NULL)
+    if (result->text != NULL)
     {
-      found = g_regex_match (regex, result->text, 0, NULL);
-if (found) printf("Found %s\n", result->text);
-      if (found) return TRUE;
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          checked = TRUE;
+          found = g_regex_match (regex, result->text, 0, NULL);
+          if (found == FALSE) return found;
+        }
+        link = link->next;
+      }
     }
 
     //Compare romaji atoms
-    regex = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-    if (regex != NULL)
-    {
-      found = g_regex_match (regex, result->text, 0, NULL);
-printf("romaji comparison\n");
-      if (found == TRUE) return TRUE;
+    if (result->text != NULL)
+      {
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+      while (link != NULL)
+      {
+        regex = link->data;
+        if (regex != NULL) 
+        {
+          checked = TRUE;
+          found = g_regex_match (regex, result->text, 0, NULL);
+          if (found == FALSE) return found;
+        }
+        link = link->next;
+      }
     }
-*/
 
-    return FALSE;
+    return (checked && found);
 }
 
 
 static void
-lw_unknowndictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
+lw_unknowndictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
 {
-/*
     //Declarations
     gchar *temp;
     gchar *delimited;
-    gchar **tokens;
-    static const gchar *DELIMITOR = "|";
     gboolean split_script_changes, split_whitespace;
-    gint i;
+    gchar **tokens;
+    gchar **tokeniter;
     
     //Initializations
     delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
@@ -243,35 +268,36 @@ lw_unknowndictionary_tokenize_query (LwDictionary *dictionary, LwQuery *query)
 
     if (split_script_changes)
     {
-      temp = lw_util_delimit_script_changes (DELIMITOR, delimited, FALSE);
+      temp = lw_util_delimit_script_changes (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited, FALSE);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
     if (split_whitespace)
     {
-      temp = lw_util_delimit_whitespace (DELIMITOR, delimited);
+      temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
-    tokens = g_strsplit (delimited, DELIMITOR, -1);
+    tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
 
     if (tokens != NULL)
     {
-      for (i = 0; tokens[i] != NULL; i++)
+      while (*tokeniter != NULL)
       {
-        if (lw_util_is_furigana_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_kanji_ish_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_romaji_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else
-          g_free (tokens[i]); 
-        tokens[i] = NULL;
+        if (lw_util_is_furigana_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_FURIGANA, *tokeniter);
+        else if (lw_util_is_kanji_ish_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_KANJI, *tokeniter);
+        else if (lw_util_is_romaji_str (*tokeniter))
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_ROMAJI, *tokeniter);
+        tokeniter++;
       }
-      g_free (tokens); tokens = NULL;
+      g_strfreev (tokens); tokens = NULL;
     }
-*/
+
+    printf("BREAK primary delimited %s\n", delimited);
+
+    if (temp != NULL) g_free (temp); temp = NULL;
 }
 
 

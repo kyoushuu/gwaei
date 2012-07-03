@@ -312,68 +312,52 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
 {
     //Declarations
     GList *link;
-    gboolean strokes_check_passed;
-    gboolean frequency_check_passed;
-    gboolean grade_check_passed;
-    gboolean jlpt_check_passed;
-    gboolean romaji_check_passed;
-    gboolean furigana_check_passed;
-    gboolean kanji_check_passed;
-    gboolean radical_check_passed;
     gboolean found;
     gboolean checked;
-    gint kanji_index;
-    gint radical_index;
     LwRange *range;
     GRegex *regex;
     gint i;
 
     //Initializations
-    strokes_check_passed = TRUE;
-    frequency_check_passed = TRUE;
-    grade_check_passed = TRUE;
-    jlpt_check_passed = TRUE;
-    romaji_check_passed = TRUE;
-    furigana_check_passed = TRUE;
-    kanji_check_passed = TRUE;
-    radical_check_passed = TRUE;
-    kanji_index = -1;
-    radical_index = -1;
+    found = FALSE;
     checked = FALSE;
 
-/*
+
     //Calculate the strokes check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_STROKES);
     if (result->strokes != NULL && range != NULL)
     {
-      if (lw_range_string_is_in_range (range, result->strokes) == FALSE)
-          strokes_check_passed = FALSE;
+      checked = TRUE;
+      found = lw_range_string_is_in_range (range, result->strokes);
+      if (found == FALSE) return FALSE;
     }
 
     //Calculate the frequency check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_FREQUENCY);
     if (result->frequency != NULL && range != NULL)
     {
-      if (lw_range_string_is_in_range (range, result->frequency) == FALSE)
-        frequency_check_passed = FALSE;
+      checked = TRUE;
+      found = lw_range_string_is_in_range (range, result->frequency);
+      if (found == FALSE) return FALSE;
     }
 
     //Calculate the grade check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_GRADE);
     if (result->grade != NULL && range != NULL)
     {
-      if (lw_range_string_is_in_range (range, result->grade) == FALSE)
-        grade_check_passed = FALSE;
+      checked = TRUE;
+      found = lw_range_string_is_in_range (range, result->grade);
+      if (found == FALSE) return FALSE;
     }
 
     //Calculate the jlpt check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_JLPT);
     if (result->jlpt != NULL && range != NULL)
     {
-      if (lw_range_string_is_in_range (range, result->jlpt) == FALSE)
-        jlpt_check_passed = FALSE;
+      checked = TRUE;
+      found = lw_range_string_is_in_range (range, result->jlpt);
+      if (found == FALSE) return FALSE;
     }
-*/
 
     //Compare romaji atoms
     link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
@@ -394,17 +378,13 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     while (link != NULL)
     {
       regex = link->data;
-      if (regex != NULL && result->furigana_start != NULL)
+      for (i = 0; i < 3 && result->readings[i] != NULL; i++)
       {
         checked = TRUE;
-        for (i = 0; i < 3 && result->readings[i] != NULL; i++)
-        {
-          found = g_regex_match (regex, result->readings[i], 0, NULL);
-printf("BREAK found %d %s\n", found, result->readings[i]);
-          if (found == TRUE) break;
-        }
-        if (found == FALSE) return found;
+        found = g_regex_match (regex, result->readings[i], 0, NULL);
+        if (found == TRUE) break;
       }
+      if (found == FALSE) return found;
       link = link->next;
     }
 
@@ -453,7 +433,6 @@ lw_kanjidictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *que
     gchar **tokens;
     gchar **tokeniter;
     gboolean split_script_changes, split_whitespace;
-    LwRange *range;
     
     //Initializations
     delimited = lw_util_prepare_query (lw_query_get_text (query), TRUE);
@@ -479,7 +458,7 @@ lw_kanjidictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *que
       {
         if (lw_range_pattern_is_valid (*tokeniter))
         {
-          range = lw_range_new_from_pattern (*tokeniter);
+          LwRange *range = lw_range_new_from_pattern (*tokeniter);
           if (**tokeniter == 's' || **tokeniter == 'S')
             lw_query_rangelist_set (query, LW_QUERY_RANGE_TYPE_STROKES, range);
           else if (**tokeniter == 'g' || **tokeniter == 'G')

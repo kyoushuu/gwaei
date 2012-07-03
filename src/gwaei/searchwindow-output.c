@@ -240,7 +240,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
     text = gtk_text_buffer_get_slice (buffer, &start_iter, &end_iter, FALSE);
 
     //Look for kanji atoms
-    link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_LOW);
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_LOW);
     while (link != NULL)
     {
       regex = link->data;
@@ -262,7 +262,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
     }
 
     //Look for furigana atoms
-    link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_LOW);
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_LOW);
     while (link != NULL)
     {
       regex = link->data;
@@ -284,7 +284,7 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
     }
 
     //Look for romaji atoms
-    link = lw_query_regexgroup_get_list (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_LOW);
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_LOW);
     while (link != NULL)
     {
       regex = link->data;
