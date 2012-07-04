@@ -568,7 +568,7 @@ gw_searchwindow_set_total_results_label_by_searchitem (GwSearchWindow *window, L
       const gchar *searching_message_total = ngettext("Searching... %d result", "Searching... %d results", total);
 
       // TRANSLATORS: relevant what ? It's the number of "relevant" result(s) displayed while or after searching.
-      const gchar *message_relevant = ngettext("(%d Relevant)", "(%d Relevant)", relevant);
+      const gchar *message_relevant = ngettext("(%d Exact)", "(%d Exact)", relevant);
 
       gchar *base_message = NULL;
       gchar *final_message = NULL;
@@ -805,9 +805,9 @@ gw_searchwindow_append_to_buffer (GwSearchWindow *window, LwSearch *search, cons
     if (buffer == NULL) return;
 
     GtkTextIter iter;
-    gtk_text_buffer_get_end_iter(buffer, &iter);
+    gtk_text_buffer_get_end_iter (buffer, &iter);
     if (start_line != NULL)
-      *start_line = gtk_text_iter_get_line(&iter);
+      *start_line = gtk_text_iter_get_line (&iter);
 
     if (tag1 == NULL && tag2 == NULL)
       gtk_text_buffer_insert (buffer, &iter, text, -1);
@@ -877,27 +877,10 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
     gtk_text_buffer_get_end_iter (buffer, &iter);
     gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "\n", -1, "spacing", NULL);
 
-    gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_create_mark (buffer, "more_relevant_header_mark", &iter, TRUE);
-    gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
-
-    gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_insert (buffer, &iter, "\n", -1);
-    gtk_text_buffer_get_end_iter (buffer, &iter); gtk_text_iter_backward_line (&iter);
-    gtk_text_buffer_create_mark (buffer, "more_rel_content_insertion_mark", &iter, FALSE);
     gtk_text_buffer_create_mark (buffer, "content_insertion_mark", &iter, FALSE);
 
     gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_create_mark (buffer, "less_relevant_header_mark", &iter, TRUE);
-    gtk_text_buffer_insert (buffer, &iter, "\n\n", -1);
-
-    gtk_text_buffer_get_end_iter (buffer, &iter);
     gtk_text_buffer_insert (buffer, &iter, "\n", -1);
-    gtk_text_buffer_get_end_iter (buffer, &iter); gtk_text_iter_backward_line (&iter);
-    gtk_text_buffer_create_mark (buffer, "less_rel_content_insertion_mark", &iter, FALSE);
-
-    gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_insert (buffer, &iter, "\n\n\n", -1);
     gtk_text_buffer_get_end_iter (buffer, &iter);
     gtk_text_buffer_create_mark (buffer, "footer_insertion_mark", &iter, FALSE);
 
@@ -1520,8 +1503,6 @@ gw_searchwindow_tabcontent_new (GwSearchWindow *window)
 
     //Set up the text buffer
     gtk_text_buffer_get_start_iter (buffer, &iter);
-    gtk_text_buffer_create_mark (buffer, "more_relevant_header_mark", &iter, TRUE);
-    gtk_text_buffer_create_mark (buffer, "less_relevant_header_mark", &iter, TRUE);
     gtk_text_buffer_create_mark (buffer, "less_rel_content_insertion_mark", &iter, FALSE);
     gtk_text_buffer_create_mark (buffer, "more_rel_content_insertion_mark", &iter, FALSE);
     gtk_text_buffer_create_mark (buffer, "content_insertion_mark", &iter, FALSE);

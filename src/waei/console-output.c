@@ -42,8 +42,6 @@ static void w_console_append_edict_result (WApplication*, LwSearch*);
 static void w_console_append_kanjidict_result (WApplication*, LwSearch*);
 static void w_console_append_examplesdict_result (WApplication*, LwSearch*);
 static void w_console_append_unknowndict_result (WApplication*, LwSearch*);
-static void w_console_append_less_relevant_header (WApplication*, LwSearch*);
-
 
 void 
 w_console_append_result (WApplication *application, LwSearch *search)
@@ -87,8 +85,6 @@ w_console_append_edict_result (WApplication *application, LwSearch *search)
     if (result == NULL) return;
     color_switch = w_application_get_color_switch (application);
     cont = 0;
-
-    w_console_append_less_relevant_header (application, search);
 
     //Kanji
     if (result->kanji_start)
@@ -152,8 +148,6 @@ w_console_append_kanjidict_result (WApplication *application, LwSearch *search)
     if (result == NULL) return;
     color_switch = w_application_get_color_switch (application);
     line_started = FALSE;
-
-    w_console_append_less_relevant_header (application, search);
 
     //Kanji
     if (color_switch)
@@ -230,8 +224,6 @@ w_console_append_examplesdict_result (WApplication *application, LwSearch *searc
     if (result == NULL) return;
     color_switch = w_application_get_color_switch (application);
 
-    w_console_append_less_relevant_header (application, search);
-
     if (result->def_start[0] != NULL)
     {
       if (color_switch)
@@ -281,43 +273,10 @@ w_console_append_unknowndict_result (WApplication *application, LwSearch *search
     result = lw_search_get_result (search);
     if (result == NULL) return;
 
-    w_console_append_less_relevant_header (application, search);
-
     printf("%s\n", result->text);
 
     //Cleanup
     lw_result_free (result);
-}
-
-
-//!
-//! @brief Print the "less relevant" header where necessary.
-//!
-static void 
-w_console_append_less_relevant_header (WApplication *application, LwSearch *search)
-{
-    //Sanity check
-    if (application == NULL || search == NULL) return;
-
-    //Declarations
-    WSearchData *sdata;
-    gboolean color_switch;
-    gboolean quiet_switch;
-
-    //Initializations
-    color_switch = w_application_get_color_switch (application);
-    quiet_switch = w_application_get_quiet_switch (application);
-    sdata = W_SEARCHDATA (lw_search_get_data (search));
-
-    if (quiet_switch) return;
-    if (sdata->less_relevant_header_set || search->status != LW_SEARCHSTATUS_IDLE || search->results[LW_RELEVANCE_HIGH] != NULL) return;
-
-    if (color_switch)
-      printf("\n[0;31m***[0m[1m%s[0;31m***************************[0m\n\n\n", gettext("Other Results"));
-    else
-      printf("\n***%s***************************\n\n\n", gettext("Other Results"));
-
-    sdata->less_relevant_header_set = TRUE;
 }
 
 

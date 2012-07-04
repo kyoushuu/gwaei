@@ -43,9 +43,6 @@ static void gw_searchwindow_append_edict_result (GwSearchWindow*, LwSearch*);
 static void gw_searchwindow_append_kanjidict_result (GwSearchWindow*, LwSearch*);
 static void gw_searchwindow_append_examplesdict_result (GwSearchWindow*, LwSearch*);
 static void gw_searchwindow_append_unknowndict_result (GwSearchWindow*, LwSearch*);
-static void gw_searchwindow_append_less_relevant_header (GwSearchWindow*, LwSearch*);
-static void gw_searchwindow_append_more_relevant_header (GwSearchWindow*, LwSearch*);
-
 
 static void
 gw_searchwindow_insert_addlink (GwSearchWindow   *window,
@@ -140,64 +137,6 @@ gw_searchwindow_append_result (GwSearchWindow *window, LwSearch* search)
       gw_searchwindow_append_unknowndict_result (window, search);
     else
       g_warning ("%s\n", gettext("This is an unknown dictionary type!"));
-}
-
-
-
-
-//!
-//! @brief PRIVATE FUNCTION. A Stes the text of the desired mark.
-//!
-//! @param search A LwSearch to gleam information from
-//! @param text The desired text to set to the mark
-//! @param mark_name The name of the mark to set the new attributes to
-//!
-//!
-static void 
-gw_searchwindow_set_header (LwSearch *search, char* text, char* mark_name)
-{
-    //Sanity check
-    g_assert (lw_search_has_data (search));
-
-    //Declarations
-    GwSearchData *sdata;
-    GtkTextView *view;
-    GtkTextBuffer *buffer;
-    GtkTextIter iter;
-    GtkTextMark *mark;
-    gint line;
-    char *new_text;
-
-    //Initializations
-    sdata = GW_SEARCHDATA (lw_search_get_data (search));
-    view = GTK_TEXT_VIEW (sdata->view);
-    buffer = gtk_text_view_get_buffer (view);
-    mark = gtk_text_buffer_get_mark (buffer, mark_name);
-    gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-    line = gtk_text_iter_get_line (&iter);
-
-    //Move the insertion header to the less relevenant section
-    if (strcmp(mark_name, "less_relevant_header_mark") == 0)
-    {
-      GtkTextMark *target_mark;
-      GtkTextIter iter;
-      target_mark = gtk_text_buffer_get_mark (buffer, "less_rel_content_insertion_mark");
-      gtk_text_buffer_get_iter_at_mark (buffer, &iter, target_mark);
-      gtk_text_buffer_move_mark_by_name (buffer, "content_insertion_mark", &iter);
-    }
-
-    //Update the header text
-    new_text = g_strdup_printf ("%s\n", text);
-    if (new_text != NULL)
-    {
-      GtkTextIter end_iter;
-      gtk_text_buffer_get_iter_at_line(buffer, &end_iter, line + 1);
-      gtk_text_buffer_delete (buffer, &iter, &end_iter);
-      gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
-      gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, new_text, -1, "header", NULL);
-      g_free (new_text);
-      new_text = NULL;
-    }
 }
 
 
@@ -507,20 +446,6 @@ gw_searchwindow_append_edict_result (GwSearchWindow *window, LwSearch *search)
 
     gw_searchdata_set_result (sdata, result);
 
-    switch (result->relevance)
-    {
-      case LW_RELEVANCE_HIGH:
-        gw_searchwindow_append_more_relevant_header (window, search);
-        break;
-      case LW_RELEVANCE_MEDIUM:
-      case LW_RELEVANCE_LOW:
-        gw_searchwindow_append_less_relevant_header (window, search);
-        break;
-      default:
-        g_assert_not_reached ();
-        break;
-    }
-
     //Start output
     mark = gtk_text_buffer_get_mark (buffer, "content_insertion_mark");
 
@@ -652,20 +577,6 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
     buffer = gtk_text_view_get_buffer (view);
 
     gw_searchdata_set_result (sdata, result);
-
-    switch (result->relevance)
-    {
-      case LW_RELEVANCE_HIGH:
-        gw_searchwindow_append_more_relevant_header (window, search);
-        break;
-      case LW_RELEVANCE_MEDIUM:
-      case LW_RELEVANCE_LOW:
-        gw_searchwindow_append_less_relevant_header (window, search);
-        break;
-      default:
-        g_assert_not_reached ();
-        break;
-    }
 
     mark = gtk_text_buffer_get_mark (buffer, "content_insertion_mark");
     gtk_text_buffer_get_iter_at_mark (buffer, &iter, mark);
@@ -921,57 +832,6 @@ gw_searchwindow_append_unknowndict_result (GwSearchWindow *window, LwSearch *sea
       g_quark_from_static_string ("unknowndict"), 
       result
     );
-}
-
-
-//!
-//! @brief Add an header to irrelevant "other" results with number of matches
-//!
-static void 
-gw_searchwindow_append_less_relevant_header (GwSearchWindow *window, LwSearch *search)
-{
-    //Sanity checks
-    g_return_if_fail (window != NULL);
-    g_return_if_fail (search != NULL);
-
-    //Declarations
-    gint irrelevant;
-    gchar *message;
-
-    //Initializations
-    irrelevant = lw_search_get_total_irrelevant_results (search);
-    message = g_strdup_printf (ngettext("Other Result %d", "Other Results %d", irrelevant), irrelevant);
-
-    if (message != NULL)
-    {
-      gw_searchwindow_set_header (search, message, "less_relevant_header_mark");
-      g_free (message);
-    }
-}
-
-
-//!
-//! @brief Add an header to relevant "main" results with number of matches
-//!
-static void 
-gw_searchwindow_append_more_relevant_header (GwSearchWindow *window, LwSearch *search)
-{
-    //Sanity checks
-    g_return_if_fail (window != NULL);
-
-    //Declarations
-    gint relevant;
-    gchar *message;
-
-    //Initializations
-    relevant = lw_search_get_total_relevant_results (search);
-    message = g_strdup_printf (ngettext("Main Result %d", "Main Results %d", relevant), relevant);
-
-    if (message != NULL)
-    {
-      gw_searchwindow_set_header (search, message, "more_relevant_header_mark");
-      g_free (message);
-    }
 }
 
 
