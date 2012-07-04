@@ -339,6 +339,8 @@ lw_exampledictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *q
           lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_KANJI, *tokeniter);
         else if (lw_util_is_romaji_str (*tokeniter))
           lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_ROMAJI, *tokeniter);
+        else
+          lw_query_tokenlist_append_primary (query, LW_QUERY_TYPE_MIX, *tokeniter);
         tokeniter++;
       }
       g_strfreev (tokens); tokens = NULL;

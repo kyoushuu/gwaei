@@ -252,44 +252,41 @@ lw_query_tokenlist_append_primary (LwQuery     *query,
 }
 
 
-void
-lw_query_tokenlist_append_secondary (LwQuery     *query, 
-                                     LwQueryType  type, 
-                                     gint         index, 
-                                     const gchar *TOKEN)
+static void
+lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
+                                              gchar        *token
+                                              gchar       **supplimentary_tokens
+                                              LwQueryType  *supplimentary_type)
 {
-/*
-    //Sanity checks
-    g_return_if_fail (query != NULL);
-    g_return_if_fail (token != NULL);
+}
 
-    //Declarations
-    gchar number_character;
-    gchar primary_character;
-    gchar *combined;
 
-    //Initializations
-    number_character = '0' + (gchar) relevance;
-    primary_character = '0' + (gchar) primary;
+void
+lw_query_tokenlist_get_supplimentary (LwQuery      *query, 
+                                      LwQueryType   type, 
+                                      gint          index, 
+                                      gchar       **supplimentary_tokens
+                                      LwQueryType  *supplimentary_type)
+{
+    gchar *tokens = lw_query_tokenlist_get (query, type);
+    gchar *token = tokens[index];
 
-    if (query->tokenlist[type] == NULL)
+    switch (type)
     {
-      combined = g_strdup_printf ("%c%c%s", number_character, primary_character, token);
-      if (combined == NULL) return;
-      query->tokenlist[type] = combined;
-    } 
-    else
-    {
-      combined = g_strdup_printf ("%s%c%c%c%s", 
-                                  query->tokenlist[type], 
-                                  LW_QUERY_DELIMITOR_CHARACTER, 
-                                  number_character, 
-                                  primary_character, 
-                                  token);
-      if (combined == NULL) return;
-      g_free (query->tokenlist[type]); query->tokenlist[type] = combined;
+      case LW_QUERY_TYPE_KANJI:
+        lw_query_tokenlist_build_kanji_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
+        break;
+      case LW_QUERY_TYPE_FURIGANA:
+        lw_query_tokenlist_build_furigana_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
+        break;
+      case LW_QUERY_TYPE_ROMAJI:
+        lw_query_tokenlist_build_romaji_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
+        break;
+      default:
+        *supplimentary_tokens = g_strdup();
+        *supplimentary_type = type;
+        break;
     }
-*/
 }
 
 
@@ -300,42 +297,6 @@ lw_query_tokenlist_get (LwQuery *query, LwQueryType type)
     g_return_val_if_fail (query != NULL, NULL);
 
     return (query->tokenlist[type]);
-/*
-    gchar *buffer, *bufferptr;
-    gchar **tokeniter, **tokenlist, *tokenptr;
-    LwRelevance relevance;
-    gboolean primary;
-
-    if (query->tokenlist[type] == NULL) return NULL;
-    bufferptr = buffer = g_new (gchar, strlen (query->tokenlist[type]) + 1);
-    if (buffer == NULL) return NULL;
-    tokeniter = tokenlist = g_strsplit (query->tokenlist[type], LW_QUERY_DELIMITOR_STRING, -1);
-
-    if (tokenlist != NULL)
-    {
-      while (*tokeniter != NULL)
-      {
-        tokenptr = *tokeniter;
-        relevance = (gint) (*tokenptr - '0');
-        tokenptr++;
-        primary = (gint) (*tokenptr - '0');
-        tokenptr++;
-        if (relevance >= relevance_filter && (!only_primary || primary))
-        {   
-          if (bufferptr > buffer) *(bufferptr++) = LW_QUERY_DELIMITOR_CHARACTER;
-          while (*tokenptr != '\0') *(bufferptr++) = *(tokenptr++);
-        }
-        tokeniter++;
-      }
-    }
-    *bufferptr = '\0';
-    
-    g_strfreev (tokenlist); tokenlist = tokeniter = NULL; tokenptr = NULL;
-    tokenlist = g_strsplit (buffer, LW_QUERY_DELIMITOR_STRING, -1);
-    if (buffer != NULL) g_free (buffer); buffer = NULL;
-
-    return tokenlist;
-*/
 }
 
 
