@@ -308,37 +308,31 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     found = TRUE;
 
     //Compare kanji atoms
-    if (result->kanji_start != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+    while (link != NULL)
     {
-      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-      while (link != NULL)
-      {
-        regex = link->data;
-        if (regex != NULL) 
-        {
-          found = g_regex_match (regex, result->kanji_start, 0, NULL);
-          if (found == FALSE) return found;
-          checked = TRUE;
-        }
-        link = link->next;
-      }
+      regex = link->data;
+      if (regex == NULL || result->kanji_start == NULL)  return FALSE;
+
+      found = g_regex_match (regex, result->kanji_start, 0, NULL);
+      if (found == FALSE) return found;
+      checked = TRUE;
+
+      link = link->next;
     }
 
     //Compare furigana atoms
-    if (result->furigana_start != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    while (link != NULL)
     {
-      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-      while (link != NULL)
-      {
-        regex = link->data;
-        if (regex != NULL) 
-        {
-          found = g_regex_match (regex, result->furigana_start, 0, NULL);
-          if (found == FALSE) return found;
-          checked = TRUE;
-        }
-        link = link->next;
-      }
+      regex = link->data;
+      if (regex == NULL || result->furigana_start == NULL) return FALSE;
+
+      found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      if (found == FALSE) return found;
+      checked = TRUE;
+
+      link = link->next;
     }
 
     //Compare romaji atoms
@@ -346,15 +340,15 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     while (link != NULL)
     {
       regex = link->data;
-      if (regex != NULL) 
+      if (regex == NULL) return FALSE;
+
+      for (j = 0; result->def_start[j] != NULL; j++)
       {
-        for (j = 0; result->def_start[j] != NULL; j++)
-        {
-          found = g_regex_match (regex, result->def_start[j], 0, NULL);
-          checked = TRUE;
-          if (found == TRUE) break;
-        }
+        found = g_regex_match (regex, result->def_start[j], 0, NULL);
+        checked = TRUE;
+        if (found == TRUE) break;
       }
+
       if (found == FALSE) return found;
       link = link->next;
     }
@@ -433,6 +427,7 @@ lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
       temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
+    printf("BREAK primary delimited %s\n", delimited);
 
     tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
 
@@ -453,9 +448,8 @@ lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
       g_strfreev (tokens); tokens = NULL;
     }
 
-    printf("BREAK primary delimited %s\n", delimited);
 
-    if (temp != NULL) g_free (temp); temp = NULL;
+    if (delimited != NULL) g_free (delimited); delimited = NULL;
 }
 
 

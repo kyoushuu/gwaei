@@ -1420,15 +1420,18 @@ lw_util_script_changed (GUnicodeScript p, GUnicodeScript n, gboolean split_kanji
     gboolean is_japanese_p;
     gboolean is_japanese_n;
     gboolean is_japanese_change;
+
     
     //Initializations;
     has_common = (p == G_UNICODE_SCRIPT_INVALID_CODE ||	n == G_UNICODE_SCRIPT_COMMON || p == G_UNICODE_SCRIPT_COMMON);
-    has_changed = (p != n);
+    has_changed = (p != n && !has_common);
     is_japanese_p = (p == G_UNICODE_SCRIPT_HAN || p == G_UNICODE_SCRIPT_HIRAGANA || p == G_UNICODE_SCRIPT_KATAKANA);
     is_japanese_n = (n == G_UNICODE_SCRIPT_HAN || n == G_UNICODE_SCRIPT_HIRAGANA || n == G_UNICODE_SCRIPT_KATAKANA);
-    is_japanese_change = (is_japanese_p && is_japanese_n  && p != n && split_kanji_furigana == TRUE);
+    is_japanese_change = (is_japanese_p && is_japanese_n  && p != n);
 
-    return (has_changed && !has_common && is_japanese_change);
+
+    if (is_japanese_change) return (split_kanji_furigana);
+    else return (has_changed);
 }
 
 

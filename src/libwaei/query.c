@@ -254,8 +254,8 @@ lw_query_tokenlist_append_primary (LwQuery     *query,
 
 static void
 lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
-                                              gchar        *token
-                                              gchar       **supplimentary_tokens
+                                              gchar        *token,
+                                              gchar       **supplimentary_tokens,
                                               LwQueryType  *supplimentary_type)
 {
 }
@@ -265,9 +265,11 @@ void
 lw_query_tokenlist_get_supplimentary (LwQuery      *query, 
                                       LwQueryType   type, 
                                       gint          index, 
-                                      gchar       **supplimentary_tokens
+                                      gchar       **supplimentary_tokens,
                                       LwQueryType  *supplimentary_type)
 {
+//TODO
+/*
     gchar *tokens = lw_query_tokenlist_get (query, type);
     gchar *token = tokens[index];
 
@@ -287,6 +289,7 @@ lw_query_tokenlist_get_supplimentary (LwQuery      *query,
         *supplimentary_type = type;
         break;
     }
+*/
 }
 
 
