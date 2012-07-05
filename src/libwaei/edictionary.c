@@ -314,9 +314,9 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
       regex = link->data;
       if (regex == NULL || result->kanji_start == NULL)  return FALSE;
 
+      checked = TRUE;
       found = g_regex_match (regex, result->kanji_start, 0, NULL);
       if (found == FALSE) return found;
-      checked = TRUE;
 
       link = link->next;
     }
@@ -328,9 +328,9 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
       regex = link->data;
       if (regex == NULL || result->furigana_start == NULL) return FALSE;
 
+      checked = TRUE;
       found = g_regex_match (regex, result->furigana_start, 0, NULL);
       if (found == FALSE) return found;
-      checked = TRUE;
 
       link = link->next;
     }
@@ -344,8 +344,8 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
 
       for (j = 0; result->def_start[j] != NULL; j++)
       {
-        found = g_regex_match (regex, result->def_start[j], 0, NULL);
         checked = TRUE;
+        found = g_regex_match (regex, result->def_start[j], 0, NULL);
         if (found == TRUE) break;
       }
 

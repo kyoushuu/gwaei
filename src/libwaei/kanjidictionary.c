@@ -322,7 +322,6 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     found = FALSE;
     checked = FALSE;
 
-
     //Calculate the strokes check
     range = lw_query_rangelist_get (query, LW_QUERY_RANGE_TYPE_STROKES);
     if (result->strokes != NULL && range != NULL)
@@ -364,12 +363,12 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     while (link != NULL)
     {
       regex = link->data;
-      if (regex != NULL && result->meanings != NULL)
-      {
-        checked = TRUE;
-        found = g_regex_match (regex, result->meanings, 0, NULL);
-        if (found == FALSE) return found;
-      }
+      if (regex == NULL && result->meanings == NULL) return FALSE;
+
+      checked = TRUE;
+      found = g_regex_match (regex, result->meanings, 0, NULL);
+      if (found == FALSE) return found;
+
       link = link->next;
     }
 
@@ -378,12 +377,15 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     while (link != NULL)
     {
       regex = link->data;
+      if (regex == NULL) return FALSE;
+      checked = TRUE;
+
       for (i = 0; i < 3 && result->readings[i] != NULL; i++)
       {
-        checked = TRUE;
         found = g_regex_match (regex, result->readings[i], 0, NULL);
         if (found == TRUE) break;
       }
+
       if (found == FALSE) return found;
       link = link->next;
     }
@@ -393,13 +395,13 @@ lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *
     while (link != NULL)
     {
       regex = link->data;
-      if (regex != NULL && result->kanji != NULL)
-      {
-        checked = TRUE;
-        found = g_regex_match (regex, result->kanji, 0, NULL);
-        if (found == FALSE) found = g_regex_match (regex, result->radicals, 0, NULL);
-        if (found == FALSE) return FALSE;
-      }
+      if (regex == NULL || result->kanji == NULL) return FALSE;
+      checked = TRUE;
+
+      found = g_regex_match (regex, result->kanji, 0, NULL);
+      if (found == FALSE) found = g_regex_match (regex, result->radicals, 0, NULL);
+      if (found == FALSE) return FALSE;
+
       link = link->next;
     }
 
