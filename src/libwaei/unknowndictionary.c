@@ -198,54 +198,45 @@ lw_unknowndictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult
     found = TRUE;
 
     //Compare kanji atoms
-    if (result->text != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
+    while (link != NULL)
     {
-      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_KANJI, RELEVANCE);
-      while (link != NULL)
-      {
-        regex = link->data;
-        if (regex != NULL) 
-        {
-          checked = TRUE;
-          found = g_regex_match (regex, result->text, 0, NULL);
-          if (found == FALSE) return found;
-        }
-        link = link->next;
-      }
+      regex = link->data;
+      if (regex == NULL || result->text == NULL) return FALSE;
+
+      checked = TRUE;
+      found = g_regex_match (regex, result->text, 0, NULL);
+      if (found == FALSE) return found;
+
+      link = link->next;
     }
 
     //Compare furigana atoms
-    if (result->text != NULL)
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    while (link != NULL)
     {
-      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-      while (link != NULL)
-      {
-        regex = link->data;
-        if (regex != NULL) 
-        {
-          checked = TRUE;
-          found = g_regex_match (regex, result->text, 0, NULL);
-          if (found == FALSE) return found;
-        }
-        link = link->next;
-      }
+      regex = link->data;
+      if (regex == NULL || result->text == NULL) return FALSE;
+
+      checked = TRUE;
+      found = g_regex_match (regex, result->text, 0, NULL);
+      if (found == FALSE) return found;
+
+      link = link->next;
     }
 
     //Compare romaji atoms
-    if (result->text != NULL)
-      {
-      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
-      while (link != NULL)
-      {
-        regex = link->data;
-        if (regex != NULL) 
-        {
-          checked = TRUE;
-          found = g_regex_match (regex, result->text, 0, NULL);
-          if (found == FALSE) return found;
-        }
-        link = link->next;
-      }
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_ROMAJI, RELEVANCE);
+    while (link != NULL)
+    {
+      regex = link->data;
+      if (regex == NULL || result->text == NULL) return FALSE;
+
+      checked = TRUE;
+      found = g_regex_match (regex, result->text, 0, NULL);
+      if (found == FALSE) return found;
+
+      link = link->next;
     }
 
     return (checked && found);

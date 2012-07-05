@@ -875,7 +875,6 @@ gw_searchwindow_initialize_buffer_by_searchitem (GwSearchWindow *window, LwSearc
     //Clear the target text buffer
     GtkTextIter iter;
     gtk_text_buffer_get_end_iter (buffer, &iter);
-    gtk_text_buffer_insert_with_tags_by_name (buffer, &iter, "\n", -1, "spacing", NULL);
 
     gtk_text_buffer_create_mark (buffer, "content_insertion_mark", &iter, FALSE);
 
