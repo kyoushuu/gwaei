@@ -82,20 +82,24 @@
       <attribute name='label' translatable='yes'>_View</attribute>
       <section>
         <item>
+          <attribute name='label' translatable='yes'>_Menubar</attribute>
+          <attribute name='action'>win.toggle-menubar-show</attribute>
+        </item>
+        <item>
           <attribute name='label' translatable='yes'>_Toolbar</attribute>
-          <attribute name='action'>win.show-toolbar</attribute>
+          <attribute name='action'>win.toggle-toolbar-show</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>_Position Column</attribute>
-          <attribute name='action'>win.show-toolbar</attribute>
+          <attribute name='action'>win.toggle-position-column-show</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>_Timestamp Column</attribute>
-          <attribute name='action'>win.show-toolbar</attribute>
+          <attribute name='action'>win.toggle-timestamp-column-show</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>_Score Column</attribute>
-          <attribute name='action'>win.show-toolbar</attribute>
+          <attribute name='action'>win.toggle-score-column-show</attribute>
         </item>
       </section>
     </submenu>

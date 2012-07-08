@@ -267,7 +267,9 @@ lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
                                                gchar       **supplimentary_tokens,
                                                LwQueryType  *supplimentary_type)
 {
+/*
     if (query->preferences
+*/
 }
 
 
@@ -295,8 +297,10 @@ lw_query_tokenlist_get_supplimentary (LwQuery      *query,
         lw_query_tokenlist_build_romaji_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
         break;
       default:
+/*
         *supplimentary_tokens = g_strdup();
         *supplimentary_type = type;
+*/
         break;
     }
 }

@@ -53,6 +53,8 @@ gboolean gw_vocabularywindow_show_save_dialog (GwVocabularyWindow*);
 void gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow*, gboolean);
 void gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window);
 
+void gw_vocabularywindow_map_actions (GActionMap*, GwVocabularyWindow*);
+
 #include "vocabularywindow-callbacks.h"
 
 G_END_DECLS

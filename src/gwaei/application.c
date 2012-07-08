@@ -851,8 +851,9 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
       if (file_exists == FALSE)
         continue;
 
-      is_valid_xml = gtk_builder_add_from_file (builder, path,  NULL);
-      if (error != NULL || !is_valid_xml) 
+printf("BREAK attempting to load %s\n", path);
+      is_valid_xml = gtk_builder_add_from_file (builder, path,  &error);
+      if (error != NULL) 
       {
         g_warning ("Problems loading xml from %s. %s\n", path, error->message);
         g_error_free (error); error = NULL;
