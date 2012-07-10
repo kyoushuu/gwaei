@@ -21,8 +21,8 @@
           <attribute name='accel'>&lt;Primary&gt;s</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>_Reset</attribute>
-          <attribute name='action'>win.reset</attribute>
+          <attribute name='label' translatable='yes'>_Revert</attribute>
+          <attribute name='action'>win.revert</attribute>
         </item>
       </section>
       <section>
@@ -65,7 +65,7 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>_Delete</attribute>
-          <attribute name='action'>win.paste</attribute>
+          <attribute name='action'>win.delete</attribute>
           <attribute name='accel'>Delete</attribute>
         </item>
       </section>

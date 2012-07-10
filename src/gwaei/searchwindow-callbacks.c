@@ -312,32 +312,6 @@ printf("BREAK close!\n");
 
 
 //!
-//! @brief Preforms the action the window manager close event
-//! @see gw_searchwindow_close_cb ()
-//! @param widget GtkWidget pointer to the window to close
-//! @param data Currently unused gpointer
-//! @return Always returns true
-//!
-G_MODULE_EXPORT gboolean 
-gw_searchwindow_delete_event_action_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
-{ 
-    GwApplication *application;
-    GwSearchWindow *window;
-
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
-    g_return_val_if_fail (window != NULL, FALSE);
-    application = gw_window_get_application (GW_WINDOW (window));
-
-    gtk_widget_destroy (GTK_WIDGET (window));
-
-    if (gw_application_should_quit (application))
-      gw_application_quit (application);
-
-    return TRUE;
-}
-
-
-//!
 //! @brief Goes back one step in the search history
 //! @see gw_searchwindow_search_from_history_cb ()
 //! @see gw_searchwindow_forward_cb ()
@@ -690,7 +664,9 @@ gw_searchwindow_dictionary_combobox_changed_cb (GtkWidget *widget, gpointer data
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data)
+gw_searchwindow_select_all_cb (GSimpleAction *widget, 
+                               GVariant      *parameter,
+                               gpointer       data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -712,7 +688,9 @@ gw_searchwindow_select_all_cb (GtkWidget *widget, gpointer data)
 //! @param data Unused gpointer
 //!
 G_MODULE_EXPORT void 
-gw_searchwindow_paste_cb (GtkAction *action, gpointer data)
+gw_searchwindow_paste_cb (GSimpleAction *action, 
+                          GVariant      *parameter,
+                          gpointer       data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -733,8 +711,10 @@ gw_searchwindow_paste_cb (GtkAction *action, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void 
-gw_searchwindow_cut_cb (GtkAction *action, gpointer data)
+void 
+gw_searchwindow_cut_cb (GSimpleAction *action, 
+                        GVariant      *parameter,
+                        gpointer       data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -755,8 +735,10 @@ gw_searchwindow_cut_cb (GtkAction *action, gpointer data)
 //! @param widget Unused GtkWidget pointer
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void 
-gw_searchwindow_copy_cb (GtkAction *action, gpointer data)
+void 
+gw_searchwindow_copy_cb (GSimpleAction *action, 
+                         GVariant      *parameter,
+                         gpointer       data)
 {
     GwSearchWindow *window;
     GtkWidget *focus;
@@ -2295,6 +2277,7 @@ static GMenuModel *_menu_button = NULL;
 static void
 _load_button_xml (GwSearchWindow *window)
 {
+/*TODO
     if (_menu_button != NULL) return;
 
     GtkBuilder *builder;
@@ -2305,18 +2288,19 @@ _load_button_xml (GwSearchWindow *window)
     {
       gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
       menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
-//TODO
 //      gw_searchwindow_set_links (window, menumodel);
 
       _menu_button = menumodel;
 
       g_object_unref (builder); builder = NULL;
     }
+*/
 }
 
 G_MODULE_EXPORT void
 gw_searchwindow_show_popup_menu_cb (GtkWidget *widget, gpointer data)
 {
+/*TODO
     //Declarations
     GwSearchWindow *window;
     GtkMenu* menu;
@@ -2337,6 +2321,7 @@ gw_searchwindow_show_popup_menu_cb (GtkWidget *widget, gpointer data)
     gtk_menu_attach_to_widget (menu, widget, NULL);
 
     gtk_menu_popup (menu, NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
+*/
 }
 
 

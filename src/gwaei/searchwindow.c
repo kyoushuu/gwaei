@@ -169,8 +169,11 @@ gw_searchwindow_map_actions (GActionMap *map, GwSearchWindow *window)
     g_return_if_fail (window != NULL);
 
     static GActionEntry entries[] = {
-    //  { "copy", window_copy, NULL, NULL, NULL },
-    //  { "paste", window_paste, NULL, NULL, NULL },
+      { "cut", gw_searchwindow_cut_cb, NULL, NULL, NULL },
+      { "copy", gw_searchwindow_copy_cb, NULL, NULL, NULL },
+      { "paste", gw_searchwindow_paste_cb, NULL, NULL, NULL },
+      { "select-all", gw_searchwindow_select_all_cb, NULL, NULL, NULL },
+
       { "new-tab", gw_searchwindow_new_tab_cb, NULL, NULL, NULL },
       { "next-tab", gw_searchwindow_next_tab_cb, NULL, NULL, NULL },
       { "previous-tab", gw_searchwindow_previous_tab_cb, NULL, NULL, NULL },
@@ -1968,7 +1971,7 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
 
 
     g_signal_connect_after (G_OBJECT (window), "delete-event", 
-                            G_CALLBACK (gw_searchwindow_delete_event_action_cb), window);
+                            G_CALLBACK (gw_window_delete_event_cb), window);
     g_signal_connect (G_OBJECT (window), "key-release-event", 
                       G_CALLBACK (gw_searchwindow_key_release_modify_status_update_cb), window);
     g_signal_connect (G_OBJECT (window), "key-press-event", 

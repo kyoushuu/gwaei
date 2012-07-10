@@ -62,10 +62,28 @@ gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     if (menumodel == NULL)
       menumodel = g_menu_new ();
     if (menumodel == NULL) 
-      return;
+      return FALSE;
 
     gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
 
     return FALSE;
 }
 
+
+G_MODULE_EXPORT gboolean
+gw_window_delete_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    GwApplication *application;
+    GwWindow *window;
+
+    window = GW_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_WINDOW));
+    g_return_val_if_fail (window != NULL, FALSE);
+    application = gw_window_get_application (window);
+
+    gtk_widget_destroy (GTK_WIDGET (window));
+
+    if (gw_application_should_quit (application))
+      gw_application_quit (application);
+
+    return TRUE;
+}

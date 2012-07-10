@@ -36,15 +36,15 @@
     <section>
       <item>
         <attribute name='label' translatable='yes'>_Shuffle Flashcards</attribute>
-        <attribute name='action'>win.shuffle-flashcards</attribute>
+        <attribute name='action'>win.toggle-shuffle</attribute>
       </item>
       <item>
         <attribute name='label' translatable='yes'>_Trim Flashcards</attribute>
-        <attribute name='action'>win.trim-flashcards</attribute>
+        <attribute name='action'>win.toggle-trim</attribute>
       </item>
       <item>
         <attribute name='label' translatable='yes'>_Track Results</attribute>
-        <attribute name='action'>win.track-results</attribute>
+        <attribute name='action'>win.toggle-track-results</attribute>
       </item>
     </section>
   </menu>

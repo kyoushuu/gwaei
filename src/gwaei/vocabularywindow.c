@@ -318,7 +318,7 @@ gw_vocabularywindow_attach_signals (GwVocabularyWindow *window)
     g_signal_connect (G_OBJECT (window), "destroy",
                       G_CALLBACK (gw_vocabularywindow_remove_signals), NULL);
     g_signal_connect (G_OBJECT (window), "delete-event",
-                      G_CALLBACK (gw_vocabularywindow_delete_event_cb), window);
+                      G_CALLBACK (gw_window_delete_event_cb), window);
     g_signal_connect (G_OBJECT (window), "event-after",
                       G_CALLBACK (gw_vocabularywindow_event_after_cb), window);
 
@@ -1025,16 +1025,38 @@ gw_vocabularywindow_map_actions (GActionMap *map, GwVocabularyWindow *window)
     g_return_if_fail (window != NULL);
 
     static GActionEntry entries[] = {
-    //  { "copy", window_copy, NULL, NULL, NULL },
-    //  { "paste", window_paste, NULL, NULL, NULL },
       { "toggle-menubar-show", gw_vocabularywindow_menubar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-toolbar-show", gw_vocabularywindow_toolbar_show_toggled_cb, NULL, "false", NULL},
+
       { "new-list", gw_vocabularywindow_new_list_cb, NULL, "false", NULL},
       { "new-word", gw_vocabularywindow_new_word_cb, NULL, "false", NULL},
-/*TODO
-      { "save", gw_searchwindow_save_cb, NULL, NULL, NULL },
-*/
-      { "close", gw_vocabularywindow_close_cb, NULL, NULL, NULL }
+
+      { "save", gw_vocabularywindow_save_cb, NULL, NULL, NULL },
+      { "revert", gw_vocabularywindow_revert_cb, NULL, NULL, NULL },
+      { "import", gw_vocabularywindow_import_cb, NULL, NULL, NULL },
+      { "export", gw_vocabularywindow_export_cb, NULL, NULL, NULL },
+
+      { "close", gw_vocabularywindow_close_cb, NULL, NULL, NULL },
+
+      { "cut", gw_vocabularywindow_cut_cb, NULL, NULL, NULL},
+      { "copy", gw_vocabularywindow_copy_cb, NULL, NULL, NULL},
+      { "paste", gw_vocabularywindow_paste_cb, NULL, NULL, NULL},
+      { "delete", gw_vocabularywindow_delete_cb, NULL, NULL, NULL},
+
+      { "toggle-position-column-show", gw_vocabularywindow_position_column_toggled_cb, NULL, "false", NULL},
+      { "toggle-timestamp-column-show", gw_vocabularywindow_timestamp_column_toggled_cb, NULL, "false", NULL},
+      { "toggle-score-column-show", gw_vocabularywindow_score_column_toggled_cb, NULL, "false", NULL},
+
+      { "show-kanji-definition-flashcards", gw_vocabularywindow_kanji_definition_flashcards_cb, NULL, NULL, NULL},
+      { "show-definition-kanji-flashcards", gw_vocabularywindow_definition_kanji_flashcards_cb, NULL, NULL, NULL},
+      { "show-furigana-definition-flashcards", gw_vocabularywindow_furigana_definition_flashcards_cb, NULL, NULL, NULL},
+      { "show-definition-furigana-flashcards", gw_vocabularywindow_definition_furigana_flashcards_cb, NULL, NULL, NULL},
+      { "show-kanji-furigana-flashcards", gw_vocabularywindow_kanji_furigana_flashcards_cb, NULL, NULL, NULL},
+      { "show-furigana-kanji-flashcards", gw_vocabularywindow_furigana_kanji_flashcards_cb, NULL, NULL, NULL},
+
+      { "toggle-shuffle", gw_vocabularywindow_shuffle_toggled_cb, NULL, "false", NULL},
+      { "toggle-trim", gw_vocabularywindow_trim_toggled_cb, NULL, "false", NULL},
+      { "toggle-track-results", gw_vocabularywindow_track_results_toggled_cb, NULL, "false", NULL}
     };
     g_action_map_add_action_entries (map, entries, G_N_ELEMENTS (entries), window);
 }
