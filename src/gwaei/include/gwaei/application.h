@@ -80,7 +80,7 @@ gboolean gw_application_should_quit (GwApplication *application);
 gboolean gw_application_load_xml (GtkBuilder*, const gchar*);
 
 void gw_application_map_actions (GActionMap*, GwApplication*);
-void gw_menumodel_set_links (GMenuModel*, const gchar*, const gchar*, GMenuModel*);
+void gw_menumodel_set_links (GMenuModel*, const gchar*, const gchar*, const gchar*, GMenuModel*);
 
 void gw_application_show_vocabularywindow (GwApplication*, gint);
 void gw_application_spellcheck_toggled_cb (GSimpleAction*, GVariant*, gpointer);

@@ -168,8 +168,10 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="revert_toolbutton">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Revert</property>
                         <property name="use_underline">True</property>
                         <signal name="clicked" handler="gw_vocabularywindow_revert_wordstore_cb" object="toplevel" swapped="no"/>
@@ -249,6 +251,18 @@
             <property name="fill">True</property>
             <property name="pack_type">end</property>
             <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkToolbar" id="primary_toolbar">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>

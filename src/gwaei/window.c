@@ -84,6 +84,9 @@ gw_window_constructed (GObject *object)
 {
     GwWindow *window;
     GwWindowPrivate *priv;
+    GwApplication *application;
+    gboolean os_shows_app_menu;
+    GtkSettings *settings;
 
     //Chain the parent class
     {
@@ -92,17 +95,24 @@ gw_window_constructed (GObject *object)
 
     window = GW_WINDOW (object);
     priv = window->priv;
+    application = gw_window_get_application (window);
+    settings = gtk_settings_get_default ();
+    g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu, NULL);
+    gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE_MASK);
 
     priv->accelgroup = gtk_accel_group_new ();
-    //gtk_window_add_accel_group (GTK_WINDOW (window), priv->accelgroup);
+    gtk_window_add_accel_group (GTK_WINDOW (window), priv->accelgroup);
     gtk_window_set_application (GTK_WINDOW (window), GTK_APPLICATION (priv->application));
     priv->builder = gtk_builder_new ();
     gw_window_load_ui_xml (window, priv->ui_xml);
     priv->toplevel = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toplevel"));
 
-    g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
-
     gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
+
+    if (!os_shows_app_menu) gw_application_map_actions (G_ACTION_MAP (window), application);
+
+    g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
+    g_signal_connect (window, "focus-in-event", G_CALLBACK (gw_window_focus_in_event_cb), NULL);
 }
 
 
@@ -536,7 +546,7 @@ errored:
 
 
 GMenuModel*
-gw_window_get_menu_model (GwWindow *window)
+gw_window_get_menumodel (GwWindow *window)
 {
     //Sanity checks
     g_return_val_if_fail (window != NULL, NULL);

@@ -772,7 +772,7 @@ gw_application_initialize_menumodel_links (GwApplication *application)
 
     store = GW_VOCABULARYLISTSTORE (gw_application_get_vocabularyliststore (application));
     link = gw_vocabularyliststore_get_menumodel (store);
-    gw_menumodel_set_links (menumodel, "vocabulary-list-link", G_MENU_LINK_SECTION, link);
+    gw_menumodel_set_links (menumodel, "vocabulary-list-link", gettext ("Vocabulary"), G_MENU_LINK_SECTION, link);
 }
 
 
@@ -900,7 +900,7 @@ gw_application_map_actions (GActionMap *map, GwApplication *application)
 
 
 void
-gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *LINK_TYPE, GMenuModel *link)
+gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *NEW_LABEL, const gchar *LINK_TYPE, GMenuModel *link)
 {
     //Sanity checks
     g_return_if_fail (menumodel != NULL);
@@ -925,7 +925,7 @@ gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *
       {
         if (label != NULL && strcmp (label, LABEL) == 0)
         {
-          menuitem = g_menu_item_new (NULL, NULL);
+          menuitem = g_menu_item_new (NEW_LABEL, NULL);
           g_menu_item_set_link (menuitem, LINK_TYPE, link);
           g_menu_remove (G_MENU (menumodel), index);
           g_menu_insert_item (G_MENU (menumodel), index, menuitem);
@@ -936,9 +936,9 @@ gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *
 
       //Recursive work
       sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SUBMENU);
-      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, LINK_TYPE, link);
+      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, NEW_LABEL, LINK_TYPE, link);
       sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SECTION);
-      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, LINK_TYPE, link);
+      if (sublink != NULL) gw_menumodel_set_links (sublink, LABEL, NEW_LABEL, LINK_TYPE, link);
     }
 }
 

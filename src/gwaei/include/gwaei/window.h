@@ -43,8 +43,8 @@ gboolean gw_window_is_important (GwWindow*);
 void gw_window_load_size (GwWindow*);
 void gw_window_save_size (GwWindow*);
 
-void gw_window_set_menu_model (GwWindow*, const gchar*, const gchar*);
-GMenuModel* gw_window_get_menu_model (GwWindow*);
+void gw_window_set_menumodel (GwWindow*, const gchar*, const gchar*);
+GMenuModel* gw_window_get_menumodel (GwWindow*);
 
 void gw_window_show_menubar (GwWindow*, gboolean);
 void gw_window_load_menubar (GwWindow*, const gchar*);

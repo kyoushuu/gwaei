@@ -44,6 +44,7 @@ static void gw_vocabularywindow_init_styles (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_list_treeview (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_word_treeview (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_accelerators (GwVocabularyWindow*);
+static void gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow*);
 
 enum {
     TARGET_LIST_ROW_STRING,
@@ -145,53 +146,18 @@ gw_vocabularywindow_constructed (GObject *object)
     gw_vocabularywindow_map_actions (G_ACTION_MAP (window), window);
     gw_application_map_actions (G_ACTION_MAP (window), application);
 
+
     //Set up the gtkbuilder links
+    priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));
     priv->list_treeview =   GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_treeview"));
     priv->list_toolbar =    GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_list_toolbar"));
     priv->word_treeview =   GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_treeview"));
     priv->word_toolbar =    GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "vocabulary_word_toolbar"));
-    priv->study_toolbar =   NULL;
     priv->edit_toolbutton = GTK_TOGGLE_TOOL_BUTTON (gw_window_get_object (GW_WINDOW (window), "edit_toolbutton"));
     priv->paned =           GTK_PANED (gw_window_get_object (GW_WINDOW (window), "vocabulary_paned"));
 
-    priv->copy_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "copy_menuitem"));
-    priv->paste_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "paste_menuitem"));
-    priv->cut_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "cut_menuitem"));
-    priv->delete_menuitem = GTK_MENU_ITEM (gw_window_get_object (GW_WINDOW (window), "delete_menuitem"));
-
-/*
-TODO
-    priv->save_action =     GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "save_action"));
-    priv->revert_action =     GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "revert_action"));
-
-    priv->shuffle_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "shuffle_flashcards_toggleaction"));
-    priv->trim_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "trim_flashcards_toggleaction"));
-    priv->track_results_toggleaction = 
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "track_results_toggleaction"));
-    priv->show_toolbar_toggleaction =
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_toolbar_toggleaction"));
-    priv->show_position_column_toggleaction =
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_position_column_toggleaction"));
-    priv->show_score_column_toggleaction =
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_score_column_toggleaction"));
-    priv->show_timestamp_column_toggleaction =
-      GTK_TOGGLE_ACTION (gw_window_get_object (GW_WINDOW (window), "show_timestamp_column_toggleaction"));
-
-    priv->kanji_definition_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "kanji_definition_flashcards_action"));
-    priv->definition_kanji_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "definition_kanji_flashcards_action"));
-    priv->kanji_furigana_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "kanji_furigana_flashcards_action"));
-    priv->furigana_kanji_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "furigana_kanji_flashcards_action"));
-    priv->definition_furigana_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "definition_furigana_flashcards_action"));
-    priv->furigana_definition_flashcards_action = 
-      GTK_ACTION (gw_window_get_object (GW_WINDOW (window), "furigana_definition_flashcards_action"));
-*/
+    gw_vocabularywindow_initialize_toolbar (window);
+    gw_vocabularywindow_initialize_menu_links (window);
 
     //Set up the gtk window
     gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Vocabulary Manager"));
@@ -248,6 +214,7 @@ TODO
 static void
 gw_vocabularywindow_init_accelerators (GwVocabularyWindow *window)
 {
+/*TODO
     GtkWidget *widget;
     GtkAccelGroup *accelgroup;
     gint i;
@@ -315,6 +282,7 @@ gw_vocabularywindow_init_accelerators (GwVocabularyWindow *window)
       gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
         accelgroup, (GDK_KEY_0 + i), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
     }
+*/
 }
 
 
@@ -500,6 +468,13 @@ gw_vocabularywindow_remove_signals (GwVocabularyWindow *window)
     lw_preferences_remove_change_listener_by_schema (
       preferences, 
       LW_SCHEMA_VOCABULARY,
+      priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_MENUBAR_TOGGLED]
+    );
+    priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_MENUBAR_TOGGLED] = 0;
+
+    lw_preferences_remove_change_listener_by_schema (
+      preferences, 
+      LW_SCHEMA_VOCABULARY,
       priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED]
     );
     priv->signalid[GW_VOCABULARYWINDOW_SIGNALID_TOOLBAR_TOGGLED] = 0;
@@ -562,7 +537,7 @@ gw_vocabularywindow_init_styles (GwVocabularyWindow *window)
     gtk_style_context_set_junction_sides (context, sides);
     gtk_widget_reset_style (GTK_WIDGET (priv->word_toolbar));
 
-/*
+/* TODO
     context = gtk_widget_get_style_context (GTK_WIDGET (priv->study_toolbar));
     gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
     sides = GTK_JUNCTION_CORNER_BOTTOMLEFT | GTK_JUNCTION_CORNER_TOPLEFT | GTK_JUNCTION_CORNER_TOPRIGHT;
@@ -795,8 +770,10 @@ gw_vocabularywindow_set_has_changes (GwVocabularyWindow *window, gboolean has_ch
    priv->has_changes = has_changes;
    wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
 
+/* TODO
    gtk_action_set_sensitive (priv->save_action, has_changes);
    gtk_action_set_sensitive (priv->revert_action, wordstore_has_changes);
+*/
 }
 
 
@@ -1052,12 +1029,168 @@ gw_vocabularywindow_map_actions (GActionMap *map, GwVocabularyWindow *window)
     //  { "paste", window_paste, NULL, NULL, NULL },
       { "toggle-menubar-show", gw_vocabularywindow_menubar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-toolbar-show", gw_vocabularywindow_toolbar_show_toggled_cb, NULL, "false", NULL},
+      { "new-list", gw_vocabularywindow_new_list_cb, NULL, "false", NULL},
+      { "new-word", gw_vocabularywindow_new_word_cb, NULL, "false", NULL},
 /*TODO
       { "save", gw_searchwindow_save_cb, NULL, NULL, NULL },
-      { "save-as", gw_searchwindow_save_as_cb, NULL, NULL, NULL },
 */
       { "close", gw_vocabularywindow_close_cb, NULL, NULL, NULL }
     };
     g_action_map_add_action_entries (map, entries, G_N_ELEMENTS (entries), window);
+}
+
+
+GMenuModel*
+gw_vocabularywindow_get_flashcard_menumodel (GwVocabularyWindow *window)
+{
+    GwVocabularyWindowPrivate *priv;
+    GMenuModel *menumodel;
+    GtkBuilder *builder;
+
+    priv = window->priv;
+    menumodel = NULL;
+    builder = gtk_builder_new ();
+    if (builder == NULL) goto errored;
+
+    if (priv->flashcard_menumodel == NULL)
+    {
+      gw_application_load_xml (builder, "vocabularywindow-menumodel-flashcards.ui");
+      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+      priv->flashcard_menumodel = menumodel;
+    }
+
+errored:
+    if (builder != NULL) g_object_unref (builder); builder = NULL;
+
+    return priv->flashcard_menumodel;
+}
+
+
+void
+gw_vocabularywindow_initialize_menu_links (GwVocabularyWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GMenuModel *menumodel;
+    GMenuModel *link;
+
+    //Initializations
+    menumodel = gw_window_get_menumodel (GW_WINDOW (window));
+    g_return_if_fail (menumodel != NULL);
+    link = gw_vocabularywindow_get_flashcard_menumodel (window);
+
+    gw_menumodel_set_links (menumodel, "flashcards-list-link", gettext("_Study"), G_MENU_LINK_SUBMENU, link);
+}
+
+
+static void
+gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    GtkToolbar *toolbar;
+    GtkToolItem *item;
+
+    priv = window->priv;
+    toolbar = priv->primary_toolbar;
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_CUT);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.cut");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_COPY);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.copy");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_PASTE);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.paste");
+    gtk_widget_show (GTK_WIDGET (item));
+}
+
+
+void
+gw_vocabularywindow_new_list (GwVocabularyWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    GwApplication *application;
+    GtkListStore *liststore, *wordstore;
+    GtkTreeSelection *selection;
+    GtkTreeIter iter;
+
+    //Initializations
+    priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
+    liststore = gw_application_get_vocabularyliststore (application);
+    selection = gtk_tree_view_get_selection (priv->list_treeview);
+
+    gw_vocabularyliststore_new_list (GW_VOCABULARYLISTSTORE (liststore), &iter);
+    gtk_tree_selection_select_iter (selection, &iter);
+    wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
+    gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
+    gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+    gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
+    gw_vocabularywindow_show_vocabulary_list (window, TRUE);
+}
+
+
+void
+gw_vocabularywindow_new_word (GwVocabularyWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwVocabularyWindowPrivate *priv;
+    GwApplication *application;
+    GtkWindow *avw;
+    GtkTreeModel *model;
+    GtkTreeSelection *selection;
+    GtkTreeIter iter;
+    gboolean valid;
+    gchar *list;
+
+    //Initializations
+    priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
+    model = gtk_tree_view_get_model (priv->list_treeview);
+    if (model == NULL) return;
+    selection = gtk_tree_view_get_selection (priv->list_treeview);
+    valid = gtk_tree_selection_get_selected (selection, &model, &iter);
+
+    if (valid)
+    {
+      avw = gw_addvocabularywindow_new (GTK_APPLICATION (application));
+      list = gw_vocabularyliststore_get_name_by_iter (GW_VOCABULARYLISTSTORE (model), &iter);
+      if (list != NULL)
+      {
+        gw_addvocabularywindow_set_list (GW_ADDVOCABULARYWINDOW (avw), list);
+        gw_addvocabularywindow_set_focus (GW_ADDVOCABULARYWINDOW (avw), GW_ADDVOCABULARYWINDOW_FOCUS_KANJI);
+        g_free (list);
+      }
+      gtk_window_set_transient_for (avw, GTK_WINDOW (window));
+      g_signal_connect (G_OBJECT (avw), "word-added", G_CALLBACK (gw_vocabularywindow_select_new_word_from_dialog_cb), window);
+      gtk_widget_show (GTK_WIDGET (avw));
+    }
 }
 

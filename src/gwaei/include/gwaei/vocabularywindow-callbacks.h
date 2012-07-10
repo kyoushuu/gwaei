@@ -25,4 +25,9 @@ void gw_vocabularywindow_position_column_toggled_cb (GtkAction*, gpointer);
 void gw_vocabularywindow_score_column_toggled_cb (GtkAction*, gpointer);
 void gw_vocabularywindow_timestamp_column_toggled_cb (GtkAction*, gpointer);
 
+void gw_vocabularywindow_new_word_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_vocabularywindow_new_list_cb (GSimpleAction*, GVariant*, gpointer);
+
+void gw_vocabularywindow_select_new_word_from_dialog_cb (GtkWidget*, gpointer);
+
 #endif

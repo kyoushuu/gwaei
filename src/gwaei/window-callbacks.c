@@ -48,3 +48,24 @@ gw_window_configure_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     return FALSE;
 }
 
+
+G_MODULE_EXPORT gboolean
+gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    GwWindow *window;
+    GwApplication *application;
+    GMenuModel *menumodel;
+    
+    window = GW_WINDOW (widget);
+    application = gw_window_get_application (window);
+    menumodel = gw_window_get_menumodel (window);
+    if (menumodel == NULL)
+      menumodel = g_menu_new ();
+    if (menumodel == NULL) 
+      return;
+
+    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+
+    return FALSE;
+}
+

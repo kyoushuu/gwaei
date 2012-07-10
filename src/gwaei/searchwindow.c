@@ -232,10 +232,8 @@ gw_searchwindow_constructed (GObject *object)
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
 
-    gw_window_load_menubar (GW_WINDOW (window), "searchwindow");
-
     gw_searchwindow_map_actions (G_ACTION_MAP (window), window);
-    gw_application_map_actions (G_ACTION_MAP (window), application);
+    gw_window_load_menubar (GW_WINDOW (window), "searchwindow");
 
     //Set up the gtkbuilder links
     priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));
@@ -2270,6 +2268,7 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
 }
 
+
 void
 gw_searchwindow_initialize_toolbar (GwSearchWindow *window)
 {
@@ -2394,19 +2393,19 @@ gw_searchwindow_initialize_menu_links (GwSearchWindow *window)
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
-    menumodel = gw_window_get_menu_model (GW_WINDOW (window));
+    menumodel = gw_window_get_menumodel (GW_WINDOW (window));
     g_return_if_fail (menumodel != NULL);
 
     link = gw_history_get_combined_menumodel (priv->history);
-    gw_menumodel_set_links (menumodel, "history-list-link", G_MENU_LINK_SECTION, link);
+    gw_menumodel_set_links (menumodel, "history-list-link", NULL, G_MENU_LINK_SECTION, link);
     
     dictionarylist = gw_application_get_installed_dictionarylist (application);
     link = gw_dictionarylist_get_menumodel (dictionarylist);
-    gw_menumodel_set_links (menumodel, "dictionary-list-link", G_MENU_LINK_SECTION, link);
+    gw_menumodel_set_links (menumodel, "dictionary-list-link", NULL, G_MENU_LINK_SECTION, link);
 
     store = GW_VOCABULARYLISTSTORE (gw_application_get_vocabularyliststore (application));
     link = gw_vocabularyliststore_get_menumodel (store);
-    gw_menumodel_set_links (menumodel, "vocabulary-list-link", G_MENU_LINK_SECTION, link);
+    gw_menumodel_set_links (menumodel, "vocabulary-list-link", NULL, G_MENU_LINK_SECTION, link);
 }
     
 

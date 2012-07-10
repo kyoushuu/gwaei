@@ -31,6 +31,7 @@ void gw_vocabularywindow_save (GwVocabularyWindow*);
 void gw_vocabularywindow_load_selected_vocabulary (GwVocabularyWindow*);
 void gw_vocabularywindow_load_vocabulary_by_index (GwVocabularyWindow*, gint);
 void gw_vocabularywindow_new_list (GwVocabularyWindow*);
+void gw_vocabularywindow_new_word (GwVocabularyWindow*);
 void gw_vocabularywindow_remove_selected_lists (GwVocabularyWindow*);
 
 void gw_vocabularywindow_remove_selected_words (GwVocabularyWindow*);
@@ -54,6 +55,7 @@ void gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow*, gboolean);
 void gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window);
 
 void gw_vocabularywindow_map_actions (GActionMap*, GwVocabularyWindow*);
+void gw_vocabularywindow_initialize_menu_links (GwVocabularyWindow*);
 
 #include "vocabularywindow-callbacks.h"
 
