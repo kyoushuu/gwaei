@@ -150,6 +150,7 @@ void gw_searchwindow_go_back (GwSearchWindow*, gint);
 void gw_searchwindow_go_forward (GwSearchWindow*, gint);
 
 void gw_searchwindow_set_links (GwSearchWindow*, GMenuModel*);
+GMenuModel* gw_searchwindow_get_popup_menu (GwSearchWindow*);
 
 #include "searchwindow-callbacks.h"
 #include "searchwindow-output.h"

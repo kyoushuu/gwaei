@@ -2260,13 +2260,35 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     gtk_toolbar_insert (toolbar, item, -1);
     priv->submit_toolbutton = GTK_TOOL_BUTTON (item);
 
-    item = gtk_toggle_tool_button_new_from_stock (GTK_STOCK_EXECUTE);
-    g_signal_connect (item, "toggled", G_CALLBACK (gw_searchwindow_show_popup_menu_cb), window);
+/*TODO
+    item = gtk_tool_item_new ();
+
+        GMenuModel *menumodel;
+        GtkMenuBar *menubar;
+        GtkMenuItem *menuitem;
+        GtkMenu *submenu;
+
+        menumodel = gw_searchwindow_get_popup_menu (window);
+        printf("BREAK menucount: %d\n", g_menu_model_get_n_items (menumodel));
+        menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
+        gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
+        menuitem = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Menu"));
+        submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
+
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
+        gtk_menu_shell_append (GTK_MENU_SHELL (menubar), GTK_WIDGET (menuitem));
+        gtk_widget_show_all (GTK_WIDGET (submenu));
+*/
+
+menuitem = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("TEST"));
+gtk_menu_shell_append (GTK_MENU_SHELL (submenu), GTK_WIDGET (menuitem));
+
+//GTK_STOCK_EXECUTE
     gtk_widget_set_margin_left (GTK_WIDGET (item), 2);
     gtk_widget_set_margin_right (GTK_WIDGET (item), 2);
     gtk_widget_show_all (GTK_WIDGET (item));
     gtk_toolbar_insert (toolbar, item, -1);
-    priv->menu_toolbutton = GTK_TOOL_BUTTON (item);
+    priv->menu_toolbutton = GTK_TOOL_ITEM (item);
 
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
 }
@@ -2573,3 +2595,26 @@ gw_searchwindow_go_forward (GwSearchWindow *window, gint i)
     if (search != NULL) gw_searchwindow_start_search (window, search);
 }
 
+
+GMenuModel*
+gw_searchwindow_get_popup_menu (GwSearchWindow *window)
+{
+    //Sanity checks
+    g_return_val_if_fail (window != NULL, NULL);
+
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GtkBuilder *builder;
+    GMenuModel *menumodel;
+
+    //Initializations
+    builder = gtk_builder_new ();
+    gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
+    menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+    
+    //TODO add history code
+
+    if (builder != NULL) g_object_unref (builder); builder = NULL;
+    
+    return menumodel;
+}

@@ -60,7 +60,7 @@ gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     application = gw_window_get_application (window);
     menumodel = gw_window_get_menumodel (window);
     if (menumodel == NULL)
-      menumodel = g_menu_new ();
+      menumodel = G_MENU_MODEL (g_menu_new ());
     if (menumodel == NULL) 
       return FALSE;
 

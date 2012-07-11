@@ -45,7 +45,7 @@ struct _GwSearchWindowPrivate {
   GtkEntry *entry;
   GtkComboBox *combobox;
   GtkToolButton *submit_toolbutton;
-  GtkToolButton *menu_toolbutton;
+  GtkToolItem *menu_toolbutton;
 
   GtkWidget *statusbar;
   GtkLabel *statusbar_label;
