@@ -2221,6 +2221,8 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     priv = window->priv;
     toolbar = priv->search_toolbar;
 
+    gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_MENU);
+
     item = gtk_tool_item_new (); 
     label = gtk_label_new_with_mnemonic (gettext ("Sear_ch:"));
     gtk_container_add (GTK_CONTAINER (item), label);
@@ -2254,38 +2256,33 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     
     item = gtk_tool_button_new_from_stock (GTK_STOCK_FIND);
     g_signal_connect (item, "clicked", G_CALLBACK (gw_searchwindow_search_cb), window);
-    gtk_widget_set_margin_left (GTK_WIDGET (item), 2);
-    gtk_widget_set_margin_right (GTK_WIDGET (item), 2);
+
     gtk_widget_show_all (GTK_WIDGET (item));
     gtk_toolbar_insert (toolbar, item, -1);
     priv->submit_toolbutton = GTK_TOOL_BUTTON (item);
 
-/*TODO
     item = gtk_tool_item_new ();
 
         GMenuModel *menumodel;
         GtkMenuBar *menubar;
         GtkMenuItem *menuitem;
+        GtkImage *image;
         GtkMenu *submenu;
 
         menumodel = gw_searchwindow_get_popup_menu (window);
-        printf("BREAK menucount: %d\n", g_menu_model_get_n_items (menumodel));
         menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
-        gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
-        menuitem = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("Menu"));
+        image = GTK_IMAGE (gtk_image_new_from_stock (GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));
+        menuitem = GTK_MENU_ITEM (gtk_menu_item_new ());
         submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
 
+        gtk_menu_attach_to_widget (submenu, GTK_WIDGET (window), NULL);
+
+        gtk_container_add (GTK_CONTAINER (menuitem), GTK_WIDGET (image));
+        gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
         gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
         gtk_menu_shell_append (GTK_MENU_SHELL (menubar), GTK_WIDGET (menuitem));
         gtk_widget_show_all (GTK_WIDGET (submenu));
-*/
 
-menuitem = GTK_MENU_ITEM (gtk_menu_item_new_with_label ("TEST"));
-gtk_menu_shell_append (GTK_MENU_SHELL (submenu), GTK_WIDGET (menuitem));
-
-//GTK_STOCK_EXECUTE
-    gtk_widget_set_margin_left (GTK_WIDGET (item), 2);
-    gtk_widget_set_margin_right (GTK_WIDGET (item), 2);
     gtk_widget_show_all (GTK_WIDGET (item));
     gtk_toolbar_insert (toolbar, item, -1);
     priv->menu_toolbutton = GTK_TOOL_ITEM (item);
@@ -2606,13 +2603,16 @@ gw_searchwindow_get_popup_menu (GwSearchWindow *window)
     GwSearchWindowPrivate *priv;
     GtkBuilder *builder;
     GMenuModel *menumodel;
+    GMenuModel *link;
 
     //Initializations
+    priv = window->priv;
     builder = gtk_builder_new ();
     gw_application_load_xml (builder, "searchwindow-menumodel-button.ui");
     menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+    link = gw_history_get_combined_menumodel (priv->history);
     
-    //TODO add history code
+    gw_menumodel_set_links (menumodel, "history-list-link", NULL, G_MENU_LINK_SECTION, link);
 
     if (builder != NULL) g_object_unref (builder); builder = NULL;
     

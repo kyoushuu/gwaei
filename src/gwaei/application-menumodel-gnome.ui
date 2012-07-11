@@ -1,5 +1,4 @@
 <interface>
-
   <menu id='menu'>
     <section>
       <item>
@@ -48,6 +47,5 @@
         <attribute name='accel'>&lt;Primary&gt;q</attribute>
       </item>
     </section>
-
   </menu>
 </interface>
