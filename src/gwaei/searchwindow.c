@@ -2275,16 +2275,15 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
         menuitem = GTK_MENU_ITEM (gtk_menu_item_new ());
         submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
 
-        gtk_menu_attach_to_widget (submenu, GTK_WIDGET (window), NULL);
-
-        gtk_container_add (GTK_CONTAINER (menuitem), GTK_WIDGET (image));
+        gtk_toolbar_insert (toolbar, item, -1);
         gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
-        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
+        gtk_container_add (GTK_CONTAINER (menuitem), GTK_WIDGET (image));
+
         gtk_menu_shell_append (GTK_MENU_SHELL (menubar), GTK_WIDGET (menuitem));
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
         gtk_widget_show_all (GTK_WIDGET (submenu));
 
     gtk_widget_show_all (GTK_WIDGET (item));
-    gtk_toolbar_insert (toolbar, item, -1);
     priv->menu_toolbutton = GTK_TOOL_ITEM (item);
 
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
