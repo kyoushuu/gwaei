@@ -693,7 +693,7 @@ gw_searchwindow_append_kanjidict_result (GwSearchWindow *window, LwSearch *searc
       radicalswindow =  GW_RADICALSWINDOW (gw_application_get_window_by_type (application, GW_TYPE_RADICALSWINDOW));
       if (radicalswindow != NULL && result->radicals != NULL)
       {
-        gw_radicalswindow_set_button_sensitive_when_label_is (radicalswindow, result->radicals);
+        gw_radicalswindow_update_sensitivities (radicalswindow, result->radicals);
       }
     }
 }

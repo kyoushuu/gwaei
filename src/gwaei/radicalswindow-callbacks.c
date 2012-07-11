@@ -54,7 +54,7 @@ gw_radicalswindow_clear_cb (GtkWidget *widget, gpointer data)
     g_return_if_fail (window != NULL);
     priv = window->priv;
 
-    gw_radicalswindow_deselect_all_radicals (window);
+    gw_radicalswindow_deselect (window);
     gtk_toggle_button_set_active (priv->strokes_checkbutton, FALSE);
 }
 

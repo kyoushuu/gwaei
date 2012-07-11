@@ -1969,7 +1969,7 @@ gw_searchwindow_radicalswindow_query_changed_cb (GwRadicalsWindow *window, gpoin
     position = lw_dictionarylist_get_position (dictionarylist, dictionary);
     if (dictionary == NULL) return;
 
-    text_radicals = gw_radicalswindow_strdup_all_selected (window);
+    text_radicals = gw_radicalswindow_strdup_selected (window);
     text_strokes = gw_radicalswindow_strdup_prefered_stroke_count (window);
     text_query = g_strdup_printf ("%s%s", text_radicals, text_strokes);
 
@@ -2011,7 +2011,7 @@ gw_searchwindow_toggle_radicalswindow_cb (GSimpleAction *action,
       if (priv->radicalswindow != NULL)
       {
         gtk_window_set_transient_for (GTK_WINDOW (priv->radicalswindow), GTK_WINDOW (window));
-        gw_radicalswindow_deselect_all_radicals (GW_RADICALSWINDOW (priv->radicalswindow));
+        gw_radicalswindow_deselect (GW_RADICALSWINDOW (priv->radicalswindow));
         gtk_window_present (GTK_WINDOW (priv->radicalswindow));
       }
       else
