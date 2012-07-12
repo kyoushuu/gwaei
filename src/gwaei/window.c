@@ -560,7 +560,7 @@ gw_window_show_menubar (GwWindow *window, gboolean show)
 {
     //Sanity checks
     g_return_if_fail (window != NULL);
-    g_return_if_fail (window->priv->menubar != NULL);
+    if (window->priv->menubar == NULL) return;
 
     //Declarations
     GwWindowPrivate *priv;

@@ -2217,10 +2217,14 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     GtkWidget *label;
     GtkWidget *entry;
     GtkWidget *combobox;
+    GtkSettings *settings;
+    gboolean os_shows_win_menu;
 
     priv = window->priv;
     toolbar = priv->search_toolbar;
 
+    settings = gtk_settings_get_default ();
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
     gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_MENU);
 
     item = gtk_tool_item_new (); 
@@ -2261,30 +2265,34 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     gtk_toolbar_insert (toolbar, item, -1);
     priv->submit_toolbutton = GTK_TOOL_BUTTON (item);
 
-    item = gtk_tool_item_new ();
 
-        GMenuModel *menumodel;
-        GtkMenuBar *menubar;
-        GtkMenuItem *menuitem;
-        GtkImage *image;
-        GtkMenu *submenu;
+    if (!os_shows_win_menu)
+    {
+      item = gtk_tool_item_new ();
 
-        menumodel = gw_searchwindow_get_popup_menu (window);
-        menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
-        image = GTK_IMAGE (gtk_image_new_from_stock (GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));
-        menuitem = GTK_MENU_ITEM (gtk_menu_item_new ());
-        submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
+      GMenuModel *menumodel;
+      GtkMenuBar *menubar;
+      GtkMenuItem *menuitem;
+      GtkImage *image;
+      GtkMenu *submenu;
 
-        gtk_toolbar_insert (toolbar, item, -1);
-        gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
-        gtk_container_add (GTK_CONTAINER (menuitem), GTK_WIDGET (image));
+      menumodel = gw_searchwindow_get_popup_menu (window);
+      menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
+      image = GTK_IMAGE (gtk_image_new_from_stock (GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));
+      menuitem = GTK_MENU_ITEM (gtk_menu_item_new ());
+      submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
 
-        gtk_menu_shell_append (GTK_MENU_SHELL (menubar), GTK_WIDGET (menuitem));
-        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
-        gtk_widget_show_all (GTK_WIDGET (submenu));
+      gtk_toolbar_insert (toolbar, item, -1);
+      gtk_container_add (GTK_CONTAINER (item), GTK_WIDGET (menubar));
+      gtk_container_add (GTK_CONTAINER (menuitem), GTK_WIDGET (image));
 
-    gtk_widget_show_all (GTK_WIDGET (item));
-    priv->menu_toolbutton = GTK_TOOL_ITEM (item);
+      gtk_menu_shell_append (GTK_MENU_SHELL (menubar), GTK_WIDGET (menuitem));
+      gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (submenu));
+      gtk_widget_show_all (GTK_WIDGET (submenu));
+
+      gtk_widget_show_all (GTK_WIDGET (item));
+      priv->menu_toolbutton = GTK_TOOL_ITEM (item);
+    }
 
     gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
 }

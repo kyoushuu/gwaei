@@ -1636,10 +1636,13 @@ gw_searchwindow_sync_menubar_show_cb (GSettings *settings,
     gtk_window_set_hide_titlebar_when_maximized (GTK_WINDOW (window), !show || shell_shows_menubar);
     g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (show));
 
-    if (show == TRUE || shell_shows_menubar)
-      gtk_widget_hide (GTK_WIDGET (priv->menu_toolbutton));
-    else
-      gtk_widget_show (GTK_WIDGET (priv->menu_toolbutton));
+    if (priv->menu_toolbutton != NULL)
+    {
+      if (show == TRUE || shell_shows_menubar)
+        gtk_widget_hide (GTK_WIDGET (priv->menu_toolbutton));
+      else
+        gtk_widget_show (GTK_WIDGET (priv->menu_toolbutton));
+    }
 }
 
 
