@@ -1171,9 +1171,7 @@ lw_dictionary_installer_cancel (LwDictionary *dictionary)
 
 /*TODO
     if (status != LW_DICTIONARY_STATE_INSTALLED && state != LW_DICTIONARY_STATE_NOT_INSTALLED)
-    {
       priv->install->cancel = TRUE;
       lw_io_set_cancel_operations (state);
-    }
 */
 }
