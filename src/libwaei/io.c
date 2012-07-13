@@ -39,7 +39,6 @@
 
 
 static gchar *_savepath = NULL;
-static gboolean _cancel = FALSE;
 
 struct _LwIoProcessFdData {
   const char* uri;         //!< The file path being passed
@@ -258,7 +257,9 @@ static int _libcurl_update_progress (void  *custom,
       fraction = dlnow / dltotal;
 
     //Update the interface
+/*TODO
     if (_cancel) return 1;
+*/
     else return cb (fraction, data);
 }
 
@@ -316,6 +317,7 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
     fclose(outfile);
     curl_easy_cleanup(curl);
 
+/*TODO
     if (res != 0 && _cancel == FALSE)
     {
       g_remove (target_path);
@@ -326,6 +328,7 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
         *error = g_error_new_literal (quark, LW_IO_DOWNLOAD_ERROR, message);
       }
     }
+*/
 
   curl_global_cleanup ();
 
@@ -365,6 +368,7 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     curpos = 0;
     fraction = 0.0;
 
+/*TODO
     while (chunk && !_cancel)
     {
       fraction = ((double) curpos) / ((double) end);
@@ -375,6 +379,7 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     }
     fraction = 1.0;
     if (cb != NULL) cb (fraction, data);
+*/
 
     //Cleanup
     fclose(infd);
@@ -427,9 +432,11 @@ lw_io_create_mix_dictionary (const char *output_path,
     end = lw_io_get_filesize (kanji_dictionary_path);
     fraction = 0.0;
 
+/*TODO
     //Loop through the kanji file
     while (fgets(kanji_input, LW_IO_MAX_FGETS_LINE, kanji_file) != NULL && !_cancel)
     {
+*/
       fraction = ((double) curpos)/((double) end);
       if (cb != NULL) cb (fraction, data);
 
@@ -571,6 +578,7 @@ lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH,
     name_write_error  = 0;
 
 
+/* TODO
     //Start writing the child files
     while (fgets(buffer, LW_IO_MAX_FGETS_LINE, inputf) != NULL &&
            place_write_error != EOF &&
@@ -578,6 +586,7 @@ lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH,
            *error == NULL &&
            !_cancel)
     {
+*/
       fraction = ((double) curpos) / ((double) end);
       if (cb != NULL) cb (fraction, data);
 
@@ -728,6 +737,7 @@ gpointer _stdin_func (gpointer data)
     file = fopen(in->uri, "rb");
     stream = fdopen(in->fd, "ab");
 
+/*TODO
     while (file != NULL && ferror(file) == 0 && feof(file) == 0 && !_cancel)
     {
         fraction = ((double) curpos / (double) end);
@@ -740,6 +750,7 @@ gpointer _stdin_func (gpointer data)
     }
     fraction = 1.0;
     if (in->cb != NULL) in->cb (fraction, in->data);
+*/
 
     if (ferror(file) != 0)
     {
@@ -829,17 +840,6 @@ lw_io_remove (const char *URI, GError **error)
   g_remove (URI);
 
   return (error == NULL && *error == NULL);
-}
-
-
-//!
-//! @brief Sets the global IO state to cancel all operations
-//! @param state The cancel request state wanted
-//!
-void 
-lw_io_set_cancel_operations (gboolean state)
-{
-    _cancel = state;
 }
 
 

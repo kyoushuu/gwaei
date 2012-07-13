@@ -280,29 +280,27 @@ lw_query_tokenlist_get_supplimentary (LwQuery      *query,
                                       gchar       **supplimentary_tokens,
                                       LwQueryType  *supplimentary_type)
 {
+/*
     gchar *tokens = lw_query_tokenlist_get (query, type);
     gchar *token = tokens[index];
 
     switch (type)
     {
-/*
       case LW_QUERY_TYPE_KANJI:
         lw_query_tokenlist_build_kanji_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
         break;
       case LW_QUERY_TYPE_FURIGANA:
         lw_query_tokenlist_build_furigana_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
         break;
-*/
       case LW_QUERY_TYPE_ROMAJI:
         lw_query_tokenlist_build_romaji_supplimentary (query, token, supplimentary_tokens, supplimentary_type);
         break;
       default:
-/*
         *supplimentary_tokens = g_strdup();
         *supplimentary_type = type;
-*/
         break;
     }
+*/
 }
 
 

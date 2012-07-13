@@ -119,8 +119,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
 
       gw_application_handle_error (application, NULL, FALSE, NULL);
 
-      //TODO
-      //lw_dictionarylist_set_cancel_operations (dictionarylist, FALSE);
+      lw_dictionarylist_installer_cancel (dictionarylist);
 
       return FALSE;
     }

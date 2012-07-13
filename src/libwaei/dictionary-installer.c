@@ -463,7 +463,7 @@ lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_downloadlist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_decompresslist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING;
 
@@ -517,7 +517,7 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_decompresslist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_encodelist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_DECOMPRESSING;
 
@@ -574,7 +574,7 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **err
     targetiter = targetlist = lw_dictionary_installer_get_postprocesslist (dictionary);
     encodingname = lw_util_get_encodingname (priv->install->encoding);
 
-    if (priv->cancel) return FALSE;
+    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_ENCODING;
 
@@ -628,7 +628,7 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_postprocesslist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installlist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_POSTPROCESSING;
 
@@ -687,7 +687,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_installlist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installedlist (dictionary);
 
-    if (priv->cancel) return FALSE;
+    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_FINISHING;
 
@@ -1135,3 +1135,45 @@ lw_dictionary_installer_is_builtin (LwDictionary *dictionary)
     return dictionary->priv->install->builtin;
 }
 
+
+//!
+//! @brief Used to tell the LwDictionary installer to stop installation.
+//! @param dictionary The LwDictionary object to stop or prevent the install on.
+//! @param state Whether to turn on the requested cancel operation or not.
+//!
+gboolean
+lw_dictionary_installer_is_cancelled (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+
+    return (dictionary->priv->install->cancel);
+}
+
+
+//!
+//! @brief Used to tell the LwDictionary installer to stop installation.
+//! @param dictionary The LwDictionary object to stop or prevent the install on.
+//! @param state Whether to turn on the requested cancel operation or not.
+//!
+void 
+lw_dictionary_installer_cancel (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_assert (dictionary->priv->install != NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+
+    //Initializations
+    priv = dictionary->priv;
+
+/*TODO
+    if (status != LW_DICTIONARY_STATE_INSTALLED && state != LW_DICTIONARY_STATE_NOT_INSTALLED)
+    {
+      priv->install->cancel = TRUE;
+      lw_io_set_cancel_operations (state);
+    }
+*/
+}

@@ -582,7 +582,11 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 gboolean 
 lw_dictionary_install (LwDictionary *dictionary, GError **error)
 {
-    g_assert (*error == NULL && dictionary != NULL);
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+    g_return_val_if_fail (dictionary->priv != NULL, FALSE);
+    g_assert (dictionary->priv->install != NULL);
+    if (*error != NULL) return FALSE;
 
     lw_dictionary_installer_download (dictionary, error);
     lw_dictionary_installer_decompress (dictionary, error);
@@ -624,49 +628,6 @@ lw_dictionary_set_selected (LwDictionary *dictionary, gboolean selected)
     priv = dictionary->priv;
 
     priv->selected = selected;
-}
-
-
-//!
-//! @brief Used to tell the LwDictionary installer to stop installation.
-//! @param dictionary The LwDictionary object to stop or prevent the install on.
-//! @param state Whether to turn on the requested cancel operation or not.
-//!
-gboolean
-lw_dictionary_is_cancelled (LwDictionary *dictionary)
-{
-    LwDictionaryPrivate *priv;
-
-    priv = dictionary->priv;
-
-    return (priv->cancel);
-}
-
-
-//!
-//! @brief Used to tell the LwDictionary installer to stop installation.
-//! @param dictionary The LwDictionary object to stop or prevent the install on.
-//! @param state Whether to turn on the requested cancel operation or not.
-//!
-void 
-lw_dictionary_cancel (LwDictionary *dictionary)
-{
-    //TODO
-    g_return_if_fail (dictionary != NULL);
-/*
-
-    LwDictionaryPrivate *priv;
-    LwDictionaryState state;
-
-    priv = dictionary->priv;
-    state = lw_dictionary_get_state (dictionary);
-
-    if (state != LW_DICTIONARY_STATE_INSTALLED && state != LW_DICTIONARY_STATE_NOT_INSTALLED)
-    {
-      priv->cancel = TRUE;
-      lw_io_set_cancel_operations (state);
-    }
-*/
 }
 
 

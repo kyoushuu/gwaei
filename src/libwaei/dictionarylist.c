@@ -657,12 +657,17 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
 
 
 void 
-lw_dictionarylist_cancel (LwDictionaryList *dictionarylist, gboolean state)
+lw_dictionarylist_installer_cancel (LwDictionaryList *dictionarylist, gboolean state)
 {
+    //Sanity checks
+    g_return_if_fail (dictionarylist != NULL);
+
+    //Declarations
     LwDictionaryListPrivate *priv;
     LwDictionary *dictionary;
     GList *link;
 
+    //Initializations
     priv = dictionarylist->priv;
     link = priv->list;
 
@@ -670,10 +675,7 @@ lw_dictionarylist_cancel (LwDictionaryList *dictionarylist, gboolean state)
     {
       dictionary = LW_DICTIONARY (link->data);
 
-      if (dictionary != NULL)
-      {
-        lw_dictionary_cancel (dictionary);
-      }
+      if (dictionary != NULL) lw_dictionary_installer_cancel (dictionary);
 
       link = link->next;
     }
