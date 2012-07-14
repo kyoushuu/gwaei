@@ -169,7 +169,9 @@ gw_vocabularywindow_remove_word_cb (GtkWidget *widget, gpointer data)
 G_MODULE_EXPORT void
 gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
 {
-/* TODO
+    //Sanity checks
+    g_return_if_fail (view != NULL);
+
     //Declarations
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
@@ -182,6 +184,8 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     gchar *title;
     const gchar *name;
     gboolean valid;
+    GActionMap *map;
+    GSimpleAction *action;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
@@ -192,6 +196,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     liststore = gw_application_get_vocabularyliststore (application);
     model = GTK_TREE_MODEL (liststore);
     selection = gtk_tree_view_get_selection (priv->list_treeview);
+    map = G_ACTION_MAP (window);
 
     valid = gtk_tree_selection_get_selected (selection, &model, &iter);
 
@@ -202,7 +207,8 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
       has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
-      gtk_action_set_sensitive (priv->revert_action, has_changes);
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert"));
+      g_simple_action_set_enabled (action, has_changes);
 
       gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 
@@ -219,7 +225,6 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       gtk_window_set_title (GTK_WINDOW (window), title);
       g_free (title); title = NULL;
     }
-*/
 }
 
 
@@ -633,31 +638,33 @@ gw_vocabularywindow_paste_cb (GSimpleAction *action,
 G_MODULE_EXPORT gboolean
 gw_vocabularywindow_event_after_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-/*TODO
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
     GtkWidget *focus;
     gboolean sensitive;
-    int i = 0;
+    GActionMap *map;
+    GSimpleAction *action;
 
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     g_return_val_if_fail (window != NULL, FALSE);
     priv = window->priv;
-    GtkMenuItem *menuitem[] = { 
-      priv->copy_menuitem, 
-      priv->paste_menuitem, 
-      priv->cut_menuitem, 
-      priv->delete_menuitem, 
-      NULL };
+    map = G_ACTION_MAP (window);
+
     focus = gtk_window_get_focus (GTK_WINDOW (window));
     sensitive = (GTK_WIDGET (priv->word_treeview) == focus);
 
-    for (i = 0; menuitem[i] != NULL; i++)
-    {
-      gtk_widget_set_sensitive (GTK_WIDGET (menuitem[i]), sensitive);
-    }
-*/
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "copy"));
+    g_simple_action_set_enabled (action, sensitive);
 
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "paste"));
+    g_simple_action_set_enabled (action, sensitive);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "cut"));
+    g_simple_action_set_enabled (action, sensitive);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "delete"));
+    g_simple_action_set_enabled (action, sensitive);
+    
     return FALSE;
 }
 

@@ -43,7 +43,6 @@ static void gw_vocabularywindow_remove_signals (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_styles (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_list_treeview (GwVocabularyWindow*);
 static void gw_vocabularywindow_init_word_treeview (GwVocabularyWindow*);
-static void gw_vocabularywindow_init_accelerators (GwVocabularyWindow*);
 static void gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow*);
 
 enum {
@@ -175,8 +174,6 @@ gw_vocabularywindow_constructed (GObject *object)
     gw_vocabularywindow_init_styles (window);
     gw_vocabularywindow_init_word_treeview (window);
     gw_vocabularywindow_init_list_treeview (window);
-    //TODO
-    //gw_vocabularywindow_init_accelerators (window);
 
     gw_vocabularywindow_attach_signals (window);
 
@@ -208,81 +205,6 @@ gw_vocabularywindow_constructed (GObject *object)
 
     gw_window_unload_xml (GW_WINDOW (window));
     gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
-}
-
-
-static void
-gw_vocabularywindow_init_accelerators (GwVocabularyWindow *window)
-{
-/*TODO
-    GtkWidget *widget;
-    GtkAccelGroup *accelgroup;
-    gint i;
-    const gchar *flashcard_id[6] =
-    {
-      "kanji_definition_flashcard_menuitem",
-      "definition_kanji_flashcard_menuitem",
-      "furigana_definition_flashcard_menuitem",
-      "definition_furigana_flashcard_menuitem",
-      "kanji_furigana_flashcard_menuitem",
-      "furigana_kanji_flashcard_menuitem"
-    };
-
-    accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
-
-    //File popup
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "new_list_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_N), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "new_word_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_N), GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "save_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_S), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "import_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_O), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "export_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_S), GDK_CONTROL_MASK | GDK_SHIFT_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "close_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    //Edit popup
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "revert_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_Z), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "cut_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_X), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "copy_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_C), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "paste_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_V), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "delete_menuitem"));
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_Delete), 0, GTK_ACCEL_VISIBLE);
-
-    for (i = 0; i < 6; i++)
-    {
-      widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), flashcard_id[i]));
-      gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-        accelgroup, (GDK_KEY_0 + i), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    }
-*/
 }
 
 
@@ -536,19 +458,6 @@ gw_vocabularywindow_init_styles (GwVocabularyWindow *window)
     sides = GTK_JUNCTION_CORNER_TOPLEFT | GTK_JUNCTION_CORNER_TOPRIGHT | GTK_JUNCTION_CORNER_BOTTOMRIGHT;
     gtk_style_context_set_junction_sides (context, sides);
     gtk_widget_reset_style (GTK_WIDGET (priv->word_toolbar));
-
-/* TODO
-    context = gtk_widget_get_style_context (GTK_WIDGET (priv->study_toolbar));
-    gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-    sides = GTK_JUNCTION_CORNER_BOTTOMLEFT | GTK_JUNCTION_CORNER_TOPLEFT | GTK_JUNCTION_CORNER_TOPRIGHT;
-    gtk_style_context_set_junction_sides (context, sides);
-    gtk_widget_reset_style (GTK_WIDGET (priv->study_toolbar));
-
-    GtkWidget *menu, *menutoolbutton;
-    menu = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "toolbar_study_menu"));
-    menutoolbutton = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "study_menutoolbutton"));
-    gtk_menu_tool_button_set_menu (GTK_MENU_TOOL_BUTTON (menutoolbutton), menu);
-*/
 }
 
 
@@ -763,17 +672,21 @@ gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow *window)
 void
 gw_vocabularywindow_set_has_changes (GwVocabularyWindow *window, gboolean has_changes)
 {
-   GwVocabularyWindowPrivate *priv;
-   gboolean wordstore_has_changes;
+    GwVocabularyWindowPrivate *priv;
+    gboolean wordstore_has_changes;
+    GSimpleAction *action;
+    GActionMap *map;
 
-   priv = window->priv;
-   priv->has_changes = has_changes;
-   wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
+    priv = window->priv;
+    priv->has_changes = has_changes;
+    wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
+    map = G_ACTION_MAP (window);
 
-/* TODO
-   gtk_action_set_sensitive (priv->save_action, has_changes);
-   gtk_action_set_sensitive (priv->revert_action, wordstore_has_changes);
-*/
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save"));
+    g_simple_action_set_enabled (action, has_changes);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert"));
+    g_simple_action_set_enabled (action, wordstore_has_changes);
 }
 
 
@@ -993,27 +906,39 @@ gw_vocabularywindow_show_vocabulary_list (GwVocabularyWindow *window, gboolean r
 void
 gw_vocabularywindow_update_flashcard_menu_sensitivities (GwVocabularyWindow *window)
 {
-/* TODO
     //Declarations
     GwVocabularyWindowPrivate *priv;
     gint n_children;
     GtkTreeModel *model;
+    GActionMap *map;  
+    GSimpleAction *action;
+    gboolean enabled;
 
     //Initializations
     priv = window->priv;
+    map = G_ACTION_MAP (window);
     model = gtk_tree_view_get_model (priv->word_treeview);
-    if (model != NULL)
-      n_children = gtk_tree_model_iter_n_children (model, NULL);
-    else 
-      n_children = 0;
+    n_children = 0;
+    if (model != NULL) n_children = gtk_tree_model_iter_n_children (model, NULL);
+    enabled = (n_children > 0);
 
-    gtk_action_set_sensitive (priv->kanji_definition_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->definition_kanji_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->kanji_furigana_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->furigana_kanji_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->definition_furigana_flashcards_action, n_children);
-    gtk_action_set_sensitive (priv->furigana_definition_flashcards_action, n_children);
-*/
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-kanji-definition-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-definition-kanji-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-kanji-furigana-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-furigana-kanji-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-definition-furigana-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "show-furigana-definition-flashcards"));
+    g_simple_action_set_enabled (action, enabled);
 }
 
 

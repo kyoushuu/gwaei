@@ -2076,40 +2076,31 @@ G_MODULE_EXPORT void
 gw_searchwindow_dictionaries_changed_cb (GwSearchWindow   *window,
                                          LwDictionaryList *dictionarylist)
 {
-    //TODO
-/*
     //Declarations
-    GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    GwApplication *application;
-    GtkListStore *dictionarystore;
-    LwDictionaryList *dictionarylist;
-    GtkAction *action;
-    gboolean enable;
+    gboolean enabled;
+    GActionMap *map;
+    GSimpleAction *action;
+    LwHistory *history;
 
     //Initializations
-    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
-    dictionarystore = gw_application_get_dictionarystore (application);
-    dictionarylist = gw_dictionarystore_get_dictionarylist (GW_DICTIONARYSTORE (dictionarystore));
+    map = G_ACTION_MAP (window);
+    history = LW_HISTORY (priv->history);
 
     //Update radicals window tool menuitem
-    action = GTK_ACTION (priv->show_radicals_toggleaction);
-    enable = (lw_dictionarylist_get_dictionary (dictionarylist, LW_TYPE_KANJIDICTIONARY, "Kanji") != NULL);
-    gtk_action_set_sensitive (action, enable);
-
-    gw_searchwindow_initialize_dictionary_menu (window);
-    gw_searchwindow_initialize_dictionary_combobox (window);
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "toggle-radicals-show"));
+    enabled = (lw_dictionarylist_get_dictionary (dictionarylist, LW_TYPE_KANJIDICTIONARY, "Kanji") != NULL);
+    g_simple_action_set_enabled (action, enabled);
 
     //Set the show state of the dictionaries required message
     if (lw_dictionarylist_get_total (dictionarylist) > 0)
       gw_searchwindow_set_dictionary (window, 0);
 
     //Reset history and searchitems
-    if (priv->history != NULL) lw_history_free (priv->history);
-    priv->history = lw_history_new (20);
+    lw_history_clear_forward_list (history);
+    lw_history_clear_back_list (history);
 
     GList *children, *link;
     children = link = gtk_container_get_children (GTK_CONTAINER (priv->notebook));
@@ -2122,9 +2113,6 @@ gw_searchwindow_dictionaries_changed_cb (GwSearchWindow   *window,
       }
       g_list_free (children); children = NULL;
     }
-
-    gw_searchwindow_update_history_popups (window);
-*/
 }
 
 
@@ -2186,49 +2174,46 @@ gw_searchwindow_event_after_cb (GtkWidget *widget,
                                 GdkEvent  *event, 
                                 gpointer   data)
 {
-//TODO
-/*
     //Declarations
     GwSearchWindow *window;
-    GwSearchWindowPrivate *priv;
-    GtkAction *action_cut, *action_paste, *action_copy, *action_select_all;
+    GActionMap *map;
+    GSimpleAction *action_cut, *action_paste, *action_copy, *action_select_all;
     gboolean has_selection;
     GtkWidget *selectable;
   
     //Initializations
     window = GW_SEARCHWINDOW (widget);
-    priv = window->priv;
+    map = G_ACTION_MAP (window);
     selectable = gtk_window_get_focus (GTK_WINDOW (window));
     if (selectable == NULL) return;
-    action_cut = GTK_ACTION (priv->cut_action);
-    action_copy = GTK_ACTION (priv->copy_action);
-    action_paste = GTK_ACTION (priv->paste_action);
-    action_select_all = GTK_ACTION (priv->select_all_action);
+    action_cut = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "cut"));
+    action_copy = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "copy"));
+    action_paste = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "paste"));
+    action_select_all = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "select-all"));
     has_selection = (gw_searchwindow_has_selection (window, selectable));
 
     //Set the sensitivity states
     if (GTK_IS_ENTRY (selectable))
     {
-      gtk_action_set_sensitive (action_cut, has_selection);
-      gtk_action_set_sensitive (action_copy, has_selection);
-      gtk_action_set_sensitive (action_paste, TRUE);
-      gtk_action_set_sensitive (action_select_all, TRUE);
+      g_simple_action_set_enabled (action_cut, has_selection);
+      g_simple_action_set_enabled (action_copy, has_selection);
+      g_simple_action_set_enabled (action_paste, TRUE);
+      g_simple_action_set_enabled (action_select_all, TRUE);
     }
     else if (GTK_IS_TEXT_VIEW (selectable))
     {
-      gtk_action_set_sensitive (action_cut, FALSE);
-      gtk_action_set_sensitive (action_copy, has_selection);
-      gtk_action_set_sensitive (action_paste, FALSE);
-      gtk_action_set_sensitive (action_select_all, TRUE);
+      g_simple_action_set_enabled (action_cut, FALSE);
+      g_simple_action_set_enabled (action_copy, has_selection);
+      g_simple_action_set_enabled (action_paste, FALSE);
+      g_simple_action_set_enabled (action_select_all, TRUE);
     }
     else
     {
-      gtk_action_set_sensitive (action_cut, FALSE);
-      gtk_action_set_sensitive (action_copy, FALSE);
-      gtk_action_set_sensitive (action_paste, FALSE);
-      gtk_action_set_sensitive (action_select_all, FALSE);
+      g_simple_action_set_enabled (action_cut, FALSE);
+      g_simple_action_set_enabled (action_copy, FALSE);
+      g_simple_action_set_enabled (action_paste, FALSE);
+      g_simple_action_set_enabled (action_select_all, FALSE);
     }
-*/
 }
 
 static void

@@ -1,7 +1,6 @@
 #ifndef LW_QUERYLINE_INCLUDED
 #define LW_QUERYLINE_INCLUDED
 
-#include <libwaei/regexgroup.h>
 #include <libwaei/range.h>
 
 G_BEGIN_DECLS

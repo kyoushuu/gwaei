@@ -113,7 +113,7 @@ w_console_install_dictionary (WApplication *application, GError **error)
     {
       printf(gettext("Installing %s Dictionary...\n"), lw_dictionary_get_name (dictionary));
       signalid = g_signal_connect (G_OBJECT (dictionary), "progress-changed", G_CALLBACK (w_console_update_progress_cb), application);
-      lw_dictionary_install (dictionary, error);
+      lw_dictionary_install (dictionary, NULL, error);
       if (g_signal_handler_is_connected (G_OBJECT (dictionary), signalid))
         g_signal_handler_disconnect (G_OBJECT (dictionary), signalid);
       if (*error == NULL) 

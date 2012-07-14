@@ -38,18 +38,21 @@
 G_MODULE_EXPORT void 
 gw_installprogresswindow_cancel_cb (GtkWidget *widget, gpointer data)
 {
-/*
-    GwInstallProgressWindow *window;
-    GwApplication *application;
-    LwDictionaryList *dictionarylist;
+    //Sanity checks
+    g_return_if_fail (widget != NULL);
 
+    //Declarations
+    GwInstallProgressWindow *window;
+    GwInstallProgressWindowPrivate *priv;
+    GCancellable *cancellable;
+
+    //Initializations
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
     g_return_if_fail (window != NULL);
-    application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_dictionarylist (application);
+    priv = window->priv;
+    cancellable = priv->cancellable;
 
-    lw_dictionarylist_set_cancel_operations (dictionarylist, TRUE);
-*/
+    g_cancellable_cancel (cancellable);
 }
 
 
@@ -118,8 +121,6 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
       gtk_widget_destroy (GTK_WIDGET (window));
 
       gw_application_handle_error (application, NULL, FALSE, NULL);
-
-      lw_dictionarylist_installer_cancel (dictionarylist);
 
       return FALSE;
     }

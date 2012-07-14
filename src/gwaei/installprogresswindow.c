@@ -81,6 +81,7 @@ gw_installprogresswindow_finalize (GObject *object)
     priv->label = NULL;
     priv->sublabel = NULL;
     priv->progressbar = NULL;
+    if (priv->cancellable != NULL) g_object_unref (priv->cancellable); priv->cancellable = NULL;
 
     G_OBJECT_CLASS (gw_installprogresswindow_parent_class)->finalize (object);
 }
@@ -108,6 +109,7 @@ gw_installprogresswindow_constructed (GObject *object)
     priv->sublabel = GTK_LABEL (gw_window_get_object (GW_WINDOW (window), "sub_progress_label"));
     priv->progressbar = GTK_PROGRESS_BAR (gw_window_get_object (GW_WINDOW (window), "progress_progressbar"));
     priv->cancel_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "cancel_button"));
+    priv->cancellable = g_cancellable_new ();
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("Installing Dictionaries..."));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
@@ -187,6 +189,7 @@ gw_installprogresswindow_install_thread (gpointer data)
     LwDictionary *dictionary;
     GError *error;
     gulong signalid;
+    GCancellable *cancellable;
 
     //Initializations
     window = GW_INSTALLPROGRESSWINDOW (data);
@@ -194,6 +197,7 @@ gw_installprogresswindow_install_thread (gpointer data)
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarylist = gw_application_get_installable_dictionarylist (application);
+    cancellable = priv->cancellable;
     error = NULL;
     link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist));
 
@@ -208,7 +212,7 @@ gw_installprogresswindow_install_thread (gpointer data)
         priv->dictionary = dictionary;
         g_mutex_unlock (&priv->mutex);
         signalid = g_signal_connect (dictionary, "progress-changed", G_CALLBACK (gw_installprogresswindow_update_dictionary_cb), window);
-        lw_dictionary_install (dictionary, &error);
+        lw_dictionary_install (dictionary, cancellable, &error);
         if (g_signal_handler_is_connected (dictionary, signalid))
           g_signal_handler_disconnect (dictionary, signalid);
       }

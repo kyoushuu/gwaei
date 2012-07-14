@@ -525,7 +525,6 @@ printf("BREAK3\n");
     }
 printf("BREAK4\n");
 
-    //TODO this should be moved to a on-focus callback
     //Set the menubar to the application
     gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
 printf("BREAK5\n");

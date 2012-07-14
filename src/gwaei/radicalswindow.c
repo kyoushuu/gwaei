@@ -606,11 +606,17 @@ gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow   *window,
                                                 GtkToolItemGroup *toolitemgroup, 
                                                 const gchar      *TEXT)
 {
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+    g_return_if_fail (toolitemgroup != NULL);
+    g_return_if_fail (TEXT != NULL);
+
+    //Declarations
     GList *itemlist, *itemlink;
     const gchar *RADICAL;
     GtkToggleToolButton *button;
     gunichar c;
-    gboolean found;
+    gboolean found; 
 
     itemlink = itemlist = gtk_container_get_children (GTK_CONTAINER (toolitemgroup));
 
@@ -624,7 +630,7 @@ gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow   *window,
         {
           c = g_utf8_get_char (RADICAL);
           found = (g_utf8_strchr (TEXT, -1, c) != NULL);
-          //if (found) gtk_widget_set_sensitive (GTK_WIDGET (button), TRUE);
+          if (found) gtk_widget_set_sensitive (GTK_WIDGET (button), TRUE); 
         }
       }
       itemlink = itemlink->next;

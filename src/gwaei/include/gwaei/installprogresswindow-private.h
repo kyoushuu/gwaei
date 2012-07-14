@@ -5,6 +5,7 @@ G_BEGIN_DECLS
 
 struct _GwInstallProgressWindowPrivate {
   LwDictionary *dictionary;
+  GCancellable *cancellable;
 
   GtkLabel *label;
   GtkLabel *sublabel;

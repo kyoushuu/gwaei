@@ -1080,7 +1080,8 @@ lw_dictionary_installer_get_downloads (LwDictionary *dictionary)
 
 
 void
-lw_dictionary_installer_set_downloads (LwDictionary *dictionary, const gchar *downloads)
+lw_dictionary_installer_set_downloads (LwDictionary *dictionary, 
+                                       const gchar  *DOWNLOADS)
 {
     //TODO
 }
