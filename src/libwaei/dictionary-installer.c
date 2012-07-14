@@ -408,7 +408,7 @@ errored:
 gboolean 
 lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 {
-/*
+/* TODO
     //Declarations
 		LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
@@ -731,39 +731,30 @@ lw_dictionary_installer_install (LwDictionary  *dictionary,
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //!
 void 
-lw_dictionary_installer_clean (LwDictionary *dictionary, GCancellable *cancellable)
+lw_dictionary_installer_clean (LwDictionary *dictionary, 
+                               GCancellable *cancellable)
 {
-    //TODO
-/*
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+
     //Declarations
 		LwDictionaryPrivate *priv;
-    LwDictionaryUri group_index;
-    gint i;
-    gchar *source;
+    LwDictionaryInstall *install;
 
     //Initializations
 		priv = dictionary->priv;
-    group_index = 0;
+    install = priv->install;
 
-    //Loop through all of the uris except the final destination
-    while (group_index < LW_INSTALLDICTIONARY_NEEDS_NOTHING)
-    {
-      i = 0;
-      while ((source = lw_installdictionary_get_source_uri (dictionary, group_index, i)) != NULL)
-      {
-        g_remove (source);
-        i++;
-      }
-      group_index++;
-    }
+    if (install->files != NULL) g_free (install->files); install->files = NULL;
+    if (install->downloads != NULL) g_free (install->files); install->files = NULL;
 
-    if (priv->current_source_uris != NULL) g_strfreev (priv->current_source_uris);
-    if (priv->current_target_uris != NULL) g_strfreev (priv->current_target_uris);
-    priv->current_source_uris = NULL;
-    priv->current_target_uris = NULL;
-    priv->uri_group_index = -1;
-    priv->uri_atom_index = -1;
-*/
+    if (install->filelist != NULL) g_strfreev (install->filelist); install->filelist = NULL;
+    if (install->downloadlist != NULL) g_strfreev (install->downloadlist); install->downloadlist = NULL;
+    if (install->decompresslist != NULL) g_strfreev (install->downloadlist); install->downloadlist = NULL;
+    if (install->encodelist != NULL) g_strfreev (install->downloadlist); install->downloadlist = NULL;
+    if (install->postprocesslist != NULL) g_strfreev (install->postprocesslist); install->postprocesslist = NULL;
+    if (install->installlist != NULL) g_strfreev (install->installlist); install->installlist = NULL;
+    if (install->installedlist != NULL) g_strfreev (install->installedlist); install->installedlist = NULL;
 }
 
 
@@ -1083,14 +1074,47 @@ void
 lw_dictionary_installer_set_downloads (LwDictionary *dictionary, 
                                        const gchar  *DOWNLOADS)
 {
-    //TODO
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (DOWNLOADS != NULL);
+    g_assert (dictionary->priv->install != NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    LwPreferences *preferences;
+    const gchar *KEY;
+
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+    preferences = install->preferences;
+    KEY = install->key;
+
+    lw_preferences_set_string_by_schema (preferences, LW_SCHEMA_DICTIONARY, KEY, DOWNLOADS);
 }
 
 
 void
 lw_dictionary_installer_reset_downloads (LwDictionary *dictionary)
 {
-    //TODO
+    //Sanity checks
+    g_return_if_fail (dictionary != NULL);
+    g_assert (dictionary->priv->install != NULL);
+
+    //Declarations
+    LwDictionaryPrivate *priv;
+    LwDictionaryInstall *install;
+    LwPreferences *preferences;
+    const gchar *KEY;
+
+    //Initializations
+    priv = dictionary->priv;
+    install = priv->install;
+    preferences = install->preferences;
+    KEY = install->key;
+
+    lw_preferences_reset_value_by_schema (preferences, LW_SCHEMA_DICTIONARY, KEY);
 }
 
 

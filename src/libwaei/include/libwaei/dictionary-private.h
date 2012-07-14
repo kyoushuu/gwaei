@@ -11,7 +11,6 @@ struct _LwDictionaryPrivate {
     GMutex mutex;
     LwDictionaryInstall *install;
     gboolean selected;
-    gboolean cancel;
 };
 
 struct _LwDictionaryInstall {
@@ -38,8 +37,6 @@ struct _LwDictionaryInstall {
   gulong listenerid;            //!< An id to hold the g_signal_connect value when the source copy uri pref is set
   LwEncoding encoding;          //!< Path to the raw unziped dictionary file
   gboolean postprocess;
-
-  gboolean cancel;
 };
 
 #define LW_DICTIONARY_GET_PRIVATE(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), LW_TYPE_DICTIONARY, LwDictionaryPrivate));
