@@ -46,6 +46,7 @@ struct _LwIoProcessFdData {
   int fd;                  //!< The file descriptor to be used with the path
   LwIoProgressCallback cb; //!< Callback to update progress
   gpointer data;           //!< Data to be passed to the LwIoProgressCallback
+  GCancellable *cancellable;
   GError *error;           //!< A GError
 };
 typedef struct _LwIoProcessFdData LwIoProcessFdData; //!< Used for passing data to LwIo functions
@@ -135,9 +136,14 @@ lw_io_write_file (const char* PATH, const char* mode, gchar *text, LwIoProgressC
 //! @return The status of the conversion opertaion
 //!
 gboolean 
-lw_io_copy_with_encoding (const char *SOURCE_PATH, const char *TARGET_PATH,
-                                   const char *SOURCE_ENCODING, const char *TARGET_ENCODING,
-                                   LwIoProgressCallback cb, gpointer data, GError **error   )
+lw_io_copy_with_encoding (const gchar           *SOURCE_PATH, 
+                          const gchar           *TARGET_PATH,
+                          const gchar           *SOURCE_ENCODING, 
+                          const gchar           *TARGET_ENCODING,
+                          LwIoProgressCallback   cb, 
+                          gpointer               data, 
+                          GCancellable          *cancellable,
+                          GError               **error)
 {
     if (*error != NULL) return FALSE;
 
@@ -248,6 +254,7 @@ static int _libcurl_update_progress (void   *custom,
     gpointer data;
     double fraction;
     GCancellable *cancellable;
+    gboolean is_cancelled;
     
     //Initializations
     cbwdata = (LwIoProgressCallbackWithData*) custom;
@@ -296,10 +303,11 @@ lw_io_download (const gchar           *SOURCE_PATH,
     FILE *outfile;
     const gchar *message;
     LwIoProgressCallbackWithData cbwdata;
+    gboolean is_cancelled;
 
     //Initializations
     curl = curl_easy_init ();
-    outfile = fopen(target_path, "wb");
+    outfile = fopen(TARGET_PATH, "wb");
     cbwdata.cb = cb;
     cbwdata.data = data;
     cbwdata.cancellable = cancellable;
@@ -307,7 +315,7 @@ lw_io_download (const gchar           *SOURCE_PATH,
 
     if (curl != NULL || outfile != NULL)
     {
-      curl_easy_setopt(curl, CURLOPT_URL, source_path);
+      curl_easy_setopt(curl, CURLOPT_URL, SOURCE_PATH);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, outfile);
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _libcurl_write_func);
       curl_easy_setopt(curl, CURLOPT_READFUNCTION, _libcurl_read_func);
@@ -330,7 +338,7 @@ lw_io_download (const gchar           *SOURCE_PATH,
 
     if (res != 0 && is_cancelled == FALSE)
     {
-      g_remove (target_path);
+      g_remove (TARGET_PATH);
 
       if (error != NULL) {
         message = gettext(curl_easy_strerror(res));
@@ -372,6 +380,7 @@ lw_io_copy (const gchar           *SOURCE_PATH,
     const int MAX = 1024;
     char buffer[MAX];
     double fraction;
+    gboolean is_cancelled;
 
     //Initalizations
     infd = fopen(SOURCE_PATH, "rb");
@@ -418,7 +427,7 @@ lw_io_create_mix_dictionary (const gchar           *OUTPUT_PATH,
                              const gchar           *RADICALS_DICTIONARY_PATH, 
                              LwIoProgressCallback   cb,
                              gpointer               data,
-                             GCancellable          *cancellable
+                             GCancellable          *cancellable,
                              GError               **error)
 {
     //Sanity check
@@ -437,15 +446,15 @@ lw_io_create_mix_dictionary (const gchar           *OUTPUT_PATH,
     gboolean is_cancelled;
 
     //Initializations
-    kanji_file =  fopen(kanji_dictionary_path, "r");
-    radicals_file = fopen(radicals_dictionary_path, "r");
-    output_file = fopen(output_path, "w");
+    kanji_file =  fopen(KANJI_DICTIONARY_PATH, "r");
+    radicals_file = fopen(RADICALS_DICTIONARY_PATH, "r");
+    output_file = fopen(OUTPUT_PATH, "w");
     radicals_ptr = NULL;
     kanji_ptr = NULL;
     output_ptr = NULL;
 
     curpos = 0;
-    end = lw_io_get_filesize (kanji_dictionary_path);
+    end = lw_io_get_filesize (KANJI_DICTIONARY_PATH);
     fraction = 0.0;
 
     //Loop through the kanji file
@@ -570,6 +579,7 @@ lw_io_split_places_from_names_dictionary (const gchar           *OUTPUT_NAMES_PA
     size_t curpos;
     size_t end;
     double fraction;
+    gboolean is_cancelled;
 
     FILE *placesf;
     GRegex *re_place;
@@ -693,7 +703,11 @@ lw_io_gunzip_file (const gchar           *SOURCE_PATH,
 //! @param error A pointer to a GError object to write an error to or NULL
 //!
 gboolean 
-lw_io_unzip_file (char *SOURCE_PATH, LwIoProgressCallback cb, gpointer data, GError **error)
+lw_io_unzip_file (gchar                 *SOURCE_PATH, 
+                  LwIoProgressCallback   cb, 
+                  gpointer               data, 
+                  GCancellable          *cancellable,
+                  GError               **error)
 {
     return TRUE;
 }
@@ -705,7 +719,7 @@ lw_io_unzip_file (char *SOURCE_PATH, LwIoProgressCallback cb, gpointer data, GEr
 //! @returns The size of the file in bytes
 //!
 size_t 
-lw_io_get_filesize (const char *URI)
+lw_io_get_filesize (const gchar *URI)
 {
     //Sanity check
     g_assert (g_file_test (URI, G_FILE_TEST_IS_REGULAR));
@@ -738,7 +752,7 @@ lw_io_get_filesize (const char *URI)
 gpointer _stdin_func (gpointer data)
 {
     //Sanity checks
-    g_return_var_if_fail (data != NULL, NULL);
+    g_return_val_if_fail (data != NULL, NULL);
 
     //Declarations
     const int MAX_CHUNK = 128;
@@ -753,6 +767,7 @@ gpointer _stdin_func (gpointer data)
     const char *message;
     GQuark domain;
     GCancellable *cancellable;
+    gboolean is_cancelled;
 
     //Initalizations
     in = data;
@@ -818,6 +833,8 @@ gpointer _stdout_func (gpointer data)
     LwIoProcessFdData* out;
     const char *message;
     GQuark domain;
+    GCancellable *cancellable;
+    gboolean is_cancelled;
 
     //Initalizations
     out = data;
@@ -825,12 +842,16 @@ gpointer _stdout_func (gpointer data)
     curpos = 0;
     file = fopen(out->uri, "wb");
     stream = fdopen(out->fd, "rb");
+    cancellable = out->cancellable;
 
     while (file != NULL && ferror(file) == 0 && feof(file) == 0 && chunk != 0)
     {
-        chunk = fread(buffer, sizeof(char), MAX_CHUNK, stream);
-        curpos += chunk;
-        chunk = fwrite(buffer, sizeof(char), chunk, file);
+      is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+      if (is_cancelled) break;
+
+      chunk = fread(buffer, sizeof(char), MAX_CHUNK, stream);
+      curpos += chunk;
+      chunk = fwrite(buffer, sizeof(char), chunk, file);
     }
 
     if (ferror(stream) != 0)
@@ -862,7 +883,7 @@ gpointer _stdout_func (gpointer data)
 //!
 gboolean 
 lw_io_remove (const gchar   *URI, 
-              GCancellable  *cancellable
+              GCancellable  *cancellable,
               GError       **error)
 {
   if (error != NULL && *error != NULL) return FALSE;

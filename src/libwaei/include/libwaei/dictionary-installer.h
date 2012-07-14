@@ -26,12 +26,12 @@ void lw_dictionary_installer_set_status (LwDictionary*, LwDictionaryInstallerSta
 gint lw_dictionary_installer_get_file_index (LwDictionary*);
 gboolean lw_dictionary_installer_is_valid (LwDictionary*);
 
-gboolean lw_dictionary_installer_download (LwDictionary*, GError**);
-gboolean lw_dictionary_installer_decompress (LwDictionary*, GError**);
-gboolean lw_dictionary_installer_convert_encoding (LwDictionary*, GError**);
-gboolean lw_dictionary_installer_postprocess (LwDictionary*, GError**);
-gboolean lw_dictionary_installer_install (LwDictionary*, GError **);
-void lw_dictionary_installer_clean (LwDictionary*);
+gboolean lw_dictionary_installer_download (LwDictionary*, GCancellable*, GError**);
+gboolean lw_dictionary_installer_decompress (LwDictionary*, GCancellable*, GError**);
+gboolean lw_dictionary_installer_convert_encoding (LwDictionary*, GCancellable*, GError**);
+gboolean lw_dictionary_installer_postprocess (LwDictionary*, GCancellable*, GError**);
+gboolean lw_dictionary_installer_install (LwDictionary*, GCancellable*, GError**);
+void lw_dictionary_installer_clean (LwDictionary*, GCancellable*);
 
 gdouble lw_dictionary_installer_get_progress (LwDictionary*);
 gdouble lw_dictionary_installer_get_stage_progress (LwDictionary*);

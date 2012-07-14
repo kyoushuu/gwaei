@@ -447,7 +447,9 @@ lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
+lw_dictionary_installer_download (LwDictionary  *dictionary, 
+                                  GCancellable  *cancellable,
+                                  GError       **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -463,7 +465,7 @@ lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_downloadlist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_decompresslist (dictionary);
 
-    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
+    if (g_cancellable_is_cancelled (cancellable)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING;
 
@@ -474,10 +476,10 @@ lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
       {
         //File is located locally so copy it
         if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
-          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
         //Download the file
         else
-          lw_io_download (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+          lw_io_download (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
 
         sourceiter++;
         targetiter++;
@@ -501,7 +503,9 @@ lw_dictionary_installer_download (LwDictionary *dictionary, GError **error)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
+lw_dictionary_installer_decompress (LwDictionary  *dictionary, 
+                                    GCancellable  *cancellable,
+                                    GError       **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -517,7 +521,7 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_decompresslist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_encodelist (dictionary);
 
-    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
+    if (g_cancellable_is_cancelled (cancellable)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_DECOMPRESSING;
 
@@ -529,9 +533,9 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
         if (g_file_test (*sourceiter, G_FILE_TEST_IS_REGULAR))
         {
           if (g_str_has_suffix (*sourceiter, "gz") || g_str_has_suffix (*sourceiter, "gzip"))
-            lw_io_gunzip_file (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+            lw_io_gunzip_file (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
           else
-            lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+            lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
         }
 
         sourceiter++;
@@ -556,7 +560,7 @@ lw_dictionary_installer_decompress (LwDictionary *dictionary, GError **error)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **error)
+lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GCancellable *cancellable, GError **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -574,7 +578,7 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **err
     targetiter = targetlist = lw_dictionary_installer_get_postprocesslist (dictionary);
     encodingname = lw_util_get_encodingname (priv->install->encoding);
 
-    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
+    if (g_cancellable_is_cancelled (cancellable)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_ENCODING;
 
@@ -584,9 +588,9 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **err
       while (*sourceiter != NULL && *targetiter != NULL)
       {
         if (priv->install->encoding == LW_ENCODING_UTF8)
-          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
         else
-          lw_io_copy_with_encoding (*sourceiter, *targetiter, encodingname, "UTF-8", lw_dictionary_sync_progress_cb, dictionary, error);
+          lw_io_copy_with_encoding (*sourceiter, *targetiter, encodingname, "UTF-8", lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
 
         sourceiter++;
         targetiter++;
@@ -610,7 +614,9 @@ lw_dictionary_installer_convert_encoding (LwDictionary *dictionary, GError **err
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
+lw_dictionary_installer_postprocess (LwDictionary  *dictionary, 
+                                     GCancellable  *cancellable,
+                                     GError       **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -628,7 +634,7 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_postprocesslist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installlist (dictionary);
 
-    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
+    if (g_cancellable_is_cancelled (cancellable)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_POSTPROCESSING;
 
@@ -638,14 +644,14 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
       if (klass->installer_postprocess != NULL)
       {
 
-        klass->installer_postprocess (dictionary, sourcelist, targetlist, lw_dictionary_sync_progress_cb, dictionary, error);
+        klass->installer_postprocess (dictionary, sourcelist, targetlist, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
         priv->install->index++;
       }
       else
       {
         while (*sourceiter != NULL && *targetiter != NULL)
         {
-          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+          lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
 
           sourceiter++;
           targetiter++;
@@ -671,7 +677,9 @@ lw_dictionary_installer_postprocess (LwDictionary *dictionary, GError **error)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
+lw_dictionary_installer_install (LwDictionary  *dictionary, 
+                                 GCancellable  *cancellable,
+                                 GError       **error)
 {
     //Sanity check
     if (error != NULL && *error != NULL) return FALSE;
@@ -687,7 +695,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
     sourceiter = sourcelist = lw_dictionary_installer_get_installlist (dictionary);
     targetiter = targetlist = lw_dictionary_installer_get_installedlist (dictionary);
 
-    if (lw_dictionary_installer_is_cancelled (dictionary)) return FALSE;
+    if (g_cancellable_is_cancelled (cancellable)) return FALSE;
 
     priv->install->status = LW_DICTIONARY_INSTALLER_STATUS_FINISHING;
 
@@ -697,7 +705,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
       priv->install->index = 0;
       while (*sourceiter != NULL && *targetiter != NULL)
       {
-        lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, error);
+        lw_io_copy (*sourceiter, *targetiter, lw_dictionary_sync_progress_cb, dictionary, cancellable, error);
 
         sourceiter++;
         targetiter++;
@@ -723,7 +731,7 @@ lw_dictionary_installer_install (LwDictionary *dictionary, GError **error)
 //! @param data A gpointer to data to pass to the LwIoProgressCallback.
 //!
 void 
-lw_dictionary_installer_clean (LwDictionary *dictionary)
+lw_dictionary_installer_clean (LwDictionary *dictionary, GCancellable *cancellable)
 {
     //TODO
 /*
@@ -1135,43 +1143,3 @@ lw_dictionary_installer_is_builtin (LwDictionary *dictionary)
     return dictionary->priv->install->builtin;
 }
 
-
-//!
-//! @brief Used to tell the LwDictionary installer to stop installation.
-//! @param dictionary The LwDictionary object to stop or prevent the install on.
-//! @param state Whether to turn on the requested cancel operation or not.
-//!
-gboolean
-lw_dictionary_installer_is_cancelled (LwDictionary *dictionary)
-{
-    //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, FALSE);
-
-    return (dictionary->priv->install->cancel);
-}
-
-
-//!
-//! @brief Used to tell the LwDictionary installer to stop installation.
-//! @param dictionary The LwDictionary object to stop or prevent the install on.
-//! @param state Whether to turn on the requested cancel operation or not.
-//!
-void 
-lw_dictionary_installer_cancel (LwDictionary *dictionary)
-{
-    //Sanity checks
-    g_return_if_fail (dictionary != NULL);
-    g_assert (dictionary->priv->install != NULL);
-
-    //Declarations
-    LwDictionaryPrivate *priv;
-
-    //Initializations
-    priv = dictionary->priv;
-
-/*TODO
-    if (status != LW_DICTIONARY_STATE_INSTALLED && state != LW_DICTIONARY_STATE_NOT_INSTALLED)
-      priv->install->cancel = TRUE;
-      lw_io_set_cancel_operations (state);
-*/
-}

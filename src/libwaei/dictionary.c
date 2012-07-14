@@ -290,7 +290,7 @@ lw_dictionary_uninstall (LwDictionary *dictionary, LwIoProgressCallback cb, GErr
 
     if (uri != NULL)
     {
-      lw_io_remove (uri, error);
+      lw_io_remove (uri, NULL, error);
       if (cb != NULL) cb (1.0, dictionary);
 
       g_free (uri); uri = NULL;
@@ -580,20 +580,20 @@ lw_dictionary_build_id (LwDictionary *dictionary)
 //! @see lw_installdictionary_install
 //!
 gboolean 
-lw_dictionary_install (LwDictionary *dictionary, GError **error)
+lw_dictionary_install (LwDictionary *dictionary, GCancellable *cancellable, GError **error)
 {
     //Sanity checks
     g_return_val_if_fail (dictionary != NULL, FALSE);
     g_return_val_if_fail (dictionary->priv != NULL, FALSE);
     g_assert (dictionary->priv->install != NULL);
-    if (*error != NULL) return FALSE;
+    if (error != NULL && *error != NULL) return FALSE;
 
-    lw_dictionary_installer_download (dictionary, error);
-    lw_dictionary_installer_decompress (dictionary, error);
-    lw_dictionary_installer_convert_encoding (dictionary, error);
-    lw_dictionary_installer_postprocess (dictionary, error);
-    lw_dictionary_installer_install (dictionary, error);
-    lw_dictionary_installer_clean (dictionary);
+    lw_dictionary_installer_download (dictionary, cancellable, error);
+    lw_dictionary_installer_decompress (dictionary, cancellable, error);
+    lw_dictionary_installer_convert_encoding (dictionary, cancellable, error);
+    lw_dictionary_installer_postprocess (dictionary, cancellable, error);
+    lw_dictionary_installer_install (dictionary, cancellable, error);
+    lw_dictionary_installer_clean (dictionary, cancellable);
 
     return (*error == NULL);
 }

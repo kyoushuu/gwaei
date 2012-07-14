@@ -656,32 +656,6 @@ lw_dictionarylist_sort_compare_function (gconstpointer a, gconstpointer b, gpoin
 }
 
 
-void 
-lw_dictionarylist_installer_cancel (LwDictionaryList *dictionarylist, gboolean state)
-{
-    //Sanity checks
-    g_return_if_fail (dictionarylist != NULL);
-
-    //Declarations
-    LwDictionaryListPrivate *priv;
-    LwDictionary *dictionary;
-    GList *link;
-
-    //Initializations
-    priv = dictionarylist->priv;
-    link = priv->list;
-
-    while (link != NULL)
-    {
-      dictionary = LW_DICTIONARY (link->data);
-
-      if (dictionary != NULL) lw_dictionary_installer_cancel (dictionary);
-
-      link = link->next;
-    }
-}
-
-
 //!
 //! @brief Sets up the built-in installabale dictionaries
 //!

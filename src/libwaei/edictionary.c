@@ -44,7 +44,7 @@ static gchar* FIRST_DEFINITION_PREFIX_STR = "(1)";
 static gboolean lw_edictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError**);
 static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
-static gboolean lw_edictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
+static gboolean lw_edictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GCancellable*, GError**);
 static void lw_edictionary_create_primary_tokens (LwDictionary*, LwQuery*);
 static void lw_edictionary_add_supplimentary_tokens (LwDictionary*, LwQuery*);
 
@@ -363,6 +363,7 @@ lw_edictionary_installer_postprocess (LwDictionary *dictionary,
                                       gchar **targetlist, 
                                       LwIoProgressCallback cb,
                                       gpointer data,
+                                      GCancellable *cancellable,
                                       GError **error)
 {
     //Sanity checks
@@ -385,14 +386,14 @@ lw_edictionary_installer_postprocess (LwDictionary *dictionary,
       for (i = 0; targetlist[i] != NULL && sourcelist[i] != NULL; i++)
       {
         if (g_file_test (sourcelist[i], G_FILE_TEST_IS_REGULAR) && *error == NULL)
-          lw_io_copy (sourcelist[i], targetlist[i], cb, data, error);
+          lw_io_copy (sourcelist[i], targetlist[i], cb, data, cancellable, error);
       }
     }
     else
     {
       g_return_val_if_fail (g_strv_length (sourcelist) > 0, FALSE);
       g_return_val_if_fail (g_strv_length (targetlist) > 1, FALSE);
-      return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, error);
+      return lw_io_split_places_from_names_dictionary (targetlist[0], targetlist[1], sourcelist[0], cb, data, cancellable, error);
     }
 
     return FALSE;

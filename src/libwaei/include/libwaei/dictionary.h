@@ -41,13 +41,13 @@ struct _LwDictionaryClass {
   gboolean (*parse_query) (LwDictionary *dictionary, LwQuery *query, const gchar *TEXT, GError **error);
   gint (*parse_result) (LwDictionary *dictionary, LwResult *result, FILE *fd);
   gboolean (*compare) (LwDictionary *dictionary, LwQuery *query, LwResult *result, const LwRelevance relevance);
-  gboolean (*installer_postprocess) (LwDictionary *dictionary, gchar** sourcelist, gchar** targetlist, LwIoProgressCallback cb, gpointer data, GError **error);
+  gboolean (*installer_postprocess) (LwDictionary *dictionary, gchar** sourcelist, gchar** targetlist, LwIoProgressCallback cb, gpointer data, GCancellable *cancellable, GError **error);
   gchar ***patterns;  
 };
 
 //Methods
 GType lw_dictionary_get_type (void) G_GNUC_CONST;
-gboolean lw_dictionary_install (LwDictionary*, GError**);
+gboolean lw_dictionary_install (LwDictionary*, GCancellable*, GError**);
 gboolean lw_dictionary_uninstall (LwDictionary*, LwIoProgressCallback, GError**);
 gchar* lw_dictionary_get_directory (GType);
 gchar* lw_dictionary_get_path (LwDictionary*);

@@ -43,7 +43,7 @@ G_DEFINE_TYPE (LwKanjiDictionary, lw_kanjidictionary, LW_TYPE_DICTIONARY)
 static gboolean lw_kanjidictionary_parse_query (LwDictionary*, LwQuery*, const gchar*, GError **);
 static gint lw_kanjidictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_kanjidictionary_compare (LwDictionary *dictionary, LwQuery*, LwResult*, const LwRelevance);
-static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GError**);
+static gboolean lw_kanjidictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GCancellable*, GError**);
 
 static void lw_kanjidictionary_create_primary_tokens (LwDictionary*, LwQuery*);
 
@@ -416,13 +416,14 @@ lw_kanjidictionary_installer_postprocess (LwDictionary *dictionary,
                                           gchar **targetlist, 
                                           LwIoProgressCallback cb,
                                           gpointer data,
+                                          GCancellable *cancellable,
                                           GError **error)
 {
     g_return_val_if_fail (dictionary != NULL, FALSE);
     g_return_val_if_fail (g_strv_length (sourcelist) > 1, FALSE);
     g_return_val_if_fail (g_strv_length (targetlist) > 0, FALSE);
 
-    return lw_io_create_mix_dictionary (targetlist[0], sourcelist[0], sourcelist[1], cb, data, error);
+    return lw_io_create_mix_dictionary (targetlist[0], sourcelist[0], sourcelist[1], cb, data, cancellable, error);
 }
 
 
