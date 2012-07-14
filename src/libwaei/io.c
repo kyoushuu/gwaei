@@ -31,6 +31,7 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 #include <curl/curl.h>
 #include <zlib.h>
 
@@ -235,31 +236,33 @@ static size_t _libcurl_read_func (void *ptr, size_t size, size_t nmemb, FILE *st
 //! @param nmemb TBA
 //! @param stream TBA
 //!
-static int _libcurl_update_progress (void  *custom,
-                                     double dltotal,
-                                     double dlnow,
-                                     double ultotal,
-                                     double ulnow   )
+static int _libcurl_update_progress (void   *custom,
+                                     double  dltotal,
+                                     double  dlnow,
+                                     double  ultotal,
+                                     double  ulnow   )
 {
     //Declarations
     LwIoProgressCallbackWithData *cbwdata;
     LwIoProgressCallback cb;
     gpointer data;
     double fraction;
+    GCancellable *cancellable;
     
     //Initializations
     cbwdata = (LwIoProgressCallbackWithData*) custom;
     cb = cbwdata->cb;
     data = cbwdata->data;
+    cancellable = cbwdata->cancellable;
     fraction = 0;
 
     if (dltotal > 0.0)
       fraction = dlnow / dltotal;
 
     //Update the interface
-/*TODO
-    if (_cancel) return 1;
-*/
+    is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+    if (is_cancelled) return 1;
+
     else return cb (fraction, data);
 }
 
@@ -275,8 +278,12 @@ static int _libcurl_update_progress (void  *custom,
 //! @param error Error handling
 //!
 gboolean 
-lw_io_download (const char *source_path, const char *target_path, LwIoProgressCallback cb,
-                gpointer data, GError **error)
+lw_io_download (const gchar           *SOURCE_PATH, 
+                const gchar           *TARGET_PATH, 
+                LwIoProgressCallback   cb,
+                gpointer               data, 
+                GCancellable          *cancellable,
+                GError               **error)
 {
     if (error != NULL && *error != NULL) return FALSE;
 
@@ -295,6 +302,7 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
     outfile = fopen(target_path, "wb");
     cbwdata.cb = cb;
     cbwdata.data = data;
+    cbwdata.cancellable = cancellable;
     res = 0;
 
     if (curl != NULL || outfile != NULL)
@@ -317,8 +325,10 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
     fclose(outfile);
     curl_easy_cleanup(curl);
 
-/*TODO
-    if (res != 0 && _cancel == FALSE)
+    is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+    if (is_cancelled) return 1;
+
+    if (res != 0 && is_cancelled == FALSE)
     {
       g_remove (target_path);
 
@@ -328,7 +338,6 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
         *error = g_error_new_literal (quark, LW_IO_DOWNLOAD_ERROR, message);
       }
     }
-*/
 
   curl_global_cleanup ();
 
@@ -345,8 +354,12 @@ lw_io_download (const char *source_path, const char *target_path, LwIoProgressCa
 //! @param error Error handling
 //!
 gboolean 
-lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH, 
-            LwIoProgressCallback cb, gpointer data, GError **error)
+lw_io_copy (const gchar           *SOURCE_PATH, 
+            const gchar           *TARGET_PATH, 
+            LwIoProgressCallback   cb, 
+            gpointer               data, 
+            GCancellable          *cancellable,
+            GError               **error)
 {
     if (*error != NULL) return FALSE;
 
@@ -368,9 +381,11 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     curpos = 0;
     fraction = 0.0;
 
-/*TODO
-    while (chunk && !_cancel)
+    while (chunk)
     {
+      is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+      if (is_cancelled) break; 
+
       fraction = ((double) curpos) / ((double) end);
       if (cb != NULL) cb (fraction, data);
       chunk = fread(buffer, sizeof(char), MAX, infd);
@@ -379,7 +394,6 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
     }
     fraction = 1.0;
     if (cb != NULL) cb (fraction, data);
-*/
 
     //Cleanup
     fclose(infd);
@@ -399,15 +413,16 @@ lw_io_copy (const char *SOURCE_PATH, const char *TARGET_PATH,
 //! @param error pointer to a GError to write errors to
 //!
 gboolean 
-lw_io_create_mix_dictionary (const char *output_path, 
-                             const char *kanji_dictionary_path, 
-                             const char *radicals_dictionary_path, 
-                             LwIoProgressCallback cb,
-                             gpointer data,
-                             GError **error)
+lw_io_create_mix_dictionary (const gchar           *OUTPUT_PATH, 
+                             const gchar           *KANJI_DICTIONARY_PATH, 
+                             const gchar           *RADICALS_DICTIONARY_PATH, 
+                             LwIoProgressCallback   cb,
+                             gpointer               data,
+                             GCancellable          *cancellable
+                             GError               **error)
 {
     //Sanity check
-    if (*error != NULL) return FALSE;
+    if (error != NULL && *error != NULL) return FALSE;
 
     //Declarations
     FILE *output_file, *kanji_file, *radicals_file;
@@ -419,6 +434,7 @@ lw_io_create_mix_dictionary (const char *output_path,
     size_t curpos;
     size_t end;
     double fraction;
+    gboolean is_cancelled;
 
     //Initializations
     kanji_file =  fopen(kanji_dictionary_path, "r");
@@ -432,11 +448,12 @@ lw_io_create_mix_dictionary (const char *output_path,
     end = lw_io_get_filesize (kanji_dictionary_path);
     fraction = 0.0;
 
-/*TODO
     //Loop through the kanji file
-    while (fgets(kanji_input, LW_IO_MAX_FGETS_LINE, kanji_file) != NULL && !_cancel)
+    while (fgets(kanji_input, LW_IO_MAX_FGETS_LINE, kanji_file) != NULL)
     {
-*/
+      is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+      if (is_cancelled) break;
+
       fraction = ((double) curpos)/((double) end);
       if (cb != NULL) cb (fraction, data);
 
@@ -522,12 +539,13 @@ lw_io_create_mix_dictionary (const char *output_path,
 //! @param error pointer to a GError to write errors to
 //!
 gboolean 
-lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH, 
-                                          const char* OUTPUT_PLACES_PATH,
-                                          const char* INPUT_NAMES_PLACES_PATH,
-                                          LwIoProgressCallback cb,
-                                          gpointer data,
-                                          GError **error                    )
+lw_io_split_places_from_names_dictionary (const gchar           *OUTPUT_NAMES_PATH, 
+                                          const gchar           *OUTPUT_PLACES_PATH,
+                                          const gchar           *INPUT_NAMES_PLACES_PATH,
+                                          LwIoProgressCallback   cb,
+                                          gpointer               data,
+                                          GCancellable          *cancellable,
+                                          GError               **error)
 {
     if (error != NULL && *error != NULL) return FALSE;
 
@@ -555,12 +573,12 @@ lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH,
 
     FILE *placesf;
     GRegex *re_place;
-    const char *place_pattern = "([\\(,])((p)|(st))([\\),])";
+    const gchar *place_pattern = "([\\(,])((p)|(st))([\\),])";
     int  place_write_error;
 
     FILE *namesf;
     GRegex *re_name;
-    const char *name_pattern = "([\\(,])((s)|(u)|(g)|(f)|(m)|(h)|(pr)|(co))([\\),])";
+    const gchar *name_pattern = "([\\(,])((s)|(u)|(g)|(f)|(m)|(h)|(pr)|(co))([\\),])";
     int  name_write_error;
 
     //Initializations
@@ -578,15 +596,15 @@ lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH,
     name_write_error  = 0;
 
 
-/* TODO
     //Start writing the child files
     while (fgets(buffer, LW_IO_MAX_FGETS_LINE, inputf) != NULL &&
            place_write_error != EOF &&
            name_write_error  != EOF &&
-           *error == NULL &&
-           !_cancel)
+           *error == NULL)
     {
-*/
+      is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+      if (is_cancelled) break;
+
       fraction = ((double) curpos) / ((double) end);
       if (cb != NULL) cb (fraction, data);
 
@@ -619,8 +637,12 @@ lw_io_split_places_from_names_dictionary (const char *OUTPUT_NAMES_PATH,
 //! @param error A pointer to a GError object to write an error to or NULL
 //!
 gboolean 
-lw_io_gunzip_file (const char *SOURCE_PATH, const char *TARGET_PATH,
-                   LwIoProgressCallback cb, gpointer data, GError **error)
+lw_io_gunzip_file (const gchar           *SOURCE_PATH, 
+                   const gchar           *TARGET_PATH,
+                   LwIoProgressCallback   cb, 
+                   gpointer               data, 
+                   GCancellable          *cancellable,
+                   GError               **error)
 {
     if (error != NULL && *error != NULL) return FALSE;
 
@@ -715,6 +737,9 @@ lw_io_get_filesize (const char *URI)
 //!
 gpointer _stdin_func (gpointer data)
 {
+    //Sanity checks
+    g_return_var_if_fail (data != NULL, NULL);
+
     //Declarations
     const int MAX_CHUNK = 128;
     char buffer[MAX_CHUNK];
@@ -727,6 +752,7 @@ gpointer _stdin_func (gpointer data)
     LwIoProcessFdData* in;
     const char *message;
     GQuark domain;
+    GCancellable *cancellable;
 
     //Initalizations
     in = data;
@@ -736,21 +762,23 @@ gpointer _stdin_func (gpointer data)
     fraction = 0.0;
     file = fopen(in->uri, "rb");
     stream = fdopen(in->fd, "ab");
+    cancellable = in->cancellable;
 
-/*TODO
-    while (file != NULL && ferror(file) == 0 && feof(file) == 0 && !_cancel)
+    while (file != NULL && ferror(file) == 0 && feof(file) == 0)
     {
-        fraction = ((double) curpos / (double) end);
-        if (in->cb != NULL) in->cb (fraction, in->data);
+      is_cancelled = (cancellable != NULL && g_cancellable_is_cancelled (cancellable));
+      if (is_cancelled) break;
 
-        chunk = fread(buffer, sizeof(char), MAX_CHUNK, file);
-        curpos += chunk;
-        chunk = fwrite(buffer, sizeof(char), chunk, stream);
-        fflush(stream);
+      fraction = ((double) curpos / (double) end);
+      if (in->cb != NULL) in->cb (fraction, in->data);
+
+      chunk = fread(buffer, sizeof(char), MAX_CHUNK, file);
+      curpos += chunk;
+      chunk = fwrite(buffer, sizeof(char), chunk, stream);
+      fflush(stream);
     }
     fraction = 1.0;
     if (in->cb != NULL) in->cb (fraction, in->data);
-*/
 
     if (ferror(file) != 0)
     {
@@ -833,7 +861,9 @@ gpointer _stdout_func (gpointer data)
 //! @param error A pointer to a GError object to write errors to or NULL
 //!
 gboolean 
-lw_io_remove (const char *URI, GError **error)
+lw_io_remove (const gchar   *URI, 
+              GCancellable  *cancellable
+              GError       **error)
 {
   if (error != NULL && *error != NULL) return FALSE;
 
