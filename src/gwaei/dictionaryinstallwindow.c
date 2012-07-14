@@ -321,7 +321,8 @@ gw_dictionaryinstallwindow_gtype_to_index (GwDictionaryInstallWindow *window, Lw
     {
       gtk_tree_model_get (treemodel, &treeiter, GW_DICTINSTWINDOW_ENGINESTOREFIELD_ID, &treetype, -1);
 
-      if (g_type_is_a (type, treetype) == TRUE) break;
+printf("%d %d\n", type, treetype);
+      if (type == treetype) break;
 
       valid = gtk_tree_model_iter_next (treemodel, &treeiter);
       index++;
