@@ -740,7 +740,6 @@ gw_searchwindow_sync_history (GwSearchWindow *window)
     map = G_ACTION_MAP (window);
     history = LW_HISTORY (priv->history);
 
-/* TESTING
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "go-back"));
     enabled = lw_history_has_back (history);
     g_simple_action_set_enabled (action, enabled);
@@ -748,7 +747,6 @@ gw_searchwindow_sync_history (GwSearchWindow *window)
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "go-forward"));
     enabled = lw_history_has_forward (history);
     g_simple_action_set_enabled (action, enabled);
-*/
 }
 
 
@@ -1729,7 +1727,7 @@ gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwS
         gw_searchwindow_set_title_by_searchitem (window, search);
         gw_searchwindow_set_total_results_label_by_searchitem (window, search);
         gw_searchwindow_set_search_progressbar_by_searchitem (window, search);
-/* TESTING
+
         //Update Save sensitivity state
         enabled = (search != NULL);
         action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save"));
@@ -1749,7 +1747,6 @@ gw_searchwindow_set_searchitem_by_index (GwSearchWindow *window, gint index, LwS
         enabled = (search != NULL);
         action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "print-preview"));
         g_simple_action_set_enabled (action, enabled);
-*/
       }
     }
 }
@@ -1811,7 +1808,7 @@ gw_searchwindow_start_search (GwSearchWindow *window, LwSearch* new_search)
     //Initializations
     index = gw_searchwindow_get_current_tab_index (window);
     application = gw_window_get_application (GW_WINDOW (window));
-    //if (!gw_application_can_start_search (application)) return;
+    if (!gw_application_can_start_search (application)) return;
     view = gw_searchwindow_get_current_textview (window);
     if (view == NULL) goto errored;
     sdata = GW_SEARCHDATA (gw_searchdata_new (view, window));
@@ -1928,7 +1925,6 @@ gw_searchwindow_set_font (GwSearchWindow *window)
         
         map = G_ACTION_MAP (window);
 
-/*TESTING
         //Update Zoom in sensitivity state
         enabled = (magnification < GW_APPLICATION_MAX_FONT_MAGNIFICATION);
         action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "zoom-in"));
@@ -1943,7 +1939,6 @@ gw_searchwindow_set_font (GwSearchWindow *window)
         enabled = (magnification != GW_APPLICATION_DEFAULT_FONT_MAGNIFICATION);
         action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "zoom-100"));
         g_simple_action_set_enabled (action, enabled);
-*/
       }
     }
 }
@@ -2540,12 +2535,10 @@ gw_searchwindow_sync_tabbar_show (GwSearchWindow *window)
     show = ((pages > 1) || always_show_tabbar);
     enabled = (pages > 1);
 
-/* TESTING
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "previous-tab"));
     g_simple_action_set_enabled (action, enabled);
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "next-tab"));
     g_simple_action_set_enabled (action, enabled);
-*/
     
     gtk_notebook_set_show_tabs (notebook, show);
 }

@@ -16,6 +16,7 @@ typedef enum {
 typedef struct _LwDictionary LwDictionary;
 typedef struct _LwDictionaryClass LwDictionaryClass;
 typedef struct _LwDictionaryPrivate LwDictionaryPrivate;
+typedef struct _LwDictionaryInstall LwDictionaryInstall;
 
 #define LW_TYPE_DICTIONARY              (lw_dictionary_get_type())
 #define LW_DICTIONARY(obj)              (G_TYPE_CHECK_INSTANCE_CAST((obj), LW_TYPE_DICTIONARY, LwDictionary))
@@ -74,8 +75,10 @@ gchar** lw_dictionary_get_installed_idlist (GType);
 
 void lw_dictionary_build_regex (LwDictionary*, LwQuery*, GError**);
 
-void lw_dictionary_set_installer (LwDictionary*, const gchar*, const gchar*, const gchar*, LwEncoding, gboolean);
-void lw_dictionary_set_builtin_installer (LwDictionary*, const gchar*, LwPreferences*, const gchar*, const gchar*, LwEncoding, gboolean);
+LwDictionaryInstall* lw_dictionary_steal_installer (LwDictionary*);
+void lw_dictionary_set_installer (LwDictionary*, LwDictionaryInstall*);
+void lw_dictionary_set_installer_full (LwDictionary*, const gchar*, const gchar*, const gchar*, LwEncoding, gboolean);
+void lw_dictionary_set_builtin_installer_full (LwDictionary*, const gchar*, LwPreferences*, const gchar*, const gchar*, LwEncoding, gboolean);
 
 G_END_DECLS
 

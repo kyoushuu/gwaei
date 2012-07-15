@@ -408,30 +408,18 @@ errored:
 gboolean 
 lw_dictionary_installer_is_valid (LwDictionary *dictionary)
 {
-/* TODO
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, FALSE);
+
     //Declarations
 		LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
-    gchar **filelist;
-    gchar **downloadlist;
-    gboolean filesvalid, downloadsvalid, encodingvalid;
 
+    //Initializations
 		priv = dictionary->priv;
     install = priv->install;
 
-    downloadlist = lw_dictionary_installer_get_downloadlist (dictionary);
-    downloadsvalid = (downloadlist != NULL && g_strv_length (downloadlist) > 0);
-    if (downloadlist != NULL) g_strfreev (downloadlist); downloadlist = NULL;
-
-    filelist = lw_dictionary_installer_get_filelist (dictionary);
-    filesvalid = (filelist != NULL && g_strv_length (filelist) > 0);
-    if (filelist != NULL) g_strfreev (filelist); filelist = NULL;
-
-    encodingvalid = (install->encoding >= 0 && install->encoding < LW_ENCODING_TOTAL);
-
-    return (downloadsvalid && filesvalid && encodingvalid);
-*/
-    return TRUE;
+    return (install->files != NULL && install->downloads != NULL);
 }
 
 

@@ -3,8 +3,6 @@
 
 G_BEGIN_DECLS
 
-typedef struct _LwDictionaryInstall LwDictionaryInstall;
-
 typedef enum {
   LW_DICTIONARY_INSTALLER_STATUS_UNINSTALLED,
   LW_DICTIONARY_INSTALLER_STATUS_DOWNLOADING,

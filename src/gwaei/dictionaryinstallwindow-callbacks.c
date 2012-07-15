@@ -62,27 +62,55 @@ gw_dictionaryinstallwindow_filename_entry_changed_cb (GtkWidget *widget, gpointe
 G_MODULE_EXPORT void 
 gw_dictionaryinstallwindow_engine_combobox_changed_cb (GtkWidget *widget, gpointer data)
 {
-    //TODO
-
-/*
-    //Sanity check
-    g_assert (data != NULL);
-
     //Declarations
     GwDictionaryInstallWindow *window;
     GwDictionaryInstallWindowPrivate *priv;
-//    gint value;
+    GwApplication *application;
+    GwDictionaryList *dictionarylist;
+    GtkComboBox *combobox;
+    LwDictionary *dictionary;
+    gint index;
+    GtkTreeModel *treemodel;
+    GtkTreeIter treeiter;
+    gboolean valid;
+    LwDictionaryInstall *install;
+    GType type;
+    const gchar *FILENAME;
+    GList *link;
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-//    value = gtk_combo_box_get_active (GTK_COMBO_BOX (widget));
+    application = gw_window_get_application (GW_WINDOW (window));
+    dictionarylist = gw_application_get_installable_dictionarylist (application);
+    combobox = GTK_COMBO_BOX (widget);
+    index = gtk_combo_box_get_active (combobox);
+    dictionary = priv->dictionary;
 
-//TODO
-//    priv->dictionary->type = value;
+    //Get the GType needed
+    treemodel = gtk_combo_box_get_model (combobox);
+    valid = gtk_tree_model_iter_nth_child (treemodel, &treeiter, NULL, index);
+    if (!valid) return;
+    gtk_tree_model_get (treemodel, &treeiter, GW_DICTINSTWINDOW_ENGINESTOREFIELD_ID, &type, -1);
+
+    //Get the current dictionary install information
+    link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist));
+    while (link != NULL && dictionary != LW_DICTIONARY (link->data)) link = link->next;
+    if (link == NULL) return;
+    install = lw_dictionary_steal_installer (link->data);
+    FILENAME = lw_dictionary_get_filename (link->data);
+
+    //Create the new dictionary
+    dictionary = LW_DICTIONARY (g_object_new (LW_TYPE_EDICTIONARY, "filename", FILENAME, NULL));
+    lw_dictionary_set_installer (dictionary, install);
+  
+    //Replace the old one
+    g_object_unref (link->data);
+    link->data = dictionary;
+
+    //Update the interface
     gw_dictionaryinstallwindow_sync_interface (window);
-*/
 }
 
 
@@ -95,7 +123,7 @@ gw_dictionaryinstallwindow_source_entry_changed_cb (GtkWidget *widget, gpointer 
     //Declarations
     GwDictionaryInstallWindow *window;
     GwDictionaryInstallWindowPrivate *priv;
-    const char *value = gtk_entry_get_text (GTK_ENTRY (widget));
+    const gchar *value = gtk_entry_get_text (GTK_ENTRY (widget));
 
     //Initializations
     window = GW_DICTIONARYINSTALLWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_DICTIONARYINSTALLWINDOW));

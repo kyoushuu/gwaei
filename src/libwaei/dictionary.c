@@ -49,13 +49,40 @@ typedef enum
 } LwDictionaryProps;
 
 
+LwDictionaryInstall*
+lw_dictionary_steal_installer (LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryInstall *install;
+
+    install = dictionary->priv->install;
+    dictionary->priv = NULL;  
+    
+    return install;
+}
+
+
 void
-lw_dictionary_set_installer (LwDictionary *dictionary,
-                             const gchar *FILES,
-                             const gchar *DOWNLOADS,
-                             const gchar *DESCRIPTION,
-                             LwEncoding encoding,
-                             gboolean postprocess)
+lw_dictionary_set_installer (LwDictionary        *dictionary,
+                             LwDictionaryInstall *install)
+{
+    g_return_if_fail (dictionary != NULL);
+    g_return_if_fail (install != NULL);
+
+    dictionary->priv->install = install;
+}
+
+
+void
+lw_dictionary_set_installer_full (LwDictionary *dictionary,
+                                  const gchar  *FILES,
+                                  const gchar  *DOWNLOADS,
+                                  const gchar  *DESCRIPTION,
+                                  LwEncoding    encoding,
+                                  gboolean      postprocess)
 {
     g_return_if_fail (dictionary != NULL);
     g_return_if_fail (FILES != NULL && *FILES != '\0');
@@ -80,13 +107,13 @@ lw_dictionary_set_installer (LwDictionary *dictionary,
 
 
 void
-lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
-                                     const gchar *FILES,
-                                     LwPreferences *preferences,
-                                     const gchar *KEY,
-                                     const gchar *DESCRIPTION,
-                                     LwEncoding encoding,
-                                     gboolean postprocess)
+lw_dictionary_set_builtin_installer_full (LwDictionary  *dictionary,
+                                          const gchar   *FILES,
+                                          LwPreferences *preferences,
+                                          const gchar   *KEY,
+                                          const gchar   *DESCRIPTION,
+                                          LwEncoding     encoding,
+                                          gboolean       postprocess)
 {
     //Sanity checks
     g_return_if_fail (dictionary != NULL);
@@ -98,7 +125,7 @@ lw_dictionary_set_builtin_installer (LwDictionary *dictionary,
     LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
 
-    lw_dictionary_set_installer (dictionary, FILES, NULL, DESCRIPTION, encoding, postprocess);
+    lw_dictionary_set_installer_full (dictionary, FILES, NULL, DESCRIPTION, encoding, postprocess);
 
     priv = dictionary->priv;
     install = priv->install;

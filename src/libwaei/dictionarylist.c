@@ -670,7 +670,7 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     klass = LW_DICTIONARYLIST_CLASS (G_OBJECT_GET_CLASS (dictionarylist));
 
     dictionary = lw_edictionary_new ("English");
-    lw_dictionary_set_builtin_installer (
+    lw_dictionary_set_builtin_installer_full (
       dictionary, 
       "English",
       preferences,
@@ -682,7 +682,7 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     priv->list = g_list_append (priv->list, dictionary);
 
     dictionary = lw_kanjidictionary_new ("Kanji");
-    lw_dictionary_set_builtin_installer (
+    lw_dictionary_set_builtin_installer_full (
       dictionary, 
       "Kanji",
       preferences,
@@ -694,7 +694,7 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     priv->list = g_list_append (priv->list, dictionary);
 
     dictionary = lw_edictionary_new ("Names and Places");
-    lw_dictionary_set_builtin_installer (
+    lw_dictionary_set_builtin_installer_full (
       dictionary, 
       "Names;Places",
       preferences,
@@ -706,7 +706,7 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
     priv->list = g_list_append (priv->list, dictionary);
 
     dictionary = lw_exampledictionary_new ("Examples");
-    lw_dictionary_set_builtin_installer (
+    lw_dictionary_set_builtin_installer_full (
       dictionary, 
       "Examples",
       preferences,
@@ -746,6 +746,9 @@ lw_dictionarylist_load_installable (LwDictionaryList *dictionarylist, LwPreferen
 gboolean 
 lw_dictionarylist_installer_is_valid (LwDictionaryList *dictionarylist)
 {
+    //Sanity checks
+    g_return_val_if_fail (dictionarylist != NULL, FALSE);
+
     //Declarations
     LwDictionaryListPrivate *priv;
     GList *link;
@@ -781,3 +784,23 @@ lw_dictionarylist_get_list (LwDictionaryList *dictionarylist)
 
     return dictionarylist->priv->list;
 }
+
+
+void
+lw_dictionarylist_sort_with_data (LwDictionaryList *dictionarylist, 
+                                  GCompareDataFunc compare_func, 
+                                  gpointer user_data)
+{
+    //Sanity checks
+    g_return_if_fail (dictionarylist != NULL);
+
+    //Declarations
+    LwDictionaryListPrivate *priv;
+
+    //Initializations
+    priv = dictionarylist->priv;
+
+    priv->list = g_list_sort_with_data (priv->list, compare_func, user_data);
+
+}
+

@@ -286,49 +286,60 @@ gw_dictionarylist_sync_treestore (GwDictionaryList *dictionarylist)
 }
 
 
-void
-gw_dictionarylist_save_order (GwDictionaryList *store, LwPreferences *preferences)
+static gint
+gw_dictionarylist_save_order_compare_func (gconstpointer a, gconstpointer b, gpointer data)
 {
-    printf("BREAK Saving order\n");
-    //TODO
-/*
     //Declarations
-    GwDictionaryListPrivate *priv;
-    GtkTreeModel *model;
-    gint position;
-    gpointer ptr;
-    GtkTreeIter iter;
-    LwDictionary *dictionary;
-    LwDictionaryList *dictionarylist;
-    gboolean valid;
+    GHashTable *hashtable;
+    gint a_index;
+    gint b_index;
 
     //Initializations
-    dictionarylist = gw_dictionarylist_get_dictionarylist (store);
-    priv = store->priv;
-    position = 0;
-    model = GTK_TREE_MODEL (store);
+    hashtable = data;
+    a_index = GPOINTER_TO_INT (g_hash_table_lookup (hashtable, a));
+    b_index = GPOINTER_TO_INT (g_hash_table_lookup (hashtable, b));
+    
+    if (a_index < b_index) return -1;
+    else if (a_index > b_index) return -1;
+    else return 0;
+}
 
-    g_signal_handler_block (model, priv->signalids[GW_DICTIONARYLIST_SIGNALID_ROW_CHANGED]);
 
-    valid = gtk_tree_model_get_iter_first (model, &iter);
+void
+gw_dictionarylist_save_order (GwDictionaryList *dictionarylist, LwPreferences *preferences)
+{
+    printf("BREAK Saving order\n");
+
+    //Declarations
+    GtkListStore *liststore;
+    GtkTreeModel *treemodel;
+    GtkTreeIter treeiter;
+    LwDictionary *dictionary;
+    gboolean valid;
+    GHashTable *hashtable;
+    gint index;
+
+    //Initializations
+    liststore = gw_dictionarylist_get_liststore (dictionarylist);
+    treemodel = GTK_TREE_MODEL (liststore);
+    hashtable = g_hash_table_new (g_direct_hash, g_direct_equal);
+    index = 0;
+
+    //Fill the hashtable
+    valid = gtk_tree_model_get_iter_first (treemodel, &treeiter);
     while (valid)
     {
-      gtk_tree_model_get (model, &iter, GW_DICTIONARYLIST_COLUMN_DICT_POINTER, &ptr, -1);
-      if (ptr != NULL)
-      {
-        dictionary = LW_DICTIONARY (ptr);
-        dictionary->load_position = position;
-        position++;
-      }
-      valid = gtk_tree_model_iter_next (model, &iter);
+      gtk_tree_model_get (treemodel, &treeiter, GW_DICTIONARYLIST_COLUMN_DICT_POINTER, &dictionary, -1);
+      g_hash_table_insert (hashtable, dictionary, GINT_TO_POINTER (index));
+      valid = gtk_tree_model_iter_next (treemodel, &treeiter);
+      index++;
     }
 
-    g_signal_handler_unblock (model, priv->signalids[GW_DICTIONARYLIST_SIGNALID_ROW_CHANGED]);
+    //Sort the LwDictionaryList and save the order
+    lw_dictionarylist_sort_with_data (LW_DICTIONARYLIST (dictionarylist), gw_dictionarylist_save_order_compare_func, hashtable);
+    lw_dictionarylist_save_order (LW_DICTIONARYLIST (dictionarylist), preferences);
 
-    gw_dictionarylist_normalize (store);
-    lw_dictionarylist_save_order (dictionarylist, preferences);
-    gw_dictionarylist_update (store);
-*/
+    g_hash_table_unref (hashtable); hashtable = NULL;
 }
 
 

@@ -69,6 +69,7 @@ void lw_dictionarylist_clear (LwDictionaryList*);
 gboolean lw_dictionarylist_installer_is_valid (LwDictionaryList*);
 
 GList* lw_dictionarylist_get_list (LwDictionaryList*);
+void lw_dictionarylist_sort_with_data (LwDictionaryList*, GCompareDataFunc, gpointer);
 
 G_END_DECLS
 
