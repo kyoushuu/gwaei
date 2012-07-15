@@ -1429,7 +1429,7 @@ gw_searchwindow_update_tab_text_by_index (GwSearchWindow *window, gint index)
     container = GTK_WIDGET (gtk_notebook_get_nth_page (priv->notebook, index));
     search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
     query = NULL;
-    text = "(Empty)";
+    text = "New Tab";
     box = GTK_WIDGET (gtk_notebook_get_tab_label (priv->notebook, GTK_WIDGET (container)));
     children = gtk_container_get_children (GTK_CONTAINER (box));
 
