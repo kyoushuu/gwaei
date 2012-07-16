@@ -745,17 +745,19 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
     //Declarations
     LwDictionaryClass *klass;
     gchar **tokenlist;
+    gchar *token;
+    gchar *supplimentary;
     GRegex *regex;
     LwRelevance relevance;
     gchar **pattern;
     LwQueryType type;
+    LwQueryType new_type;
     gint i;
 
     //Initializations
     for (type = 0; type < TOTAL_LW_QUERY_TYPES; type++)
     {
       klass = LW_DICTIONARY_CLASS (G_OBJECT_GET_CLASS (dictionary));
-      pattern = klass->patterns[type];
       for (relevance = 0; relevance < TOTAL_LW_RELEVANCE; relevance++)
       {
         tokenlist = lw_query_tokenlist_get (query, type);
@@ -763,8 +765,12 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
         {
           for (i = 0; tokenlist[i] != NULL; i++)
           {
-            regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
-            if (regex != NULL) lw_query_regexgroup_append (query, type, relevance, regex);
+            supplimentary = lw_query_get_supplimentary (query, type, tokenlist[i], &new_type);
+            pattern = klass->patterns[new_type];
+            if (token != NULL) regex = lw_regex_new (pattern[relevance], supplimentary, error);
+            if (regex != NULL) lw_query_regexgroup_append (query, new_type, relevance, regex);
+            if (token != NULL) g_free (token);
+            regex = NULL; token = NULL;
           }
         }
       }

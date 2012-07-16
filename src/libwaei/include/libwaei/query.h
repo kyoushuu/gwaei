@@ -16,7 +16,7 @@ typedef enum {
   LW_QUERY_FLAG_DELIMIT_MORPHOLGY =  (2 << 0),
   LW_QUERY_FLAG_ROMAJI_TO_FURIGANA = (3 << 0),
   LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA = (4 << 0),
-  LW_QUERY_FLAG_KATAKANA_TO_FURIGANA = (5 << 0),
+  LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA = (5 << 0),
   LW_QUERY_FLAG_ROOT_WORD = (6 << 0)
 } LwQueryFlags;
 
@@ -42,6 +42,7 @@ struct _LwQuery {
     GList ***regexgroup;
     LwRange **rangelist;
     gboolean parsed;
+    gint16 preferences;
 };
 typedef struct _LwQuery LwQuery;
 
@@ -61,6 +62,8 @@ void lw_query_clear (LwQuery*);
 
 void lw_query_tokenlist_append_primary (LwQuery*, LwQueryType, const gchar*);
 void lw_query_tokenlist_append_supplimentary (LwQuery*, LwQueryType, gint, const gchar*);
+
+gchar* lw_query_get_supplimentary (LwQuery*, LwQueryType, const gchar*, LwQueryType*);
 gchar** lw_query_tokenlist_get (LwQuery*, LwQueryType);
 
 void lw_query_rangelist_set (LwQuery*, LwQueryRangeType, LwRange*);

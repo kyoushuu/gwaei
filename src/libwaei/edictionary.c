@@ -46,7 +46,6 @@ static gboolean lw_edictionary_parse_result (LwDictionary*, LwResult*, FILE*);
 static gboolean lw_edictionary_compare (LwDictionary*, LwQuery*, LwResult*, const LwRelevance);
 static gboolean lw_edictionary_installer_postprocess (LwDictionary*, gchar**, gchar**, LwIoProgressCallback, gpointer, GCancellable*, GError**);
 static void lw_edictionary_create_primary_tokens (LwDictionary*, LwQuery*);
-static void lw_edictionary_add_supplimentary_tokens (LwDictionary*, LwQuery*);
 
 
 LwDictionary* lw_edictionary_new (const gchar *FILENAME)
@@ -165,10 +164,7 @@ lw_edictionary_parse_query (LwDictionary *dictionary, LwQuery *query, const gcha
 
     //Sanity check
     g_return_val_if_fail (dictionary != NULL && query != NULL && TEXT != NULL, FALSE);
-    //fist&&second
-    lw_edictionary_create_primary_tokens (dictionary, query);  
-    //first||second
-    lw_edictionary_add_supplimentary_tokens (dictionary, query);  
+    lw_edictionary_create_primary_tokens (dictionary, query);  //fist&&second
     lw_dictionary_build_regex (dictionary, query, error);
 
     return (error == NULL || *error == NULL);
@@ -453,39 +449,4 @@ lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
     if (delimited != NULL) g_free (delimited); delimited = NULL;
 }
 
-
-//!
-//! @brief For each logical and delimited token (&), the appropriate supplimentary (logical or) tokens will be added.
-//!
-static void 
-lw_edictionary_add_supplimentary_tokens (LwDictionary *dictionary, LwQuery *query)
-{
-/*
-    tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_STRING, -1);
-
-    if (tokens != NULL)
-    {
-      for (i = 0; tokens[i] != NULL; i++)
-      {
-        if (lw_util_is_furigana_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_FURIGANA, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_kanji_ish_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_KANJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        else if (lw_util_is_romaji_str (tokens[i]))
-          lw_query_tokenlist_append (query, LW_QUERY_TYPE_ROMAJI, LW_RELEVANCE_HIGH, TRUE, tokens[i]);
-        if (tokens[i] != NULL) g_free (tokens[i]); tokens[i] = NULL;
-      }
-      g_free (tokens); tokens = NULL;
-    }
-*/
-
-/*
-          if (get_japanese_morphology)
-          {
-            lw_morphology_get_stem ()
-            query->tokenlist[LW_QUERY_TYPE_KANJI] = g_list_append (query->tokenlist[LW_QUERY_TYPE_KANJI], tokens[i]);
-          }
-*/
-
-}
 
