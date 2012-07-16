@@ -1028,20 +1028,18 @@ gw_searchwindow_append_kanjidict_tooltip_result (GwSearchWindow *window, LwSearc
 void 
 gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch *search)
 {
+printf("BREAK no results 1\n");
     //Sanity check
     if (search == NULL || search->dictionary == NULL) return;
-    if (search->status != LW_SEARCHSTATUS_IDLE || search->current == 0L || search->total_results > 0) return; 
+printf("BREAK no results 1\n");
+    if (lw_search_get_progress (search) > 0.0 || lw_search_get_total_results (search) > 0) return; 
+printf("BREAK no results 1\n");
 
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
     priv = window->priv;
     LwDictionaryList *dictionarylist;
-    gint32 temp = g_random_int_range (0,9);
-    while (temp == priv->previous_tip)
-      temp = g_random_int_range (0,9);
-    const gint32 TIP_NUMBER = temp;
-    priv->previous_tip = temp;
     GtkTextView *view;
     GtkTextBuffer *buffer;
     GtkWidget *image = NULL;
@@ -1049,7 +1047,6 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
     GtkTextChildAnchor *anchor = NULL;
     GtkWidget *label = NULL;
     GtkWidget *box = NULL;
-    gchar *body = NULL;
     const gchar *query_text;
     gint i = 0;
     GtkWidget *button = NULL;
@@ -1089,7 +1086,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
     label = gtk_label_new (NULL);
     char *message = NULL;
     // TRANSLATORS: The argument is the dictionary long name
-    message = g_strdup_printf(gettext("Nothing found in the %s Dictionary!"), shortname);
+    message = g_strdup_printf (gettext("Nothing found in the %s Dictionary!"), shortname);
     if (message != NULL)
     {
       markup = g_markup_printf_escaped ("<big><big><b>%s</b></big></big>", message);
@@ -1138,8 +1135,11 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
       {
         if (dictionary != dictionary_selected)
         {
+          shortname = lw_dictionary_get_name (dictionary);
           button = gtk_button_new_with_label (shortname);
           position = lw_dictionarylist_get_position (dictionarylist, dictionary);
+          gtk_widget_set_margin_left (GTK_WIDGET (button), 2);
+          gtk_widget_set_margin_right (GTK_WIDGET (button), 2);
           g_object_set_data (G_OBJECT (button), "load-position", GINT_TO_POINTER (position));
           g_signal_connect (G_OBJECT (button), "clicked", G_CALLBACK (gw_searchwindow_no_results_search_for_dictionary_cb), window);
           gtk_container_add (GTK_CONTAINER (box), GTK_WIDGET (button));
@@ -1202,192 +1202,4 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
       i += 3;
     }
 
-
-
-
-    gw_searchwindow_append_to_buffer (window, search, "\n \n \n", NULL, NULL, NULL, NULL);
-
-
-
-
-    //Insert the instruction text
-    char *tip_header_str = NULL;
-    tip_header_str = g_strdup_printf (gettext("gWaei Usage Tip #%d: "), (TIP_NUMBER + 1));
-    if (tip_header_str != NULL)
-    {
-      gw_searchwindow_append_to_buffer (window, search, tip_header_str,
-                              "important", NULL, NULL, NULL         );
-      g_free (tip_header_str);
-      tip_header_str = NULL;
-    }
-                            
-    switch (TIP_NUMBER)
-    {
-      case 0:
-        //Tip 1
-        body = g_strdup_printf (gettext("Use the Unknown Character from the Insert menu or toolbar in "
-                                "place of unknown Kanji. %s will return results like %s.\n \nKanjipad "
-                                "is another option for inputting Kanji characters.  Because of how the "
-                                "innards of Kanjipad works, drawing with the correct number of strokes "
-                                "and drawing the strokes in the correct direction is very important."),
-                                "日.語", "日本語");
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Inputting Unknown Kanji"),
-                                "header", "important", NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        if (body != NULL)
-        {
-          gw_searchwindow_append_to_buffer (window, search, body,
-                                  NULL, NULL, NULL, NULL);
-          g_free (body);
-          body = NULL;
-        }
-        break;
-
-     case 1:
-        //Tip 2
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Getting More Exact Matches"),
-                                "important", "header", NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Use the Word-edge Mark and the Not-word-edge Mark from the "
-                                "insert menu to get more relevant results.  fish\\b will return results "
-                                "like fish and selfish , but not fisherman"),
-                                NULL, NULL, NULL, NULL);
-        break;
-
-     case 2:
-        //Tip 3
-        body = g_strdup_printf (gettext("Use the And Character or Or Character to window for "
-                                "results that contain a combination of words that might not be "
-                                "right next to each other.  cats&dogs will return only results "
-                                "that contain both the words cats and dogs like %s does."),
-                                "犬猫");
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Searching for Multiple Words"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL);
-        if (body != NULL)
-        {
-          gw_searchwindow_append_to_buffer (window, search, body,
-                                  NULL, NULL, NULL, NULL);
-          g_free (body);
-          body = NULL;
-        }
-        break;
-
-     case 3:
-        //Tip 4
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Make a Vocabulary List"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Specific sections of results can be printed or saved by "
-                                "dragging the mouse to highlight them.  Using this in combination "
-                                "with the Append command from the File menu or toolbar, quick and "
-                                "easy creation of a word lists is possible."),
-                                NULL, NULL, NULL, NULL);
-        break;
-
-     case 4:
-        //Tip 5
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Why Use the Mouse?"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Typing something will move the focus to the window input "
-                                "box.  Hitting the Up or Down arrow key will move the focus to the "
-                                "results pane so you can scroll the results.  Hitting Alt-Up or "
-                                "Alt-Down will cycle the currently installed dictionaries."),
-                                NULL, NULL, NULL, NULL         );
-        break;
-
-     case 5:
-        //Tip 6
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Get Ready for the JLPT"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("The Kanji dictionary has some hidden features.  One such "
-                                "one is the ability to filter out Kanji that don't meet a certain "
-                                "criteria.  If you are planning on taking the Japanese Language "
-                                "Proficiency Test, using the phrase J# will filter out Kanji not of "
-                                "that level for easy study.  For example, J4 will only show Kanji "
-                                "that appears on the forth level test.\n \nAlso of interest, the "
-                                "phrase G# will filter out Kanji for the grade level a Japanese "
-                                "person would study it at in school."),
-                                NULL, NULL, NULL, NULL         );
-        break;
-
-     case 6:
-        //Tip 7
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Just drag words in!"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("If you drag and drop a highlighted word into gWaei's "
-                                "window result box, gWaei will automatically start a window "
-                                "using that text.  This can be a nice way to quickly look up words "
-                                "while browsing webpages. "),
-                                NULL, NULL, NULL, NULL         );
-
-        break;
-
-     case 7:
-        //Tip 8
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("What does (adj-i) mean?"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("It is part of the terminalogy used by the EDICT group of "
-                                "dictionaries to categorize words.  Some are obvious, but there are "
-                                "a number that there is no way to know the meaning other than by looking "
-                                "it up.\n \ngWaei includes some of the EDICT documentation in its help "
-                                "manual.  Click the Dictionary Terminology Glossary menuitem in the "
-                                "Help menu to get to it."),
-                                NULL, NULL, NULL, NULL         );
-        break;
-
-     case 8:
-        //Tip 9
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Books are Heavy"),
-                                "important", "header", NULL, NULL);
-        gw_searchwindow_append_to_buffer (window, search,
-                                "\n \n",
-                                NULL, NULL, NULL, NULL         );
-        gw_searchwindow_append_to_buffer (window, search,
-                                gettext("Aways wear a construction helmet when working with books.  "
-                                "They are dangerous heavy objects that can at any point fall on and "
-                                "injure you.  Please all urge all of your friends to, too.  They will "
-                                "thank you later.  Really."),
-                                NULL, NULL, NULL, NULL         );
-       break;
-    }
-
-    gw_searchwindow_append_to_buffer (window, search,
-                               "\n \n",
-                               NULL, NULL, NULL, NULL         );
 }

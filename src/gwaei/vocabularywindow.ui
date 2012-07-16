@@ -60,7 +60,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Add</property>
                         <property name="use_underline">True</property>
-                        <property name="icon_name">list-add-symbolic</property>
+                        <property name="stock_id">gtk-add</property>
                         <signal name="clicked" handler="gw_vocabularywindow_new_list_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>
@@ -76,7 +76,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Remove</property>
                         <property name="use_underline">True</property>
-                        <property name="icon_name">list-remove-symbolic</property>
+                        <property name="stock_id">gtk-remove</property>
                         <signal name="clicked" handler="gw_vocabularywindow_remove_list_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>
@@ -142,7 +142,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Add</property>
                         <property name="use_underline">True</property>
-                        <property name="icon_name">list-add-symbolic</property>
+                        <property name="stock_id">gtk-add</property>
                         <signal name="clicked" handler="gw_vocabularywindow_new_word_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>
@@ -158,7 +158,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Remove</property>
                         <property name="use_underline">True</property>
-                        <property name="icon_name">list-remove-symbolic</property>
+                        <property name="stock_id">gtk-remove</property>
                         <signal name="clicked" handler="gw_vocabularywindow_remove_word_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>
@@ -174,6 +174,7 @@
                         <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">Revert</property>
                         <property name="use_underline">True</property>
+                        <property name="stock_id">gtk-revert-to-saved</property>
                         <signal name="clicked" handler="gw_vocabularywindow_revert_wordstore_cb" object="toplevel" swapped="no"/>
                       </object>
                       <packing>

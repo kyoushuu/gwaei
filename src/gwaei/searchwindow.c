@@ -358,38 +358,47 @@ gw_searchwindow_append_result_timeout (GwSearchWindow *window)
     gint index;
     gint chunk;
     gint max_chunk;
-    //LwSearchStatus status;
+    LwSearchStatus status;
     gboolean has_results;
+    gint total_results;
 
     //Initializations
     priv = window->priv;
     index = gw_searchwindow_get_current_tab_index (window);
     search = gw_searchwindow_get_searchitem_by_index (window, index);
-    //status = lw_search_get_status (search);
-    has_results = lw_search_has_results (search);
-    chunk = 0;
-    max_chunk = 10;
-    
-    if (search != NULL && has_results)
+
+    if (search != NULL) 
     {
-      while (search != NULL && has_results && chunk < max_chunk)
+      status = lw_search_get_status (search);
+      total_results = lw_search_get_total_results (search);
+      has_results = lw_search_has_results (search);
+      chunk = 0;
+      max_chunk = 10;
+      
+      if (status == LW_SEARCHSTATUS_FINISHING && total_results == 0)
       {
-        gw_searchwindow_append_result (window, search);
-        chunk++;
-        has_results = lw_search_has_results (search);
+          gw_searchwindow_display_no_results_found_page (window, search);
       }
-    }
-    else
-    {
-        gw_searchwindow_display_no_results_found_page (window, search);
+      else if (has_results)
+      {
+        while (has_results && chunk++ < max_chunk)
+        {
+          gw_searchwindow_append_result (window, search);
+          has_results = lw_search_has_results (search);
+        }
+      }
     }
 
     search = priv->mouse_item;
-    has_results = lw_search_has_results (search);
-    
-    if (search != NULL && has_results);
+
+    if (search != NULL)
     {
-      gw_searchwindow_append_kanjidict_tooltip_result (window, search);
+      has_results = lw_search_has_results (search);
+      
+      if (search != NULL && has_results);
+      {
+        gw_searchwindow_append_kanjidict_tooltip_result (window, search);
+      }
     }
 
     return TRUE;
@@ -2235,6 +2244,7 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     g_signal_connect (entry, "activate", G_CALLBACK (gw_searchwindow_search_cb), window);
     g_signal_connect (entry, "changed", G_CALLBACK (gw_searchwindow_update_button_states_based_on_entry_text_cb), window);
     g_signal_connect (entry, "icon-release", G_CALLBACK (gw_searchwindow_clear_entry_button_pressed_cb), window);
+    g_signal_connect (entry, "key-press-event", G_CALLBACK (gw_searchwindow_focus_change_on_key_press_cb), window);
     gtk_container_add (GTK_CONTAINER (item), entry);
     gtk_widget_set_margin_left (GTK_WIDGET (item), 2);
     gtk_widget_set_margin_right (GTK_WIDGET (item), 2);

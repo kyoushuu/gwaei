@@ -477,7 +477,7 @@
                             <property name="use_action_appearance">False</property>
                             <property name="label" translatable="yes">Add</property>
                             <property name="use_underline">True</property>
-                            <property name="icon_name">list-add-symbolic</property>
+                            <property name="stock_id">gtk-add</property>
                             <signal name="clicked" handler="gw_settingswindow_open_dictionaryinstallwindow_cb" object="toplevel" swapped="no"/>
                           </object>
                           <packing>
@@ -494,7 +494,7 @@
                             <property name="use_action_appearance">False</property>
                             <property name="label" translatable="yes">Remove</property>
                             <property name="use_underline">True</property>
-                            <property name="icon_name">list-remove-symbolic</property>
+                            <property name="stock_id">gtk-remove</property>
                             <signal name="clicked" handler="gw_settingswindow_remove_dictionary_cb" object="toplevel" swapped="no"/>
                           </object>
                           <packing>
@@ -585,7 +585,7 @@
                             <property name="use_action_appearance">False</property>
                             <property name="label" translatable="yes">Remove</property>
                             <property name="use_underline">True</property>
-                            <property name="icon_name">list-add-symbolic</property>
+                            <property name="stock_id">gtk-add</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -603,7 +603,7 @@
                             <property name="use_action_appearance">False</property>
                             <property name="label" translatable="yes">Add</property>
                             <property name="use_underline">True</property>
-                            <property name="icon_name">list-remove-symbolic</property>
+                            <property name="stock_id">gtk-remove</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>

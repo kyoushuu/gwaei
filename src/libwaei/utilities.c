@@ -1557,6 +1557,70 @@ lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 }
 
 
+gchar*
+lw_util_delimit_radicals (const gchar *DELIMITOR, const gchar* TEXT)
+{
+printf("BREAK not delimited TEXT %s\n", TEXT);
+    //Sanity check
+    g_return_val_if_fail (DELIMITOR != NULL && TEXT != NULL, NULL);
+
+    //Declarations
+    gchar *buffer;
+    gint count;
+    const gchar *source_ptr;
+    gchar *target_ptr;
+    gunichar c;
+    gint delimitor_length;
+    GUnicodeScript script;
+    GUnicodeScript previous_script;
+
+    //Initializations
+    count = 0;
+    delimitor_length = strlen(DELIMITOR);
+    previous_script = G_UNICODE_SCRIPT_INVALID_CODE;
+
+    for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
+    {
+      c = g_utf8_get_char (source_ptr);
+      script = g_unichar_get_script (c);
+
+      if (previous_script == G_UNICODE_SCRIPT_HAN && script == previous_script)
+      {
+        count++;
+      }
+      previous_script = script;
+    }
+
+    buffer = g_new (gchar, strlen(TEXT) + (delimitor_length * count) + 1);
+    target_ptr = buffer;
+    previous_script = G_UNICODE_SCRIPT_INVALID_CODE;
+
+    //Create the delimited string
+    if (buffer != NULL)
+    {
+      for (source_ptr = TEXT; *source_ptr != '\0'; source_ptr = g_utf8_next_char (source_ptr))
+      {
+        c = g_utf8_get_char (source_ptr);
+        script = g_unichar_get_script (c);
+
+        if (previous_script == G_UNICODE_SCRIPT_HAN && script == previous_script)
+        {
+          strcpy(target_ptr, DELIMITOR);
+          target_ptr += delimitor_length;
+        }
+
+        target_ptr += g_unichar_to_utf8 (c, target_ptr);
+        *target_ptr = '\0';
+
+        previous_script = script;
+      }
+    }
+printf("BREAK radicals delimited buffer %s\n", buffer);
+
+    return buffer;
+}
+
+
 GRegex*
 lw_regex_new (const gchar *PATTERN, const gchar *EXPRESSION, GError **error)
 {

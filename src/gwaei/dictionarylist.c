@@ -300,7 +300,7 @@ gw_dictionarylist_save_order_compare_func (gconstpointer a, gconstpointer b, gpo
     b_index = GPOINTER_TO_INT (g_hash_table_lookup (hashtable, b));
     
     if (a_index < b_index) return -1;
-    else if (a_index > b_index) return -1;
+    else if (a_index > b_index) return 1;
     else return 0;
 }
 
@@ -308,8 +308,6 @@ gw_dictionarylist_save_order_compare_func (gconstpointer a, gconstpointer b, gpo
 void
 gw_dictionarylist_save_order (GwDictionaryList *dictionarylist, LwPreferences *preferences)
 {
-    printf("BREAK Saving order\n");
-
     //Declarations
     GtkListStore *liststore;
     GtkTreeModel *treemodel;

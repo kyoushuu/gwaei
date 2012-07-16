@@ -453,6 +453,9 @@ lw_kanjidictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *que
       g_free (delimited); delimited = temp; temp = NULL;
     }
 
+    temp = lw_util_delimit_radicals (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
+    g_free (delimited); delimited = temp; temp = NULL;
+
     tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
 
     if (tokens != NULL)
