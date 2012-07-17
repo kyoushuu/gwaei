@@ -26,12 +26,15 @@ typedef enum
 
 typedef enum
 {
-  LW_SEARCH_FLAG_EXACT              = (1 << 0)
-/*
-  LW_SEARCH_FLAG_DELIMIT_WHITESPACE = (1 << 1),
-  LW_SEARCH_FLAG_JAPANESE_STEP      = (1 << 2),
-  LW_SEARCH_FLAG_ROMAJI_STEP        = (1 << 3)
-*/
+  //First 16 bits are made to mirror the LwQueryFlags
+  LW_SEARCH_FLAG_DELIMIT_WHITESPACE = (1 << 0),
+  LW_SEARCH_FLAG_DELIMIT_MORPHOLGY =  (1 << 1),
+  LW_SEARCH_FLAG_ROMAJI_TO_FURIGANA = (1 << 2),
+  LW_SEARCH_FLAG_HIRAGANA_TO_KATAKANA = (1 << 3),
+  LW_SEARCH_FLAG_KATAKANA_TO_HIRAGANA = (1 << 4),
+  LW_SEARCH_FLAG_ROOT_WORD = (1 << 5),
+  //Last 16 bits are specific to LwSearchFlags
+  LW_SEARCH_FLAG_EXACT = (1 << 6)
 } LwSearchFlags;
 
 typedef void(*LwSearchDataFreeFunc)(gpointer);
@@ -65,7 +68,6 @@ struct _LwSearch {
 
     gpointer data;                 //!< Pointer to a buffer that stays constant unlike when the target attribute is used
 
-    gint16 preferences;
     gint64 timestamp;
 
     LwSearchDataFreeFunc free_data_func;
@@ -108,6 +110,9 @@ gint lw_search_get_total_results (LwSearch*);
 gint lw_search_get_total_relevant_results (LwSearch*);
 gint lw_search_get_total_irrelevant_results (LwSearch*);
 
+void lw_search_set_flags (LwSearch*, LwSearchFlags);
+LwSearchFlags lw_search_get_flags (LwSearch*);
+LwSearchFlags lw_search_get_flags_from_preferences (LwPreferences*);
 
 G_END_DECLS
 

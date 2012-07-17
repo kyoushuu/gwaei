@@ -133,6 +133,10 @@ lw_kanjidictionary_class_init (LwKanjiDictionaryClass *klass)
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "\\b(%s)\\b";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_HIGH] =  "\\{(%s)\\}";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_MEDIUM] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_HIGH] = "(%s)";
 }
 
 

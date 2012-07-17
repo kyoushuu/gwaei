@@ -109,6 +109,8 @@ lw_search_init (LwSearch *search, LwDictionary* dictionary, const gchar* TEXT, L
     search->flags = flags;
     search->max = 500;
 
+    lw_search_set_flags (search, flags);
+
     lw_dictionary_parse_query (search->dictionary, search->query, TEXT, error);
 }
 
@@ -685,5 +687,67 @@ lw_search_get_total_irrelevant_results (LwSearch *search)
     total += search->total_results[LW_RELEVANCE_MEDIUM];
 
     return total;
+}
+
+void
+lw_search_set_flags (LwSearch *search, LwSearchFlags flags)
+{
+    //Sanity checks
+    g_return_if_fail (search != NULL);
+    g_return_if_fail (search->query != NULL);
+
+    LwQuery *query;
+
+    search->flags = flags;
+    query = search->query;
+
+
+    query->flags = flags & 0xFFFF;
+}
+
+
+LwSearchFlags
+lw_search_get_flags (LwSearch *search)
+{
+    //Sanity checks
+    g_return_val_if_fail (search != NULL, 0);
+
+    return search->flags;
+}
+
+
+LwSearchFlags
+lw_search_get_flags_from_preferences (LwPreferences *preferences)
+{
+    //Sanity checks
+    g_return_val_if_fail (preferences != NULL, 0);
+
+    //Declarations
+    gboolean hiragana_to_katakana;
+    gboolean katakana_to_hiragana;
+    gboolean romaji_to_furigana;
+    gboolean delimit_whitespace;
+    gboolean delimit_morphology;
+    gboolean root_word;
+    gint32 flags;
+
+    //Initializations
+    hiragana_to_katakana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_HIRA_KATA);
+    katakana_to_hiragana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_KATA_HIRA);
+//    romaji_to_furigana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
+    romaji_to_furigana = TRUE; //TODO
+    delimit_whitespace = LW_QUERY_FLAG_DELIMIT_WHITESPACE;
+    delimit_morphology = LW_QUERY_FLAG_DELIMIT_MORPHOLOGY;
+    root_word = LW_QUERY_FLAG_ROOT_WORD;
+    flags = 0;
+
+    if (hiragana_to_katakana) flags |= LW_SEARCH_FLAG_HIRAGANA_TO_KATAKANA;
+    if (katakana_to_hiragana) flags |= LW_SEARCH_FLAG_KATAKANA_TO_HIRAGANA;
+    if (romaji_to_furigana) flags |= LW_SEARCH_FLAG_ROMAJI_TO_FURIGANA;
+    if (delimit_whitespace) flags |= LW_SEARCH_FLAG_DELIMIT_WHITESPACE;
+    if (delimit_morphology) flags |= LW_SEARCH_FLAG_DELIMIT_MORPHOLGY;
+    if (root_word) flags |= LW_SEARCH_FLAG_ROOT_WORD;
+
+    return flags;
 }
 

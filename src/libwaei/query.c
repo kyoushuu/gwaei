@@ -288,8 +288,8 @@ static gchar*
       gchar *temp;
 
       //Initializations
-      hiragana_to_katakana = query->preferences & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
-      katakana_to_hiragana = query->preferences & LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA;
+      hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
+      katakana_to_hiragana = query->flags & LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA;
       is_hiragana = lw_util_is_hiragana_str (TOKEN);
       is_katakana = lw_util_is_katakana_str (TOKEN);
       supplimentary = g_strdup (TOKEN);
@@ -334,8 +334,8 @@ static gchar*
       gchar *temp;
 
       //Initializations
-      romaji_to_furigana = query->preferences & LW_QUERY_FLAG_ROMAJI_TO_FURIGANA;
-      hiragana_to_katakana = query->preferences & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
+      romaji_to_furigana = query->flags & LW_QUERY_FLAG_ROMAJI_TO_FURIGANA;
+      hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
       is_romaji = lw_util_is_romaji_str (TOKEN);
       supplimentary = g_strdup (TOKEN);
       buffer[0] = '\0';
@@ -347,6 +347,10 @@ static gchar*
         temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
         g_free (supplimentary); supplimentary = temp; temp = NULL;
       }
+      else
+      {
+        buffer[0] = '\0';
+      }
       if (hiragana_to_katakana && buffer[0] != '\0' && lw_util_is_hiragana_str (buffer))
       {
         lw_util_str_shift_hira_to_kata (buffer);
@@ -357,46 +361,46 @@ static gchar*
       return supplimentary;
   }
 
-  //!
-  //! @brief Returns the delimited supplimentary tokens and changes the supplimentary type if necessary
-  //! @param type primary token type to lookup
-  //! @param index primary token index to lookup
-  //! @param supplimentary_tokens Where to store the supplimentary tokens
-  //! @param supplimentary_type Where to store the supplimentary type
-  //!
-  gchar*
-  lw_query_get_supplimentary (LwQuery      *query, 
-                              LwQueryType   type, 
-                              const gchar  *token,
-                              LwQueryType  *new_type)
-  {
-      //Sanity checks
-      g_return_val_if_fail (query != NULL, NULL);
-      g_return_val_if_fail (new_type != NULL, NULL);
+//!
+//! @brief Returns the delimited supplimentary tokens and changes the supplimentary type if necessary
+//! @param type primary token type to lookup
+//! @param index primary token index to lookup
+//! @param supplimentary_tokens Where to store the supplimentary tokens
+//! @param supplimentary_type Where to store the supplimentary type
+//!
+gchar*
+lw_query_get_supplimentary (LwQuery      *query, 
+                            LwQueryType   type, 
+                            const gchar  *token,
+                            LwQueryType  *new_type)
+{
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (new_type != NULL, NULL);
 
-      //Declarations
-      gchar *supplimentary;
+    //Declarations
+    gchar *supplimentary;
 
-      //Initializations
-      *new_type = type;
+    //Initializations
+    *new_type = type;
 
-      switch (type)
-      {
-        case LW_QUERY_TYPE_KANJI:
-          supplimentary = lw_query_tokenlist_build_kanji_supplimentary (query, token, new_type);
-        break;
-      case LW_QUERY_TYPE_FURIGANA:
-        supplimentary = lw_query_tokenlist_build_furigana_supplimentary (query, token, new_type);
-        break;
-      case LW_QUERY_TYPE_ROMAJI:
-        supplimentary = lw_query_tokenlist_build_romaji_supplimentary (query, token, new_type);
-        break;
-      default:
-        supplimentary = g_strdup (token);
-        break;
-    }
+    switch (type)
+    {
+      case LW_QUERY_TYPE_KANJI:
+        supplimentary = lw_query_tokenlist_build_kanji_supplimentary (query, token, new_type);
+      break;
+    case LW_QUERY_TYPE_FURIGANA:
+      supplimentary = lw_query_tokenlist_build_furigana_supplimentary (query, token, new_type);
+      break;
+    case LW_QUERY_TYPE_ROMAJI:
+      supplimentary = lw_query_tokenlist_build_romaji_supplimentary (query, token, new_type);
+      break;
+    default:
+      supplimentary = g_strdup (token);
+      break;
+  }
 
-    return supplimentary;
+  return supplimentary;
 }
 
 

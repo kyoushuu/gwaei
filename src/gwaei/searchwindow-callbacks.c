@@ -1029,7 +1029,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     GwApplication *application;
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;
-    //LwPreferences *preferences;
+    LwPreferences *preferences;
     gchar query[50];
     LwSearch *search;
     LwSearch *new_item;
@@ -1039,6 +1039,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     GtkTextView *view;
     gint index;
     LwHistory *history;
+    LwSearchFlags flags;
 
     //Initializations
     error = NULL;
@@ -1050,7 +1051,8 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
 
     if (!gw_application_can_start_search (application)) return;
 
-    //preferences = gw_application_get_preferences (application);
+    preferences = gw_application_get_preferences (application);
+    flags = lw_search_get_flags_from_preferences (preferences);
     strncpy (query, gtk_entry_get_text (priv->entry), 50);
     index = gw_searchwindow_get_current_tab_index (window);
     search = gw_searchwindow_get_searchitem_by_index (window, index);
@@ -1065,7 +1067,7 @@ gw_searchwindow_search_cb (GtkWidget *widget, gpointer data)
     }
 
     view = gw_searchwindow_get_current_textview (window);
-    new_item = lw_search_new (dictionary, query, 0, &error);
+    new_item = lw_search_new (dictionary, query, flags, &error);
     if (new_item == NULL)
     {
       gw_application_handle_error (application, NULL, FALSE, &error);

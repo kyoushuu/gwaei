@@ -148,6 +148,10 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_HIGH] = "(^|\\)|/|^to |\\) )(%s)(\\(|/|$|!| \\()";
+
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_MEDIUM] = "\\b(%s)\\b";
+    dictionary_class->patterns[LW_QUERY_TYPE_MIX][LW_RELEVANCE_HIGH] = "^(%s)$";
 }
 
 
@@ -349,6 +353,38 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
       link = link->next;
     }
 
+    //Compare mix atoms
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_MIX, RELEVANCE);
+    while (link != NULL)
+    {
+      regex = link->data;
+      if (regex == NULL || result->text == NULL) return FALSE;
+
+      if (result->kanji_start != NULL) 
+      {
+        checked = TRUE;
+        found = g_regex_match (regex, result->kanji_start, 0, NULL);
+      }
+      if (result->furigana_start && !found) 
+      {
+        checked = TRUE;
+        found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      }
+      if (!found)
+      {
+        checked = TRUE;
+        for (j = 0; result->def_start[j] != NULL; j++)
+        {
+          found = g_regex_match (regex, result->def_start[j], 0, NULL);
+          if (found == TRUE) break;
+        }
+      }
+
+      if (found == FALSE) return found;
+
+      link = link->next;
+    }
+
     return (checked && found);
 }
 
@@ -424,7 +460,6 @@ lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
       temp = lw_util_delimit_whitespace (LW_QUERY_DELIMITOR_PRIMARY_STRING, delimited);
       g_free (delimited); delimited = temp; temp = NULL;
     }
-    printf("BREAK primary delimited %s\n", delimited);
 
     tokeniter = tokens = g_strsplit (delimited, LW_QUERY_DELIMITOR_PRIMARY_STRING, -1);
 

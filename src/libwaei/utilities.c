@@ -522,8 +522,8 @@ lw_util_next_hira_char_from_roma (const char *input)
 //! @param output The string to write the hiragana equivalent to
 //! @return Returns null on error/end
 //!
-char* 
-lw_util_roma_char_to_hira (const char *input, char *output)
+gchar* 
+lw_util_roma_char_to_hira (const gchar *input, gchar *output)
 {
     //Set up the input pointer
     const char *input_ptr;
@@ -580,6 +580,7 @@ lw_util_roma_char_to_hira (const char *input, char *output)
               strlen(input) == 1
             )
     {
+       input_ptr = NULL;
        return NULL;
     }
     //HACK!!!!!!!!!!!!!!!!
@@ -898,7 +899,7 @@ lw_util_roma_char_to_hira (const char *input, char *output)
     else if (strcmp(buffer_ptr, "-") == 0)
        strcpy(output, "ー");
 
-    else return NULL;
+    else { printf("BREAK returning NULL!\n"); input_ptr = NULL; return NULL; }
 
     return output;
 }
@@ -914,17 +915,23 @@ lw_util_roma_char_to_hira (const char *input, char *output)
 //! @see lw_util_str_shift_hira_to_kata ()
 //!
 gboolean 
-lw_util_str_roma_to_hira (const char* input, char* output, int max)
+lw_util_str_roma_to_hira (const gchar* input, gchar* output, gint max)
 {
+    //Sanity checks
+    g_return_val_if_fail (input != NULL, FALSE);
+    g_return_val_if_fail (output != NULL, FALSE);
+
     //Declarations
-    const char *input_ptr;
-    char *kana_ptr;
-    int leftover;
+    const gchar *input_ptr;
+    gchar *kana_ptr;
+    gchar *previous_kana_ptr;
+    gint leftover;
 
     //Initializations
     input_ptr = input;
     kana_ptr = output;
     *kana_ptr = '\0';
+    previous_kana_ptr = NULL;
     leftover = max;
 
     //Try converting to hiragana
@@ -937,7 +944,7 @@ lw_util_str_roma_to_hira (const char* input, char* output, int max)
       if (kana_ptr == NULL || input_ptr == NULL)
         break;
 
-      kana_ptr = &kana_ptr[strlen(kana_ptr)];
+      previous_kana_ptr = kana_ptr = &kana_ptr[strlen(kana_ptr)];
     }
 
     return (input_ptr != NULL && strlen (input_ptr) == 0);
@@ -1560,7 +1567,6 @@ lw_util_delimit_whitespace (const gchar *DELIMITOR, const gchar* TEXT)
 gchar*
 lw_util_delimit_radicals (const gchar *DELIMITOR, const gchar* TEXT)
 {
-printf("BREAK not delimited TEXT %s\n", TEXT);
     //Sanity check
     g_return_val_if_fail (DELIMITOR != NULL && TEXT != NULL, NULL);
 
@@ -1615,7 +1621,6 @@ printf("BREAK not delimited TEXT %s\n", TEXT);
         previous_script = script;
       }
     }
-printf("BREAK radicals delimited buffer %s\n", buffer);
 
     return buffer;
 }

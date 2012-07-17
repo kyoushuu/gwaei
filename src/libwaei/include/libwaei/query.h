@@ -8,16 +8,16 @@ G_BEGIN_DECLS
 #define LW_QUERY(object) (LwQuery*) object
 #define LW_QUERY_DELIMITOR_PRIMARY_CHARACTER '&'
 #define LW_QUERY_DELIMITOR_PRIMARY_STRING "&"
-#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_CHARACTER '&'
-#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING "&"
+#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_CHARACTER '|'
+#define LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING "|"
 
 typedef enum {
   LW_QUERY_FLAG_DELIMIT_WHITESPACE = (1 << 0),
-  LW_QUERY_FLAG_DELIMIT_MORPHOLGY =  (2 << 0),
-  LW_QUERY_FLAG_ROMAJI_TO_FURIGANA = (3 << 0),
-  LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA = (4 << 0),
-  LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA = (5 << 0),
-  LW_QUERY_FLAG_ROOT_WORD = (6 << 0)
+  LW_QUERY_FLAG_DELIMIT_MORPHOLOGY =  (1 << 1),
+  LW_QUERY_FLAG_ROMAJI_TO_FURIGANA = (1 << 2),
+  LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA = (1 << 3),
+  LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA = (1 << 4),
+  LW_QUERY_FLAG_ROOT_WORD = (1 << 5)
 } LwQueryFlags;
 
 typedef enum {
@@ -42,7 +42,7 @@ struct _LwQuery {
     GList ***regexgroup;
     LwRange **rangelist;
     gboolean parsed;
-    gint16 preferences;
+    LwQueryFlags flags;
 };
 typedef struct _LwQuery LwQuery;
 
