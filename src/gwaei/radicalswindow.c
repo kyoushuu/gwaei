@@ -606,6 +606,7 @@ gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow   *window,
                                                 GtkToolItemGroup *toolitemgroup, 
                                                 const gchar      *TEXT)
 {
+printf("BREAK updating sensitivities foreach!\n");
     //Sanity checks
     g_return_if_fail (window != NULL);
     g_return_if_fail (toolitemgroup != NULL);
@@ -630,7 +631,9 @@ gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow   *window,
         {
           c = g_utf8_get_char (RADICAL);
           found = (g_utf8_strchr (TEXT, -1, c) != NULL);
-          if (found) gtk_widget_set_sensitive (GTK_WIDGET (button), TRUE); 
+          //gtk_widget_set_sensitive (GTK_WIDGET (button), found); 
+          if (found) gtk_widget_show (GTK_WIDGET (button));
+          else gtk_widget_hide (GTK_WIDGET (button));
         }
       }
       itemlink = itemlink->next;
@@ -724,6 +727,7 @@ gw_radicalswindow_deselect_foreach (GwRadicalsWindow *window, GtkToolItemGroup *
         G_GNUC_EXTENSION g_signal_handlers_block_by_func (button, gw_radicalswindow_toggled_cb, window);
         gtk_toggle_tool_button_set_active (button, FALSE);
         //gtk_widget_set_sensitive (GTK_WIDGET (button), FALSE);
+        gtk_widget_show (GTK_WIDGET (button));
         G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (button, gw_radicalswindow_toggled_cb, window);
       }
       itemlink = itemlink->next;

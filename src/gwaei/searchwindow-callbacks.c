@@ -1910,7 +1910,7 @@ gw_searchwindow_toggle_kanjipadwindow_cb (GSimpleAction *action,
           window
         );
 
-        g_signal_connect (
+        priv->signalid[GW_SEARCHWINDOW_SIGNALID_KANJIPADWINDOW_CLOSED] = g_signal_connect (
           G_OBJECT (priv->kanjipadwindow),
           "hide",
           G_CALLBACK (gw_searchwindow_kanjipadwindow_destroy_cb),
@@ -2036,7 +2036,7 @@ gw_searchwindow_toggle_radicalswindow_cb (GSimpleAction *action,
           window
         );
 
-        g_signal_connect (
+        priv->signalid[GW_SEARCHWINDOW_SIGNALID_RADICALSWINDOW_CLOSED] = g_signal_connect (
           G_OBJECT (priv->radicalswindow),
           "hide",
           G_CALLBACK (gw_searchwindow_radicalswindow_destroy_cb),

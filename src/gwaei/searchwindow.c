@@ -2097,6 +2097,9 @@ gw_searchwindow_attach_signals (GwSearchWindow *window)
 static void 
 gw_searchwindow_remove_signals (GwSearchWindow *window)
 {
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
     //Declarations
     GwApplication *application;
     GwSearchWindowPrivate *priv;
@@ -2107,6 +2110,20 @@ gw_searchwindow_remove_signals (GwSearchWindow *window)
     application = gw_window_get_application (GW_WINDOW (window));
     priv = window->priv;
     preferences = gw_application_get_preferences (application);
+  
+    if (priv->radicalswindow != NULL && priv->signalid[GW_SEARCHWINDOW_SIGNALID_RADICALSWINDOW_CLOSED] != 0)
+    {
+      g_signal_handler_disconnect (priv->radicalswindow, priv->signalid[GW_SEARCHWINDOW_SIGNALID_RADICALSWINDOW_CLOSED]);
+      priv->signalid[GW_SEARCHWINDOW_SIGNALID_RADICALSWINDOW_CLOSED] = 0;
+      gtk_widget_destroy (GTK_WIDGET (priv->radicalswindow));
+    }
+
+    if (priv->kanjipadwindow != NULL && priv->signalid[GW_SEARCHWINDOW_SIGNALID_KANJIPADWINDOW_CLOSED] != 0)
+    {
+      g_signal_handler_disconnect (priv->kanjipadwindow, priv->signalid[GW_SEARCHWINDOW_SIGNALID_KANJIPADWINDOW_CLOSED]);
+      priv->signalid[GW_SEARCHWINDOW_SIGNALID_KANJIPADWINDOW_CLOSED] = 0;
+      gtk_widget_destroy (GTK_WIDGET (priv->kanjipadwindow));
+    }
 
     for (i = 0; i < TOTAL_GW_SEARCHWINDOW_TIMEOUTIDS; i++)
     {

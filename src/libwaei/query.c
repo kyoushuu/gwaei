@@ -46,7 +46,7 @@ lw_query_new ()
 void 
 lw_query_free (LwQuery* query)
 {
-    g_return_if_fail (query != NULL);
+    if (query == NULL) return;
 
     lw_query_clear (query);
     if (query->text != NULL) g_free (query->text); query->text = NULL;
@@ -69,8 +69,7 @@ lw_query_clear_tokens (LwQuery *query)
       i = 0;
       while (i < TOTAL_LW_QUERY_TYPES)
       {
-        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); 
-        query->tokenlist[i] = NULL;
+        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); query->tokenlist[i] = NULL;
         i++;
       }
       g_free (query->tokenlist); query->tokenlist = NULL;
@@ -201,27 +200,6 @@ lw_query_is_sane (const char* query)
 }
 */
 
-/*
-QUERY
-fish cat
-
-TOKENIZED
-fish
-cat
-
-
-QUERY
-sakana
-
-TOKENIZED
-sakana|さかな|サカナ
-
-
-
-
-
-
-*/
 
 void
 lw_query_tokenlist_append_primary (LwQuery     *query, 
@@ -232,136 +210,142 @@ lw_query_tokenlist_append_primary (LwQuery     *query,
     g_return_if_fail (query != NULL);
     g_return_if_fail (TOKEN != NULL);
 
+    //Declarations
     gint length;
     gint index;
 
+    //Initializations
     if (query->tokenlist[type] == NULL) 
-      query->tokenlist[type] = g_malloc0 (1);
-    
-
-    length = g_strv_length (query->tokenlist[type]);
-    index = length;
+    {
+      length = 1;
+      index = 0;
+      query->tokenlist[type] = g_malloc0 (length);
+    }
+    else
+    {
+      length = g_strv_length (query->tokenlist[type]) + 1;
+      index = length - 1;
+    }
 
     query->tokenlist[type][index] = g_strdup (TOKEN);
 
     length++;
     index++;
-
     query->tokenlist[type] = g_realloc (query->tokenlist[type], length);
     query->tokenlist[type][index] = NULL;
 }
 
 
 static gchar* 
-  lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
-                                                const gchar  *TOKEN,
-                                                LwQueryType  *new_type)
-  {
-      //Sanity checks
-      g_return_val_if_fail (query != NULL, NULL);
-      g_return_val_if_fail (TOKEN != NULL, NULL);
-      g_return_val_if_fail (new_type != NULL, NULL);
+lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
+                                              const gchar  *TOKEN,
+                                              LwQueryType  *new_type)
+{
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (TOKEN != NULL, NULL);
+    g_return_val_if_fail (new_type != NULL, NULL);
 
-      *new_type = LW_QUERY_TYPE_KANJI;
+    *new_type = LW_QUERY_TYPE_KANJI;
 
-      return g_strdup (TOKEN);
-  }
-
-
-  static gchar*
-  lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
-                                                   const gchar  *TOKEN,
-                                                   LwQueryType  *new_type)
-  {
-      //Sanity checks
-      g_return_val_if_fail (query != NULL, NULL);
-      g_return_val_if_fail (TOKEN != NULL, NULL);
-      g_return_val_if_fail (new_type != NULL, NULL);
-
-      //Declarations
-      gboolean hiragana_to_katakana;
-      gboolean katakana_to_hiragana;
-      gboolean is_hiragana;
-      gboolean is_katakana;
-      gchar *supplimentary;
-      gchar buffer[100];
-      gchar *temp;
-
-      //Initializations
-      hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
-      katakana_to_hiragana = query->flags & LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA;
-      is_hiragana = lw_util_is_hiragana_str (TOKEN);
-      is_katakana = lw_util_is_katakana_str (TOKEN);
-      supplimentary = g_strdup (TOKEN);
-      *new_type = LW_QUERY_TYPE_FURIGANA;
-
-      if (hiragana_to_katakana && is_hiragana)
-      {
-        strcpy (buffer, TOKEN);
-        lw_util_str_shift_hira_to_kata (buffer);
-        temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
-        g_free (supplimentary); supplimentary = temp; temp = NULL;
-      }
-      else if (katakana_to_hiragana && is_katakana)
-      {
-        strcpy (buffer, TOKEN);
-        lw_util_str_shift_kata_to_hira (buffer);
-        temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
-        g_free (supplimentary); supplimentary = temp; temp = NULL;
-      }
-
-      return supplimentary;
-  }
+    return g_strdup (TOKEN);
+}
 
 
-  static gchar* 
-  lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
+static gchar*
+lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
                                                  const gchar  *TOKEN,
                                                  LwQueryType  *new_type)
-  {
-      //Sanity checks
-      g_return_val_if_fail (query != NULL, NULL);
-      g_return_val_if_fail (TOKEN != NULL, NULL);
-      g_return_val_if_fail (new_type != NULL, NULL);
+{
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (TOKEN != NULL, NULL);
+    g_return_val_if_fail (new_type != NULL, NULL);
 
-      //Declarations
-      gboolean romaji_to_furigana;
-      gboolean hiragana_to_katakana;
-      gboolean is_romaji;
-      gchar *supplimentary;
-      const gint LENGTH = 100;
-      gchar buffer[LENGTH];
-      gchar *temp;
-      gboolean convertable;
+    //Declarations
+    gboolean hiragana_to_katakana;
+    gboolean katakana_to_hiragana;
+    gboolean is_hiragana;
+    gboolean is_katakana;
+    gchar *supplimentary;
+    gchar buffer[100];
+    gchar *temp;
 
-      //Initializations
-      romaji_to_furigana = query->flags & LW_QUERY_FLAG_ROMAJI_TO_FURIGANA;
-      hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
-      is_romaji = lw_util_is_romaji_str (TOKEN);
-      supplimentary = g_strdup (TOKEN);
+    //Initializations
+    hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
+    katakana_to_hiragana = query->flags & LW_QUERY_FLAG_KATAKANA_TO_HIRAGANA;
+    is_hiragana = lw_util_is_hiragana_str (TOKEN);
+    is_katakana = lw_util_is_katakana_str (TOKEN);
+    supplimentary = g_strdup (TOKEN);
+    *new_type = LW_QUERY_TYPE_FURIGANA;
+
+    if (hiragana_to_katakana && is_hiragana)
+    {
+      strcpy (buffer, TOKEN);
+      lw_util_str_shift_hira_to_kata (buffer);
+      temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
+      g_free (supplimentary); supplimentary = temp; temp = NULL;
+    }
+    else if (katakana_to_hiragana && is_katakana)
+    {
+      strcpy (buffer, TOKEN);
+      lw_util_str_shift_kata_to_hira (buffer);
+      temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
+      g_free (supplimentary); supplimentary = temp; temp = NULL;
+    }
+
+    return supplimentary;
+}
+
+
+static gchar* 
+lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
+                                               const gchar  *TOKEN,
+                                               LwQueryType  *new_type)
+{
+    //Sanity checks
+    g_return_val_if_fail (query != NULL, NULL);
+    g_return_val_if_fail (TOKEN != NULL, NULL);
+    g_return_val_if_fail (new_type != NULL, NULL);
+
+    //Declarations
+    gboolean romaji_to_furigana;
+    gboolean hiragana_to_katakana;
+    gboolean is_romaji;
+    gchar *supplimentary;
+    const gint LENGTH = 100;
+    gchar buffer[LENGTH];
+    gchar *temp;
+    gboolean convertable;
+
+    //Initializations
+    romaji_to_furigana = query->flags & LW_QUERY_FLAG_ROMAJI_TO_FURIGANA;
+    hiragana_to_katakana = query->flags & LW_QUERY_FLAG_HIRAGANA_TO_KATAKANA;
+    is_romaji = lw_util_is_romaji_str (TOKEN);
+    supplimentary = g_strdup (TOKEN);
+    buffer[0] = '\0';
+    *new_type = LW_QUERY_TYPE_ROMAJI;
+    convertable = lw_util_str_roma_to_hira (TOKEN, buffer, LENGTH);
+    
+    if (romaji_to_furigana && is_romaji && convertable)
+    {
+      *new_type = LW_QUERY_TYPE_MIX;
+      temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
+      g_free (supplimentary); supplimentary = temp; temp = NULL;
+    }
+    else
+    {
       buffer[0] = '\0';
-      *new_type = LW_QUERY_TYPE_ROMAJI;
-      convertable = lw_util_str_roma_to_hira (TOKEN, buffer, LENGTH);
-      
-      if (romaji_to_furigana && is_romaji && convertable)
-      {
-        *new_type = LW_QUERY_TYPE_MIX;
-        temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
-        g_free (supplimentary); supplimentary = temp; temp = NULL;
-      }
-      else
-      {
-        buffer[0] = '\0';
-      }
-      if (hiragana_to_katakana && buffer[0] != '\0' && lw_util_is_hiragana_str (buffer))
-      {
-        lw_util_str_shift_hira_to_kata (buffer);
-        temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
-        g_free (supplimentary); supplimentary = temp; temp = NULL;
-      }
+    }
+    if (hiragana_to_katakana && buffer[0] != '\0' && lw_util_is_hiragana_str (buffer))
+    {
+      lw_util_str_shift_hira_to_kata (buffer);
+      temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
+      g_free (supplimentary); supplimentary = temp; temp = NULL;
+    }
 
-      return supplimentary;
-  }
+    return supplimentary;
+}
 
 //!
 //! @brief Returns the delimited supplimentary tokens and changes the supplimentary type if necessary
