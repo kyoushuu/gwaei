@@ -701,7 +701,6 @@ lw_search_set_flags (LwSearch *search, LwSearchFlags flags)
     search->flags = flags;
     query = search->query;
 
-
     query->flags = flags & 0xFFFF;
 }
 
