@@ -66,11 +66,13 @@ lw_query_clear_tokens (LwQuery *query)
 
     if (query->tokenlist != NULL)
     {
-      i = 0;
-      while (i < TOTAL_LW_QUERY_TYPES)
+      for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
       {
-        if (query->tokenlist[i] != NULL) g_free (query->tokenlist[i]); query->tokenlist[i] = NULL;
-        i++;
+        if (query->tokenlist[i] != NULL) 
+        {
+          g_free (query->tokenlist[i]); 
+          query->tokenlist[i] = NULL;
+        }
       }
       g_free (query->tokenlist); query->tokenlist = NULL;
     }
@@ -219,7 +221,7 @@ lw_query_tokenlist_append_primary (LwQuery     *query,
     {
       length = 1;
       index = 0;
-      query->tokenlist[type] = g_malloc0 (length);
+      query->tokenlist[type] = (gchar**) g_malloc0 (sizeof(gchar*) * length);
     }
     else
     {
@@ -231,7 +233,7 @@ lw_query_tokenlist_append_primary (LwQuery     *query,
 
     length++;
     index++;
-    query->tokenlist[type] = g_realloc (query->tokenlist[type], length);
+    query->tokenlist[type] = (gchar**) g_realloc (query->tokenlist[type], sizeof(gchar*) * length);
     query->tokenlist[type][index] = NULL;
 }
 

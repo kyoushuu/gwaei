@@ -80,6 +80,8 @@ gw_radicalswindow_toggled_cb (GtkWidget *widget, gpointer data)
     g_return_if_fail (window != NULL);
     klass = GW_RADICALSWINDOW_CLASS (G_OBJECT_GET_CLASS (window));
 
+    gw_radicalswindow_update_sensitivities (window, NULL);
+
     g_signal_emit (
       G_OBJECT (window), 
       klass->signalid[GW_RADICALSWINDOW_CLASS_SIGNALID_QUERY_CHANGED], 

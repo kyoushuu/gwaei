@@ -371,7 +371,7 @@ gw_radicalswindow_constructed (GObject *object)
     window = GW_RADICALSWINDOW (object);
     priv = window->priv;
 
-    gtk_window_set_title (GTK_WINDOW (window), gettext("gWaei Radical Search Tool"));
+    gtk_window_set_title (GTK_WINDOW (window), gettext("Radical Table - gWaei"));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
     gtk_window_set_default_size (GTK_WINDOW (window), 300, 600);
     gtk_window_set_type_hint (GTK_WINDOW (window), GDK_WINDOW_TYPE_HINT_UTILITY);
@@ -602,15 +602,13 @@ gw_radicalswindow_strdup_selected (GwRadicalsWindow *window)
 
 
 static void
-gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow   *window, 
+gw_radicalswindow_update_sensitivities_foreach (GwRadicalsWindow *window, 
                                                 GtkToolItemGroup *toolitemgroup, 
                                                 const gchar      *TEXT)
 {
-printf("BREAK updating sensitivities foreach!\n");
     //Sanity checks
     g_return_if_fail (window != NULL);
     g_return_if_fail (toolitemgroup != NULL);
-    g_return_if_fail (TEXT != NULL);
 
     //Declarations
     GList *itemlist, *itemlink;
@@ -618,8 +616,10 @@ printf("BREAK updating sensitivities foreach!\n");
     GtkToggleToolButton *button;
     gunichar c;
     gboolean found; 
+    gboolean has_sensitive;
 
     itemlink = itemlist = gtk_container_get_children (GTK_CONTAINER (toolitemgroup));
+    has_sensitive = FALSE;
 
     while (itemlink != NULL)
     {
@@ -630,16 +630,19 @@ printf("BREAK updating sensitivities foreach!\n");
         if (RADICAL != NULL)
         {
           c = g_utf8_get_char (RADICAL);
-          found = (g_utf8_strchr (TEXT, -1, c) != NULL);
-          //gtk_widget_set_sensitive (GTK_WIDGET (button), found); 
-          if (found) gtk_widget_show (GTK_WIDGET (button));
-          else gtk_widget_hide (GTK_WIDGET (button));
+          found = (TEXT != NULL && g_utf8_strchr (TEXT, -1, c) != NULL);
+          if (TEXT == NULL) gtk_widget_set_sensitive (GTK_WIDGET (button), FALSE);
+          else if (found) gtk_widget_set_sensitive (GTK_WIDGET (button), TRUE); 
+          if (gtk_widget_get_sensitive (GTK_WIDGET (button))) has_sensitive = TRUE;
         }
       }
       itemlink = itemlink->next;
     }
  
     g_list_free (itemlist); itemlist = NULL;
+
+    if (TEXT != NULL) gtk_tool_item_group_set_collapsed (toolitemgroup, !has_sensitive);
+    //gtk_widget_set_sensitive (GTK_WIDGET (toolitemgroup), !has_sensitive);
 }
 
 
@@ -653,28 +656,27 @@ gw_radicalswindow_update_sensitivities (GwRadicalsWindow *window, const gchar *T
 {
     //Sanity checks
     g_return_if_fail (window != NULL);
-    if (TEXT == NULL) return;
 
     //Declarations
     GwRadicalsWindowPrivate *priv;
     GtkToolPalette *toolpalette;
     GtkToolItemGroup *toolitemgroup;
-    GList *grouplist, *groupiter;
+    GList *grouplist, *grouplink;
 
     //Initializations
     priv = window->priv;
     toolpalette = priv->toolpalette;
-    groupiter = grouplist = gtk_container_get_children (GTK_CONTAINER (toolpalette));
+    grouplink = grouplist = gtk_container_get_children (GTK_CONTAINER (toolpalette));
 
 
-    while (groupiter != NULL)
+    while (grouplink != NULL)
     {
-      toolitemgroup = GTK_TOOL_ITEM_GROUP (groupiter->data);
+      toolitemgroup = GTK_TOOL_ITEM_GROUP (grouplink->data);
       if (toolitemgroup != NULL)
       {
         gw_radicalswindow_update_sensitivities_foreach (window, toolitemgroup, TEXT);
       }
-      groupiter = groupiter->next;
+      grouplink = grouplink->next;
     }
 
     g_list_free (grouplist); grouplist = NULL;
@@ -726,8 +728,8 @@ gw_radicalswindow_deselect_foreach (GwRadicalsWindow *window, GtkToolItemGroup *
       {
         G_GNUC_EXTENSION g_signal_handlers_block_by_func (button, gw_radicalswindow_toggled_cb, window);
         gtk_toggle_tool_button_set_active (button, FALSE);
-        //gtk_widget_set_sensitive (GTK_WIDGET (button), FALSE);
-        gtk_widget_show (GTK_WIDGET (button));
+        gtk_widget_set_sensitive (GTK_WIDGET (button), TRUE);
+        //gtk_widget_show (GTK_WIDGET (button));
         G_GNUC_EXTENSION g_signal_handlers_unblock_by_func (button, gw_radicalswindow_toggled_cb, window);
       }
       itemlink = itemlink->next;

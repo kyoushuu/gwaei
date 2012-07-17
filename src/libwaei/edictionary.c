@@ -480,7 +480,6 @@ lw_edictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *query)
       g_strfreev (tokens); tokens = NULL;
     }
 
-
     if (delimited != NULL) g_free (delimited); delimited = NULL;
 }
 

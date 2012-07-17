@@ -492,5 +492,7 @@ lw_kanjidictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *que
       }
       g_strfreev (tokens); tokens = NULL;
     }
+
+    if (delimited != NULL) g_free (delimited); delimited = NULL;
 }
 
