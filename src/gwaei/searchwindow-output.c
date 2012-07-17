@@ -244,6 +244,28 @@ gw_add_match_highlights (gint line, gint start_offset, gint end_offset, LwSearch
       link = link->next;
     }
 
+    //Look for mix atoms
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_MIX, LW_RELEVANCE_LOW);
+    while (link != NULL)
+    {
+      regex = link->data;
+      if (regex != NULL && g_regex_match (regex, text, 0, &match_info))
+      {
+        while (g_match_info_matches (match_info))
+        {
+          g_match_info_fetch_pos (match_info, 0, &match_start_byte_offset, &match_end_byte_offset);
+          match_character_offset = g_utf8_pointer_to_offset (text, text + match_start_byte_offset);
+          gtk_text_buffer_get_iter_at_line_offset (buffer, &start_iter, line, match_character_offset + start_offset);
+          match_character_offset = g_utf8_pointer_to_offset (text, text + match_end_byte_offset);
+          gtk_text_buffer_get_iter_at_line_offset (buffer, &end_iter, line, match_character_offset + start_offset);
+          gtk_text_buffer_apply_tag_by_name (buffer, "match", &start_iter, &end_iter);
+          g_match_info_next (match_info, NULL);
+        }
+        g_match_info_free (match_info); match_info = NULL;
+      }
+      link = link->next;
+    }
+
     //Cleanup
     g_free (text); text = NULL;
 }
@@ -1028,12 +1050,9 @@ gw_searchwindow_append_kanjidict_tooltip_result (GwSearchWindow *window, LwSearc
 void 
 gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch *search)
 {
-printf("BREAK no results 1\n");
     //Sanity check
     if (search == NULL || search->dictionary == NULL) return;
-printf("BREAK no results 1\n");
     if (lw_search_get_progress (search) > 0.0 || lw_search_get_total_results (search) > 0) return; 
-printf("BREAK no results 1\n");
 
     //Declarations
     GwApplication *application;

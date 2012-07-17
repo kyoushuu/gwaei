@@ -506,14 +506,11 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
       filename = g_strjoin ("-", BASE_NAME, "menumodel", "standard.ui", NULL);
       if (filename == NULL) goto errored;
     }
-printf("BREAK1\n");
 
     loaded = gw_application_load_xml (builder, filename); 
     if (loaded == FALSE) goto errored;
-printf("BREAK2\n");
     win_menu_model = G_MENU_MODEL (gtk_builder_get_object (builder, "menu")); 
     if (win_menu_model == NULL) goto errored;
-printf("BREAK3\n");
 
     //Set the whole menu to the window if appropriate
     if (os_shows_win_menu == FALSE)
@@ -523,18 +520,15 @@ printf("BREAK3\n");
       gtk_box_pack_end (GTK_BOX (priv->toplevel), menubar, FALSE, FALSE, 0);
       gtk_widget_show_all (menubar);
     }
-printf("BREAK4\n");
 
     //Set the menubar to the application
     gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
-printf("BREAK5\n");
 
     //Save the menu objects in the window
     if (priv->menu_model != NULL) g_object_unref (priv->menu_model);
     priv->menu_model = win_menu_model; win_menu_model = NULL;
     if (priv->menubar != NULL) gtk_widget_destroy (GTK_WIDGET (priv->menubar)); 
     priv->menubar = GTK_MENU_BAR (menubar); menubar = NULL;
-printf("BREAK menubar has been set\n");
 
 errored:
     if (builder != NULL) g_object_unref (builder); builder = NULL;

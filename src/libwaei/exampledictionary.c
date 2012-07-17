@@ -350,8 +350,6 @@ lw_exampledictionary_create_primary_tokens (LwDictionary *dictionary, LwQuery *q
       g_strfreev (tokens); tokens = NULL;
     }
 
-    printf("BREAK primary delimited %s\n", delimited);
-
     if (temp != NULL) g_free (temp); temp = NULL;
 }
 

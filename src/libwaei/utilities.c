@@ -580,7 +580,6 @@ lw_util_roma_char_to_hira (const gchar *input, gchar *output)
               strlen(input) == 1
             )
     {
-       input_ptr = NULL;
        return NULL;
     }
     //HACK!!!!!!!!!!!!!!!!
@@ -899,7 +898,11 @@ lw_util_roma_char_to_hira (const gchar *input, gchar *output)
     else if (strcmp(buffer_ptr, "-") == 0)
        strcpy(output, "ー");
 
-    else { printf("BREAK returning NULL!\n"); input_ptr = NULL; return NULL; }
+    else
+    {
+      input_ptr = NULL;
+      return NULL;
+    }
 
     return output;
 }
@@ -924,14 +927,12 @@ lw_util_str_roma_to_hira (const gchar* input, gchar* output, gint max)
     //Declarations
     const gchar *input_ptr;
     gchar *kana_ptr;
-    gchar *previous_kana_ptr;
     gint leftover;
 
     //Initializations
     input_ptr = input;
     kana_ptr = output;
     *kana_ptr = '\0';
-    previous_kana_ptr = NULL;
     leftover = max;
 
     //Try converting to hiragana
@@ -944,7 +945,7 @@ lw_util_str_roma_to_hira (const gchar* input, gchar* output, gint max)
       if (kana_ptr == NULL || input_ptr == NULL)
         break;
 
-      previous_kana_ptr = kana_ptr = &kana_ptr[strlen(kana_ptr)];
+      kana_ptr = &kana_ptr[strlen(kana_ptr)];
     }
 
     return (input_ptr != NULL && strlen (input_ptr) == 0);

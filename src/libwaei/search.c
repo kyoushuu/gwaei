@@ -725,7 +725,8 @@ lw_search_get_flags_from_preferences (LwPreferences *preferences)
     //Declarations
     gboolean hiragana_to_katakana;
     gboolean katakana_to_hiragana;
-    gboolean romaji_to_furigana;
+    gint romaji_to_furigana;
+    gboolean want_romaji_to_furigana_conv;
     gboolean delimit_whitespace;
     gboolean delimit_morphology;
     gboolean root_word;
@@ -734,8 +735,8 @@ lw_search_get_flags_from_preferences (LwPreferences *preferences)
     //Initializations
     hiragana_to_katakana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_HIRA_KATA);
     katakana_to_hiragana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_KATA_HIRA);
-//    romaji_to_furigana = lw_preferences_get_boolean_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
-    romaji_to_furigana = TRUE; //TODO
+    romaji_to_furigana = lw_preferences_get_int_by_schema (preferences, LW_SCHEMA_BASE, LW_KEY_ROMAN_KANA);
+    want_romaji_to_furigana_conv = (romaji_to_furigana == 0 || (romaji_to_furigana == 2 && !lw_util_is_japanese_locale()));
     delimit_whitespace = LW_QUERY_FLAG_DELIMIT_WHITESPACE;
     delimit_morphology = LW_QUERY_FLAG_DELIMIT_MORPHOLOGY;
     root_word = LW_QUERY_FLAG_ROOT_WORD;
@@ -743,7 +744,7 @@ lw_search_get_flags_from_preferences (LwPreferences *preferences)
 
     if (hiragana_to_katakana) flags |= LW_SEARCH_FLAG_HIRAGANA_TO_KATAKANA;
     if (katakana_to_hiragana) flags |= LW_SEARCH_FLAG_KATAKANA_TO_HIRAGANA;
-    if (romaji_to_furigana) flags |= LW_SEARCH_FLAG_ROMAJI_TO_FURIGANA;
+    if (want_romaji_to_furigana_conv) flags |= LW_SEARCH_FLAG_ROMAJI_TO_FURIGANA;
     if (delimit_whitespace) flags |= LW_SEARCH_FLAG_DELIMIT_WHITESPACE;
     if (delimit_morphology) flags |= LW_SEARCH_FLAG_DELIMIT_MORPHOLGY;
     if (root_word) flags |= LW_SEARCH_FLAG_ROOT_WORD;

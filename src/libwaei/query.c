@@ -332,6 +332,7 @@ static gchar*
       const gint LENGTH = 100;
       gchar buffer[LENGTH];
       gchar *temp;
+      gboolean convertable;
 
       //Initializations
       romaji_to_furigana = query->flags & LW_QUERY_FLAG_ROMAJI_TO_FURIGANA;
@@ -340,8 +341,9 @@ static gchar*
       supplimentary = g_strdup (TOKEN);
       buffer[0] = '\0';
       *new_type = LW_QUERY_TYPE_ROMAJI;
+      convertable = lw_util_str_roma_to_hira (TOKEN, buffer, LENGTH);
       
-      if (romaji_to_furigana && is_romaji && lw_util_str_roma_to_hira (TOKEN, buffer, LENGTH))
+      if (romaji_to_furigana && is_romaji && convertable)
       {
         *new_type = LW_QUERY_TYPE_MIX;
         temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
