@@ -2216,6 +2216,7 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
 
     //Declarations
     GwSearchWindowPrivate *priv;
+    GtkIconTheme *theme;
     GtkToolbar *toolbar;
     GtkToolItem *item;
     GtkWidget *label;
@@ -2225,6 +2226,7 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     gboolean os_shows_win_menu;
 
     priv = window->priv;
+    theme = gtk_icon_theme_get_default ();
     toolbar = priv->search_toolbar;
 
     settings = gtk_settings_get_default ();
@@ -2264,6 +2266,11 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     priv->combobox = GTK_COMBO_BOX (combobox);
     
     item = gtk_tool_button_new_from_stock (GTK_STOCK_FIND);
+    if (gtk_icon_theme_has_icon (theme, "edit-find-symbolic")) 
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "edit-find-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
     g_signal_connect (item, "clicked", G_CALLBACK (gw_searchwindow_search_cb), window);
 
     gtk_widget_show_all (GTK_WIDGET (item));
@@ -2284,6 +2291,7 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
       menumodel = gw_searchwindow_get_popup_menu (window);
       menubar = GTK_MENU_BAR (gtk_menu_bar_new ());
       image = GTK_IMAGE (gtk_image_new_from_stock (GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));
+      if (gtk_icon_theme_has_icon (theme, "system-run-symbolic")) gtk_image_set_from_icon_name (image, "system-run-symbolic", GTK_ICON_SIZE_MENU);
       menuitem = GTK_MENU_ITEM (gtk_menu_item_new ());
       submenu = GTK_MENU (gtk_menu_new_from_model (menumodel));
 

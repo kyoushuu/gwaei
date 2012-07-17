@@ -547,7 +547,13 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
     gtk_tree_view_append_column (priv->word_treeview, column);
 
     //Kanji Column
-    editable = gtk_toggle_tool_button_get_active (priv->edit_toolbutton);
+    {
+      GActionMap *map = G_ACTION_MAP (window);
+      GAction *action = g_action_map_lookup_action (map, "toggle-editable");
+      GVariant *state = g_action_get_state (action);
+      editable = g_variant_get_boolean (state);
+      g_variant_unref (state); state = NULL;
+    }
     column = gtk_tree_view_column_new ();
     gtk_tree_view_column_set_sort_column_id (column, GW_VOCABULARYWORDSTORE_COLUMN_KANJI);
     priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI] = renderer = gtk_cell_renderer_text_new ();
@@ -682,10 +688,10 @@ gw_vocabularywindow_set_has_changes (GwVocabularyWindow *window, gboolean has_ch
     wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
     map = G_ACTION_MAP (window);
 
-    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save"));
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-list"));
     g_simple_action_set_enabled (action, has_changes);
 
-    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert"));
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
     g_simple_action_set_enabled (action, wordstore_has_changes);
 }
 
@@ -953,11 +959,14 @@ gw_vocabularywindow_map_actions (GActionMap *map, GwVocabularyWindow *window)
       { "toggle-menubar-show", gw_vocabularywindow_menubar_show_toggled_cb, NULL, "false", NULL},
       { "toggle-toolbar-show", gw_vocabularywindow_toolbar_show_toggled_cb, NULL, "false", NULL},
 
-      { "new-list", gw_vocabularywindow_new_list_cb, NULL, "false", NULL},
-      { "new-word", gw_vocabularywindow_new_word_cb, NULL, "false", NULL},
+      { "new-list", gw_vocabularywindow_new_list_cb, NULL, NULL, NULL},
+      { "new-word", gw_vocabularywindow_new_word_cb, NULL, NULL, NULL},
 
-      { "save", gw_vocabularywindow_save_cb, NULL, NULL, NULL },
-      { "revert", gw_vocabularywindow_revert_cb, NULL, NULL, NULL },
+      { "remove-list", gw_vocabularywindow_remove_list_cb, NULL, NULL, NULL},
+      { "remove-word", gw_vocabularywindow_remove_word_cb, NULL, NULL, NULL},
+
+      { "save-list", gw_vocabularywindow_save_cb, NULL, NULL, NULL },
+      { "revert-list", gw_vocabularywindow_revert_cb, NULL, NULL, NULL },
       { "import", gw_vocabularywindow_import_cb, NULL, NULL, NULL },
       { "export", gw_vocabularywindow_export_cb, NULL, NULL, NULL },
 
@@ -967,6 +976,8 @@ gw_vocabularywindow_map_actions (GActionMap *map, GwVocabularyWindow *window)
       { "copy", gw_vocabularywindow_copy_cb, NULL, NULL, NULL},
       { "paste", gw_vocabularywindow_paste_cb, NULL, NULL, NULL},
       { "delete", gw_vocabularywindow_delete_cb, NULL, NULL, NULL},
+
+      { "toggle-editable", gw_vocabularywindow_editable_toggled_cb, NULL, "false", NULL},
 
       { "toggle-position-column-show", gw_vocabularywindow_position_column_toggled_cb, NULL, "false", NULL},
       { "toggle-timestamp-column-show", gw_vocabularywindow_timestamp_column_toggled_cb, NULL, "false", NULL},
@@ -1040,11 +1051,13 @@ gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow *window)
 
     //Declarations
     GwVocabularyWindowPrivate *priv;
+    GtkIconTheme *theme;
     GtkToolbar *toolbar;
     GtkToolItem *item;
 
     priv = window->priv;
     toolbar = priv->primary_toolbar;
+    theme = gtk_icon_theme_get_default ();
 
     item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
     gtk_toolbar_insert (toolbar, item, -1);
@@ -1068,6 +1081,91 @@ gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow *window)
     item = gtk_tool_button_new_from_stock (GTK_STOCK_PASTE);
     gtk_toolbar_insert (toolbar, item, -1);
     gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.paste");
+    gtk_widget_show (GTK_WIDGET (item));
+
+///////////////////
+
+    toolbar = priv->list_toolbar;
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
+    if (gtk_icon_theme_has_icon (theme, "list-add-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-add-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.new-list");
+    gtk_widget_show (GTK_WIDGET (item));
+    
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_REMOVE);
+    if (gtk_icon_theme_has_icon (theme, "list-remove-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-remove-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.remove-list");
+    gtk_widget_show (GTK_WIDGET (item));
+
+////////////////
+
+    toolbar = priv->word_toolbar;
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
+    if (gtk_icon_theme_has_icon (theme, "list-add-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-add-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.new-word");
+    gtk_widget_show (GTK_WIDGET (item));
+    
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_REMOVE);
+    if (gtk_icon_theme_has_icon (theme, "list-remove-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-remove-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.remove-word");
+    gtk_widget_show (GTK_WIDGET (item));
+
+/*
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+*/
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_REVERT_TO_SAVED);
+    if (gtk_icon_theme_has_icon (theme, "edit-undo-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "edit-undo-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.revert-list");
+    gtk_widget_show (GTK_WIDGET (item));
+
+    item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
+    if (gtk_icon_theme_has_icon (theme, "document-save-symbolic"))
+    {
+      gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "document-save-symbolic");
+      gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+    }
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save-list");
+    gtk_widget_show (GTK_WIDGET (item));
+
+/*
+    item = gtk_separator_tool_item_new ();
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_widget_show (GTK_WIDGET (item));
+*/
+
+    item = gtk_toggle_tool_button_new_from_stock (GTK_STOCK_EDIT);
+    gtk_toolbar_insert (toolbar, item, -1);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.toggle-editable");
     gtk_widget_show (GTK_WIDGET (item));
 }
 

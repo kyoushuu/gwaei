@@ -53,7 +53,9 @@ gw_vocabularywindow_new_list_cb (GSimpleAction *action,
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_remove_list_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_remove_list_cb (GSimpleAction *action, 
+                                    GVariant      *parameter,
+                                    gpointer       data)
 {
     //Declarations
     GwVocabularyWindow *window;
@@ -142,7 +144,9 @@ gw_vocabularywindow_new_word_cb (GSimpleAction *action,
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_remove_word_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_remove_word_cb (GSimpleAction *action, 
+                                    GVariant      *parameter,
+                                    gpointer       data)
 {
     //Declarations
     GwVocabularyWindow *window;
@@ -207,7 +211,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
 
       has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
-      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert"));
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
       g_simple_action_set_enabled (action, has_changes);
 
       gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
@@ -717,22 +721,27 @@ gw_vocabularywindow_revert_wordstore_cb (GtkWidget *widget, gpointer data)
 
 
 G_MODULE_EXPORT void
-gw_vocabularywindow_toggle_editing_cb (GtkWidget *widget, gpointer data)
+gw_vocabularywindow_editable_toggled_cb (GSimpleAction *action, 
+                                         GVariant      *parameter,
+                                         gpointer       data)
 {
     //Declarations
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
-    gboolean state;
+    GVariant *state;
+    gboolean editable;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
     g_return_if_fail (window != NULL);
     priv = window->priv;
-    state = gtk_toggle_tool_button_get_active (priv->edit_toolbutton);
+    state = g_action_get_state (G_ACTION (action));
+    editable = g_variant_get_boolean (state);
+    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (!editable));
 
-    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI]), "editable", state, NULL);
-    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA]), "editable", state, NULL);
-    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS]), "editable", state, NULL);
+    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_KANJI]), "editable", !editable, NULL);
+    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_FURIGANA]), "editable", !editable, NULL);
+    g_object_set (G_OBJECT (priv->renderer[GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS]), "editable", !editable, NULL);
 }
 
 

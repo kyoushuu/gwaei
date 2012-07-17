@@ -18,6 +18,7 @@ void gw_vocabularywindow_sync_position_column_show_cb (GSettings*, gchar*, gpoin
 void gw_vocabularywindow_sync_score_column_show_cb (GSettings*, gchar*, gpointer);
 void gw_vocabularywindow_sync_timestamp_column_show_cb (GSettings*, gchar*, gpointer);
 
+void gw_vocabularywindow_editable_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_toolbar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_menubar_show_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_position_column_toggled_cb (GSimpleAction*, GVariant*, gpointer);
@@ -34,7 +35,9 @@ void gw_vocabularywindow_paste_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_delete_cb (GSimpleAction*, GVariant*, gpointer);
 
 void gw_vocabularywindow_new_word_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_vocabularywindow_remove_word_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_new_list_cb (GSimpleAction*, GVariant*, gpointer);
+void gw_vocabularywindow_remove_list_cb (GSimpleAction*, GVariant*, gpointer);
 
 void gw_vocabularywindow_kanji_definition_flashcards_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_vocabularywindow_definition_kanji_flashcards_cb (GSimpleAction*, GVariant*, gpointer);

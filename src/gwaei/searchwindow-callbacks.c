@@ -1382,6 +1382,7 @@ gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkEditable *editab
                                                              gpointer     data   )
 {
     //Declarations
+    GtkIconTheme *theme;
     GtkEntry *entry;
     const gchar* NAME;
     gint length;
@@ -1392,7 +1393,12 @@ gw_searchwindow_update_button_states_based_on_entry_text_cb (GtkEditable *editab
     NAME = NULL;
 
     //Show the clear icon when approprate
-    if (length > 0) NAME = "edit-clear";
+    if (length > 0) 
+    {
+      theme = gtk_icon_theme_get_default ();
+      if (gtk_icon_theme_has_icon (theme, "edit-clear-symbolic")) NAME = "edit-clear-symbolic";
+      else NAME = "edit-clear";
+    }
 
     gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY, NAME);
 }
