@@ -43,6 +43,9 @@ struct _LwQuery {
     LwRange **rangelist;
     gboolean parsed;
     LwQueryFlags flags;
+#ifdef WITH_MECAB
+    gchar *morphology;
+#endif
 };
 typedef struct _LwQuery LwQuery;
 

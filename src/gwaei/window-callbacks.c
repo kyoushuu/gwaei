@@ -113,3 +113,5 @@ gw_window_delete_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 
     return TRUE;
 }
+
+
