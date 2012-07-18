@@ -571,7 +571,7 @@ gw_radicalswindow_strdup_selected (GwRadicalsWindow *window)
     //Initializations
     priv = window->priv;
     length = 1;
-    buffer = (gchar*) g_malloc0 (length);
+    buffer = (gchar*) g_malloc0 (sizeof(gchar) * length);
     buffer_offset = 0;
     grouplist = gtk_container_get_children (GTK_CONTAINER (priv->toolpalette));
 
@@ -584,7 +584,7 @@ gw_radicalswindow_strdup_selected (GwRadicalsWindow *window)
       if (text == NULL) continue;
 
       length += strlen (text);
-      buffer = g_realloc (buffer, length);
+      buffer = (gchar*) g_realloc (buffer, sizeof(gchar) * length);
       
       while (*text_ptr != '\0' && buffer_offset < (length - 1)) *(buffer + buffer_offset++) = *(text_ptr++);
 
