@@ -392,6 +392,8 @@ lw_dictionary_get_directory (GType dictionary_type)
       path = lw_util_build_filename (LW_PATH_DICTIONARY, directoryname);
       g_free (directoryname); directoryname = NULL;
     }
+
+    g_mkdir_with_parents (path, 0755);
   
     return path;
 }
