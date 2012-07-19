@@ -2250,8 +2250,10 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
     g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
     gtk_toolbar_set_icon_size (toolbar, GTK_ICON_SIZE_MENU);
 
+/*
     if (gtk_icon_theme_has_icon (theme, "edit-find-symbolic") == FALSE)
     {
+*/
       item = gtk_tool_item_new (); 
       label = gtk_label_new_with_mnemonic (gettext ("Sear_ch:"));
       gtk_container_add (GTK_CONTAINER (item), label);
@@ -2259,18 +2261,24 @@ gw_searchwindow_initialize_search_toolbar (GwSearchWindow *window)
       gtk_widget_set_margin_right (GTK_WIDGET (item), 2);
       gtk_widget_show_all (GTK_WIDGET (item));
       gtk_toolbar_insert (toolbar, item, -1);
+/*
     }
+*/
 
     item = gtk_tool_item_new (); 
     entry = gtk_entry_new ();
+/*
     if (gtk_icon_theme_has_icon (theme, "edit-find-symbolic"))
     {
       gtk_entry_set_icon_from_icon_name (GTK_ENTRY (entry), GTK_ENTRY_ICON_PRIMARY, "edit-find-symbolic");
     }
     else
     {
+*/
       gtk_label_set_mnemonic_widget (GTK_LABEL (label), entry);
+/*
     }
+*/
     g_signal_connect (entry, "activate", G_CALLBACK (gw_searchwindow_search_cb), window);
     g_signal_connect (entry, "changed", G_CALLBACK (gw_searchwindow_update_button_states_based_on_entry_text_cb), window);
     g_signal_connect (entry, "icon-release", G_CALLBACK (gw_searchwindow_clear_entry_button_pressed_cb), window);
