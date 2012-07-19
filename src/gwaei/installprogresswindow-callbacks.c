@@ -105,7 +105,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
     g_return_val_if_fail (window != NULL, FALSE);
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_installed_dictionarylist (application);
+    dictionarylist = gw_application_get_installable_dictionarylist (application);
     preferences = gw_application_get_preferences (application);
     priv = window->priv;
     current_to_install = 0;
