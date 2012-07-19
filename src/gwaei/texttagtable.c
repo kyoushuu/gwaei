@@ -192,7 +192,7 @@ gw_texttagtable_init_base_tags (GwTextTagTable *tagtable)
     g_object_unref (tag);
 
     tag = gtk_text_tag_new ("entry-header");
-    g_object_set (tag, "scale", 1.5, "weight", 600, NULL);
+    g_object_set (tag, "scale", 1.3, "weight", 600, NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
     g_object_unref (tag);
 
