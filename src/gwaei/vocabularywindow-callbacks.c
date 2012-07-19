@@ -63,10 +63,7 @@ gw_vocabularywindow_remove_list_cb (GSimpleAction *action,
     GtkTreeSelection *selection;
     GtkTreeModel *model;
     GList *rowlist;
-    GtkListStore *store;
-    GtkTreeIter iter;
     GtkTreePath *path;
-    gboolean valid;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
@@ -75,24 +72,14 @@ gw_vocabularywindow_remove_list_cb (GSimpleAction *action,
     selection = gtk_tree_view_get_selection (priv->list_treeview);
     model = gtk_tree_view_get_model (priv->list_treeview);
     rowlist = gtk_tree_selection_get_selected_rows (selection, &model);
+    if (rowlist == NULL) return;
 
     gw_vocabularyliststore_remove_path_list (GW_VOCABULARYLISTSTORE (model), rowlist);
 
     path = (GtkTreePath*) rowlist->data;
     gtk_tree_path_prev (path);
-    valid = gtk_tree_model_get_iter (model, &iter, path);
 
-    if (valid)
-    {
-      gtk_tree_selection_select_iter (selection, &iter);
-      store = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (model), &iter);
-      gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (store));
-      gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
-    }
-    else
-    {
-      gtk_tree_view_set_model (priv->word_treeview, NULL);
-    }
+    gtk_tree_view_set_cursor (priv->list_treeview, path, NULL, FALSE);
 
     g_list_foreach (rowlist, (GFunc) gtk_tree_path_free, NULL);
     g_list_free (rowlist); rowlist = NULL;
@@ -190,6 +177,7 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     gboolean valid;
     GActionMap *map;
     GSimpleAction *action;
+    gint total_children;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_VOCABULARYWINDOW));
@@ -209,10 +197,20 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
       wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
       gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
       gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
+      total_children = gtk_tree_model_iter_n_children (GTK_TREE_MODEL (wordstore), NULL);
 
       has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
       action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
       g_simple_action_set_enabled (action, has_changes);
+
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-list"));
+      g_simple_action_set_enabled (action, has_changes);
+
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "new-word"));
+      g_simple_action_set_enabled (action, TRUE);
+
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "remove-word"));
+      g_simple_action_set_enabled (action, (total_children > 0));
 
       gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
 
@@ -222,6 +220,15 @@ gw_vocabularywindow_list_selection_changed_cb (GtkTreeView *view, gpointer data)
     else
     {
       title = g_strdup_printf (gettext("gWaei Vocabulary"));
+
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
+      g_simple_action_set_enabled (action, FALSE);
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-list"));
+      g_simple_action_set_enabled (action, FALSE);
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "new-word"));
+      g_simple_action_set_enabled (action, FALSE);
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "remove-word"));
+      g_simple_action_set_enabled (action, FALSE);
     }
 
     if (title != NULL)

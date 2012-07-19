@@ -1180,22 +1180,26 @@ gw_vocabularywindow_new_list (GwVocabularyWindow *window)
     GwVocabularyWindowPrivate *priv;
     GwApplication *application;
     GtkListStore *liststore, *wordstore;
-    GtkTreeSelection *selection;
     GtkTreeIter iter;
+    GtkTreePath *path;
 
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     liststore = gw_application_get_vocabularyliststore (application);
-    selection = gtk_tree_view_get_selection (priv->list_treeview);
 
     gw_vocabularyliststore_new_list (GW_VOCABULARYLISTSTORE (liststore), &iter);
-    gtk_tree_selection_select_iter (selection, &iter);
+    path = gtk_tree_model_get_path (GTK_TREE_MODEL (liststore), &iter);
+
+    gtk_tree_view_set_cursor (priv->list_treeview, path, NULL, TRUE);
     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (liststore), &iter);
     gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
     gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
     gw_vocabularywindow_update_flashcard_menu_sensitivities (window);
     gw_vocabularywindow_show_vocabulary_list (window, TRUE);
+
+    //Cleanup
+    gtk_tree_path_free (path); path = NULL;
 }
 
 
