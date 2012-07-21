@@ -126,6 +126,8 @@ gw_settingswindow_constructed (GObject *object)
     application = gw_window_get_application (GW_WINDOW (window));
     dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
 
+    gw_settingswindow_map_actions (G_ACTION_MAP (window), window);
+
     priv->manage_dictionaries_treeview = GTK_TREE_VIEW (gw_window_get_object (GW_WINDOW (window), "dictionary_treeview"));
     priv->notebook = GTK_NOTEBOOK (gw_window_get_object (GW_WINDOW (window), "settings_notebook"));
     priv->close_button = GTK_BUTTON (gw_window_get_object (GW_WINDOW (window), "close_button"));
@@ -417,6 +419,21 @@ gw_settingswindow_remove_signals (GwSettingsWindow *window)
 }
 
 
+void
+gw_settingswindow_map_actions (GActionMap *map, GwSettingsWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (map != NULL);
+    g_return_if_fail (window != NULL);
+
+    static GActionEntry entries[] = {
+      { "add-dictionary", gw_settingswindow_add_dictionary_cb, NULL, NULL, NULL },
+      { "remove-dictionary", gw_settingswindow_remove_dictionary_cb, NULL, NULL, NULL }
+    };
+    g_action_map_add_action_entries (map, entries, G_N_ELEMENTS (entries), window);
+}
+
+
 //!
 //! @brief Sets the text in the source gtkentry for the appropriate dictionary
 //!
@@ -437,8 +454,10 @@ static void
 gw_settingswindow_init_styles (GwSettingsWindow *window)
 {
     //Declarations
+    GtkToolbar *toolbar;
     GtkStyleContext *context;
     GtkWidget *widget;
+
 
     //Vocabulary list pane
     widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_scrolledwindow"));
@@ -446,11 +465,39 @@ gw_settingswindow_init_styles (GwSettingsWindow *window)
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_BOTTOM);
     gtk_widget_reset_style (widget);
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "dictionary_toolbar"));
+    toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "dictionary_toolbar"));
+    widget = GTK_WIDGET (toolbar);
     context = gtk_widget_get_style_context (widget);
     gtk_style_context_add_class (context, "inline-toolbar");
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);
     gtk_widget_reset_style (widget);
+
+    {
+      GtkIconTheme *theme;
+      GtkToolItem *item;
+
+      theme = gtk_icon_theme_get_default ();
+
+      item = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
+      if (gtk_icon_theme_has_icon (theme, "list-add-symbolic"))
+      {
+        gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-add-symbolic");
+        gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+      }
+      gtk_toolbar_insert (toolbar, item, -1);
+      gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.add-dictionary");
+      gtk_widget_show (GTK_WIDGET (item));
+      
+      item = gtk_tool_button_new_from_stock (GTK_STOCK_REMOVE);
+      if (gtk_icon_theme_has_icon (theme, "list-remove-symbolic"))
+      {
+        gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-remove-symbolic");
+        gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+      }
+      gtk_toolbar_insert (toolbar, item, -1);
+      gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.remove-dictionary");
+      gtk_widget_show (GTK_WIDGET (item));
+    }
 
     //Vocabulary listitem pane
     widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "plugin_scrolledwindow"));
@@ -458,11 +505,39 @@ gw_settingswindow_init_styles (GwSettingsWindow *window)
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_BOTTOM);
     gtk_widget_reset_style (widget);
 
-    widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "plugin_toolbar"));
+    toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "plugin_toolbar"));
+    widget = GTK_WIDGET (toolbar);
     context = gtk_widget_get_style_context (widget);
     gtk_style_context_add_class (context, "inline-toolbar");
     gtk_style_context_set_junction_sides (context, GTK_JUNCTION_TOP);
     gtk_widget_reset_style (widget);
+
+    {
+      GtkIconTheme *theme;
+      GtkToolItem *item;
+
+      theme = gtk_icon_theme_get_default ();
+
+      item = gtk_tool_button_new_from_stock (GTK_STOCK_ADD);
+      if (gtk_icon_theme_has_icon (theme, "list-add-symbolic"))
+      {
+        gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-add-symbolic");
+        gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+      }
+      gtk_toolbar_insert (toolbar, item, -1);
+      gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.add-plugin");
+      gtk_widget_show (GTK_WIDGET (item));
+      
+      item = gtk_tool_button_new_from_stock (GTK_STOCK_REMOVE);
+      if (gtk_icon_theme_has_icon (theme, "list-remove-symbolic"))
+      {
+        gtk_tool_button_set_icon_name (GTK_TOOL_BUTTON (item), "list-remove-symbolic");
+        gtk_tool_button_set_stock_id (GTK_TOOL_BUTTON (item), NULL);
+      }
+      gtk_toolbar_insert (toolbar, item, -1);
+      gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.remove-plugin");
+      gtk_widget_show (GTK_WIDGET (item));
+    }
 }
 
 

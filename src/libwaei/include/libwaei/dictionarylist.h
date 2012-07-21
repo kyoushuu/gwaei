@@ -48,6 +48,9 @@ GType lw_dictionarylist_get_type (void) G_GNUC_CONST;
 
 void lw_dictionarylist_append (LwDictionaryList*, LwDictionary*);
 
+LwDictionary* lw_dictionarylist_remove (LwDictionaryList*, LwDictionary*);
+LwDictionary* lw_dictionarylist_remove_by_position (LwDictionaryList*, gint);
+
 LwDictionary* lw_dictionarylist_get_dictionary (LwDictionaryList*, GType, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_by_filename (LwDictionaryList*, const gchar*);
 LwDictionary* lw_dictionarylist_get_dictionary_by_id (LwDictionaryList*, const gchar*);

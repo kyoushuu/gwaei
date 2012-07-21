@@ -240,6 +240,66 @@ lw_dictionarylist_get_position (LwDictionaryList *dictionarylist, LwDictionary *
 }
 
 
+LwDictionary*
+lw_dictionarylist_remove_by_position (LwDictionaryList *dictionarylist, gint position)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionarylist != NULL, NULL);
+
+    //Declarations
+    LwDictionaryListPrivate *priv;
+    LwDictionaryListClass *klass;
+    GList *link;
+    LwDictionary *removed_dictionary;
+
+    //Initializations
+    priv = dictionarylist->priv;
+    klass = LW_DICTIONARYLIST_CLASS (G_OBJECT_GET_CLASS (dictionarylist));
+    removed_dictionary = NULL;
+    link = g_list_nth (priv->list, position);
+
+    if (link != NULL)
+    {
+      removed_dictionary = link->data;
+      priv->list = g_list_delete_link (priv->list, link);
+      g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_REMOVED], 0);
+        
+    }
+
+    return removed_dictionary;
+}
+
+
+LwDictionary*
+lw_dictionarylist_remove (LwDictionaryList *dictionarylist, LwDictionary *dictionary)
+{
+    //Sanity checks
+    g_return_val_if_fail (dictionarylist != NULL, NULL);
+    g_return_val_if_fail (dictionary != NULL, NULL);
+
+    //Declarations
+    LwDictionaryListPrivate *priv;
+    LwDictionaryListClass *klass;
+    GList *link;
+    LwDictionary *removed_dictionary;
+
+    //Initializations
+    priv = dictionarylist->priv;
+    klass = LW_DICTIONARYLIST_CLASS (G_OBJECT_GET_CLASS (dictionarylist));
+    removed_dictionary = NULL;
+    link = g_list_find (priv->list, dictionary);
+
+    if (link != NULL)
+    {
+      removed_dictionary = link->data;
+      priv->list = g_list_delete_link (priv->list, link);
+      g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_REMOVED], 0);
+    }
+        
+    return removed_dictionary;
+}
+
+
 //!
 //! @brief Adds a dictionary to the LwDictionaryList with sanity checks
 //! @param TYPE Engine of the dictionary to add
