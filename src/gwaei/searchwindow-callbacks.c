@@ -2326,6 +2326,7 @@ gw_searchwindow_show_toolbar_popup_cb (GtkToolbar *toolbar,
 G_MODULE_EXPORT void 
 gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer data)
 {
+#ifdef WITH_HUNSPELL
     //Declarations
     GwApplication *application;
     GwSearchWindow *window;
@@ -2351,5 +2352,6 @@ gw_searchwindow_sync_spellcheck_cb (GSettings *settings, gchar *KEY, gpointer da
       if (priv->spellcheck != NULL)
         g_object_unref (G_OBJECT (priv->spellcheck));
     }
+#endif
 }
 

@@ -115,12 +115,10 @@ gw_dictionarylist_class_init (GwDictionaryListClass *klass)
 static void 
 gw_dictionarylist_attach_signals (GwDictionaryList *dictionarylist)
 {
-    g_signal_connect (
-      G_OBJECT (dictionarylist),
-      "changed",
-      G_CALLBACK (gw_dictionarylist_changed_cb),
-      NULL
-    );
+    //Sanity checks
+    g_return_if_fail (dictionarylist != NULL);    
+
+    g_signal_connect (dictionarylist, "changed", G_CALLBACK (gw_dictionarylist_changed_cb), NULL);
 }
 
 

@@ -294,7 +294,7 @@ gw_application_open_glossary_cb (GSimpleAction *action,
 //! @param widget Unused pointer to a GtkWidget
 //! @param data Unused gpointer
 //!
-G_MODULE_EXPORT void 
+void 
 gw_application_spellcheck_toggled_cb (GSimpleAction *action, 
                                       GVariant      *parameter, 
                                       gpointer       data)

@@ -11,6 +11,8 @@ void gw_application_open_vocabularywindow_index_cb (GSimpleAction*, GVariant*, g
 void gw_application_open_glossary_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_application_open_help_cb (GSimpleAction*, GVariant*, gpointer);
 void gw_application_open_homepage_cb (GSimpleAction*, GVariant*, gpointer);
+#ifdef WITH_HUNSPELL
 void gw_application_sync_spellcheck_cb (GSettings*, gchar*, gpointer);
+#endif
 
 #endif

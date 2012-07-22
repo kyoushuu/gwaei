@@ -217,7 +217,7 @@ gw_vocabularyliststore_get_wordstore_by_name (GwVocabularyListStore *store, cons
         GW_VOCABULARYLISTSTORE_COLUMN_CHANGED, PANGO_WEIGHT_SEMIBOLD,
         GW_VOCABULARYLISTSTORE_COLUMN_OBJECT,  wordstore,
         -1);
-      g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
+      g_signal_connect (wordstore, "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
       gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), TRUE);
       g_object_unref (wordstore);
     }
@@ -489,7 +489,7 @@ gw_vocabularyliststore_revert_all (GwVocabularyListStore* store)
           GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, wordstore,
           -1);
         gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), FALSE);
-        g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
+        g_signal_connect (wordstore, "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
         g_object_unref (wordstore);
       }
       g_strfreev (lists); lists = NULL;
@@ -537,7 +537,7 @@ gw_vocabularyliststore_new_list (GwVocabularyListStore *store, GtkTreeIter *iter
         GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, wordstore,
     -1);
 
-    g_signal_connect (G_OBJECT (wordstore), "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
+    g_signal_connect (wordstore, "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
     gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), TRUE);
     g_object_unref (wordstore);
 
@@ -623,7 +623,7 @@ gw_vocabularyliststore_set_has_changes (GwVocabularyListStore *store, gboolean h
 
     klass = GW_VOCABULARYLISTSTORE_CLASS (G_OBJECT_GET_CLASS (store));
     store->priv->has_changes = has_changes;
-    g_signal_emit (G_OBJECT (store), klass->signalid[GW_VOCABULARYLISTSTORE_CLASS_SIGNALID_CHANGED], 0);
+    g_signal_emit (store, klass->signalid[GW_VOCABULARYLISTSTORE_CLASS_SIGNALID_CHANGED], 0);
 }
 
 

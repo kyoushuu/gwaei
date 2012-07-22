@@ -172,6 +172,7 @@ gw_application_class_init (GwApplicationClass *klass)
 static void 
 gw_application_attach_signals (GwApplication *application)
 {
+#ifdef WITH_HUNSPELL
     //Sanity checks
     g_return_if_fail (application != NULL);
 
@@ -181,7 +182,6 @@ gw_application_attach_signals (GwApplication *application)
     //Initializations
     preferences = gw_application_get_preferences (application);
 
-#ifdef WITH_HUNSPELL
     lw_preferences_add_change_listener_by_schema (
         preferences,
         LW_SCHEMA_BASE,
@@ -276,6 +276,7 @@ gw_application_print_about (GwApplication *application)
 void 
 gw_application_quit (GwApplication *application)
 {
+printf("BREAK quit\n");
     gw_application_block_searches (application);
 
     GList *link;
@@ -891,7 +892,9 @@ gw_application_map_actions (GActionMap *map, GwApplication *application)
       { "show-vocabulary-index", gw_application_open_vocabularywindow_index_cb, "s", NULL, NULL },
       { "show-help", gw_application_open_help_cb, NULL, NULL, NULL },
       { "show-glossary", gw_application_open_glossary_cb, NULL, NULL, NULL },
+#ifdef WITH_HUNSPELL
       { "toggle-spellcheck", gw_application_spellcheck_toggled_cb, NULL, "false", NULL },
+#endif
       { "quit", gw_application_quit_cb, NULL, NULL, NULL }
     };
 
