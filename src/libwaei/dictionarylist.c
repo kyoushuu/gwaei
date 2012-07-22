@@ -263,7 +263,7 @@ lw_dictionarylist_remove_by_position (LwDictionaryList *dictionarylist, gint pos
       removed_dictionary = link->data;
       priv->list = g_list_delete_link (priv->list, link);
       g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_REMOVED], 0);
-        
+      g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_CHANGED], 0);    
     }
 
     return removed_dictionary;
@@ -294,6 +294,7 @@ lw_dictionarylist_remove (LwDictionaryList *dictionarylist, LwDictionary *dictio
       removed_dictionary = link->data;
       priv->list = g_list_delete_link (priv->list, link);
       g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_REMOVED], 0);
+      g_signal_emit (dictionarylist, klass->signalid[LW_DICTIONARYLIST_CLASS_SIGNALID_CHANGED], 0);
     }
         
     return removed_dictionary;
