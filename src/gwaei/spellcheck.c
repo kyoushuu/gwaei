@@ -471,10 +471,10 @@ gw_spellcheck_set_entry (GwSpellcheck *spellcheck, GtkEntry *entry)
         g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
 
       if (priv->signalid[GW_SPELLCHECK_SIGNALID_CHANGED] != 0)
-        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_CHANGED]);
 
       if (priv->signalid[GW_SPELLCHECK_SIGNALID_POPULATE_POPUP] != 0)
-        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DRAW]);
+        g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_POPULATE_POPUP]);
 
       if (priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY] != 0)
         g_signal_handler_disconnect (G_OBJECT (priv->entry), priv->signalid[GW_SPELLCHECK_SIGNALID_DESTROY]);
