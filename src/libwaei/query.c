@@ -30,6 +30,7 @@
 #include <glib.h>
 
 #include <libwaei/libwaei.h>
+#include <libwaei/morphology.h>
 
 
 LwQuery* 
@@ -248,9 +249,40 @@ lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
     g_return_val_if_fail (TOKEN != NULL, NULL);
     g_return_val_if_fail (new_type != NULL, NULL);
 
-    *new_type = LW_QUERY_TYPE_KANJI;
+    gchar *supplimentary;
+    gchar *temp;
 
-    return g_strdup (TOKEN);
+    *new_type = LW_QUERY_TYPE_KANJI;
+    supplimentary = g_strdup (TOKEN);
+
+#ifdef WITH_MECAB
+    {
+      LwMorphologyEngine *engine;
+      LwMorphology *morphology;
+      GList *resultlist;
+      GList *resultlink;
+
+      engine = lw_morphologyengine_get_default ();
+      resultlink = resultlist = lw_morphologyengine_analyze (engine, TOKEN);
+
+      while (resultlink != NULL)
+      {
+        morphology = LW_MORPHOLOGY (resultlink->data);
+        printf("BREAK result word: %s ", morphology->word);
+        printf(", base_form: %s ", morphology->base_form);
+        printf(", explanation: %s\n", morphology->explanation);
+        resultlink = resultlink->next;
+
+        if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)
+        {
+          temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, morphology->base_form, NULL);
+          g_free (supplimentary); supplimentary = temp; temp = NULL;
+        }
+      }
+    }
+#endif
+
+    return supplimentary;
 }
 
 
@@ -280,6 +312,33 @@ lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
     is_katakana = lw_util_is_katakana_str (TOKEN);
     supplimentary = g_strdup (TOKEN);
     *new_type = LW_QUERY_TYPE_FURIGANA;
+
+#ifdef WITH_MECAB
+    {
+      LwMorphologyEngine *engine;
+      LwMorphology *morphology;
+      GList *resultlist;
+      GList *resultlink;
+
+      engine = lw_morphologyengine_get_default ();
+      resultlink = resultlist = lw_morphologyengine_analyze (engine, TOKEN);
+
+      while (resultlink != NULL)
+      {
+        morphology = LW_MORPHOLOGY (resultlink->data);
+        printf("BREAK result word: %s ", morphology->word);
+        printf(", base_form: %s ", morphology->base_form);
+        printf(", explanation: %s\n", morphology->explanation);
+        resultlink = resultlink->next;
+
+        if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)
+        {
+          temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, morphology->base_form, NULL);
+          g_free (supplimentary); supplimentary = temp; temp = NULL;
+        }
+      }
+    }
+#endif
 
     if (hiragana_to_katakana && is_hiragana)
     {
@@ -334,6 +393,33 @@ lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
       *new_type = LW_QUERY_TYPE_MIX;
       temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
       g_free (supplimentary); supplimentary = temp; temp = NULL;
+
+#ifdef WITH_MECAB
+      {
+        LwMorphologyEngine *engine;
+        LwMorphology *morphology;
+        GList *resultlist;
+        GList *resultlink;
+
+        engine = lw_morphologyengine_get_default ();
+        resultlink = resultlist = lw_morphologyengine_analyze (engine, TOKEN);
+
+        while (resultlink != NULL)
+        {
+          morphology = LW_MORPHOLOGY (resultlink->data);
+          printf("BREAK result word: %s ", morphology->word);
+          printf(", base_form: %s ", morphology->base_form);
+          printf(", explanation: %s\n", morphology->explanation);
+          resultlink = resultlink->next;
+
+          if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)
+          {
+            temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, morphology->base_form, NULL);
+            g_free (supplimentary); supplimentary = temp; temp = NULL;
+          }
+        }
+      }
+#endif
     }
     else
     {
