@@ -143,8 +143,8 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と)$";
     dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(無|不|非|お|御|)(%s)$";
 
-//    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|\\b)";
 //TODO
+//    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|\\b)";
     dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|)\\b";
     dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "\\b(お|)(%s)\\b";
@@ -326,30 +326,23 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     }
 
     //Compare furigana atoms
-//TODO FIX ME!
-    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    while (link != NULL && result->furigana_start != NULL)
     {
-      regex = link->data;
-      if (regex == NULL) return FALSE;
+      gchar *text;
+      if (result->furigana_start != NULL) text = result->furigana_start;
+      else text = result->kanji_start;
+      link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
 
-      checked = TRUE;
-      found = g_regex_match (regex, result->furigana_start, 0, NULL);
-      if (found == FALSE) return found;
+      while (link != NULL && text != NULL)
+      {
+        regex = link->data;
+        if (regex == NULL) return FALSE;
 
-      link = link->next;
-    }
-    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    while (link != NULL && result->furigana_start == NULL && result->kanji_start != NULL)
-    {
-      regex = link->data;
-      if (regex == NULL && result->kanji_start == NULL) return FALSE;
+        checked = TRUE;
+        found = g_regex_match (regex, text, 0, NULL);
+        if (found == FALSE) return found;
 
-      checked = TRUE;
-      found = g_regex_match (regex, result->kanji_start, 0, NULL);
-      if (found == FALSE) return found;
-
-      link = link->next;
+        link = link->next;
+      }
     }
 
     //Compare romaji atoms
