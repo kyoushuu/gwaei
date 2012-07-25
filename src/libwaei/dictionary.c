@@ -768,8 +768,9 @@ lw_dictionary_build_regex (LwDictionary *dictionary, LwQuery *query, GError **er
           {
             supplimentary = lw_query_get_supplimentary (query, type, tokenlist[i], &new_type);
             pattern = klass->patterns[new_type];
-            if (relevance < LW_RELEVANCE_HIGH && supplimentary != NULL) regex = lw_regex_new (pattern[relevance], supplimentary, error);
+            if (relevance != LW_RELEVANCE_HIGH && supplimentary != NULL) regex = lw_regex_new (pattern[relevance], supplimentary, error);
             else regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
+            regex = lw_regex_new (pattern[relevance], tokenlist[i], error);
             if (regex != NULL) lw_query_regexgroup_append (query, new_type, relevance, regex);
             if (supplimentary != NULL) g_free (supplimentary); supplimentary = NULL;
             regex = NULL; 

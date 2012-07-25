@@ -143,11 +143,11 @@ lw_edictionary_class_init (LwEDictionaryClass *klass)
     dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_MEDIUM] = "^(お|を|に|で|は|と|)(%s)(で|が|の|を|に|で|は|と)$";
     dictionary_class->patterns[LW_QUERY_TYPE_KANJI][LW_RELEVANCE_HIGH] = "^(無|不|非|お|御|)(%s)$";
 
-    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|\\b)";
+//    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|\\b)";
 //TODO
-    //dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
-    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "^(|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|)$";
-    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "^(お|)(%s)$";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_LOW] = "(%s)";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_MEDIUM] = "(\\b|お|を|に|で|は|と)(%s)(で|が|の|を|に|で|は|と|)\\b";
+    dictionary_class->patterns[LW_QUERY_TYPE_FURIGANA][LW_RELEVANCE_HIGH] = "\\b(お|)(%s)\\b";
 
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_LOW] = "(%s)";
     dictionary_class->patterns[LW_QUERY_TYPE_ROMAJI][LW_RELEVANCE_MEDIUM] = "(\\) |/)((\\bto )|(\\bto be )|(\\b))(%s)(( \\([^/]+\\)/)|(/))";
@@ -326,14 +326,27 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     }
 
     //Compare furigana atoms
+//TODO FIX ME!
     link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
-    while (link != NULL)
+    while (link != NULL && result->furigana_start != NULL)
     {
       regex = link->data;
-      if (regex == NULL || result->furigana_start == NULL) return FALSE;
+      if (regex == NULL) return FALSE;
 
       checked = TRUE;
       found = g_regex_match (regex, result->furigana_start, 0, NULL);
+      if (found == FALSE) return found;
+
+      link = link->next;
+    }
+    link = lw_query_regexgroup_get (query, LW_QUERY_TYPE_FURIGANA, RELEVANCE);
+    while (link != NULL && result->furigana_start == NULL && result->kanji_start != NULL)
+    {
+      regex = link->data;
+      if (regex == NULL && result->kanji_start == NULL) return FALSE;
+
+      checked = TRUE;
+      found = g_regex_match (regex, result->kanji_start, 0, NULL);
       if (found == FALSE) return found;
 
       link = link->next;
@@ -363,13 +376,14 @@ lw_edictionary_compare (LwDictionary *dictionary, LwQuery *query, LwResult *resu
     {
       regex = link->data;
       if (regex == NULL || result->text == NULL) return FALSE;
+      found = FALSE;
 
       if (result->kanji_start != NULL) 
       {
         checked = TRUE;
         found = g_regex_match (regex, result->kanji_start, 0, NULL);
       }
-      if (result->furigana_start && !found) 
+      if (result->furigana_start != NULL && !found) 
       {
         checked = TRUE;
         found = g_regex_match (regex, result->furigana_start, 0, NULL);

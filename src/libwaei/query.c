@@ -354,6 +354,7 @@ lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
       temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
       g_free (supplimentary); supplimentary = temp; temp = NULL;
     }
+printf("BREAK furigana supplimentary %s\n", supplimentary);
 
     return supplimentary;
 }
