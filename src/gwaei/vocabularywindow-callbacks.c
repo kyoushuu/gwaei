@@ -318,18 +318,36 @@ gw_vocabularywindow_save_cb (GSimpleAction *action,
 {
     //Declarations
     GwVocabularyWindow *window;
+    GwVocabularyWindowPrivate *priv;
     GwApplication *application;
     LwPreferences *preferences;
+    GtkTreeView *treeview;
     GtkListStore *liststore;
+    GtkTreePath *treepath;
+    GtkTreeIter treeiter;
+    GtkTreeModel *treemodel;
+    gboolean valid;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (data);
+    priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
+    treeview = priv->list_treeview;
     liststore = gw_application_get_vocabularyliststore (application);
+    treemodel = GTK_TREE_MODEL (liststore);
 
-    gw_vocabularyliststore_save_all (GW_VOCABULARYLISTSTORE (liststore));
-    gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
+    gtk_tree_view_get_cursor (treeview, &treepath, NULL);
+
+    if (treepath != NULL)
+    {
+      valid = gtk_tree_model_get_iter (treemodel, &treeiter, treepath);
+      if (valid)
+      {
+        gw_vocabularyliststore_save (GW_VOCABULARYLISTSTORE (liststore), &treeiter);
+        gw_vocabularyliststore_save_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
+      }
+    }
 }
 
 
@@ -343,23 +361,35 @@ gw_vocabularywindow_revert_cb (GSimpleAction *action,
     GwVocabularyWindowPrivate *priv;
     GwApplication *application;
     LwPreferences *preferences;
-    GtkListStore *liststore, *wordstore;
-    GtkTreeIter iter;
-    GtkTreeModel *model;
-    GtkTreeSelection *selection;
+    GtkTreeView *treeview;
+    GtkListStore *liststore;
+    GtkTreePath *treepath;
+    GtkTreeIter treeiter;
+    GtkTreeModel *treemodel;
+    gboolean valid;
 
     //Initializations
     window = GW_VOCABULARYWINDOW (data);
     priv = window->priv;
+    treeview = priv->list_treeview;
     application = gw_window_get_application (GW_WINDOW (window));
     preferences = gw_application_get_preferences (application);
     liststore = gw_application_get_vocabularyliststore (application);
-    model = GTK_TREE_MODEL (liststore);
-    selection = gtk_tree_view_get_selection (priv->list_treeview);
+    treemodel = GTK_TREE_MODEL (liststore);
 
-    gw_vocabularyliststore_revert_all (GW_VOCABULARYLISTSTORE (liststore));
-    gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
+    gtk_tree_view_get_cursor (treeview, &treepath, NULL);
 
+    if (treepath != NULL)
+    {
+      valid = gtk_tree_model_get_iter (treemodel, &treeiter, treepath);
+      if (valid)
+      {
+        gw_vocabularyliststore_revert (GW_VOCABULARYLISTSTORE (liststore), &treeiter);
+        gw_vocabularyliststore_load_list_order (GW_VOCABULARYLISTSTORE (liststore), preferences);
+      }
+    }
+
+/*TODO
     if (!gtk_tree_selection_get_selected (selection, &model, NULL))
     {
       gtk_tree_model_get_iter_first (model, &iter);
@@ -368,6 +398,7 @@ gw_vocabularywindow_revert_cb (GSimpleAction *action,
       gtk_tree_view_set_model (priv->word_treeview, GTK_TREE_MODEL (wordstore));
       gtk_tree_view_set_search_column (priv->word_treeview, GW_VOCABULARYWORDSTORE_COLUMN_DEFINITIONS);
     }
+*/
 }
 
 

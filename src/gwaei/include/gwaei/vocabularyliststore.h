@@ -44,7 +44,10 @@ struct _GwVocabularyListStoreClass {
 GtkListStore* gw_vocabularyliststore_new (void);
 GType gw_vocabularyliststore_get_type (void) G_GNUC_CONST;
 
+void gw_vocabularyliststore_save (GwVocabularyListStore*, GtkTreeIter*);
 void gw_vocabularyliststore_save_all (GwVocabularyListStore*);
+
+void gw_vocabularyliststore_revert (GwVocabularyListStore*, GtkTreeIter*);
 void gw_vocabularyliststore_revert_all (GwVocabularyListStore*);
 
 void gw_vocabularyliststore_save_list_order (GwVocabularyListStore*, LwPreferences*);

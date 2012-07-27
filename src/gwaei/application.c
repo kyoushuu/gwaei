@@ -615,8 +615,8 @@ gw_application_activate (GApplication *application)
     GwDictionaryList *dictionarylist;
 
     priv = GW_APPLICATION (application)->priv;
-    searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
     dictionarylist = gw_application_get_installed_dictionarylist (GW_APPLICATION (application));
+    searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
 
     if (priv->arg_new_vocabulary_window_switch)
     {
