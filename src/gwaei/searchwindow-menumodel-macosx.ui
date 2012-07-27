@@ -188,6 +188,11 @@
           <attribute name='accel'>&lt;Primary&gt;Left</attribute>
         </item>
       </section>
+      <section>
+        <item>
+            <attribute name='label'>history-list-link</attribute>
+        </item>
+      </section>
     </submenu>
 
     <submenu>
@@ -195,7 +200,7 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>_Manage</attribute>
-          <attribute name='action'>win.show-vocabulary</attribute>
+          <attribute name='action'>app.show-vocabulary</attribute>
           <attribute name='accel'>&lt;Primary&gt;m</attribute>
         </item>
       </section>
