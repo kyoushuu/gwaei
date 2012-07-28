@@ -1918,6 +1918,7 @@ gw_searchwindow_toggle_kanjipadwindow_cb (GSimpleAction *action,
         );
 
         gtk_widget_show (GTK_WIDGET (priv->kanjipadwindow));
+        gtk_window_present (GTK_WINDOW (priv->kanjipadwindow));
         g_object_add_weak_pointer (G_OBJECT (priv->kanjipadwindow), (gpointer) &(priv->kanjipadwindow));
       }
     }
@@ -2044,6 +2045,7 @@ gw_searchwindow_toggle_radicalswindow_cb (GSimpleAction *action,
         );
 
         gtk_widget_show (GTK_WIDGET (priv->radicalswindow));
+        gtk_window_present (GTK_WINDOW (priv->radicalswindow));
         g_object_add_weak_pointer (G_OBJECT (priv->radicalswindow), (gpointer) &(priv->radicalswindow));
       }
     }

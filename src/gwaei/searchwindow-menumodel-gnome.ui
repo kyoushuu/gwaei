@@ -157,27 +157,25 @@
         <item>
           <attribute name='label' translatable='yes'>Word-Edge Character</attribute>
           <attribute name='action'>win.insert-word-edge-character</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
+          <attribute name='accel'>&lt;Primary&gt;b</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>Not-Word-Edge Character</attribute>
           <attribute name='action'>win.insert-not-word-edge-character</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
+          <attribute name='accel'>&lt;Primary&gt;&lt;Shift&gt;b</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>Unknown Character</attribute>
           <attribute name='action'>win.insert-unknown-character</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
+          <attribute name='accel'>&lt;Primary&gt;u</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>And Character</attribute>
           <attribute name='action'>win.insert-and-character</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
         </item>
         <item>
           <attribute name='label' translatable='yes'>Or Character</attribute>
           <attribute name='action'>win.insert-or-character</attribute>
-          <attribute name='accel'>&lt;Primary&gt;k</attribute>
         </item>
       </section>
       <section>

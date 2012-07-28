@@ -558,6 +558,8 @@ gw_vocabularywindow_delete_cb (GSimpleAction *action,
     priv = window->priv;
     model = gtk_tree_view_get_model (priv->word_treeview);
 
+//TODO add confirm window
+
     if (model != NULL)
     {
       selection = gtk_tree_view_get_selection (priv->word_treeview);

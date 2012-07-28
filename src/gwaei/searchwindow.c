@@ -2488,6 +2488,7 @@ gw_searchwindow_initialize_menu_links (GwSearchWindow *window)
 
 static 
 GtkInfoBar* _construct_infobar ()
+/*TODO*/
 {
     GtkInfoBar *infobar;
     GtkWidget *label;
