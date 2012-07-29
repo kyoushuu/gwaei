@@ -116,7 +116,7 @@ lw_vocabulary_load (LwVocabulary *vocabulary, const gchar *FILENAME, LwIoProgres
     gchar buffer[MAX + 1];
 
     if (FILENAME != NULL)
-      uri = g_strdup (FILENAME);
+      uri = lw_util_build_filename (LW_PATH_VOCABULARY, FILENAME);
     else
       uri = lw_util_build_filename (LW_PATH_VOCABULARY, vocabulary->name);
 

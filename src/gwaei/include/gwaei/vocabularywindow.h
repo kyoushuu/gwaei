@@ -41,7 +41,7 @@ void gw_vocabularywindow_clean_files (GwVocabularyWindow*);
 void gw_vocabularywindow_clean_lists (GwVocabularyWindow*);
 gboolean gw_vocabularywindow_list_exists (GwVocabularyWindow*, const gchar*);
 void gw_vocabularywindow_reset (GwVocabularyWindow*);
-void gw_vocabularywindow_set_has_changes (GwVocabularyWindow*, gboolean);
+void gw_vocabularywindow_sync_has_changes (GwVocabularyWindow*);
 gboolean gw_vocabularywindow_has_changes (GwVocabularyWindow*);
 gchar* gw_vocabularywindow_selected_words_to_string (GwVocabularyWindow*);
 gboolean gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow*);

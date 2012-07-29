@@ -651,45 +651,44 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 gboolean
 gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow *window)
 {
-   GwVocabularyWindowPrivate *priv;
-   GtkTreeModel *model;
-   GtkTreeSelection *selection;
-   gboolean valid;
-   gboolean has_changes;
-   GtkTreeIter iter;
-   GtkListStore *wordstore;
+   //Sanity checks
+   g_return_val_if_fail (window != NULL, FALSE);
 
+   //Declarations
+   GwVocabularyWindowPrivate *priv;
+   gboolean has_changes;
+   GtkTreeModel *treemodel;
+
+   //Initializations
    priv = window->priv;
-   model = gtk_tree_view_get_model (priv->list_treeview);
-   selection = gtk_tree_view_get_selection (priv->list_treeview);
-   valid = gtk_tree_selection_get_selected (selection, &model, &iter);
+   treemodel = gtk_tree_view_get_model (priv->word_treeview);
    has_changes = FALSE;
 
-   if (valid)
+   if (treemodel != NULL)
    {
-     wordstore = gw_vocabularyliststore_get_wordstore_by_iter (GW_VOCABULARYLISTSTORE (model), &iter);
-     has_changes = gw_vocabularywordstore_has_changes (GW_VOCABULARYWORDSTORE (wordstore));
+     has_changes = gw_vocabularywordstore_has_changes (GW_VOCABULARYWORDSTORE (treemodel));
    }
+printf("BREAK current_wordstore_has_changes %d\n", has_changes);
 
    return has_changes;
 }
 
 
 void
-gw_vocabularywindow_set_has_changes (GwVocabularyWindow *window, gboolean has_changes)
+gw_vocabularywindow_sync_has_changes (GwVocabularyWindow *window)
 {
-    GwVocabularyWindowPrivate *priv;
+    //GwVocabularyWindowPrivate *priv;
     gboolean wordstore_has_changes;
     GSimpleAction *action;
     GActionMap *map;
 
-    priv = window->priv;
-    priv->has_changes = has_changes;
+    //priv = window->priv;
+    //priv->has_changes = has_changes; TODO
     wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
     map = G_ACTION_MAP (window);
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-list"));
-    g_simple_action_set_enabled (action, has_changes);
+    g_simple_action_set_enabled (action, wordstore_has_changes);
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
     g_simple_action_set_enabled (action, wordstore_has_changes);

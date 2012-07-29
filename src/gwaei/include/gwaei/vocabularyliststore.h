@@ -65,6 +65,8 @@ gboolean gw_vocabularyliststore_has_changes (GwVocabularyListStore*);
 void gw_vocabularyliststore_set_has_changes (GwVocabularyListStore*, gboolean);
 GMenuModel* gw_vocabularyliststore_get_menumodel (GwVocabularyListStore*);
 
+void gw_vocabularyliststore_load (GwVocabularyListStore*);
+
 G_END_DECLS
 
 #endif

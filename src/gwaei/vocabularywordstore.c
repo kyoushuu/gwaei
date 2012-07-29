@@ -273,9 +273,9 @@ void
 gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME)
 {
     //Sanity checks
-    g_assert (store != NULL);
+    g_return_if_fail (store != NULL);
     if (gw_vocabularywordstore_loaded (store)) return;
-    g_assert (store->priv->name != NULL);
+    g_return_if_fail (store->priv->name != NULL);
 
     //Declarations
     GwVocabularyWordStorePrivate *priv;
@@ -321,6 +321,7 @@ gw_vocabularywordstore_load (GwVocabularyWordStore *store, const gchar *FILENAME
     }
 
     priv->loaded = TRUE;
+    gw_vocabularywordstore_set_has_changes (store, FALSE);
 }
 
 
@@ -428,12 +429,15 @@ gw_vocabularywordstore_set_has_changes (GwVocabularyWordStore *store, gboolean h
   klass = GW_VOCABULARYWORDSTORE_CLASS (G_OBJECT_GET_CLASS (store));
   store->priv->has_changes = has_changes;
   g_signal_emit (G_OBJECT (store), klass->signalid[GW_VOCABULARYWORDSTORE_CLASS_SIGNALID_CHANGED], 0);
+printf("BREAK set has changes\n");
 }
 
 
 gboolean
 gw_vocabularywordstore_has_changes (GwVocabularyWordStore *store)
 {
+  g_return_val_if_fail (store != NULL, FALSE);
+
   return store->priv->has_changes;
 }
 
