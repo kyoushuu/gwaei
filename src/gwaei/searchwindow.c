@@ -1360,7 +1360,7 @@ gw_searchwindow_get_current_textview (GwSearchWindow *window)
 {
     //Sanity checks
     g_return_val_if_fail (window != NULL, NULL);
-    gw_searchwindow_guarantee_first_tab (window);
+    //gw_searchwindow_guarantee_first_tab (window);
 
     //Declarations
     GwSearchWindowPrivate *priv;

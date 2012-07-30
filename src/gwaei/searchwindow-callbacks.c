@@ -113,6 +113,7 @@ gw_searchwindow_motion_notify_event_cb (GtkWidget       *widget,
     g_return_val_if_fail (window != NULL, FALSE);
     application = gw_window_get_application (GW_WINDOW (window));
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return FALSE;
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
@@ -174,6 +175,7 @@ gw_searchwindow_get_position_for_button_press_cb (GtkWidget      *widget,
     g_return_val_if_fail (window != NULL, FALSE);
     priv = window->priv;
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return FALSE;
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
 
@@ -217,6 +219,7 @@ gw_searchwindow_get_iter_for_button_release_cb (GtkWidget      *widget,
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return FALSE;
     type = gtk_text_view_get_window_type (view, event->window);
     gtk_text_view_window_to_buffer_coords (view, type, (gint) event->x, (gint) event->y, &x, &y);
     gtk_text_view_get_iter_at_position (view, &iter, NULL, x, y);
@@ -517,6 +520,7 @@ gw_searchwindow_save_cb (GSimpleAction *action,
 
     //Carry out the save
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return;
     text = gw_searchwindow_get_text (window, GTK_WIDGET (view));
     lw_io_write_file (path, "a", text, NULL, NULL, &error);
     g_free (text);
@@ -809,6 +813,7 @@ gw_searchwindow_key_press_modify_status_update_cb (GtkWidget *widget,
     g_return_val_if_fail (window != NULL, FALSE);
     priv = window->priv;
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return FALSE;
     tooltip_window = GTK_WIDGET (gtk_widget_get_tooltip_window (GTK_WIDGET (view)));
 
     if (tooltip_window != NULL) 
@@ -911,6 +916,7 @@ gw_searchwindow_focus_change_on_key_press_cb (GtkWidget *widget,
        GDK_KEY_Alt_R
     );
     view = gw_searchwindow_get_current_textview (window);
+    if (view == NULL) return FALSE;
     page_num = gtk_notebook_get_current_page (priv->notebook);
     scrolledwindow = GTK_SCROLLED_WINDOW (gtk_notebook_get_nth_page (priv->notebook, page_num));
 
