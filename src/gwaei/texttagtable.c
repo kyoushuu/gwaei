@@ -187,7 +187,7 @@ gw_texttagtable_init_base_tags (GwTextTagTable *tagtable)
     GtkTextTag *tag;
 
     tag = gtk_text_tag_new ("entry-grand-header");
-    g_object_set (tag, "scale", 4.0, "weight", 600, NULL);
+    g_object_set (tag, "scale", 5.0, "family", "KanjiStrokeOrders", NULL);
     gtk_text_tag_table_add (GTK_TEXT_TAG_TABLE (tagtable), tag);
     g_object_unref (tag);
 
