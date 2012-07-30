@@ -327,7 +327,7 @@ gw_application_sync_spellcheck_cb (GSettings *settings,
     state = lw_preferences_get_boolean (settings, key);
     action = g_action_map_lookup_action (G_ACTION_MAP (application), "toggle-spellcheck");
 
-    g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (state));
+    if (action != NULL) g_simple_action_set_state (G_SIMPLE_ACTION (action), g_variant_new_boolean (state));
 }
 #endif
 

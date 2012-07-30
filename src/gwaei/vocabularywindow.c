@@ -648,43 +648,63 @@ gw_vocabularywindow_init_word_treeview (GwVocabularyWindow *window)
 }
 
 
-gboolean
-gw_vocabularywindow_current_wordstore_has_changes (GwVocabularyWindow *window)
+GwVocabularyWordStore*
+gw_vocabularywindow_get_current_wordstore (GwVocabularyWindow *window)
 {
    //Sanity checks
-   g_return_val_if_fail (window != NULL, FALSE);
+   g_return_val_if_fail (window != NULL, NULL);
 
    //Declarations
    GwVocabularyWindowPrivate *priv;
-   gboolean has_changes;
    GtkTreeModel *treemodel;
 
    //Initializations
    priv = window->priv;
    treemodel = gtk_tree_view_get_model (priv->word_treeview);
-   has_changes = FALSE;
 
-   if (treemodel != NULL)
-   {
-     has_changes = gw_vocabularywordstore_has_changes (GW_VOCABULARYWORDSTORE (treemodel));
-   }
-printf("BREAK current_wordstore_has_changes %d\n", has_changes);
+   return GW_VOCABULARYWORDSTORE (treemodel);
+}
 
-   return has_changes;
+
+GwVocabularyListStore*
+gw_vocabularywindow_get_liststore (GwVocabularyWindow *window)
+{
+   //Sanity checks
+   g_return_val_if_fail (window != NULL, NULL);
+
+   //Declarations
+   GwVocabularyWindowPrivate *priv;
+   GtkTreeModel *treemodel;
+
+   //Initializations
+   priv = window->priv;
+   treemodel = gtk_tree_view_get_model (priv->list_treeview);
+
+   return GW_VOCABULARYLISTSTORE (treemodel);
 }
 
 
 void
 gw_vocabularywindow_sync_has_changes (GwVocabularyWindow *window)
 {
-    //GwVocabularyWindowPrivate *priv;
+    //Sanity checks
+    g_return_if_fail (window != NULL);
+
+    //Declarations
+    GwVocabularyWordStore *wordstore;
+    GwVocabularyListStore *liststore;
     gboolean wordstore_has_changes;
+    gboolean wordstore_has_rows;
+    gboolean liststore_has_rows;
     GSimpleAction *action;
     GActionMap *map;
 
-    //priv = window->priv;
-    //priv->has_changes = has_changes; TODO
-    wordstore_has_changes = gw_vocabularywindow_current_wordstore_has_changes (window);
+    //Initializations
+    wordstore = gw_vocabularywindow_get_current_wordstore (window);
+    liststore = gw_vocabularywindow_get_liststore (window);
+    wordstore_has_changes = wordstore != NULL && gw_vocabularywordstore_has_changes (wordstore);
+    wordstore_has_rows = (wordstore != NULL && gtk_tree_model_iter_n_children (GTK_TREE_MODEL (wordstore), NULL) > 0);
+    liststore_has_rows = (gtk_tree_model_iter_n_children (GTK_TREE_MODEL (liststore), NULL) > 0);
     map = G_ACTION_MAP (window);
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-list"));
@@ -692,6 +712,15 @@ gw_vocabularywindow_sync_has_changes (GwVocabularyWindow *window)
 
     action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "revert-list"));
     g_simple_action_set_enabled (action, wordstore_has_changes);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "new-word"));
+    g_simple_action_set_enabled (action, wordstore != NULL);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "remove-word"));
+    g_simple_action_set_enabled (action, wordstore_has_rows);
+
+    action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "remove-list"));
+    g_simple_action_set_enabled (action, liststore_has_rows);
 }
 
 

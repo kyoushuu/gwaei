@@ -72,8 +72,8 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>_Delete</attribute>
-          <attribute name='action'>win.paste</attribute>
-          <attribute name='accel'>&lt;Primary&gt;Backspace</attribute>
+          <attribute name='action'>win.delete</attribute>
+          <attribute name='accel'>Delete</attribute>
         </item>
       </section>
     </submenu>

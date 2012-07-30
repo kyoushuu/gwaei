@@ -133,20 +133,24 @@ gw_vocabularyliststore_load (GwVocabularyListStore *store)
     lists = lw_vocabulary_get_lists ();
     liststore = GTK_LIST_STORE (store);
 
-    for (i = 0; lists[i] != NULL; i++)
+    if (lists != NULL)
     {
-      gtk_list_store_append (liststore, &treeiter);
-      wordstore = gw_vocabularywordstore_new (lists[i]);
-      gtk_list_store_set (
-        liststore, &treeiter, 
-        GW_VOCABULARYLISTSTORE_COLUMN_NAME, lists[i],
-        GW_VOCABULARYLISTSTORE_COLUMN_CHANGED, FALSE,
-        GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, wordstore,
-        -1);
-      g_object_unref (wordstore); wordstore = NULL;
-    }
+      for (i = 0; lists[i] != NULL; i++)
+      {
+        gtk_list_store_append (liststore, &treeiter);
+        wordstore = gw_vocabularywordstore_new (lists[i]);
+        gtk_list_store_set (
+          liststore, &treeiter, 
+          GW_VOCABULARYLISTSTORE_COLUMN_NAME, lists[i],
+          GW_VOCABULARYLISTSTORE_COLUMN_CHANGED, FALSE,
+          GW_VOCABULARYLISTSTORE_COLUMN_OBJECT, wordstore,
+          -1);
+        g_signal_connect (wordstore, "changed", G_CALLBACK (gw_vocabularyliststore_wordstore_changed_cb), store);
+        g_object_unref (wordstore); wordstore = NULL;
+      }
 
-    g_strfreev (lists); lists = NULL;
+      g_strfreev (lists); lists = NULL;
+    }
 }
 
 
