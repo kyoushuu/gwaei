@@ -2287,14 +2287,46 @@ gw_searchwindow_set_dictionary_cb (GSimpleAction *action,
 }
 
 
-static GtkMenu *_toolbar_menu = NULL;
 static void
-gw_searchwindow_detach_popup (GtkWidget *attach_widget, GtkMenu *menu)
+gw_searchwindow_detach_popup (GwSearchWindow *window, GtkMenu *menu)
 {
-    g_return_if_fail (_toolbar_menu != NULL);
-    gtk_widget_destroy (GTK_WIDGET (_toolbar_menu));
-    _toolbar_menu = NULL;
+    g_return_if_fail (menu != NULL);
+    gtk_widget_destroy (GTK_WIDGET (menu));
 }
+
+
+GtkMenu*
+gw_searchwindow_get_toolbar_menu (GwSearchWindow *window)
+{
+    //Sanity checks
+    g_return_val_if_fail (window != NULL, NULL);
+
+    //Declarations
+    GwSearchWindowPrivate *priv;
+    GMenuModel *menumodel;
+    GtkBuilder *builder;
+
+    //Initializations
+    priv = window->priv;
+
+    if (priv->toolbar_menu == NULL)
+    {
+      builder = gtk_builder_new ();
+      if (builder != NULL)
+      {
+        gw_application_load_xml (builder, "searchwindow-menumodel-toolbar.ui");
+        menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
+        priv->toolbar_menu = GTK_MENU (gtk_menu_new_from_model (menumodel));
+        gtk_menu_attach_to_widget (priv->toolbar_menu, GTK_WIDGET (window), (GtkMenuDetachFunc) gw_searchwindow_detach_popup);
+        
+        g_object_unref (builder); builder = NULL;
+      }
+    }
+
+    return priv->toolbar_menu;
+}
+
+
 
 G_MODULE_EXPORT gboolean
 gw_searchwindow_show_toolbar_popup_cb (GtkToolbar *toolbar, 
@@ -2303,25 +2335,17 @@ gw_searchwindow_show_toolbar_popup_cb (GtkToolbar *toolbar,
                                        gint        button, 
                                        gpointer    data)
 {
-    if (_toolbar_menu == NULL)
-    {
-      GtkMenu *menu;
-      GtkBuilder *builder;
-      GMenuModel *menumodel;
+    //Declarations
+    GwSearchWindow *window;
+    GtkMenu *menu;
 
-      builder = gtk_builder_new ();
-      gw_application_load_xml (builder, "searchwindow-menumodel-toolbar.ui");
-      menumodel = G_MENU_MODEL (gtk_builder_get_object (builder, "menu"));
-      menu = GTK_MENU (gtk_menu_new_from_model (menumodel));
-      gtk_widget_show (GTK_WIDGET (menu));
-      
-      g_object_unref (builder); builder = NULL;
+    //Initializations
+    window = GW_SEARCHWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_SEARCHWINDOW));
+    g_return_val_if_fail (window != NULL, FALSE);
+    menu = gw_searchwindow_get_toolbar_menu (window);
 
-      gtk_menu_attach_to_widget (menu, GTK_WIDGET (toolbar), gw_searchwindow_detach_popup);
-      _toolbar_menu = menu;
-    }
-
-    gtk_menu_popup (_toolbar_menu, NULL, NULL, NULL, NULL, button, gtk_get_current_event_time ());
+    gtk_menu_popup (menu, NULL, NULL, NULL, NULL, button, gtk_get_current_event_time ());
+    gtk_widget_show_all (GTK_WIDGET (menu));
 
     return TRUE;
 }

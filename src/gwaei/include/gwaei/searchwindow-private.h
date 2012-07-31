@@ -28,17 +28,12 @@ typedef enum {
   TOTAL_GW_SEARCHWINDOW_SIGNALIDS
 } GwSearchWindowSignalId;
 
-/*
-struct _GwSearchWindowPrivateGui {
-  
-}
-typedef struct _GwSearchWindowPrivateGui GwSearchWindowPrivateGui;
-*/
 
 struct _GwSearchWindowPrivate {
   GtkNotebook *notebook;
 
   GtkMenuBar *menubar;
+  GtkMenu *toolbar_menu;
 
   GtkToolbar *primary_toolbar;
   GtkToolButton *spellcheck_toolbutton;
