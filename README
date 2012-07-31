@@ -16,7 +16,7 @@ TABLE OF CONTENTS
 
 1.0 PREREQUISITES:
 
-  To run gWaei 3.4.x, an environment with at least gtk+-3.3.x/glib-2.31.x,
+  To run gWaei 3.5.x, an environment with at least gtk+-3.3.x/glib-2.31.x,
   curl 7.20.0, gnome-doc-utils-0.14.0, and gsettings-desktop-schemas are
   required. Additionally, you will want to have hunspell, mecab, and
   ttf-kanjistrokeorders available.
