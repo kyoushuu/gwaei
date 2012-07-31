@@ -1089,13 +1089,14 @@ gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow *window)
 
     item = gtk_tool_button_new_from_stock (GTK_STOCK_SAVE);
     gtk_toolbar_insert (toolbar, item, -1);
-    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save");
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.save-all");
     gtk_widget_show (GTK_WIDGET (item));
 
     item = gtk_separator_tool_item_new ();
     gtk_toolbar_insert (toolbar, item, -1);
     gtk_widget_show (GTK_WIDGET (item));
 
+/*
     item = gtk_tool_button_new_from_stock (GTK_STOCK_CUT);
     gtk_toolbar_insert (toolbar, item, -1);
     gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.cut");
@@ -1110,6 +1111,7 @@ gw_vocabularywindow_initialize_toolbar (GwVocabularyWindow *window)
     gtk_toolbar_insert (toolbar, item, -1);
     gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.paste");
     gtk_widget_show (GTK_WIDGET (item));
+*/
 
 ///////////////////
 

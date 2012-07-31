@@ -1,4 +1,4 @@
-AC_INIT(gwaei, 3.5.0dev)
+AC_INIT(gwaei, 3.5.0)
 AC_CONFIG_SRCDIR([src/gwaei/gwaei.c])
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE

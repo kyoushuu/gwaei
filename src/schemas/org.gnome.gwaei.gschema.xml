@@ -82,7 +82,7 @@
   <schema id="org.gnome.gwaei.vocabulary" path="/org/gnome/gwaei/vocabulary/">
 
     <key name="menubar-show" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Toolbar show status</summary>
       <description>Determines if the toolbar is hidden or not.</description>
     </key>
