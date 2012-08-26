@@ -64,6 +64,7 @@ lw_query_clear_tokens (LwQuery *query)
 
     //Declarations
     gint i;
+    gint j;
 
     if (query->tokenlist != NULL)
     {
@@ -71,6 +72,11 @@ lw_query_clear_tokens (LwQuery *query)
       {
         if (query->tokenlist[i] != NULL) 
         {
+          for (j = 0; query->tokenlist[i][j] != NULL; j++)
+          {
+            g_free (query->tokenlist[i][j]);
+            query->tokenlist[i][j] = NULL;
+          }
           g_free (query->tokenlist[i]); 
           query->tokenlist[i] = NULL;
         }
@@ -103,16 +109,14 @@ lw_query_clear_regexgroup (LwQuery *query)
 
     if (query->regexgroup != NULL)
     {
-      i = 0;
-      while (i++ < TOTAL_LW_QUERY_TYPES)
+      for (i = 0; i < TOTAL_LW_QUERY_TYPES; i++)
       {
         if (query->regexgroup[i] == NULL) continue;
-        j = 0;
-        while (j++ < TOTAL_LW_RELEVANCE)
+        for (j = 0; j < TOTAL_LW_RELEVANCE; j++)
         {
           if (query->regexgroup[i][j] == NULL) continue;
-    //      g_list_foreach (query->regexgroup[i][j], (GFunc) g_regex_unref, NULL);
-        //  g_list_free (query->regexgroup[i][j]); query->regexgroup[i][j] = NULL;
+          g_list_foreach (query->regexgroup[i][j], (GFunc) g_regex_unref, NULL);
+          query->regexgroup[i][j] = NULL;
         }
         g_free (query->regexgroup[i]); query->regexgroup[i] = NULL;
       }
@@ -279,6 +283,8 @@ lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
           g_free (supplimentary); supplimentary = temp; temp = NULL;
         }
       }
+
+      if (resultlist != NULL) lw_morphologylist_free (resultlist); resultlist = NULL;
     }
 #endif
 
@@ -337,6 +343,8 @@ lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
           g_free (supplimentary); supplimentary = temp; temp = NULL;
         }
       }
+
+      if (resultlist != NULL) lw_morphologylist_free (resultlist); resultlist = NULL;
     }
 #endif
 
@@ -419,6 +427,8 @@ lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
             g_free (supplimentary); supplimentary = temp; temp = NULL;
           }
         }
+
+        if (resultlist != NULL) lw_morphologylist_free (resultlist); resultlist = NULL;
       }
 #endif
     }
