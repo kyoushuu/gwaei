@@ -28,7 +28,6 @@ struct _GwApplicationPrivate {
   guint signalid[TOTAL_GW_APPLICATION_SIGNALIDS];
 
   GOptionContext *context;
-  gboolean arg_new_window_switch;
   gchar   *arg_dictionary;
   gchar   *arg_query;
   gboolean arg_version_switch;

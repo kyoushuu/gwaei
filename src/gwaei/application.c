@@ -211,7 +211,6 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
     priv = application->priv;
 
     //Reset the switches to their default state
-    priv->arg_new_window_switch = FALSE;
     if (priv->arg_dictionary != NULL) g_free (priv->arg_dictionary);
     priv->arg_dictionary = NULL;
     if (priv->arg_query != NULL) g_free (priv->arg_query);
@@ -221,7 +220,6 @@ gw_application_parse_args (GwApplication *application, int *argc, char** argv[])
 
     GOptionEntry entries[] =
     {
-      { "new", 'n', 0, G_OPTION_ARG_NONE, &(priv->arg_new_window_switch), gettext("Force a new instance window"), NULL },
       { "dictionary", 'd', 0, G_OPTION_ARG_STRING, &(priv->arg_dictionary), gettext("Choose the dictionary to use"), "English" },
       { "word", 'o', 0, G_OPTION_ARG_NONE, &(priv->arg_new_vocabulary_window_switch), gettext("Open the vocabulary manager window"), NULL },
       { "version", 'v', 0, G_OPTION_ARG_NONE, &(priv->arg_version_switch), gettext("Check the gWaei version information"), NULL },
@@ -616,7 +614,6 @@ gw_application_activate (GApplication *application)
 
     priv = GW_APPLICATION (application)->priv;
     dictionarylist = gw_application_get_installed_dictionarylist (GW_APPLICATION (application));
-    searchwindow = gw_application_get_last_focused_searchwindow (GW_APPLICATION (application));
 
     if (priv->arg_new_vocabulary_window_switch)
     {
@@ -625,7 +622,7 @@ gw_application_activate (GApplication *application)
       return;
     }
 
-    else if (searchwindow == NULL || priv->arg_new_window_switch)
+    else
     {
       searchwindow = GW_SEARCHWINDOW (gw_searchwindow_new (GTK_APPLICATION (application)));
       gtk_widget_show (GTK_WIDGET (searchwindow));
@@ -636,11 +633,6 @@ gw_application_activate (GApplication *application)
         gtk_window_set_transient_for (GTK_WINDOW (settingswindow), GTK_WINDOW (searchwindow));
         gtk_widget_show (GTK_WIDGET (settingswindow));
       }
-      return;
-    }
-    else
-    {
-      gtk_window_present (GTK_WINDOW (searchwindow));
       return;
     }
 }
