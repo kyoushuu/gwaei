@@ -96,6 +96,13 @@
       </section>
     </submenu>
 
+    <section>
+      <item>
+        <attribute name='label' translatable='yes'>_Preferences</attribute>
+        <attribute name='action'>win.show-preferences</attribute>
+        <attribute name='accel'>&lt;Primary&gt;comma</attribute>
+      </item>
+    </section>
 
     <section>
       <item>
