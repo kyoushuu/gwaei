@@ -291,6 +291,7 @@ gw_searchwindow_close_cb (GSimpleAction *action,
                           GVariant      *variant, 
                           gpointer       data)
 {
+printf("BREAK close search window\n");
     //Declarations
     GwSearchWindow *window;
     GwSearchWindowPrivate *priv;

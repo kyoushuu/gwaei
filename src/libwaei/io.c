@@ -799,13 +799,13 @@ gpointer _stdin_func (gpointer data)
     {
       domain = g_quark_from_string (LW_IO_ERROR);
       message = gettext("Unable to read data from the input file.");
-      in->error = g_error_new (domain, LW_IO_READ_ERROR, message);
+      in->error = g_error_new (domain, LW_IO_READ_ERROR, "%s", message);
     }
     else if(ferror(stream) != 0)
     {
       domain = g_quark_from_string (LW_IO_ERROR);
       message = gettext("Unable to write to the external program's input stream.");
-      in->error = g_error_new (domain, LW_IO_WRITE_ERROR, message);
+      in->error = g_error_new (domain, LW_IO_WRITE_ERROR, "%s", message);
     }
 
     //Cleanup
@@ -858,13 +858,13 @@ gpointer _stdout_func (gpointer data)
     {
       domain = g_quark_from_string (LW_IO_ERROR);
       message = gettext("Unable to read data from the external program's pipe.");
-      out->error = g_error_new (domain, LW_IO_READ_ERROR, message);
+      out->error = g_error_new (domain, LW_IO_READ_ERROR, "%s", message);
     }
     else if(ferror(stream) != 0)
     {
       domain = g_quark_from_string (LW_IO_ERROR);
       message = gettext("Unable to write the stream's output to a file.");
-      out->error = g_error_new (domain, LW_IO_WRITE_ERROR, message);
+      out->error = g_error_new (domain, LW_IO_WRITE_ERROR, "%s", message);
     }
 
     //Cleanup

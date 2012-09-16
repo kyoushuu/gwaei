@@ -75,21 +75,43 @@ gw_installprogresswindow_update_dictionary_cb (LwDictionary *dictionary, gpointe
 }
 
 
-//!
-//! @brief Callback to update the install dialog progress.  The data passed to it should be
-//!        in the form of a LwDictionary.  If it is NULL, the progress window will be closed.
-//!
-G_MODULE_EXPORT gboolean 
-gw_installprogresswindow_update_ui_timeout (gpointer data)
+static void
+gw_installprogresswindow_finish (GwInstallProgressWindow *window)
 {
-    //Sanity check
-    g_return_val_if_fail (data != NULL, FALSE);
+    //Sanity checks
+    g_return_if_fail (window != NULL);
 
     //Declarations
-    GwInstallProgressWindow *window;
     GwInstallProgressWindowPrivate *priv;
     GwApplication *application;
-    GwDictionaryList *dictionarylist;
+    LwDictionaryList *dictionarylist;
+    LwPreferences *preferences;
+
+
+    //Initializations
+    priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installed_dictionarylist (application));
+    preferences = gw_application_get_preferences (application);
+
+    g_mutex_lock (&priv->mutex);
+
+    lw_dictionarylist_clear (dictionarylist);
+    lw_dictionarylist_load_installed (dictionarylist);
+    lw_dictionarylist_load_order (dictionarylist, preferences);
+
+    g_mutex_unlock (&priv->mutex);
+
+    gtk_widget_destroy (GTK_WIDGET (window));
+}
+
+
+static void
+gw_installprogresswindow_sync_progress (GwInstallProgressWindow *window)
+{
+    GwInstallProgressWindowPrivate *priv;
+    GwApplication *application;
+    LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
     LwPreferences *preferences;
     GList *link;
@@ -102,33 +124,16 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     gchar *text_progressbar;
 
     //Initializations
-    window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
-    g_return_val_if_fail (window != NULL, FALSE);
     application = gw_window_get_application (GW_WINDOW (window));
-    dictionarylist = gw_application_get_installable_dictionarylist (application);
-    preferences = gw_application_get_preferences (application);
+    dictionarylist = LW_DICTIONARYLIST (gw_application_get_installable_dictionarylist (application));
     priv = window->priv;
     current_to_install = 0;
     total_to_install = 0;
 
-    //The install is complete close the window
-    if (priv->dictionary == NULL)
-    {
-      lw_dictionarylist_clear (LW_DICTIONARYLIST (dictionarylist));
-      lw_dictionarylist_load_installed (LW_DICTIONARYLIST (dictionarylist));
-      lw_dictionarylist_load_order (LW_DICTIONARYLIST (dictionarylist), preferences);
-
-      gtk_widget_destroy (GTK_WIDGET (window));
-
-      gw_application_handle_error (application, NULL, FALSE, NULL);
-
-      return FALSE;
-    }
-
     g_mutex_lock (&priv->mutex);
 
     //Calculate the number of dictionaries left to install
-    for (link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist)); link != NULL; link = link->next)
+    for (link = lw_dictionarylist_get_list (dictionarylist); link != NULL; link = link->next)
     {
       dictionary = LW_DICTIONARY (link->data);
       if (dictionary != NULL && lw_dictionary_is_selected (dictionary))
@@ -139,7 +144,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     }
 
     //Calculate the number of dictionaries left to install
-    for (link = lw_dictionarylist_get_list (LW_DICTIONARYLIST (dictionarylist)); link != NULL; link = link->next)
+    for (link = lw_dictionarylist_get_list (dictionarylist); link != NULL; link = link->next)
     {
       dictionary = LW_DICTIONARY (link->data);
       if (lw_dictionary_is_selected (dictionary))
@@ -166,8 +171,6 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     gtk_progress_bar_set_fraction (priv->progressbar, priv->install_fraction);
     gtk_progress_bar_set_text (priv->progressbar, text_progressbar);
 
-    g_mutex_unlock (&priv->mutex);
-
 errored:
     //Cleanup
     if (text_progressbar != NULL) g_free (text_progressbar); text_progressbar = NULL;
@@ -176,7 +179,47 @@ errored:
     if (text_installing != NULL) g_free (text_installing); text_installing = NULL;
     if (text_installing_markup != NULL) g_free (text_installing_markup); text_installing_markup = NULL;
 
-    return TRUE;
+    g_mutex_unlock (&priv->mutex);
+}
+
+
+//!
+//! @brief Callback to update the install dialog progress.  The data passed to it should be
+//!        in the form of a LwDictionary.  If it is NULL, the progress window will be closed.
+//!
+G_MODULE_EXPORT gboolean 
+gw_installprogresswindow_update_ui_timeout (gpointer data)
+{
+    //Sanity check
+    g_return_val_if_fail (data != NULL, FALSE);
+
+    //Declarations
+    GwInstallProgressWindow *window;
+    GwInstallProgressWindowPrivate *priv;
+    GwApplication *application;
+    gint status;
+    
+    //Initializations
+    window = GW_INSTALLPROGRESSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_INSTALLPROGRESSWINDOW));
+    g_return_val_if_fail (window != NULL, FALSE);
+    priv = window->priv;
+    application = gw_window_get_application (GW_WINDOW (window));
+    status = FALSE;
+
+    //The install is complete close the window
+    if (priv->dictionary == NULL)
+    {
+      gw_installprogresswindow_finish (window);
+      gw_application_handle_error (application, NULL, FALSE, NULL);
+      status = FALSE;
+    }
+    else
+    {
+      gw_installprogresswindow_sync_progress (window);
+      status = TRUE;
+    }
+
+    return status;
 }
 
 

@@ -522,7 +522,9 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     }
 
     //Set the menubar to the application
-    gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
+    if (gtk_application_get_menubar (GTK_APPLICATION (application)) == NULL || 
+        os_shows_win_menu == FALSE) //FIXME! This should not be needed on Ubuntu
+    	gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
 
     //Save the menu objects in the window
     if (priv->menu_model != NULL) g_object_unref (priv->menu_model);

@@ -76,13 +76,18 @@ gw_window_get_transient_for_menumodel (GwWindow *window)
 G_MODULE_EXPORT gboolean
 gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+    //Declarations
     GwWindow *window;
     GwApplication *application;
     GMenuModel *menumodel;
+    gboolean os_shows_win_menu;
+    GtkSettings *settings;
     
-    
+    //Initializations
     window = GW_WINDOW (widget);
     application = gw_window_get_application (window);
+    settings = gtk_settings_get_default ();
+    g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
 
     menumodel = gw_window_get_transient_for_menumodel (window);
     if (menumodel == NULL)
@@ -90,7 +95,8 @@ gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     if (menumodel == NULL) 
       return FALSE;
 
-    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+    if (os_shows_win_menu == FALSE) //FIXME! This should not be needed on Ubuntu
+      gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
 
     return FALSE;
 }

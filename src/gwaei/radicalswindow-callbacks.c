@@ -120,14 +120,15 @@ gw_radicalswindow_strokes_checkbox_toggled_cb (GtkWidget *widget, gpointer data)
 
 
 G_MODULE_EXPORT void 
-gw_radicalswindow_close_cb (GtkWidget* widget, gpointer data)
+gw_radicalswindow_close_cb (GSimpleAction *action, 
+                            GVariant      *variant, 
+                            gpointer       data)
 {
     //Declarations
     GwRadicalsWindow *window;
 
     //Initializations
-    window = GW_RADICALSWINDOW (gtk_widget_get_ancestor (GTK_WIDGET (data), GW_TYPE_RADICALSWINDOW));
-    g_return_if_fail (window != NULL);
+    window = GW_RADICALSWINDOW (data);
 
     gtk_widget_hide (GTK_WIDGET (window));
 }

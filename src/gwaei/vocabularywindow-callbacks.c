@@ -526,6 +526,7 @@ gw_vocabularywindow_close_cb (GSimpleAction *action,
                               GVariant      *parameter, 
                               gpointer       data)
 {
+printf("BREAK close vocabulary window\n");
     //Declarations
     GwVocabularyWindow *window;
     GwApplication *application;

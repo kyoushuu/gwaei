@@ -35,6 +35,7 @@
 #include <gwaei/gettext.h>
 #include <gwaei/radicalswindow.h>
 #include <gwaei/radicalswindow-private.h>
+#include <gwaei/radicalswindow-callbacks.h>
 
 static void gw_radicalswindow_fill_radicals (GwRadicalsWindow*);
 static void gw_radicalswindow_init_accelerators (GwRadicalsWindow*);
@@ -356,6 +357,20 @@ gw_radicalswindow_finalize (GObject *object)
 }
 
 
+void
+gw_radicalswindow_map_actions (GActionMap *map, GwRadicalsWindow *window)
+{
+    //Sanity checks
+    g_return_if_fail (map != NULL);
+    g_return_if_fail (window != NULL);
+
+    static GActionEntry entries[] = {
+      { "close", gw_radicalswindow_close_cb, NULL, NULL, NULL }
+    };
+    g_action_map_add_action_entries (map, entries, G_N_ELEMENTS (entries), window);
+}
+
+
 static void 
 gw_radicalswindow_constructed (GObject *object)
 {
@@ -370,6 +385,8 @@ gw_radicalswindow_constructed (GObject *object)
 
     window = GW_RADICALSWINDOW (object);
     priv = window->priv;
+
+    gw_radicalswindow_map_actions (G_ACTION_MAP (window), window);
 
     gtk_window_set_title (GTK_WINDOW (window), gettext("Radical Table - gWaei"));
     gtk_window_set_resizable (GTK_WINDOW (window), TRUE);
@@ -427,10 +444,10 @@ gw_radicalswindow_init_accelerators (GwRadicalsWindow *window)
     accelgroup = gw_window_get_accel_group (GW_WINDOW (window));
 
     widget = GTK_WIDGET (gw_window_get_object (GW_WINDOW (window), "close_button"));
+
     gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_W), GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-    gtk_widget_add_accelerator (GTK_WIDGET (widget), "activate", 
-      accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
+                                accelgroup, (GDK_KEY_Escape), 0, GTK_ACCEL_VISIBLE);
+    gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (widget), "win.close");
 }
 
 

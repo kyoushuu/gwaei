@@ -47,7 +47,7 @@
           <attribute name='accel'>&lt;Primary&gt;p</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Print Preview</attribute>
+          <attribute name='label' translatable='yes'>Print P_review</attribute>
           <attribute name='action'>win.print-preview</attribute>
         </item>
       </section>
@@ -110,17 +110,17 @@
       </section>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Zoom Normal</attribute>
+          <attribute name='label' translatable='yes'>_Zoom Normal</attribute>
           <attribute name='action'>win.zoom-100</attribute>
           <attribute name='accel'>&lt;Primary&gt;0</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Zoom In</attribute>
+          <attribute name='label' translatable='yes'>Zoom _In</attribute>
           <attribute name='action'>win.zoom-in</attribute>
           <attribute name='accel'>&lt;Primary&gt;plus</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Zoom Out</attribute>
+          <attribute name='label' translatable='yes'>Zoom _Out</attribute>
           <attribute name='action'>win.zoom-out</attribute>
           <attribute name='accel'>&lt;Primary&gt;minus</attribute>
         </item>
@@ -191,12 +191,12 @@
       <attribute name='label' translatable='yes'>Hi_story</attribute>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Back</attribute>
+          <attribute name='label' translatable='yes'>_Back</attribute>
           <attribute name='action'>win.go-back</attribute>
           <attribute name='accel'>&lt;Alt&gt;Left</attribute>
         </item>
         <item>
-          <attribute name='label' translatable='yes'>Forward</attribute>
+          <attribute name='label' translatable='yes'>_Forward</attribute>
           <attribute name='action'>win.go-forward</attribute>
           <attribute name='accel'>&lt;Alt&gt;Right</attribute>
         </item>
