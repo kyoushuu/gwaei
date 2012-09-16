@@ -5,7 +5,7 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>New _Window</attribute>
-          <attribute name='action'>win.new-window</attribute>
+          <attribute name='action'>app.new-window</attribute>
           <attribute name='accel'>&lt;Primary&gt;n</attribute>
         </item>
         <item>
@@ -64,7 +64,7 @@
         </item>
         <item>
           <attribute name='label' translatable='yes'>_Quit</attribute>
-          <attribute name='action'>win.quit</attribute>
+          <attribute name='action'>app.quit</attribute>
           <attribute name='accel'>&lt;Primary&gt;q</attribute>
         </item>
       </section>
@@ -99,7 +99,7 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>_Preferences</attribute>
-          <attribute name='action'>win.show-preferences</attribute>
+          <attribute name='action'>app.show-preferences</attribute>
           <attribute name='accel'>&lt;Primary&gt;comma</attribute>
         </item>
       </section>
@@ -230,7 +230,7 @@
       <section>
         <item>
           <attribute name='label' translatable='yes'>_Manage</attribute>
-          <attribute name='action'>win.show-vocabulary</attribute>
+          <attribute name='action'>app.show-vocabulary</attribute>
           <attribute name='accel'>&lt;Primary&gt;m</attribute>
         </item>
       </section>
@@ -245,16 +245,16 @@
       <attribute name='label' translatable='yes'>_Help</attribute>
       <item>
         <attribute name='label' translatable='yes'>_About</attribute>
-        <attribute name='action'>win.show-about</attribute>
+        <attribute name='action'>app.show-about</attribute>
       </item>
       <item>
         <attribute name='label' translatable='yes'>_Contents</attribute>
-        <attribute name='action'>win.show-help</attribute>
+        <attribute name='action'>app.show-help</attribute>
         <attribute name='accel'>F1</attribute>
       </item>
       <item>
         <attribute name='label' translatable='yes'>_Glossary</attribute>
-        <attribute name='action'>win.show-glossary</attribute>
+        <attribute name='action'>app.show-glossary</attribute>
       </item>
     </submenu>
   </menu>

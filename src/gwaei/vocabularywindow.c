@@ -143,8 +143,6 @@ gw_vocabularywindow_constructed (GObject *object)
     gw_window_load_menubar (GW_WINDOW (window), "vocabularywindow");
 
     gw_vocabularywindow_map_actions (G_ACTION_MAP (window), window);
-    gw_application_map_actions (G_ACTION_MAP (window), application);
-
 
     //Set up the gtkbuilder links
     priv->primary_toolbar = GTK_TOOLBAR (gw_window_get_object (GW_WINDOW (window), "primary_toolbar"));

@@ -109,8 +109,6 @@ gw_window_constructed (GObject *object)
 
     gtk_application_window_set_show_menubar (GTK_APPLICATION_WINDOW (window), FALSE);
 
-    if (!os_shows_app_menu) gw_application_map_actions (G_ACTION_MAP (window), application);
-
     g_signal_connect (G_OBJECT (window), "configure-event", G_CALLBACK (gw_window_configure_event_cb), NULL);
     g_signal_connect (window, "focus-in-event", G_CALLBACK (gw_window_focus_in_event_cb), NULL);
 }

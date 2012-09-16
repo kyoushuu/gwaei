@@ -792,12 +792,15 @@ gw_application_load_app_menu (GwApplication *application)
     g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu, NULL);
     g_object_get (settings, "gtk-shell-shows-menubar", &os_shows_win_menu, NULL);
 
+    gw_application_map_actions (G_ACTION_MAP (application), application);
+
     if (os_shows_app_menu && os_shows_win_menu) //Mac OS X style
       filename = "application-menumodel-macosx.ui";
     else if (os_shows_app_menu != os_shows_win_menu) //Gnome 3 style
       filename = "application-menumodel-gnome.ui";
     else //Windows style
       filename = NULL;
+
 
     if (filename == NULL) goto errored;
 
@@ -807,7 +810,6 @@ gw_application_load_app_menu (GwApplication *application)
 
     gtk_application_set_app_menu (GTK_APPLICATION (application), model);
     gw_application_initialize_menumodel_links (application);
-    gw_application_map_actions (G_ACTION_MAP (application), application);
 
 errored:
     if (builder != NULL) g_object_unref (builder);
