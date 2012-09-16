@@ -81,12 +81,12 @@
         <attribute name='accel'>&lt;Primary&gt;k</attribute>
       </item>
       <item>
-        <attribute name='label' translatable='yes'>Using _Radical Table</attribute>
+        <attribute name='label' translatable='yes'>Show _Radical Table</attribute>
         <attribute name='action'>win.toggle-radicals-show</attribute>
         <attribute name='accel'>&lt;Primary&gt;r</attribute>
       </item>
       <item>
-        <attribute name='label' translatable='yes'>_Manage Vocabulary</attribute>
+        <attribute name='label' translatable='yes'>Show _Vocabulary</attribute>
         <attribute name='action'>app.show-vocabulary</attribute>
         <attribute name='accel'>&lt;Primary&gt;m</attribute>
       </item>

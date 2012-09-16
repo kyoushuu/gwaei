@@ -465,7 +465,6 @@ gw_vocabularywindow_save_cb (GSimpleAction *action,
         valid = gtk_tree_model_get_iter (treemodel, &treeiter, treepath);
         if (valid)
         {
-printf("BREAK gw_vocabularywindow_save\n");
           gw_vocabularyliststore_save (GW_VOCABULARYLISTSTORE (liststore), &treeiter);
         }
       }
@@ -512,7 +511,6 @@ gw_vocabularywindow_revert_cb (GSimpleAction *action,
         valid = gtk_tree_model_get_iter (treemodel, &treeiter, treepath);
         if (valid)
         {
-printf("BREAK gw_vocabularywindow_revert\n");
           gw_vocabularyliststore_revert (GW_VOCABULARYLISTSTORE (liststore), &treeiter);
         }
       }
@@ -526,7 +524,6 @@ gw_vocabularywindow_close_cb (GSimpleAction *action,
                               GVariant      *parameter, 
                               gpointer       data)
 {
-printf("BREAK close vocabulary window\n");
     //Declarations
     GwVocabularyWindow *window;
     GwApplication *application;

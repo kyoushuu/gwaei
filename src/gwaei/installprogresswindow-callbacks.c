@@ -87,7 +87,6 @@ gw_installprogresswindow_finish (GwInstallProgressWindow *window)
     LwDictionaryList *dictionarylist;
     LwPreferences *preferences;
 
-
     //Initializations
     priv = window->priv;
     application = gw_window_get_application (GW_WINDOW (window));
@@ -210,7 +209,7 @@ gw_installprogresswindow_update_ui_timeout (gpointer data)
     if (priv->dictionary == NULL)
     {
       gw_installprogresswindow_finish (window);
-      gw_application_handle_error (application, NULL, FALSE, NULL);
+      gw_application_handle_error (application, NULL, TRUE, NULL);
       status = FALSE;
     }
     else

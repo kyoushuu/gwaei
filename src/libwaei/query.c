@@ -272,9 +272,6 @@ lw_query_tokenlist_build_kanji_supplimentary (LwQuery      *query,
       while (resultlink != NULL)
       {
         morphology = LW_MORPHOLOGY (resultlink->data);
-        printf("BREAK result word: %s ", morphology->word);
-        printf(", base_form: %s ", morphology->base_form);
-        printf(", explanation: %s\n", morphology->explanation);
         resultlink = resultlink->next;
 
         if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)
@@ -332,9 +329,6 @@ lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
       while (resultlink != NULL)
       {
         morphology = LW_MORPHOLOGY (resultlink->data);
-        printf("BREAK result word: %s ", morphology->word);
-        printf(", base_form: %s ", morphology->base_form);
-        printf(", explanation: %s\n", morphology->explanation);
         resultlink = resultlink->next;
 
         if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)
@@ -362,7 +356,6 @@ lw_query_tokenlist_build_furigana_supplimentary (LwQuery      *query,
       temp = g_strjoin (LW_QUERY_DELIMITOR_SUPPLIMENTARY_STRING, supplimentary, buffer, NULL);
       g_free (supplimentary); supplimentary = temp; temp = NULL;
     }
-printf("BREAK furigana supplimentary %s\n", supplimentary);
 
     return supplimentary;
 }
@@ -416,9 +409,6 @@ lw_query_tokenlist_build_romaji_supplimentary (LwQuery      *query,
         while (resultlink != NULL)
         {
           morphology = LW_MORPHOLOGY (resultlink->data);
-          printf("BREAK result word: %s ", morphology->word);
-          printf(", base_form: %s ", morphology->base_form);
-          printf(", explanation: %s\n", morphology->explanation);
           resultlink = resultlink->next;
 
           if (morphology->base_form != NULL && g_utf8_strlen (morphology->base_form, -1) > 1 && strcmp(TOKEN, morphology->base_form) != 0)

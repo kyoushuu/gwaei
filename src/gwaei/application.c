@@ -274,7 +274,6 @@ gw_application_print_about (GwApplication *application)
 void 
 gw_application_quit (GwApplication *application)
 {
-printf("BREAK quit\n");
     gw_application_block_searches (application);
 
     GList *link;
@@ -846,7 +845,6 @@ gw_application_load_xml (GtkBuilder *builder, const gchar *FILENAME)
       if (file_exists == FALSE)
         continue;
 
-printf("BREAK attempting to load %s\n", path);
       is_valid_xml = gtk_builder_add_from_file (builder, path,  &error);
       if (error != NULL) 
       {

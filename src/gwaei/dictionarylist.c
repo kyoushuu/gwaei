@@ -218,6 +218,7 @@ gw_dictionarylist_liststore_append (GwDictionaryList *dictionarylist, LwDictiona
     gchar *longname;
     gchar *directoryname;
     gint index;
+    gboolean selected;
 
     //Initializations
     liststore = gw_dictionarylist_get_liststore (dictionarylist);
@@ -237,6 +238,7 @@ gw_dictionarylist_liststore_append (GwDictionaryList *dictionarylist, LwDictiona
     if (index == 1) iconname = favoriteicon;
     if (index < 10) sprintf (shortcutname, "Alt-%d", index);
     if (index < 1000) sprintf (ordernumber, "%d", index);
+    selected = lw_dictionary_is_selected (dictionary);
 
     gtk_list_store_append (liststore, &iter);
     gtk_list_store_set (liststore, &iter,
@@ -246,7 +248,7 @@ gw_dictionarylist_liststore_append (GwDictionaryList *dictionarylist, LwDictiona
         GW_DICTIONARYLIST_COLUMN_LONG_NAME,    longname,
         GW_DICTIONARYLIST_COLUMN_ENGINE,       directoryname,
         GW_DICTIONARYLIST_COLUMN_SHORTCUT,     shortcutname,
-        GW_DICTIONARYLIST_COLUMN_SELECTED,     0,
+        GW_DICTIONARYLIST_COLUMN_SELECTED,     selected,
         GW_DICTIONARYLIST_COLUMN_DICT_POINTER, dictionary,
         -1
     );

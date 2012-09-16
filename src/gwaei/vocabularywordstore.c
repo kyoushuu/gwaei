@@ -429,7 +429,6 @@ gw_vocabularywordstore_set_has_changes (GwVocabularyWordStore *store, gboolean h
   klass = GW_VOCABULARYWORDSTORE_CLASS (G_OBJECT_GET_CLASS (store));
   store->priv->has_changes = has_changes;
   g_signal_emit (G_OBJECT (store), klass->signalid[GW_VOCABULARYWORDSTORE_CLASS_SIGNALID_CHANGED], 0);
-printf("BREAK set has changes %d\n", has_changes);
 }
 
 

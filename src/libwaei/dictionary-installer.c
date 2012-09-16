@@ -726,15 +726,12 @@ lw_dictionary_installer_clean (LwDictionary *dictionary,
     g_return_if_fail (dictionary != NULL);
 
     //Declarations
-		LwDictionaryPrivate *priv;
+    LwDictionaryPrivate *priv;
     LwDictionaryInstall *install;
 
     //Initializations
-		priv = dictionary->priv;
+    priv = dictionary->priv;
     install = priv->install;
-
-    if (install->files != NULL) g_free (install->files); install->files = NULL;
-    if (install->downloads != NULL) g_free (install->files); install->files = NULL;
 
     if (install->filelist != NULL) g_strfreev (install->filelist); install->filelist = NULL;
     if (install->downloadlist != NULL) g_strfreev (install->downloadlist); install->downloadlist = NULL;

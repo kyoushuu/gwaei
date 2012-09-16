@@ -241,7 +241,6 @@ gw_dictionaryinstallwindow_class_init (GwDictionaryInstallWindowClass *klass)
 void 
 gw_dictionaryinstallwindow_sync_interface (GwDictionaryInstallWindow *window)
 {
-printf("BREAK sync interface install is valid\n");
     //Declarations
     GwDictionaryInstallWindowPrivate *priv;
     GwApplication *application;

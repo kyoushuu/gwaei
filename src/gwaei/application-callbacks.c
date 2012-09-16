@@ -161,7 +161,8 @@ gw_application_open_aboutdialog_cb (GSimpleAction *action,
                "version", VERSION,
                "copyright", "gWaei (C) 2008-2012 Zachary Dovel\n" 
                             "Kanjipad backend (C) 2002 Owen Taylor\n"
-                            "JStroke backend (C) 1997 Robert Wells",
+                            "JStroke backend (C) 1997 Robert Wells\n"
+                            "Dedicated to Chuus (gl :-O)",
                "comments", gettext("Program for Japanese translation and reference. The\n"
                                     "dictionaries are supplied by Jim Breen's WWWJDIC.\n"
                                     "Special thanks to the maker of GJITEN who served as an inspiration."),

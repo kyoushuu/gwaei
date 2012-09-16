@@ -464,7 +464,6 @@ gw_vocabularyliststore_load_list_order (GwVocabularyListStore *store, LwPreferen
 void
 gw_vocabularyliststore_save (GwVocabularyListStore *store, GtkTreeIter *treeiter)
 {
-printf("BREAK save...\n");
     //Declarations
     GtkListStore *wordstore;
     GtkTreeModel *treemodel;
@@ -479,7 +478,6 @@ printf("BREAK save...\n");
       gw_vocabularywordstore_save (GW_VOCABULARYWORDSTORE (wordstore), NULL);
       gw_vocabularywordstore_set_has_changes (GW_VOCABULARYWORDSTORE (wordstore), FALSE);
       g_object_unref (wordstore); wordstore = NULL;
-      printf("BREAK saved!\n");
     }
 }
 
@@ -487,7 +485,6 @@ printf("BREAK save...\n");
 void
 gw_vocabularyliststore_save_all (GwVocabularyListStore *store)
 {
-printf("BREAK save all...\n");
     //Declarations
     GtkTreeModel *listmodel;
     GtkTreeIter iter;
