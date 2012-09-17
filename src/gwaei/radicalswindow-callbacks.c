@@ -109,6 +109,7 @@ gw_radicalswindow_strokes_checkbox_toggled_cb (GtkWidget *widget, gpointer data)
     priv = window->priv;
     request = gtk_toggle_button_get_active (priv->strokes_checkbutton);
 
+    gw_radicalswindow_update_sensitivities (window, NULL);
     gtk_widget_set_sensitive (GTK_WIDGET (priv->strokes_spinbutton), request);
 
     g_signal_emit (

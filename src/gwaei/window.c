@@ -84,7 +84,6 @@ gw_window_constructed (GObject *object)
 {
     GwWindow *window;
     GwWindowPrivate *priv;
-    GwApplication *application;
     gboolean os_shows_app_menu;
     GtkSettings *settings;
 
@@ -95,7 +94,6 @@ gw_window_constructed (GObject *object)
 
     window = GW_WINDOW (object);
     priv = window->priv;
-    application = gw_window_get_application (window);
     settings = gtk_settings_get_default ();
     g_object_get (settings, "gtk-shell-shows-app-menu", &os_shows_app_menu, NULL);
     gtk_widget_add_events (GTK_WIDGET (window), GDK_FOCUS_CHANGE_MASK);
@@ -520,9 +518,7 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     }
 
     //Set the menubar to the application
-    if (gtk_application_get_menubar (GTK_APPLICATION (application)) == NULL || 
-        os_shows_win_menu == FALSE) //FIXME! This should not be needed on Ubuntu
-    	gtk_application_set_menubar (GTK_APPLICATION (application), win_menu_model);
+    //gw_application_set_win_menubar (GW_APPLICATION (application), win_menu_model); FIXME
 
     //Save the menu objects in the window
     if (priv->menu_model != NULL) g_object_unref (priv->menu_model);

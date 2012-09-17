@@ -1527,10 +1527,31 @@ gw_searchwindow_switch_tab_cb (GtkNotebook *notebook,
     {
       search = LW_SEARCH (g_object_get_data (G_OBJECT (container), "searchitem"));
       gw_searchwindow_set_dictionary_by_searchitem (window, search);
+
       gw_searchwindow_set_entry_text_by_searchitem (window, search);
       gw_searchwindow_set_title_by_searchitem (window, search);
       gw_searchwindow_set_total_results_label_by_searchitem (window, search);
       gw_searchwindow_set_search_progressbar_by_searchitem (window, search);
+
+      gboolean enabled = (search != NULL);
+      GActionMap *map = G_ACTION_MAP (window);
+      GSimpleAction *action = NULL;
+
+      //Update Save sensitivity state
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save"));
+      g_simple_action_set_enabled (action, enabled);
+
+      //Update Save as sensitivity state
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "save-as"));
+      g_simple_action_set_enabled (action, enabled);
+
+      //Update Print sensitivity state
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "print"));
+      g_simple_action_set_enabled (action, enabled);
+
+      //Update Print preview sensitivity state
+      action = G_SIMPLE_ACTION (g_action_map_lookup_action (map, "print-preview"));
+      g_simple_action_set_enabled (action, enabled);
     }
 }
 

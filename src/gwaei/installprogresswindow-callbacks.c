@@ -112,7 +112,6 @@ gw_installprogresswindow_sync_progress (GwInstallProgressWindow *window)
     GwApplication *application;
     LwDictionaryList *dictionarylist;
     LwDictionary *dictionary;
-    LwPreferences *preferences;
     GList *link;
     gint current_to_install;
     gint total_to_install;

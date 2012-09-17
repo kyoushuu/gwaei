@@ -95,8 +95,7 @@ gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     if (menumodel == NULL) 
       return FALSE;
 
-    if (os_shows_win_menu == FALSE) //FIXME! This should not be needed on Ubuntu
-      gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+    gw_application_set_win_menubar (GW_APPLICATION (application), menumodel);
 
     return FALSE;
 }

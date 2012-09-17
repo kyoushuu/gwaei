@@ -726,6 +726,16 @@ gw_application_startup (GApplication *application)
     G_APPLICATION_CLASS (gw_application_parent_class)->startup (application);
 
     gw_application_load_app_menu (GW_APPLICATION (application));
+
+/*
+    {
+      GMenu *menu;
+      menu = g_menu_new ();
+      g_menu_prepend (menu, "window-menubar-link", NULL);
+      gtk_application_set_menubar (GTK_APPLICATION (application), G_MENU_MODEL (menu));
+    }
+*/
+
     gw_application_attach_signals (GW_APPLICATION (application));
 }
 
@@ -959,3 +969,36 @@ gw_application_show_vocabularywindow (GwApplication *application, gint index)
 
     gtk_widget_show (widget);
 }
+
+
+void
+gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumodel)
+{
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+    g_return_if_fail (menumodel != NULL);
+
+   gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+/*
+    //Declarations
+    GMenuModel *menubar;
+    gint length;
+
+    //Initializations
+    menubar = gtk_application_get_menubar (GTK_APPLICATION (application));
+    length = g_menu_model_get_n_items (menubar);
+    
+    while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
+  
+    {
+      GMenuItem *menuitem;
+      menuitem = g_menu_item_new_section (NULL, menumodel);
+      if (menuitem != NULL)
+      {
+        g_menu_append_item (G_MENU (menubar), menuitem);
+        g_object_unref (menuitem); menuitem = NULL;
+      }
+    }
+*/
+}
+

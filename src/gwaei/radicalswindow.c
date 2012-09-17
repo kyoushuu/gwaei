@@ -522,9 +522,11 @@ gw_radicalswindow_fill_radicals (GwRadicalsWindow *window)
 static gchar*
 gw_radicalswindow_get_toolitemgroup_selected (GwRadicalsWindow *window, GtkToolItemGroup *toolitemgroup)
 {
+    //Sanity checks
     g_return_val_if_fail (window != NULL, NULL);
     g_return_val_if_fail (toolitemgroup != NULL, NULL);
 
+    //Declarations
     GList *itemlist, *itemlink;
     GtkToggleToolButton *button;
     gchar *buffer, *buffer_ptr;
@@ -609,8 +611,10 @@ gw_radicalswindow_strdup_selected (GwRadicalsWindow *window)
     }
     *(buffer + buffer_offset) = '\0';
 
+/*
     if (*buffer == '\0')
       gw_radicalswindow_deselect (window);
+*/
 
     if (grouplist != NULL) g_list_free (grouplist); grouplist = NULL;
 
@@ -684,7 +688,6 @@ gw_radicalswindow_update_sensitivities (GwRadicalsWindow *window, const gchar *T
     priv = window->priv;
     toolpalette = priv->toolpalette;
     grouplink = grouplist = gtk_container_get_children (GTK_CONTAINER (toolpalette));
-
 
     while (grouplink != NULL)
     {
@@ -785,6 +788,8 @@ gw_radicalswindow_deselect (GwRadicalsWindow *window)
         gw_radicalswindow_deselect_foreach (window, toolitemgroup);
       }
       grouplink = grouplink->next;
+
+      gtk_tool_item_group_set_collapsed (toolitemgroup, FALSE);
     }
 
     g_list_free (grouplist); grouplist = NULL;

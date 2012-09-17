@@ -129,7 +129,6 @@ gw_vocabularywindow_constructed (GObject *object)
     //Declarations
     GwVocabularyWindow *window;
     GwVocabularyWindowPrivate *priv;
-    GwApplication *application;
 
     //Chain the parent class
     {
@@ -138,7 +137,6 @@ gw_vocabularywindow_constructed (GObject *object)
     //Initializations
     window = GW_VOCABULARYWINDOW (object);
     priv = window->priv;
-    application = gw_window_get_application (GW_WINDOW (window));
 
     gw_window_load_menubar (GW_WINDOW (window), "vocabularywindow");
 

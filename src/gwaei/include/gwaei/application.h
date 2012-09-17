@@ -85,6 +85,8 @@ void gw_menumodel_set_links (GMenuModel*, const gchar*, const gchar*, const gcha
 void gw_application_show_vocabularywindow (GwApplication*, gint);
 void gw_application_spellcheck_toggled_cb (GSimpleAction*, GVariant*, gpointer);
 
+void   gw_application_set_win_menubar (GwApplication*, GMenuModel*);
+
 #include "application-callbacks.h"
 
 G_END_DECLS
