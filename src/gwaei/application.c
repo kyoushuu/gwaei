@@ -727,15 +727,6 @@ gw_application_startup (GApplication *application)
 
     gw_application_load_app_menu (GW_APPLICATION (application));
 
-/*
-    {
-      GMenu *menu;
-      menu = g_menu_new ();
-      g_menu_prepend (menu, "window-menubar-link", NULL);
-      gtk_application_set_menubar (GTK_APPLICATION (application), G_MENU_MODEL (menu));
-    }
-*/
-
     gw_application_attach_signals (GW_APPLICATION (application));
 }
 
@@ -978,18 +969,29 @@ gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumode
     g_return_if_fail (application != NULL);
     g_return_if_fail (menumodel != NULL);
 
+   //This is the normal menu setter code.  Use the below if your OS crashes when trying to change the menu
    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
+
 /*
     //Declarations
     GMenuModel *menubar;
-    gint length;
 
-    //Initializations
+    //Set the menubar to a sane state
     menubar = gtk_application_get_menubar (GTK_APPLICATION (application));
-    length = g_menu_model_get_n_items (menubar);
-    
-    while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
-  
+    if (menubar == NULL)
+    {
+      GMenu *menu = g_menu_new ();
+      gtk_application_set_menubar (GTK_APPLICATION (application), G_MENU_MODEL (menu));
+      menubar = G_MENU_MODEL (menu);
+    }
+    else
+    {
+      gint length;
+      length = g_menu_model_get_n_items (menubar);
+      while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
+    }
+
+    //Add the menuitem linking the menus 
     {
       GMenuItem *menuitem;
       menuitem = g_menu_item_new_section (NULL, menumodel);
