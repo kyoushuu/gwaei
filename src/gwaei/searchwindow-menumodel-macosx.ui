@@ -97,10 +97,6 @@
       <attribute name='label' translatable='yes'>_View</attribute>
       <section>
         <item>
-          <attribute name='label' translatable='yes'>Show _Menubar</attribute>
-          <attribute name='action'>win.toggle-menubar-show</attribute>
-        </item>
-        <item>
           <attribute name='label' translatable='yes'>Show _Toolbar</attribute>
           <attribute name='action'>win.toggle-toolbar-show</attribute>
         </item>

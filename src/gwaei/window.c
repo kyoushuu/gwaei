@@ -518,7 +518,7 @@ gw_window_load_menubar (GwWindow *window, const gchar* BASE_NAME)
     }
 
     //Set the menubar to the application
-    //gw_application_set_win_menubar (GW_APPLICATION (application), win_menu_model); FIXME
+    gw_application_set_win_menubar (GW_APPLICATION (application), win_menu_model); //FIXME
 
     //Save the menu objects in the window
     if (priv->menu_model != NULL) g_object_unref (priv->menu_model);
