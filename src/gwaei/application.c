@@ -91,6 +91,7 @@ gw_application_constructed (GObject *object)
     }
 
     lw_regex_initialize ();
+    gw_application_initialize_accelerators (GW_APPLICATION (object));
 
 /*
 #ifdef OS_MINGW
@@ -1002,5 +1003,37 @@ gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumode
       }
     }
 */
+}
+
+
+void
+gw_application_initialize_accelerators (GwApplication *application)
+{
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+
+    //Declarations
+    gchar *accel;
+    gchar *action;
+    gchar *detail;
+    gint index;
+
+    //Initializations
+    index = 1;
+
+    while (index + 1 < 10)
+    {
+      accel = g_strdup_printf ("<Alt>%d", index);
+      action = g_strdup_printf ("win.set-dictionary");
+      detail = g_strdup_printf ("%d", index);
+      if (accel != NULL && action != NULL && detail != NULL)
+      {
+        gtk_application_add_accelerator (GTK_APPLICATION (application), accel, action, g_variant_new_string (detail));
+        index++;
+      }
+      if (accel != NULL) g_free (accel); accel = NULL;
+      if (action != NULL) g_free (action); action = NULL;
+      if (detail != NULL) g_free (detail); detail = NULL;
+    }
 }
 
