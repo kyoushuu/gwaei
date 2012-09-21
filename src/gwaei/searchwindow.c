@@ -2454,6 +2454,14 @@ gw_searchwindow_initialize_toolbar (GwSearchWindow *window)
     gtk_toolbar_insert (toolbar, item, -1);
     gtk_actionable_set_detailed_action_name (GTK_ACTIONABLE (item), "win.toggle-radicals-show");
     gtk_widget_show (GTK_WIDGET (item));
+
+
+    {
+      GtkWidget *widget = GTK_WIDGET (toolbar);
+      GtkStyleContext* context = gtk_widget_get_style_context (widget);
+      gtk_style_context_add_class (context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
+      gtk_widget_reset_style (widget);
+    }
 }
 
 
