@@ -563,3 +563,26 @@ gw_window_show_menubar (GwWindow *window, gboolean show)
       gtk_widget_hide (GTK_WIDGET (priv->menubar));
 }
 
+
+GMenuModel*
+gw_window_get_transient_for_menumodel (GwWindow *window)
+{
+    //Sanity checks
+    g_return_val_if_fail (window != NULL, NULL);
+
+    //Declarations
+    GMenuModel *menumodel;
+    GwWindow *transientfor;
+    gboolean check_transient_for;
+
+    //Initializations
+    transientfor = GW_WINDOW (gtk_window_get_transient_for (GTK_WINDOW (window)));
+    menumodel = gw_window_get_menumodel (window);
+    check_transient_for = (transientfor != NULL && menumodel == NULL);
+
+    //Recursive
+    if (check_transient_for)
+      return gw_window_get_transient_for_menumodel (GW_WINDOW (transientfor));
+    else
+      return gw_window_get_menumodel (window);
+}

@@ -49,6 +49,7 @@ static gboolean gw_application_local_command_line (GApplication*, gchar***, gint
 static int gw_application_command_line (GApplication*, GApplicationCommandLine*);
 static void gw_application_startup (GApplication*);
 static void gw_application_load_app_menu (GwApplication*);
+static void gw_application_load_menubar (GwApplication*);
 
 
 G_DEFINE_TYPE (GwApplication, gw_application, GTK_TYPE_APPLICATION)
@@ -727,6 +728,7 @@ gw_application_startup (GApplication *application)
     G_APPLICATION_CLASS (gw_application_parent_class)->startup (application);
 
     gw_application_load_app_menu (GW_APPLICATION (application));
+    gw_application_load_menubar (GW_APPLICATION (application));
 
     gw_application_attach_signals (GW_APPLICATION (application));
 }
@@ -814,6 +816,15 @@ gw_application_load_app_menu (GwApplication *application)
 
 errored:
     if (builder != NULL) g_object_unref (builder);
+}
+
+
+static void
+gw_application_load_menubar (GwApplication *application)
+{
+    GMenuModel *menumodel;
+    menumodel = G_MENU_MODEL (g_menu_new ());
+    gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
 }
 
 
@@ -1054,32 +1065,26 @@ gw_application_show_vocabularywindow (GwApplication *application, gint index)
 void
 gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumodel)
 {
-
     //Sanity checks
     g_return_if_fail (application != NULL);
     g_return_if_fail (menumodel != NULL);
+    if (g_menu_model_get_n_items (menumodel) == 0) return;
 
     //Declarations
     GMenuModel *menubar;
+    gint length;
 
-    //Set the menubar to a sane state
+    //Initializations
     menubar = gtk_application_get_menubar (GTK_APPLICATION (application));
-    if (menubar == NULL)
-    {
-      GMenu *menu = g_menu_new ();
-      gtk_application_set_menubar (GTK_APPLICATION (application), G_MENU_MODEL (menu));
-      menubar = G_MENU_MODEL (menu);
-    }
-    else
-    {
-      gint length = g_menu_model_get_n_items (menubar);
-      while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
-    }
+    g_return_if_fail (menubar != NULL);
+    length = g_menu_model_get_n_items (menubar);
+
+    //Clear the menubar
+    while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
 
     //Add the menuitem linking the menus 
     {
-      GMenuItem *menuitem;
-      menuitem = g_menu_item_new_section (NULL, menumodel);
+      GMenuItem *menuitem = g_menu_item_new_section (NULL, menumodel);
       if (menuitem != NULL)
       {
         g_menu_append_item (G_MENU (menubar), menuitem);
