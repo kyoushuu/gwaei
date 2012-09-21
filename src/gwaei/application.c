@@ -941,6 +941,94 @@ gw_menumodel_set_links (GMenuModel *menumodel, const gchar *LABEL, const gchar *
 
 
 void
+gw_application_add_accelerators (GwApplication *application, GMenuModel *menumodel)
+{
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+    g_return_if_fail (menumodel != NULL);
+
+    //Declarations
+    gint total_items;
+    gint index;
+    gchar *accel = NULL;
+    gchar *action = NULL;
+    gchar *detail = NULL;
+    GMenuModel *sublink = NULL;
+
+    //Initializations
+    total_items = g_menu_model_get_n_items (menumodel);
+
+    for (index = 0; index < total_items; index++)
+    {
+      g_menu_model_get_item_attribute (menumodel, index, "accel", "s", &accel, NULL);
+      g_menu_model_get_item_attribute (menumodel, index, G_MENU_ATTRIBUTE_ACTION, "s", &action, NULL);
+      g_menu_model_get_item_attribute (menumodel, index, G_MENU_ATTRIBUTE_TARGET, "s", &detail, NULL);
+      if (accel != NULL && action != NULL)
+      {
+        if (detail != NULL)
+          gtk_application_add_accelerator (GTK_APPLICATION (application), accel, action, g_variant_new_string (detail));
+        else
+          gtk_application_add_accelerator (GTK_APPLICATION (application), accel, action, NULL);
+      }
+
+      if (accel != NULL) g_free (accel); accel = NULL;
+      if (action != NULL) g_free (action); action = NULL;
+      if (detail != NULL) g_free (detail); detail = NULL;
+
+      //Recursive work
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SUBMENU);
+      if (sublink != NULL) gw_application_add_accelerators (application, sublink);
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SECTION);
+      if (sublink != NULL) gw_application_add_accelerators (application, sublink);
+    }
+}
+
+
+void
+gw_application_remove_accelerators (GwApplication *application, GMenuModel *menumodel)
+{
+    //Sanity checks
+    g_return_if_fail (application != NULL);
+    g_return_if_fail (menumodel != NULL);
+
+    //Declarations
+    gint total_items;
+    gint index;
+    gchar *accel = NULL;
+    gchar *action = NULL;
+    gchar *detail = NULL;
+    GMenuModel *sublink = NULL;
+
+    //Initializations
+    total_items = g_menu_model_get_n_items (menumodel);
+
+    for (index = 0; index < total_items; index++)
+    {
+      g_menu_model_get_item_attribute (menumodel, index, "accel", "s", &accel, NULL);
+      g_menu_model_get_item_attribute (menumodel, index, G_MENU_ATTRIBUTE_ACTION, "s", &action, NULL);
+      g_menu_model_get_item_attribute (menumodel, index, G_MENU_ATTRIBUTE_TARGET, "s", &detail, NULL);
+      if (accel != NULL && action != NULL)
+      {
+        if (detail != NULL)
+          gtk_application_remove_accelerator (GTK_APPLICATION (application), action, g_variant_new_string (detail));
+        else
+          gtk_application_remove_accelerator (GTK_APPLICATION (application), action, NULL);
+      }
+
+      if (accel != NULL) g_free (accel); accel = NULL;
+      if (action != NULL) g_free (action); action = NULL;
+      if (detail != NULL) g_free (detail); detail = NULL;
+
+      //Recursive work
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SUBMENU);
+      if (sublink != NULL) gw_application_remove_accelerators (application, sublink);
+      sublink = g_menu_model_get_item_link (menumodel, index, G_MENU_LINK_SECTION);
+      if (sublink != NULL) gw_application_remove_accelerators (application, sublink);
+    }
+}
+
+
+void
 gw_application_show_vocabularywindow (GwApplication *application, gint index)
 {
     //Declarations
@@ -966,14 +1054,11 @@ gw_application_show_vocabularywindow (GwApplication *application, gint index)
 void
 gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumodel)
 {
+
     //Sanity checks
     g_return_if_fail (application != NULL);
     g_return_if_fail (menumodel != NULL);
 
-   //This is the normal menu setter code.  Use the below if your OS crashes when trying to change the menu
-   gtk_application_set_menubar (GTK_APPLICATION (application), menumodel);
-
-/*
     //Declarations
     GMenuModel *menubar;
 
@@ -987,8 +1072,7 @@ gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumode
     }
     else
     {
-      gint length;
-      length = g_menu_model_get_n_items (menubar);
+      gint length = g_menu_model_get_n_items (menubar);
       while (length-- > 0) g_menu_remove (G_MENU (menubar), 0);
     }
 
@@ -1001,8 +1085,8 @@ gw_application_set_win_menubar (GwApplication *application, GMenuModel *menumode
         g_menu_append_item (G_MENU (menubar), menuitem);
         g_object_unref (menuitem); menuitem = NULL;
       }
+      gw_application_add_accelerators (application, menubar);
     }
-*/
 }
 
 
