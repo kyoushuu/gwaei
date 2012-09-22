@@ -109,3 +109,6 @@ configure
 gnome-doc-utils.make
 compile
 depcomp
+
+*tar.gz
+*tar.xz
