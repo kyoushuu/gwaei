@@ -71,7 +71,8 @@ gw_window_focus_in_event_cb (GtkWidget *widget, GdkEvent *event, gpointer data)
     if (menumodel == NULL) 
       return FALSE;
 
-    gw_application_set_win_menubar (GW_APPLICATION (application), menumodel);
+    if (os_shows_win_menu)
+      gw_application_set_win_menubar (GW_APPLICATION (application), menumodel);
 
     return FALSE;
 }
