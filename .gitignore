@@ -112,3 +112,7 @@ depcomp
 
 *tar.gz
 *tar.xz
+INSTALL
+install-sh
+missing
+ChangeLog
