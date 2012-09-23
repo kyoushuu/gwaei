@@ -667,11 +667,11 @@ gw_application_command_line (GApplication *application, GApplicationCommandLine 
     if (window == NULL) 
       return 0;
     dictionary = lw_dictionarylist_get_dictionary_fuzzy (LW_DICTIONARYLIST (dictionarylist), priv->arg_dictionary);
-    position = lw_dictionarylist_get_position (LW_DICTIONARYLIST (dictionarylist), dictionary);
 
     //Set the initial dictionary
     if (dictionary != NULL)
     {
+      position = lw_dictionarylist_get_position (LW_DICTIONARYLIST (dictionarylist), dictionary);
       gw_searchwindow_set_dictionary (window, position);
     }
 

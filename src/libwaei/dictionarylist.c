@@ -230,7 +230,7 @@ gint
 lw_dictionarylist_get_position (LwDictionaryList *dictionarylist, LwDictionary *dictionary)
 {
     //Sanity checks
-    g_return_val_if_fail (dictionary != NULL, -1);
+    g_return_val_if_fail (dictionarylist != NULL, -1);
     g_return_val_if_fail (dictionary != NULL, -1);
 
     return g_list_index (dictionarylist->priv->list, dictionary);

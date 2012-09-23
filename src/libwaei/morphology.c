@@ -99,6 +99,7 @@ lw_morphologyengine_new ()
 {
     //Declarations
     static gchar *argv[] = {"mecab", NULL};
+    static gboolean message_shown = FALSE;
     LwMorphologyEngine *engine;
 
     //Initializations
@@ -111,15 +112,17 @@ lw_morphologyengine_new ()
 
     //Error checking
     if (engine->mecab == NULL) {
-/*
-mecab_strerr CAUSES A SEGFAULT
-      if (engine->mecab == NULL) 
-        g_warning ("Failed to initialize Mecab engine: %s", mecab_strerror (NULL));
-*/
       lw_morphologyengine_free (engine); engine = NULL;
-      g_message ("You may not have any mecab dictionaries installed... (Try installing mecab-ipadic?)");
+      if (message_shown == FALSE)
+      {
+        g_message ("You may not have any mecab dictionaries installed... (Try installing mecab-ipadic?)");
+        message_shown = TRUE;
+      }
     }
-    g_return_val_if_fail (engine != NULL, NULL);
+    else
+    {
+      message_shown = FALSE;
+    }
 
     return engine;
 }
