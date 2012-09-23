@@ -1,2 +1,2 @@
-2012-09-16: gWaei 3.6.1
+2012-09-22: gWaei 3.6.1
 Bugfix release.  The changes mostly focus on getting the menus to work correctly on Ubuntu unity without causing crashes.  Reenabled dictionary switch accelerators. Added primary-toolbar style to the main toolbar.  Fixed ui updates when dictionaries are reordered.  
