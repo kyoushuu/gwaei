@@ -1191,7 +1191,7 @@ gw_searchwindow_display_no_results_found_page (GwSearchWindow *window, LwSearch 
 
     //Add links
     char *website_url_menuitems[] = {
-      "Google", "http://www.google.com/window?q=%s", "google.png",
+      "Google", "http://www.google.com/?q=%s", "google.png",
       "Goo", "http://dictionary.goo.ne.jp/srch/all/%s/m0u/", "goo.png",
       "Wikipedia", "http://www.wikipedia.org/wiki/%s", "wikipedia.png",
       NULL, NULL, NULL
