@@ -124,7 +124,7 @@ msgstr ""
 
 #: ../src/libwaei/dictinstlist.c:91
 msgid "Names and Places"
-msgstr ""
+msgstr "名前と場所"
 
 #: ../src/libwaei/dictinstlist.c:92
 msgid "Names and Places Dictionary"
@@ -291,7 +291,7 @@ msgstr "辞書の用語解説(_T)"
 
 #: ../src/gwaei/searchwindow.ui.h:4
 msgid "Did you mean?"
-msgstr ""
+msgstr "これかな？"
 
 #: ../src/gwaei/searchwindow.ui.h:5
 msgid "Enable spellcheck for searches"
@@ -709,11 +709,11 @@ msgstr "練習"
 
 #: ../src/gwaei/vocabularywindow.ui.h:28 ../src/gwaei/flashcardwindow.ui.h:5
 msgid "Track Results"
-msgstr ""
+msgstr "業績データをトラック"
 
 #: ../src/gwaei/vocabularywindow.ui.h:29
 msgid "Track Score Results"
-msgstr ""
+msgstr "業績をトラック"
 
 #: ../src/gwaei/vocabularywindow.ui.h:31
 msgid "_Export List"
@@ -721,7 +721,7 @@ msgstr "リストをエクスポート(_E)"
 
 #: ../src/gwaei/vocabularywindow.ui.h:33
 msgid "_Generate"
-msgstr ""
+msgstr "ジェネレート(_G)"
 
 #: ../src/gwaei/vocabularywindow.ui.h:34
 msgid "_Import List"
@@ -776,9 +776,8 @@ msgid "Choose the dictionary to use"
 msgstr "望みの辞書を選んでください"
 
 #: ../src/gwaei/application.c:273
-#, fuzzy
 msgid "Open the vocabulary manager window"
-msgstr "gWaei語彙管理"
+msgstr "語彙管理ウィンドーを開く"
 
 #: ../src/gwaei/application.c:274
 msgid "Check the gWaei version information"
@@ -1237,24 +1236,23 @@ msgstr "新規リスト%d"
 
 #: ../src/gwaei/vocabularywordstore.c:580
 msgid "(Click to set Kanji)"
-msgstr ""
+msgstr "〈クリックで設定〉"
 
 #: ../src/gwaei/vocabularywordstore.c:581
 msgid "(Click to set Furigana)"
-msgstr ""
+msgstr "〈クリックで設定〉"
 
 #: ../src/gwaei/vocabularywordstore.c:582
 msgid "(Click to set Definitions)"
-msgstr ""
+msgstr "〈クリックで設定〉"
 
 #: ../src/gwaei/vocabularywordstore.c:594
 msgid "New"
-msgstr ""
+msgstr "新規"
 
 #: ../src/gwaei/flashcardwindow.c:227
-#, fuzzy, c-format
 msgid "%s - gWaei %s Flashcards"
-msgstr "gWaei %s単語帳 \"%s\""
+msgstr "%s - gWaei %s単語帳"
 
 #: ../src/gwaei/flashcardwindow.c:387
 msgid "You were correct!"
@@ -1262,7 +1260,7 @@ msgstr "正解だった！"
 
 #: ../src/gwaei/flashcardwindow.c:388 ../src/gwaei/flashcardwindow.c:402
 msgid "Press [Enter] to continue..."
-msgstr "[Enter]を押したら続けられます..."
+msgstr "[Enter]キーで続けられます..."
 
 #: ../src/gwaei/flashcardwindow.c:389 ../src/gwaei/flashcardwindow.c:403
 msgid "Answer"
@@ -1285,5 +1283,5 @@ msgid "Completion Time"
 msgstr "費やした時間"
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
+msgid "Enter a Japanese or English word to easily get translations"
 msgstr "英語か日本語の単語を入れて簡単に翻訳を調べます"

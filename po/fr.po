@@ -1376,10 +1376,10 @@ msgid "Completion Time"
 msgstr "Temps écoulé"
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
+msgid "Enter a Japanese or English word to easily get translations"
 msgstr ""
 "Entrer un mot en japonais ou en anglais pour facilement obtenir une "
-"traduction."
+"traduction"
 
 #~ msgid "Append"
 #~ msgstr "Ajouter"

@@ -1359,8 +1359,8 @@ msgid "Completion Time"
 msgstr "Čas dokončení"
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
-msgstr "Zadejte japonské nebo anglické slovo pro snadné dostání překladů."
+msgid "Enter a Japanese or English word to easily get translations"
+msgstr "Zadejte japonské nebo anglické slovo pro snadné dostání překladů"
 
 #, fuzzy
 #~ msgid "gWaei Vocabulary Flashcard Study"

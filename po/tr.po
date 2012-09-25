@@ -1399,7 +1399,7 @@ msgid "Completion Time"
 msgstr "Açılıyor..."
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
+msgid "Enter a Japanese or English word to easily get translations"
 msgstr ""
 
 #, fuzzy

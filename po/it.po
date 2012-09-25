@@ -1388,10 +1388,10 @@ msgid "Completion Time"
 msgstr "Scompattando..."
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
+msgid "Enter a Japanese or English word to easily get translations"
 msgstr ""
 "Inserisci un termine Giapponese o Inglese per avere facilmente una "
-"traduzione."
+"traduzione"
 
 #, fuzzy
 #~ msgid "gWaei Vocabulary Flashcard Study"

@@ -1380,10 +1380,10 @@ msgid "Completion Time"
 msgstr "Komprimierung..."
 
 #: ../src/desktop/gwaei.desktop.in.h:1
-msgid "Enter a Japanese or English word to easily get translations."
+msgid "Enter a Japanese or English word to easily get translations"
 msgstr ""
 "Geben Sie ein Japanisches, Englisches oder Deutsches Wort ein, um einfach "
-"Übersetzungen davo zu erhalten."
+"Übersetzungen davo zu erhalten"
 
 #~ msgid "No results found!"
 #~ msgstr "Keine Ergebnisse gefunden!"
